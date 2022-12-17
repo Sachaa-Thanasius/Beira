@@ -143,19 +143,7 @@ class Snowball(commands.Cog):
 
         actual_target = ctx.author if target is None else target
 
-        query = """
-            SELECT global_rank, total_hits, total_misses, total_kos, total_stock
-            FROM(
-                SELECT user_id, sum(hits) as total_hits,
-                    sum(misses) as total_misses,
-                    sum(kos) as total_kos,
-                    sum(stock) as total_stock,
-                    DENSE_RANK() OVER (ORDER BY sum(hits) DESC, sum(kos), sum(misses), sum(stock) DESC, user_id DESC) AS global_rank
-                FROM     snowball_stats
-                GROUP BY user_id
-            ) as t
-            WHERE t.user_id = $1;
-        """
+        query = "SELECT rank, hits, misses, kos, stock FROM global_rank_view WHERE user_id = $1;"
 
         record = await self.bot.db_pool.fetchrow(query, actual_target.id)
 
@@ -185,9 +173,8 @@ class Snowball(commands.Cog):
         embed.set_thumbnail(url=ctx.guild.icon.url)
 
         query = """
-            SELECT guild_id, user_id, hits, kos, misses, stock, DENSE_RANK() over (
-                ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC
-                ) AS guild_rank
+            SELECT guild_id, user_id, hits, kos, misses, stock,
+                DENSE_RANK() over (ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC) AS guild_rank
             FROM snowball_stats
             WHERE guild_id = #1
             ORDER BY guild_rank
@@ -214,17 +201,7 @@ class Snowball(commands.Cog):
         )
         embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/987158778900258866/c28128b586d49f2f6d3f536b06f2f408.webp?size=160")
 
-        query = """
-            SELECT user_id, sum(hits) as hits,
-                sum(misses) as misses,
-                sum(kos) as kos,
-                sum(stock) as stock,
-                DENSE_RANK() over (ORDER BY sum(hits) DESC, sum(kos), sum(misses), sum(stock) DESC, user_id DESC) AS rank
-            FROM     snowball_stats
-            GROUP BY user_id
-            ORDER BY rank
-            LIMIT 10;
-        """
+        query = "SELECT * FROM global_rank_view LIMIT 10;"
 
         try:
             global_ldbd = await self.bot.db_pool.fetch(query)
@@ -232,6 +209,29 @@ class Snowball(commands.Cog):
             embed.description += "\n***Sorry, this command seems to be down at the moment. Please try again in a few minutes.***"
         else:
             await self._make_leaderboard_fields(embed, global_ldbd)
+        finally:
+            await ctx.send(embed=embed, ephemeral=True)
+
+    @leaderboard.command(name="guilds")
+    async def leaderboard_guilds(self, ctx: commands.Context) -> None:
+        """See which guild is dominating the Snowball Bot leaderboard."""
+
+        embed = discord.Embed(
+            color=0x2f3136,
+            title="**Guild-Level Snowball Champions**",
+            description="(Total Hits / Total Misses / Total KOs)\n——————————————"
+        )
+        embed.set_thumbnail(
+            url="https://cdn.discordapp.com/avatars/987158778900258866/c28128b586d49f2f6d3f536b06f2f408.webp?size=160")
+
+        query = "SELECT * FROM guilds_only_rank_view LIMIT 10;"
+
+        try:
+            guilds_only_ldbd = await self.bot.db_pool.fetch(query)
+        except KeyError:
+            embed.description += "\n***Sorry, this command seems to be down at the moment. Please try again in a few minutes.***"
+        else:
+            await self._make_leaderboard_fields(embed, guilds_only_ldbd)
         finally:
             await ctx.send(embed=embed, ephemeral=True)
 
@@ -333,8 +333,11 @@ class Snowball(commands.Cog):
                               orange_star, blue_star, pink_star, orange_star, blue_star)
 
         for row in records:
-            user = self.bot.get_user(row["user_id"])
-            embed.add_field(name=f"{ldbd_places_emojis[row['rank'] - 1]} {row['rank']}** | {user}**",
+            if "guild_id" in dict(row):
+                entity = self.bot.get_user(row["guild_id"])
+            else:
+                entity = self.bot.get_user(row["user_id"])
+            embed.add_field(name=f"{ldbd_places_emojis[row['rank'] - 1]} {row['rank']}** | {entity}**",
                             value=f"({row['hits']}/{row['misses']}/{row['kos']})", inline=False)
 
 
