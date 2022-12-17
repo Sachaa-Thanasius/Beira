@@ -1,0 +1,13 @@
+{
+    "discord": {
+        "token": "",
+        "default_prefix": "$",
+        "guilds": {
+            "dev": [],
+            "prod": []
+        }
+    },
+    "db": {
+        "postgres_url": ""
+    }
+}
