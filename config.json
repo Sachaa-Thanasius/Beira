@@ -1,0 +1,21 @@
+{
+    "discord": {
+        "token": "OTg3MTU4Nzc4OTAwMjU4ODY2.GsMHZE.rEl1WzK17FwOhk0PMydGujsaKzDkdHr3WlQtJs",
+        "default_prefix": "$",
+        "owner_ids": [158646501696864256],
+        "guilds": {
+            "dev": [975458232157999134, 1039953198359781446],
+            "prod": [602735169090224139]
+        }
+    },
+    "db": {
+        "postgres_url": "postgres://thanos:Tushy%3f1998@192.168.0.23:5432/discord_snowballs",
+        "mongodb_url": "mongodb://Balthazar:upstroke-liquid-pureblood@ac-1leeh6n-shard-00-00.afg3toc.mongodb.net:27017,ac-1leeh6n-shard-00-01.afg3toc.mongodb.net:27017,ac-1leeh6n-shard-00-02.afg3toc.mongodb.net:27017/?ssl=true&replicaSet=atlas-yqt1s7-shard-0&authSource=admin&retryWrites=true&w=majority"
+    },
+    "patreon": {
+        "client_id": "I0tBKkpntphsjCZODfHDF3lkBxKj0x2upmO16QYGLI9G3xNBZKu1P8eKndpTnq4u",
+        "client_secret": "ELfJBxAKSXkkoRU-1aHFN6PuJSi_iSHqWpyt2rCKDz0cW2cmq78H0OjXVrcXthxD",
+        "creator_access_token": "NJLkTGtSNzghaUsxcceMLJ3iDQMTd4EFRctjzhh313g",
+        "creator_refresh_token": "Mfa9YOgoFM3lt1RGzO2EBCR4oK71PAf_0SogKaijrTQ"
+    }
+}

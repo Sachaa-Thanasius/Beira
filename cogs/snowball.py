@@ -25,12 +25,12 @@ class Snowball(commands.Cog):
 
     def __init__(self, bot: SnowBot):
         self.bot = bot
-        self.EMBED_DATA = {}
+        self.embed_data = {}
 
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands and methods."""
         with open("data/snowball_embed_data.json", "r") as file:
-            self.EMBED_DATA = json.load(file)
+            self.embed_data = json.load(file)
 
     @commands.hybrid_command()
     @commands.guild_only()
@@ -45,7 +45,7 @@ class Snowball(commands.Cog):
             color=0x5e62d3,
             description=f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping some snowballs. You now have {record['stock']} of them—let 'em fly!"
         )
-        embed.set_image(url=self.EMBED_DATA["collects"]["image_success"])
+        embed.set_image(url=self.embed_data["collects"]["image_success"])
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
 
@@ -58,7 +58,7 @@ class Snowball(commands.Cog):
         ephemeral = False
         message = ""
         # Don't let users (other than the owner) throw snowballs at themselves.
-        if ctx.author == target and not (await self.bot.is_owner(ctx.author)):
+        if ctx.author == target and not await self.bot.is_owner(ctx.author):
             embed = discord.Embed(
                 color=0x60ff60,
                 description="Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the face."
@@ -79,19 +79,19 @@ class Snowball(commands.Cog):
 
                 embed = discord.Embed(
                     color=0x60ff60,
-                    description=random.choice(self.EMBED_DATA["hits"]["notes"]).format(target.mention)
+                    description=random.choice(self.embed_data["hits"]["notes"]).format(target.mention)
                 )
-                embed.set_image(url=random.choice(self.EMBED_DATA["hits"]["gifs"]))
+                embed.set_image(url=random.choice(self.embed_data["hits"]["gifs"]))
 
                 message = f"{target.mention}"
             else:
                 await self._update_record(ctx.author, misses=1)
 
-                misses_text = random.choice(self.EMBED_DATA["misses"]["notes"])
+                misses_text = random.choice(self.embed_data["misses"]["notes"])
                 descr = misses_text.format(target.mention) if "{}" in misses_text else misses_text
 
                 embed = discord.Embed(color=0xffa600, description=descr)
-                embed.set_image(url=random.choice(self.EMBED_DATA["misses"]["gifs"]))
+                embed.set_image(url=random.choice(self.embed_data["misses"]["gifs"]))
         else:
             embed = discord.Embed(
                 color=0x000000,
@@ -112,7 +112,7 @@ class Snowball(commands.Cog):
         query = """
             SELECT guild_rank, hits, misses, kos, stock
             FROM(
-                SELECT guild_id, user_id, hits, kos, misses, stock,
+                SELECT user_id, hits, kos, misses, stock,
                        DENSE_RANK() over (ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC) AS guild_rank
                 FROM snowball_stats
                 WHERE guild_id = #1
@@ -209,7 +209,7 @@ class Snowball(commands.Cog):
 
         embed = discord.Embed(
             color=0x2f3136,
-            title=f"**Global Snowball Champions**",
+            title="**Global Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"
         )
         embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/987158778900258866/c28128b586d49f2f6d3f536b06f2f408.webp?size=160")
@@ -241,9 +241,9 @@ class Snowball(commands.Cog):
 
         embed = discord.Embed(color=0xdd8b42, title="**Sources of Inspiration and Code**")
         embed.add_field(name="Inspiration",
-                        value=self.EMBED_DATA["inspo"]["note"].format(self.EMBED_DATA["inspo"]["url"]), inline=False)
+                        value=self.embed_data["inspo"]["note"].format(self.embed_data["inspo"]["url"]), inline=False)
         embed.add_field(name="Code",
-                        value=self.EMBED_DATA["code"]["note"].format(self.EMBED_DATA["code"]["url"]), inline=False)
+                        value=self.embed_data["code"]["note"].format(self.embed_data["code"]["url"]), inline=False)
 
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -263,8 +263,8 @@ class Snowball(commands.Cog):
             if isinstance(error.original, (app_commands.CommandInvokeError, commands.CommandInvokeError)):
                 new_error = error.original
                 if isinstance(new_error.original, asyncpg.exceptions.CheckViolationError):
-                    embed.description = f"You've filled your armory to the brim with about 100 snowballs! Release some of your stores to make space for more."
-                    embed.set_image(url=self.EMBED_DATA["collects"]["image_failure"])
+                    embed.description = "You've filled your armory to the brim with about 100 snowballs! Release some of your stores to make space for more."
+                    embed.set_image(url=self.embed_data["collects"]["image_failure"])
                 else:
                     LOGGER.exception(f"Other command invoke error - [Guild: {ctx.guild.name}][User: {ctx.author}] - Error = {type(new_error.original)}", exc_info=new_error.original)
             else:
@@ -301,8 +301,7 @@ class Snowball(commands.Cog):
                 """, member.guild.id, member.guild.name, member.guild.icon.url)
 
         # Save decrement for the update portion of the upsert
-        if stock_insert < 0:
-            stock_insert = 0
+        stock_insert = max(stock_insert, 0)
 
         # Upsert stats record
         await self.bot.db_pool.execute("""
@@ -330,14 +329,15 @@ class Snowball(commands.Cog):
         orange_star = self.bot.emojis_stock["orange_star"]
         blue_star = self.bot.emojis_stock["blue_star"]
         pink_star = self.bot.emojis_stock["pink_star"]
-        self.LDBD_PLACES_EMOJIS = ("\N{GLOWING STAR}", "\N{WHITE MEDIUM STAR}", orange_star, blue_star, pink_star,
-                                   orange_star, blue_star, pink_star, orange_star, blue_star)
+        ldbd_places_emojis = ("\N{GLOWING STAR}", "\N{WHITE MEDIUM STAR}", orange_star, blue_star, pink_star,
+                              orange_star, blue_star, pink_star, orange_star, blue_star)
 
         for row in records:
             user = self.bot.get_user(row["user_id"])
-            embed.add_field(name=f"{self.LDBD_PLACES_EMOJIS[row['rank'] - 1]} {row['rank']}** | {user}**",
+            embed.add_field(name=f"{ldbd_places_emojis[row['rank'] - 1]} {row['rank']}** | {user}**",
                             value=f"({row['hits']}/{row['misses']}/{row['kos']})", inline=False)
 
 
 async def setup(bot: SnowBot):
+    """Connect cog to bot."""
     await bot.add_cog(Snowball(bot))
