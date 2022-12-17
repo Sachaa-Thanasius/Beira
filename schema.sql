@@ -25,9 +25,7 @@ CREATE TABLE IF NOT EXISTS snowball_stats (
     PRIMARY KEY(user_id, guild_id)
 );
 
-
-
--- TODO: Add view for guild ranks to this schema outline
+-- TODO: Add view for user guild-level ranks to this schema outline
 
 CREATE VIEW global_rank_view AS
 SELECT user_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
