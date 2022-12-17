@@ -5,7 +5,7 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
-from bot import SnowBot
+from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
@@ -17,6 +17,7 @@ class LittleHelpCommand(commands.MinimalHelpCommand):
         super().__init__(command_attrs=dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user))))
 
     async def send_pages(self):
+        """A helper utility to send the page output from paginator to the destination. Modified to use embeds."""
         destination = self.get_destination()
         for page in self.paginator.pages:
             embed = discord.Embed(description=page)
@@ -39,6 +40,8 @@ class LittleHelp(commands.Cog):
 
     @app_commands.command()
     async def help(self, interaction: discord.Interaction, command: Optional[str]):
+        """Accesses the help commands through the slash system."""
+
         ctx = await self.bot.get_context(interaction, cls=commands.Context)
         if command is not None:
             await ctx.send_help(command)
@@ -47,16 +50,20 @@ class LittleHelp(commands.Cog):
 
     @help.autocomplete("command")
     async def command_autocomplete(self, interaction: discord.Interaction, needle: str) -> List[app_commands.Choice[str]]:
+        """Autocompletes the help command."""
+
         assert self.bot.help_command
         ctx = await self.bot.get_context(interaction, cls=commands.Context)
         help_command = self.bot.help_command.copy()
         help_command.context = ctx
+
         if not needle:
             return [
                        app_commands.Choice(name=cog_name, value=cog_name)
                        for cog_name, cog in self.bot.cogs.items()
                        if await help_command.filter_commands(cog.get_commands())
                    ][:25]
+
         needle = needle.lower()
         return [
                    app_commands.Choice(name=command.qualified_name, value=command.qualified_name)
@@ -65,5 +72,5 @@ class LittleHelp(commands.Cog):
                ][:25]
 
 
-async def setup(bot: SnowBot):
+async def setup(bot: Beira):
     await bot.add_cog(LittleHelp(bot))

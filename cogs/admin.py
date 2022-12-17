@@ -9,7 +9,7 @@ from discord import app_commands
 from discord.app_commands import Choice
 from discord.ext import commands
 
-from bot import SnowBot
+from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ IGNORE_EXTENSIONS = []
 class Admin(commands.Cog, command_attrs=dict(hidden=True)):
     """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
 
-    def __init__(self, bot: SnowBot):
+    def __init__(self, bot: Beira):
         self.bot = bot
 
     @commands.command()
@@ -141,5 +141,5 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.", ephemeral=True)
 
 
-async def setup(bot: SnowBot):
+async def setup(bot: Beira):
     await bot.add_cog(Admin(bot))

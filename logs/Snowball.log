@@ -1,6 +1,0 @@
-[2022-12-17 00:54:53] [INFO    ] discord.client: logging in using static token
-[2022-12-17 00:54:53] [INFO    ] bot.SnowBot: Loaded extension: cogs.snowball
-[2022-12-17 00:54:53] [INFO    ] bot.SnowBot: Loaded extension: cogs.admin
-[2022-12-17 00:54:53] [INFO    ] bot.SnowBot: Loaded extension: cogs.help
-[2022-12-17 00:54:54] [INFO    ] discord.gateway: Shard ID None has connected to Gateway (Session ID: e4d8f91979ed8bef28fbb28cb18716c4).
-[2022-12-17 00:54:56] [INFO    ] bot.SnowBot: Logged in as Soaring Snowball#2681 (ID: 987158778900258866)

@@ -6,6 +6,8 @@ import logging
 
 from discord.ext import commands
 
+from bot import Beira
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -28,5 +30,5 @@ class SlashTest(commands.Cog):
         await ctx.send(arg)
 
 
-async def setup(bot):
+async def setup(bot: Beira):
     await bot.add_cog(SlashTest(bot))

@@ -1,7 +1,5 @@
 """
-File name: log.py
-Author: Umbra from the discord.py server (modified slightly by Thanos)
-Description: Logging setup.
+log.py: Based on the work of Umbra, this is Beira's logging system.
 """
 import pathlib
 import logging

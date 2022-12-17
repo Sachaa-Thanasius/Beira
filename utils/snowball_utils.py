@@ -1,5 +1,5 @@
 """
-utils.py: Utility functions for commands.
+snowball_utils.py: Utility functions for snowball commands.
 """
 import logging
 from typing import Optional

@@ -1,13 +1,6 @@
 #!/usr/bin/env python
 """
-bot.py: SnowBot is a Discord bot meant to emulate Discord's own Snowball bot from winter 2021. It facilitates virtual
-snowball fights between server members, tracks their scores, and displays them in response to commands.
-
-Credit: Much of this code was heavily inspired by or has modified versions of the discord.py example code and the personal
-bots of Rapptz, Umbra - maintainer and major contributing member of the discord.py community respectively - Rakesh,
-whose code was the first implementation of this I saw, and so many others.
-py
-Also Ali, because everything about this is their fault.
+bot.py: The main bot.
 """
 import logging
 import asyncio
@@ -20,10 +13,10 @@ import config
 from utils.log import SetupLogging
 
 CONFIG = config.config()
-LOGGER = logging.getLogger("bot.SnowBot")
+LOGGER = logging.getLogger("bot.Beira")
 
 
-class SnowBot(commands.Bot):
+class Beira(commands.Bot):
     """A Discord bot mainly meant for API experimentation and throwing snowballs."""
 
     def __init__(self,
@@ -104,13 +97,13 @@ async def main() -> None:
         testing = False
         init_exts = ["cogs.snowball", "cogs.admin", "cogs.help"]
 
-        async with SnowBot(command_prefix=def_prefix,
-                           intents=default_intents,
-                           db_pool=pool,
-                           testing_guild_ids=testing_guilds,
-                           initial_extensions=init_exts,
-                           test_mode=testing,
-                           ) as bot:
+        async with Beira(command_prefix=def_prefix,
+                         intents=default_intents,
+                         db_pool=pool,
+                         testing_guild_ids=testing_guilds,
+                         initial_extensions=init_exts,
+                         test_mode=testing,
+                         ) as bot:
             with SetupLogging():    # Custom logging class
                 await bot.start(CONFIG["discord"]["token"])
 

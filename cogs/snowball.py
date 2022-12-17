@@ -11,8 +11,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import SnowBot
-from utils.utils import collect_cooldown
+from bot import Beira
+from utils.snowball_utils import collect_cooldown
 
 LOGGER = logging.getLogger(__name__)
 
@@ -23,7 +23,7 @@ LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
 class Snowball(commands.Cog):
     """Snowball cog that implements a version of Discord's 2021 Snowball Bot game."""
 
-    def __init__(self, bot: SnowBot):
+    def __init__(self, bot: Beira):
         self.bot = bot
         self.embed_data = {}
 
@@ -139,7 +139,7 @@ class Snowball(commands.Cog):
     @commands.guild_only()
     @app_commands.describe(target="Look up a a player's stats as a summation across all servers.")
     async def stats_global(self, ctx: commands.Context, target: discord.User = None) -> None:
-        """See who's the best across all SnowBot servers."""
+        """See who's the best across all Beira servers."""
 
         actual_target = ctx.author if target is None else target
 
@@ -338,6 +338,6 @@ class Snowball(commands.Cog):
                             value=f"({row['hits']}/{row['misses']}/{row['kos']})", inline=False)
 
 
-async def setup(bot: SnowBot):
+async def setup(bot: Beira):
     """Connect cog to bot."""
     await bot.add_cog(Snowball(bot))
