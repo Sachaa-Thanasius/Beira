@@ -3,18 +3,17 @@ CREATE TABLE IF NOT EXISTS users (
     member_name   TEXT,
     avatar_url  TEXT
 );
-CREATE TRIGGER minimize_users_updates
-BEFORE UPDATE ON users
-FOR EACH ROW EXECUTE FUNCTION suppress_redundant_updates_trigger();
+
+CREATE TRIGGER minimize_users_updates BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION suppress_redundant_updates_trigger();
+
 CREATE TABLE IF NOT EXISTS guilds (
     id          BIGINT  PRIMARY KEY,
     guild_name  TEXT,
     icon_url    TEXT
 );
 
-CREATE TRIGGER minimize_guilds_updates
-BEFORE UPDATE ON guilds
-FOR EACH ROW EXECUTE FUNCTION suppress_redundant_updates_trigger();
+CREATE TRIGGER minimize_guilds_updates BEFORE UPDATE ON guilds FOR EACH ROW EXECUTE FUNCTION suppress_redundant_updates_trigger();
+
 CREATE TABLE IF NOT EXISTS snowball_stats (
     user_id     BIGINT  REFERENCES users(id)    ON DELETE CASCADE,
     guild_id    BIGINT  REFERENCES guilds(id)   ON DELETE CASCADE,
