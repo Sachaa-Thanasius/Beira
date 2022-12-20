@@ -4,6 +4,8 @@ bot.py: The main bot.
 """
 import logging
 import asyncio
+from os import listdir
+from os.path import abspath, dirname
 
 import asyncpg
 import discord
@@ -62,6 +64,15 @@ class Beira(commands.Bot):
                     LOGGER.info(f"Loaded extension: {extension}")
                 except discord.ext.commands.ExtensionError as err:
                     LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
+        else:
+            cogs_folder = f"{abspath(dirname(__file__))}/ext/cogs"
+            for filename in listdir(cogs_folder):
+                if filename.endswith(".py"):
+                    try:
+                        await self.load_extension(f"ext.cogs.{filename[:-3]}")
+                        LOGGER.info(f"Loaded extension: {filename[:-3]}")
+                    except discord.ext.commands.ExtensionError as err:
+                        LOGGER.exception(f"Failed to load extension: {filename[:-3]}\n\n{err}")
 
     async def _fetch_owners(self) -> None:
         """Sets up owner ids based on configuration and application data."""
@@ -82,8 +93,14 @@ class Beira(commands.Bot):
             "snow_phi": self.get_emoji(1050442718842732614),
             "snowball1": self.get_emoji(1051263366410293248),
             "snowball2": self.get_emoji(1051263327810105505),
-            "snowsgive_phi": self.get_emoji(1050442718842732614)
+            "snowsgive_phi": self.get_emoji(1050442718842732614),
+            "AoC": self.get_emoji(770620658501025812),
+            "CoP": self.get_emoji(856969710952644609),
+            "FoF": self.get_emoji(856969711241396254),
+            "PoP": self.get_emoji(856969710486814730)
         }
+
+    # async def get_prefix(self, message: Message, /) -> Union[List[str], str]:
 
 
 async def main() -> None:
@@ -95,7 +112,7 @@ async def main() -> None:
         default_intents = discord.Intents.all()
         testing_guilds = CONFIG["discord"]["guilds"]["dev"]
         testing = False
-        init_exts = ["cogs.snowball", "cogs.admin", "cogs.help"]
+        init_exts = ["exts.cogs.snowball", "exts.cogs.admin", "exts.cogs.help", "exts.cogs.story_search"]
 
         async with Beira(command_prefix=def_prefix,
                          intents=default_intents,

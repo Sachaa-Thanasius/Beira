@@ -33,7 +33,7 @@ class SetupLogging:
 
         self.log.setLevel(logging.INFO)
         handler = RotatingFileHandler(
-            filename=self.logging_path / "Snowball.log",
+            filename=self.logging_path / "Beira.log",
             encoding="utf-8",
             mode="w",
             maxBytes=self.max_bytes,

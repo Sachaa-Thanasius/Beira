@@ -2,7 +2,9 @@
 snowball.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
 """
 import logging
-from typing import Optional
+from typing import Optional, TYPE_CHECKING
+from os import listdir
+from os.path import abspath, dirname
 
 import discord
 from discord import app_commands
@@ -15,6 +17,12 @@ LOGGER = logging.getLogger(__name__)
 
 # List for cogs that you don't want to be reloaded.
 IGNORE_EXTENSIONS = []
+
+_ALL_EXTENSIONS = []
+cogs_folder = f"{abspath(dirname(__file__))}"
+for filename in listdir(cogs_folder):
+    if filename.endswith(".py"):
+        _ALL_EXTENSIONS.append((f"{filename[:-3]}", f"exts.cogs.{filename[:-3]}"))
 
 
 class Admin(commands.Cog, command_attrs=dict(hidden=True)):
@@ -52,18 +60,20 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
 
     @commands.hybrid_command()
     @commands.is_owner()
+    @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in _ALL_EXTENSIONS])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
-    async def reload(self, ctx: commands.Context, extension: str = "snowball") -> None:
+    async def reload(self, ctx: commands.Context, extension: str) -> None:
         """Reloads an extension/cog."""
 
         if extension:
-            extension = "cogs." + extension
             embed = discord.Embed(color=0xcccccc,
                                   description="Nothing has happened yet.")
+
             if extension not in list(self.bot.extensions.keys()):
                 embed.description = f"Never initially loaded this extension: {extension}"
             elif extension[5:] in IGNORE_EXTENSIONS:
                 embed.description = f"Currently exempt from reloads: {extension}"
+
             else:
                 try:
                     await self.bot.reload_extension(extension)
@@ -73,6 +83,7 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
                 else:
                     embed.description = f"Reloaded extension: {extension}"
                     LOGGER.info(f"Reloaded extension: {extension}")
+
             await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()

@@ -5,14 +5,14 @@ import logging
 import random
 import json
 
-import asyncpg.exceptions
 from asyncpg import Record
+import asyncpg.exceptions
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from bot import Beira
-from utils.snowball_utils import collect_cooldown
+from exts.utils.sb_utils import collect_cooldown
 
 LOGGER = logging.getLogger(__name__)
 
@@ -115,7 +115,7 @@ class Snowball(commands.Cog):
                 SELECT user_id, hits, kos, misses, stock,
                        DENSE_RANK() over (ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC) AS guild_rank
                 FROM snowball_stats
-                WHERE guild_id = #1
+                WHERE guild_id = $1
                 ORDER BY guild_rank
             ) as t
             WHERE user_id = $2;
@@ -173,11 +173,11 @@ class Snowball(commands.Cog):
         embed.set_thumbnail(url=ctx.guild.icon.url)
 
         query = """
-            SELECT guild_id, user_id, hits, kos, misses, stock,
-                DENSE_RANK() over (ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC) AS guild_rank
+            SELECT user_id, hits, kos, misses, stock,
+                DENSE_RANK() over (ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC) AS rank
             FROM snowball_stats
-            WHERE guild_id = #1
-            ORDER BY guild_rank
+            WHERE guild_id = $1
+            ORDER BY rank
             LIMIT 10;
          """
 
@@ -273,6 +273,16 @@ class Snowball(commands.Cog):
             LOGGER.exception("Unknown command error.", exc_info=error)
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=20.0)
+
+    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        """When using prefix commands, this will allow """
+
+        embed = discord.Embed(color=0x5e9a40)
+        if isinstance(error, commands.MissingRequiredArgument):
+            embed.title = "Missing Parameter"
+            embed.description = "This command needs a target."
+            ctx.command.reset_cooldown(ctx)
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
     async def _update_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
                              stock: int = 0) -> None:

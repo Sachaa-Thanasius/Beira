@@ -21,12 +21,13 @@ class SlashTest(commands.Cog):
 
     @commands.hybrid_command()
     async def test(self, ctx: commands.Context) -> None:
-        """Test a command response"""
+        """Test a command response."""
         LOGGER.info("Hybrid command \'test\' called!")
-        await ctx.send("Hello")
+        await ctx.send("Test")
 
     @commands.hybrid_command()
     async def echo(self, ctx, arg) -> None:
+        """Echo back the user's input."""
         await ctx.send(arg)
 
 
