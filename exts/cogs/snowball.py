@@ -26,6 +26,7 @@ class Snowball(commands.Cog):
     def __init__(self, bot: Beira):
         self.bot = bot
         self.embed_data = {}
+        self.ali = 689522335119966258
 
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands and methods."""
@@ -41,11 +42,18 @@ class Snowball(commands.Cog):
         await self._update_record(ctx.author, stock=1)
         record = await self.bot.db_pool.fetchrow("SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
                                                  ctx.guild.id, ctx.author.id)
-        embed = discord.Embed(
-            color=0x5e62d3,
-            description=f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping some snowballs. You now have {record['stock']} of them—let 'em fly!"
-        )
-        embed.set_image(url=self.embed_data["collects"]["image_success"])
+
+        stock_limit = 200 if (ctx.author.id == self.ali or ctx.author.id in self.bot.owner_ids) else 100
+
+        embed = discord.Embed(color=0x5e62d3)
+        if record["stock"] < stock_limit:
+            embed.description = f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping some snowballs. You now have {record['stock']} of them—let 'em fly!"
+            embed.set_image(url=self.embed_data["collects"]["image_success"])
+
+        else:
+
+            embed.description = "You've filled your armory to the brim with about 100 snowballs! Release some of your stores to make space for more."
+            embed.set_image(url=self.embed_data["collects"]["image_failure"])
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
 

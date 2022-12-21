@@ -186,7 +186,7 @@ class ACI100PagesSearch:
 
     async def start_search(self) -> None:
         """
-        Runs a group of asynchronous scraping tasks, collects the results, and writes them
+        Runs a group of asynchronous scraping tasks, collects the all_text_lines, and writes them
         to a file.
         """
 
@@ -208,7 +208,7 @@ class ACI100PagesSearch:
             await asyncio.sleep(0.25)
         results = await asyncio.gather(*tasks)
 
-        # Put scraping results in a .txt file
+        # Put scraping all_text_lines in a .txt file
         with open(self.results_file, "w", encoding="utf-8") as file_s:
             file_s.writelines(results)
 
