@@ -94,10 +94,10 @@ class Beira(commands.Bot):
             "snowball1": self.get_emoji(1051263366410293248),
             "snowball2": self.get_emoji(1051263327810105505),
             "snowsgive_phi": self.get_emoji(1050442718842732614),
-            "AoC": self.get_emoji(770620658501025812),
-            "CoP": self.get_emoji(856969710952644609),
-            "FoF": self.get_emoji(856969711241396254),
-            "PoP": self.get_emoji(856969710486814730)
+            "aoc": self.get_emoji(770620658501025812),
+            "cop": self.get_emoji(856969710952644609),
+            "fof": self.get_emoji(856969711241396254),
+            "pop": self.get_emoji(856969710486814730)
         }
 
     # async def get_prefix(self, message: Message, /) -> Union[List[str], str]:

@@ -1,14 +1,16 @@
 """
 story_search.py: This cog is meant to provide functionality for searching the text of some books.
 """
-import asyncio
 import logging
+import asyncio
 import re
+from copy import deepcopy
 from random import randint
 from time import perf_counter
 from typing import List, Tuple
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 from bot import Beira
@@ -118,9 +120,7 @@ class ResultsScrollView(discord.ui.View):
     async def enter_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Open a modal that allows a user to enter their own page number to flip to."""
 
-        input = "default"
-
-        while (True):
+        while True:
 
             modal = PageNumEntryModal()
             await interaction.response.send_modal(modal)
@@ -230,22 +230,33 @@ class BookSearch(commands.Cog):
 
     def __init__(self, bot: Beira):
         self.bot = bot
-        self.pop_text = []
+        self.stories = {
+            "aoc": {},
+            "cop": {},
+            "fof": {},
+            "pop": {}
+        }
 
     async def cog_load(self) -> None:
         """Load the story text to avoid reading from files during runtime."""
 
-        with open("data/story_text/pop_all_books.md", "r") as file:
-            self.pop_text = file.readlines()
+        with open("data/story_text/aci100/cop/cop_all_books.md", "r") as file:
+            self.stories["cop"]["text"] = file.readlines()
+        LOGGER.info("Loaded all CoP books.")
+
+        with open("data/story_text/aci100/pop/pop_all_books.md", "r") as file:
+            self.stories["pop"]["text"] = file.readlines()
         LOGGER.info("Loaded all PoP books.")
+
+        self._create_embed_templates()
 
     @commands.hybrid_command()
     async def random_text(self, ctx: commands.Context) -> None:
         """Display a random line from the story."""
 
-        b_range = randint(2, len(self.pop_text) - 3)
-        b_sample = self.pop_text[b_range:(b_range + 2)]
-        reverse = self.pop_text[:(b_range + 2):-1]
+        b_range = randint(2, len(self.stories["pop"]["text"]) - 3)
+        b_sample = self.stories["pop"]["text"][b_range:(b_range + 2)]
+        reverse = self.stories["pop"]["text"][:(b_range + 2):-1]
         quote_year, quote_chapter = BookSearch._search_chapter_year(reverse)
 
         embed = discord.Embed(color=0xdb05db, title="Random Quote from PoP", description=f"**{quote_year}**")
@@ -254,38 +265,39 @@ class BookSearch(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(aliases=["find_text"])
-    async def search_text(self, ctx: commands.Context, text: str) -> None:
+    @app_commands.choices(story=[
+        # app_commands.Choice(name="Ashes of Chaos", value="aoc"),
+        app_commands.Choice(name="Conjoining of Paragons", value="cop"),
+        # app_commands.Choice(name="Fabric of Fate", value="fof"),
+        app_commands.Choice(name="Perversion of Purity", value="pop")
+    ])
+    async def search_text(self, ctx: commands.Context, story: app_commands.Choice[str], query: str) -> None:
         """Search the book text for a word or phrase."""
 
         start_time = perf_counter()
 
-        results = self._process_text(self.pop_text, text)
+        story_text = self.stories[story.value]["text"]
+
+        results = self._process_text(story_text, query)
 
         end_time = perf_counter()
         LOGGER.info(f"search_text() time: {end_time - start_time:.8f}")
 
-        edited_embed = discord.Embed(color=0x149cdf)
-        edited_embed.set_author(name="Harry Potter and the Perversion of Purity",
-                                url="https://www.fanfiction.net/s/13852147/",
-                                icon_url=self.bot.emojis_stock["PoP"].url)
+        edited_embed = deepcopy(self.stories[story.value]["template_embed"])
 
         if len(results) == 0:
+            edited_embed.title = "N/A"
             edited_embed.description = "No quotes found!"
             edited_embed.set_footer(text=f"Page 0 of 0")
             await ctx.send(embed=edited_embed)
-            return
 
         else:
-            # edited_embed = discord.Embed(color=0x149cdf, title=f"{results[0][0]}")
             edited_embed.title = f"{results[0][0]}"
-            edited_embed.set_author(name="Harry Potter and the Perversion of Purity",
-                                    url="https://www.fanfiction.net/s/13852147/",
-                                    icon_url=self.bot.emojis_stock["PoP"].url)
             edited_embed.set_footer(text=f"Page 1 of {len(results)}")
             edited_embed.add_field(name=f"{results[0][1]}", value=results[0][2])
 
             await ctx.send(embed=edited_embed, view=ResultsScrollView(interaction=ctx.interaction, all_text_lines=results,
-                                                                      story_icon_url=self.bot.emojis_stock["PoP"].url))
+                                                                      story_icon_url=self.bot.emojis_stock[story.value].url))
 
     @staticmethod
     def _process_text(all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
@@ -325,6 +337,28 @@ class BookSearch(commands.Cog):
 
                 return year, chapter
         return year, chapter
+
+    def _create_embed_templates(self) -> None:
+        """Initializes embed templates for every story to deep copy when necessary."""
+        self.stories["aoc"]["template_embed"] = discord.Embed(color=0x149cdf)
+        self.stories["aoc"]["template_embed"].set_author(name="Harry Potter and the Ashes of Chaos",
+                                                         url="https://www.fanfiction.net/s/13507192/",
+                                                         icon_url=self.bot.emojis_stock["aoc"].url)
+
+        self.stories["cop"]["template_embed"] = discord.Embed(color=0x149cdf)
+        self.stories["cop"]["template_embed"].set_author(name="Harry Potter and the Conjoining of Paragons",
+                                                         url="https://www.fanfiction.net/s/13766768/",
+                                                         icon_url=self.bot.emojis_stock["cop"].url)
+
+        self.stories["fof"]["template_embed"] = discord.Embed(color=0x149cdf)
+        self.stories["fof"]["template_embed"].set_author(name="Ace Iverson and the Fabric of Fate",
+                                                         url="https://www.fanfiction.net/s/13741969/",
+                                                         icon_url=self.bot.emojis_stock["fof"].url)
+
+        self.stories["pop"]["template_embed"] = discord.Embed(color=0x149cdf)
+        self.stories["pop"]["template_embed"].set_author(name="Harry Potter and the Perversion of Purity",
+                                                         url="https://www.fanfiction.net/s/13852147/",
+                                                         icon_url=self.bot.emojis_stock["pop"].url)
 
 
 async def setup(bot: Beira):

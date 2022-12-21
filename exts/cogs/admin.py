@@ -2,13 +2,12 @@
 snowball.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
 """
 import logging
-from typing import Optional, TYPE_CHECKING
+from typing import Optional
 from os import listdir
 from os.path import abspath, dirname
 
 import discord
 from discord import app_commands
-from discord.app_commands import Choice
 from discord.ext import commands
 
 from bot import Beira
@@ -101,7 +100,7 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
         app_commands.Choice(name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", value="+")
     ])
     async def sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object] = None,
-                   spec: Optional[Choice[str]] = None) -> None:
+                   spec: Optional[app_commands.Choice[str]] = None) -> None:
         """
         Syncs the command tree in a way based on input. Originally made by Umbra.
 
