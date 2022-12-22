@@ -7,7 +7,8 @@ import re
 from copy import deepcopy
 from random import randint
 from time import perf_counter
-from typing import List, Tuple
+from typing import List, Tuple, Optional
+from pprint import pprint
 
 import discord
 from discord import app_commands
@@ -18,7 +19,23 @@ from bot import Beira
 LOGGER = logging.getLogger(__name__)
 
 
+class StoryEmbed(discord.Embed):
+    """"""
+    def __init__(self, *, story_data: dict, current_page: Optional[Tuple] = None, bookmark: Optional[int] = None, max_pages: Optional[int] = None, **kwargs):
+        super().__init__(**kwargs)
+        record_icon_url = f"https://cdn.discordapp.com/emojis/{str(story_data['emoji_id'])}.webp?size=128&quality=lossless"
+        self.set_author(name=story_data["story_full_name"], url=story_data["story_link"], icon_url=record_icon_url)
+
+        self.title = current_page[0] if current_page else "Nothing to See Here"
+        if bookmark and max_pages:
+            self.set_footer(text=f"Page {bookmark} of {max_pages}")
+        if current_page:
+            self.add_field(name=f"{current_page[1]}", value=current_page[2])
+
+
 class PageNumEntryModal(discord.ui.Modal):
+    """"""
+
     input_page_num = discord.ui.TextInput(label="Page Number",
                                           custom_id="page_entry_modal:input_page_num",
                                           placeholder="Enter digits here...",
@@ -29,7 +46,7 @@ class PageNumEntryModal(discord.ui.Modal):
 
     async def on_submit(self, interaction: discord.Interaction, /) -> None:
         try:
-            valid_value = int(self.input_page_num.value)
+            _ = int(self.input_page_num.value)
         except ValueError as err:
             logging.error("Value put in Page Number Entry Modal was not an integer.")
             await interaction.response.send_modal(PageNumEntryModal())
@@ -40,7 +57,7 @@ class PageNumEntryModal(discord.ui.Modal):
 class ResultsScrollView(discord.ui.View):
     """A view for quotes within paginated embeds, allowing users to flip between different quotes using buttons."""
 
-    def __init__(self, interaction: discord.Interaction, all_text_lines: List[Tuple | None], story_icon_url: str):
+    def __init__(self, interaction: discord.Interaction, all_text_lines: List[Tuple | None], story_data: dict):
         super().__init__(timeout=60)
         self.latest_interaction = interaction
         self.all_text_lines = all_text_lines
@@ -49,9 +66,9 @@ class ResultsScrollView(discord.ui.View):
         self.max_num_pages = len(all_text_lines)
         self.current_page = ()
         self.bookmark = 1
-        self.page_cache: list[discord.Embed | None] = [None for i in range(len(all_text_lines))]
+        self.page_cache: list[discord.Embed | None] = [None for _ in range(len(all_text_lines))]
 
-        self.story_icon_url = story_icon_url
+        self.story_data = story_data
 
         # No point having forward buttons active if there's only one page.
         if len(all_text_lines) == 1:
@@ -71,8 +88,6 @@ class ResultsScrollView(discord.ui.View):
     async def on_timeout(self) -> None:
         """Remove all buttons when the view times out."""
 
-        # await self.latest_interaction.response.defer()
-
         for item in self.children:
             item.disabled = True
 
@@ -81,7 +96,7 @@ class ResultsScrollView(discord.ui.View):
         await self.latest_interaction.edit_original_response(view=self)
         LOGGER.info("View timed out.")
 
-    @discord.ui.button(label="<<", style=discord.ButtonStyle.blurple, disabled=True,
+    @discord.ui.button(label="❙🞀🞀", style=discord.ButtonStyle.blurple, disabled=True,
                        custom_id="results_scroll_view:first")
     async def first_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Skip to the first page of the view embed."""
@@ -97,7 +112,7 @@ class ResultsScrollView(discord.ui.View):
 
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
-    @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, disabled=True, custom_id="results_scroll_view:prev")
+    @discord.ui.button(label="🞀", style=discord.ButtonStyle.blurple, disabled=True, custom_id="results_scroll_view:prev")
     async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Switch to the previous page of the view embed."""
 
@@ -127,7 +142,8 @@ class ResultsScrollView(discord.ui.View):
             await modal.wait()
             try:
                 temp = int(modal.input_page_num.value)
-            except ValueError:
+                temp_2 = self.page_cache[temp]
+            except (ValueError, IndexError):
                 continue
             else:
                 self.bookmark = temp
@@ -148,7 +164,7 @@ class ResultsScrollView(discord.ui.View):
 
         await interaction.edit_original_response(embed=edited_embed, view=self)
 
-    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="results_scroll_view:next")
+    @discord.ui.button(label="🞂", style=discord.ButtonStyle.blurple, custom_id="results_scroll_view:next")
     async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Switch to the next page of the view embed."""
 
@@ -166,7 +182,7 @@ class ResultsScrollView(discord.ui.View):
 
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
-    @discord.ui.button(label=">>", style=discord.ButtonStyle.blurple, custom_id="results_scroll_view:last")
+    @discord.ui.button(label="🞂🞂❙", style=discord.ButtonStyle.blurple, custom_id="results_scroll_view:last")
     async def last_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Skip to the last page of the view embed."""
 
@@ -197,13 +213,19 @@ class ResultsScrollView(discord.ui.View):
 
         self.current_page = self.all_text_lines[self.bookmark - 1]
 
+        edited_embed = StoryEmbed(story_data=self.story_data,
+                                  current_page=self.current_page,
+                                  bookmark=self.bookmark,
+                                  max_pages=self.max_num_pages,
+                                  color=0x149cdf)
+        '''
         edited_embed = discord.Embed(color=0x149cdf, title=f"{self.current_page[0]}")
         edited_embed.set_author(name="Harry Potter and the Perversion of Purity",
                                 url="https://www.fanfiction.net/s/13852147/",
-                                icon_url=self.story_icon_url)
+                                icon_url=self.story_data)
         edited_embed.set_footer(text=f"Page {self.bookmark} of {self.max_num_pages}")
         edited_embed.add_field(name=f"{self.current_page[1]}", value=self.current_page[2])
-
+        '''
         self.page_cache[self.bookmark - 1] = edited_embed
 
         return edited_embed
@@ -230,33 +252,45 @@ class BookSearch(commands.Cog):
 
     def __init__(self, bot: Beira):
         self.bot = bot
-        self.stories = {
-            "aoc": {},
-            "cop": {},
-            "fof": {},
-            "pop": {}
-        }
+        self.story_records = {}
 
     async def cog_load(self) -> None:
-        """Load the story text to avoid reading from files during runtime."""
+        """Load the story metadata text to avoid reading from files or the database during runtime."""
 
-        with open("data/story_text/aci100/cop/cop_all_books.md", "r") as file:
-            self.stories["cop"]["text"] = file.readlines()
-        LOGGER.info("Loaded all CoP books.")
+        query = "SELECT * FROM story_information"
 
-        with open("data/story_text/aci100/pop/pop_all_books.md", "r") as file:
-            self.stories["pop"]["text"] = file.readlines()
-        LOGGER.info("Loaded all PoP books.")
+        temp_records = await self.bot.db_pool.fetch(query)
 
-        self._create_embed_templates()
+        for temp_rec in temp_records:
+            dict_temp_rec = dict(temp_rec)
+            self.story_records[temp_rec["story_acronym"]] = dict_temp_rec
+            self.story_records[temp_rec["story_acronym"]]["template_embed"] = StoryEmbed(story_data=dict_temp_rec)
+
+        pprint(self.story_records)
+
+        with open("data/story_text/aci100/aoc_all_books.md", "r", encoding="utf-8") as file:
+            self.story_records["aoc"]["text"] = file.readlines()
+        LOGGER.info("Loaded all AoC.")
+
+        with open("data/story_text/aci100/cop_all_books.md", "r", encoding="utf-8") as file:
+            self.story_records["cop"]["text"] = file.readlines()
+        LOGGER.info("Loaded all CoP.")
+
+        with open("data/story_text/aci100/fof_all_books.md", "r", encoding="utf-8") as file:
+            self.story_records["fof"]["text"] = file.readlines()
+        LOGGER.info("Loaded all FoF.")
+
+        with open("data/story_text/aci100/pop_all_books.md", "r", encoding="utf-8") as file:
+            self.story_records["pop"]["text"] = file.readlines()
+        LOGGER.info("Loaded all PoP.")
 
     @commands.hybrid_command()
     async def random_text(self, ctx: commands.Context) -> None:
         """Display a random line from the story."""
 
-        b_range = randint(2, len(self.stories["pop"]["text"]) - 3)
-        b_sample = self.stories["pop"]["text"][b_range:(b_range + 2)]
-        reverse = self.stories["pop"]["text"][:(b_range + 2):-1]
+        b_range = randint(2, len(self.story_records["pop"]["text"]) - 3)
+        b_sample = self.story_records["pop"]["text"][b_range:(b_range + 2)]
+        reverse = self.story_records["pop"]["text"][:(b_range + 2):-1]
         quote_year, quote_chapter = BookSearch._search_chapter_year(reverse)
 
         embed = discord.Embed(color=0xdb05db, title="Random Quote from PoP", description=f"**{quote_year}**")
@@ -264,40 +298,51 @@ class BookSearch(commands.Cog):
 
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command(aliases=["find_text"])
+    '''
     @app_commands.choices(story=[
-        # app_commands.Choice(name="Ashes of Chaos", value="aoc"),
+        app_commands.Choice(name="Ashes of Chaos", value="aoc"),
         app_commands.Choice(name="Conjoining of Paragons", value="cop"),
-        # app_commands.Choice(name="Fabric of Fate", value="fof"),
+        app_commands.Choice(name="Fabric of Fate", value="fof"),
         app_commands.Choice(name="Perversion of Purity", value="pop")
     ])
-    async def search_text(self, ctx: commands.Context, story: app_commands.Choice[str], query: str) -> None:
+    '''
+    @commands.hybrid_command(aliases=["find_text"])
+    async def search_text(self, ctx: commands.Context, story: str, query: str) -> None:
         """Search the book text for a word or phrase."""
 
+        story_text = self.story_records[story]["text"]
+
         start_time = perf_counter()
-
-        story_text = self.stories[story.value]["text"]
-
-        results = self._process_text(story_text, query)
-
+        processed_text = self._process_text(story_text, query)
         end_time = perf_counter()
-        LOGGER.info(f"search_text() time: {end_time - start_time:.8f}")
 
-        edited_embed = deepcopy(self.stories[story.value]["template_embed"])
+        LOGGER.info(f"_process_text() time: {end_time - start_time:.8f}")
 
-        if len(results) == 0:
-            edited_embed.title = "N/A"
-            edited_embed.description = "No quotes found!"
-            edited_embed.set_footer(text=f"Page 0 of 0")
-            await ctx.send(embed=edited_embed)
+        story_embed = deepcopy(self.story_records[story]["template_embed"])
+
+        if len(processed_text) == 0:
+            story_embed.title = "N/A"
+            story_embed.description = "No quotes found!"
+            story_embed.set_footer(text=f"Page 0 of 0")
+            await ctx.send(embed=story_embed)
 
         else:
-            edited_embed.title = f"{results[0][0]}"
-            edited_embed.set_footer(text=f"Page 1 of {len(results)}")
-            edited_embed.add_field(name=f"{results[0][1]}", value=results[0][2])
+            story_embed.title = f"{processed_text[0][0]}"
+            story_embed.set_footer(text=f"Page 1 of {len(processed_text)}")
+            story_embed.add_field(name=f"{processed_text[0][1]}", value=processed_text[0][2])
 
-            await ctx.send(embed=edited_embed, view=ResultsScrollView(interaction=ctx.interaction, all_text_lines=results,
-                                                                      story_icon_url=self.bot.emojis_stock[story.value].url))
+            await ctx.send(embed=story_embed, view=ResultsScrollView(interaction=ctx.interaction, all_text_lines=processed_text, story_data=self.story_records[story]))
+
+    @search_text.autocomplete("story")
+    async def search_text_autocomplete(self, interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+        stories = [(self.story_records[record]["story_full_name"], self.story_records[record]["story_acronym"])
+                   for record in self.story_records
+                   if self.story_records[record]["text"] is not None]
+        return [
+            app_commands.Choice(name=full_name, value=acronym)
+            for full_name, acronym in stories
+            if current.lower() in "\t".join([full_name.lower(), acronym.lower()])
+        ]
 
     @staticmethod
     def _process_text(all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
@@ -332,33 +377,13 @@ class BookSearch(commands.Cog):
                 chapter = chap_line
 
                 for year_line in all_text[index:]:
-                    if re.search(r"(^\*\*Year \d+)", year_line) or re.search(r"(^\*\*Book \d+)", year_line):
+                    if re.search(r"(^\*\*Year \d+)", year_line) or \
+                            re.search(r"(^\*\*Book \d+)", year_line) or \
+                            re.search(r"(^\*\*Season \d+)", year_line):
                         year = year_line
 
                 return year, chapter
         return year, chapter
-
-    def _create_embed_templates(self) -> None:
-        """Initializes embed templates for every story to deep copy when necessary."""
-        self.stories["aoc"]["template_embed"] = discord.Embed(color=0x149cdf)
-        self.stories["aoc"]["template_embed"].set_author(name="Harry Potter and the Ashes of Chaos",
-                                                         url="https://www.fanfiction.net/s/13507192/",
-                                                         icon_url=self.bot.emojis_stock["aoc"].url)
-
-        self.stories["cop"]["template_embed"] = discord.Embed(color=0x149cdf)
-        self.stories["cop"]["template_embed"].set_author(name="Harry Potter and the Conjoining of Paragons",
-                                                         url="https://www.fanfiction.net/s/13766768/",
-                                                         icon_url=self.bot.emojis_stock["cop"].url)
-
-        self.stories["fof"]["template_embed"] = discord.Embed(color=0x149cdf)
-        self.stories["fof"]["template_embed"].set_author(name="Ace Iverson and the Fabric of Fate",
-                                                         url="https://www.fanfiction.net/s/13741969/",
-                                                         icon_url=self.bot.emojis_stock["fof"].url)
-
-        self.stories["pop"]["template_embed"] = discord.Embed(color=0x149cdf)
-        self.stories["pop"]["template_embed"].set_author(name="Harry Potter and the Perversion of Purity",
-                                                         url="https://www.fanfiction.net/s/13852147/",
-                                                         icon_url=self.bot.emojis_stock["pop"].url)
 
 
 async def setup(bot: Beira):

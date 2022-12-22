@@ -38,7 +38,8 @@ class Beira(commands.Bot):
     async def on_ready(self) -> None:
         """Sets the rich presence state for the bot."""
 
-        self._get_emojis()
+        if self.emojis_stock is None:
+            self._get_emojis()
         await self.change_presence(activity=discord.Game(name="/collect"))
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
 

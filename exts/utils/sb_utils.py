@@ -18,4 +18,3 @@ def collect_cooldown(ctx: commands.Context) -> Optional[commands.Cooldown]:
     if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
         per = 1
     return commands.Cooldown(1, per)
-

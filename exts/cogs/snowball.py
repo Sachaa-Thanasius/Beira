@@ -6,7 +6,6 @@ import random
 import json
 
 from asyncpg import Record
-import asyncpg.exceptions
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -255,35 +254,8 @@ class Snowball(commands.Cog):
 
         await ctx.send(embed=embed, ephemeral=True)
 
-    @collect.error
-    async def collect_error(self, ctx: commands.Context, error: Exception) -> None:
-        """Error handler for commands in this cog. At the moment, it's mostly used for cooldowns."""
-
-        LOGGER.warning("Snowball.collect() error entered.")
-        embed = discord.Embed(color=0xfe0100, description="Error, please wait and try again later.")
-        if isinstance(error, (commands.CommandOnCooldown, commands.DisabledCommand)):
-            LOGGER.error(f"Collect cooldown: Guild - {ctx.guild.name} | User - {ctx.author} | "
-                         f"Cooldown - {error.retry_after:.2f} seconds.")
-
-            embed.description = f"You already scooped up all the snow! Let it fall for about **{error.retry_after:.1f}** " \
-                                f"seconds, then you'll be able to make another snowball. {self.bot.emojis_stock['angry_nicole']}"
-        elif isinstance(error, commands.HybridCommandError):
-            if isinstance(error.original, (app_commands.CommandInvokeError, commands.CommandInvokeError)):
-                new_error = error.original
-                if isinstance(new_error.original, asyncpg.exceptions.CheckViolationError):
-                    embed.description = "You've filled your armory to the brim with about 100 snowballs! Release some of your stores to make space for more."
-                    embed.set_image(url=self.embed_data["collects"]["image_failure"])
-                else:
-                    LOGGER.exception(f"Other command invoke error - [Guild: {ctx.guild.name}][User: {ctx.author}] - Error = {type(new_error.original)}", exc_info=new_error.original)
-            else:
-                LOGGER.exception(f"Other hybrid command error - [Guild: {ctx.guild.name}][User: {ctx.author}] - Error = {type(error.original)}", exc_info=error.original)
-        else:
-            LOGGER.exception("Unknown command error.", exc_info=error)
-
-        await ctx.send(embed=embed, ephemeral=True, delete_after=20.0)
-
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        """When using prefix commands, this will allow """
+        """When using prefix commands, this will tell users if they are missing arguments."""
 
         embed = discord.Embed(color=0x5e9a40)
         if isinstance(error, commands.MissingRequiredArgument):
@@ -337,6 +309,7 @@ class Snowball(commands.Cog):
         embed.set_thumbnail(url=thumbnail_url)
 
         snowsgive_phi = self.bot.emojis_stock["snowsgive_phi"]
+        self.bot.get_emoji(self.bot.emojis_stock["snowsgive_phi"])
         header_emojis = [snowsgive_phi for _ in range(len(headers))]
         for (header_emoji, header, value) in zip(header_emojis, headers, record):
             embed.add_field(name=header, value=f"{header_emoji} **|** {value}", inline=False)
