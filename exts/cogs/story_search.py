@@ -373,13 +373,13 @@ class BookSearch(commands.Cog):
         chapter, year = "N/A", "N/A"
 
         for index, chap_line in enumerate(all_text):
-            if re.search(r"(^\*\*Chapter \d+)", chap_line):
+            if re.search(r"(^\*\*Chapter \w+)", chap_line):
                 chapter = chap_line
 
                 for year_line in all_text[index:]:
                     if re.search(r"(^\*\*Year \d+)", year_line) or \
                             re.search(r"(^\*\*Book \d+)", year_line) or \
-                            re.search(r"(^\*\*Season \d+)", year_line):
+                            re.search(r"(^\*\*Season \w+)", year_line):
                         year = year_line
 
                 return year, chapter
