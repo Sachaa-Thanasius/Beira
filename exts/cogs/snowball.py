@@ -19,7 +19,7 @@ ODDS = 0.6            # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
 
 
-class Snowball(commands.Cog):
+class SnowballCog(commands.Cog):
     """Snowball cog that implements a version of Discord's 2021 Snowball Bot game."""
 
     def __init__(self, bot: Beira):
@@ -29,8 +29,8 @@ class Snowball(commands.Cog):
 
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands and methods."""
-        with open("data/snowball_embed_data.json", "r") as file:
-            self.embed_data = json.load(file)
+        with open("data/snowball_embed_data.json", "r") as f:
+            self.embed_data = json.load(f)
 
     @commands.hybrid_command()
     @commands.guild_only()
@@ -195,7 +195,7 @@ class Snowball(commands.Cog):
         else:
             await self._make_leaderboard_fields(embed, guild_ldbd)
         finally:
-            await ctx.send(embed=embed, ephemeral=True)
+            await ctx.send(embed=embed, ephemeral=False)
 
     @leaderboard.command(name="global")
     async def leaderboard_global(self, ctx: commands.Context) -> None:
@@ -305,12 +305,13 @@ class Snowball(commands.Cog):
         """, member.id, member.guild.id, hits, misses, kos, stock_insert, stock)
 
     async def _make_stats_embed(self, title: str, color: int, thumbnail_url: str, headers: list[str], record: Record) -> discord.Embed:
-        embed = discord.Embed(color=color, title=title)
-        embed.set_thumbnail(url=thumbnail_url)
 
+        embed = discord.Embed(color=color, title=title)
+
+        embed.set_thumbnail(url=thumbnail_url)
         snowsgive_phi = self.bot.emojis_stock["snowsgive_phi"]
-        self.bot.get_emoji(self.bot.emojis_stock["snowsgive_phi"])
         header_emojis = [snowsgive_phi for _ in range(len(headers))]
+
         for (header_emoji, header, value) in zip(header_emojis, headers, record):
             embed.add_field(name=header, value=f"{header_emoji} **|** {value}", inline=False)
 
@@ -325,13 +326,16 @@ class Snowball(commands.Cog):
 
         for row in records:
             if "guild_id" in dict(row):
-                entity = self.bot.get_user(row["guild_id"])
+                entity = self.bot.get_guild(row["guild_id"])
+                rank = row["guild_rank"]
             else:
                 entity = self.bot.get_user(row["user_id"])
-            embed.add_field(name=f"{ldbd_places_emojis[row['rank'] - 1]} {row['rank']}** | {entity}**",
+                rank = row["rank"]
+
+            embed.add_field(name=f"{ldbd_places_emojis[rank - 1]} {rank}** | {entity}**",
                             value=f"({row['hits']}/{row['misses']}/{row['kos']})", inline=False)
 
 
 async def setup(bot: Beira):
     """Connect cog to bot."""
-    await bot.add_cog(Snowball(bot))
+    await bot.add_cog(SnowballCog(bot))

@@ -38,7 +38,7 @@ class Beira(commands.Bot):
     async def on_ready(self) -> None:
         """Sets the rich presence state for the bot."""
 
-        if self.emojis_stock is None:
+        if len(self.emojis_stock) == 0:
             self._get_emojis()
         await self.change_presence(activity=discord.Game(name="/collect"))
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -106,7 +106,6 @@ class Beira(commands.Bot):
 
 async def main() -> None:
     """Starts an instance of the bot."""
-
     async with asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30) as pool:
         def_prefix = CONFIG["discord"]["default_prefix"]
 

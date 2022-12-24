@@ -1,3 +1,7 @@
+"""
+help.py: A slight adjustment for using embeds to the minimal help commands, set through a cog.
+"""
+
 import logging
 from typing import Optional, List
 
@@ -18,13 +22,14 @@ class LittleHelpCommand(commands.MinimalHelpCommand):
 
     async def send_pages(self):
         """A helper utility to send the page output from paginator to the destination. Modified to use embeds."""
+
         destination = self.get_destination()
         for page in self.paginator.pages:
             embed = discord.Embed(description=page)
             await destination.send(embed=embed)
 
 
-class LittleHelp(commands.Cog):
+class LittleHelpCog(commands.Cog):
     """A cog that allows more dynamic usage of my custom help command class, LittleHelpCommand."""
 
     def __init__(self, bot: commands.Bot):
@@ -73,4 +78,4 @@ class LittleHelp(commands.Cog):
 
 
 async def setup(bot: Beira):
-    await bot.add_cog(LittleHelp(bot))
+    await bot.add_cog(LittleHelpCog(bot))

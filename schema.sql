@@ -33,6 +33,13 @@ CREATE TABLE IF NOT EXISTS story_information (
     emoji_id        BIGINT
 );
 
+INSERT INTO story_information
+VALUES
+    (DEFAULT, 'aoc', 'Harry Potter and the Ashes of Chaos',         'ACI100', 'https://www.fanfiction.net/s/13507192/', 770620658501025812),
+    (DEFAULT, 'cop', 'Harry Potter and the Conjoining of Paragons', 'ACI100', 'https://www.fanfiction.net/s/13766768/', 856969710952644609),
+    (DEFAULT, 'fof', 'Ace Iverson and the Fabric of Fate',          'ACI100', 'https://www.fanfiction.net/s/13741969/', 856969711241396254),
+    (DEFAULT, 'pop', 'Harry Potter and the Perversion of Purity',   'ACI100', 'https://www.fanfiction.net/s/13852147/', 856969710486814730);
+
 --# serial id | acronym | full name | author name | story link | emoji id | emoji url
 -- TODO: Add view for user guild-level ranks to this schema outline
 
@@ -49,9 +56,3 @@ SELECT guild_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(
 FROM snowball_stats
 GROUP BY guild_id;
 
-INSERT INTO story_information
-VALUES
-    (DEFAULT, 'aoc', 'Harry Potter and the Ashes of Chaos',         'ACI100', 'https://www.fanfiction.net/s/13507192/', 770620658501025812),
-    (DEFAULT, 'cop', 'Harry Potter and the Conjoining of Paragons', 'ACI100', 'https://www.fanfiction.net/s/13766768/', 856969710952644609),
-    (DEFAULT, 'fof', 'Ace Iverson and the Fabric of Fate',          'ACI100', 'https://www.fanfiction.net/s/13741969/', 856969711241396254),
-    (DEFAULT, 'pop', 'Harry Potter and the Perversion of Purity',   'ACI100', 'https://www.fanfiction.net/s/13852147/', 856969710486814730);

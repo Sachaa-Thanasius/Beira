@@ -4,8 +4,8 @@
         "image_failure": "https://c7.alamy.com/zooms/9/e2305f4b2e734529a9abcaf94f8ec8e2/2cr87x3.jpg"
     },
     "hits": {
-        "notes": ["Sound the trumpets of war (doot doot)—the reckoning has begun. {} got hit with a snowball!",
-            "{0} wasn’t even paying attention to chat...  and they got smacked by a snowball anyways! Hey {0} — use /collect, then /throw to get ‘em back!",
+        "notes": ["Sound the trumpets of war (doot doot)\u2014the reckoning has begun. {} got hit with a snowball!",
+            "{0} wasn\u2019t even paying attention to chat...  and they got smacked by a snowball anyways! Hey {0}\u2014use /collect, then /throw to get \u2018em back!",
             "Thunk! {} got pelted with a snowball... you gonna take that lying down?",
             "Pow, right in the kisser! {} got slugged by a snowball."],
         "gifs": ["https://media.giphy.com/media/W5TBt9C4VVWw2BOOjP/giphy.gif",
@@ -17,8 +17,8 @@
         },
     "misses": {
         "notes": ["{} is just too quick! You missed!",
-            "A shoebill blocked your shot—damn those stinky shoebills. You missed!",
-            "*Whoosh!* You missed, but there’s always another snowball. /collect some more and show ‘em what for!",
+            "A shoebill blocked your shot\u2014damn those stinky shoebills. You missed!",
+            "*Whoosh!* You missed, but there\u2019s always another snowball. /collect some more and show \u2018em what for!",
             "You throw a snowball with all your might, just for it to land a few inches from your feet. You missed! Maybe you should work on your arm strength a bit..."],
         "gifs": ["https://media.giphy.com/media/ukSGgGljsKRXdiHb0h/giphy.gif",
             "https://media.tenor.com/nDxCGQUnuDEAAAAC/snowball-anime.gif",

@@ -1,5 +1,5 @@
 """
-snowball.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
+admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
 """
 import logging
 from typing import Optional
@@ -24,7 +24,7 @@ for filename in listdir(cogs_folder):
         _ALL_EXTENSIONS.append((f"{filename[:-3]}", f"exts.cogs.{filename[:-3]}"))
 
 
-class Admin(commands.Cog, command_attrs=dict(hidden=True)):
+class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
     """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
 
     def __init__(self, bot: Beira):
@@ -152,4 +152,4 @@ class Admin(commands.Cog, command_attrs=dict(hidden=True)):
 
 
 async def setup(bot: Beira):
-    await bot.add_cog(Admin(bot))
+    await bot.add_cog(AdminCog(bot))

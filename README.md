@@ -1,4 +1,4 @@
-Beira is a Discord bot meant to serve me and on top of that, emulate Discord's own Snowball bot from winter 2021.
+Beira is a Discord bot meant to serve me and on top of that, emulate Discord's own SnowballCog bot from winter 2021.
 It facilitates virtual snowball fights between server members, tracks their scores, and displays them in response to
 commands.
 
