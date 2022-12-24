@@ -96,6 +96,7 @@ class BookSearchCog(commands.Cog):
     @staticmethod
     def _process_text(all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
         """Collect all lines from story text that contain the given terms."""
+
         process_text_start = perf_counter()
         results = []
         if exact:
@@ -126,7 +127,7 @@ class BookSearchCog(commands.Cog):
         all_text.reverse()
 
         chapter, collection_header = "N/A", "N/A"
-        chapter_re = re.compile(r"(^\*\*Chapter \w+)|(^\*\*Prologue\w+)")
+        chapter_re = re.compile(r"(^\*\*Chapter \w+)|(^\*\*Prologue.*)")
         collection_re = re.compile(r"(^\*\*Year \d+)|(^\*\*Book \d+)|(^\*\*Season \w+)")
 
         for index, chap_line in enumerate(all_text):
