@@ -11269,3 +11269,263 @@ Harry grinned, unable to hold in his excitement. *I'm not sure what that means, 
 **PS: The next chapter will be posted in exactly two weeks. It will be released here for readers on Wednesday, December 14th, 2022. IT IS AVAILABLE RIGHT NOW FOR ANYONE WHO JOINS MY DISCORD SERVER, AS ARE CHAPTERS 40, 41, AND 42! Chapter 43 will also be made available to Discord members next Wednesday. THOSE WHO SIGN UP TO MY P\*T\*E\*N PAGE WILL GAIN IMMEDIATE ACCESS TO THE NEXT NINECHAPTERS, PLUS TWO MORE CHAPTERS WILL RELEASE THERE NEXT WEEK!. Both of those links can be found on my profile. If you have trouble with either of them, a generic search of my pen name will bring up my website, and direct links to both can be found via the home page.**
 
 **DON'T FORGET ABOUT THE FUNDRAISER I MENTIONED IN THE OPENING NOTES! USE THE LINK ON MY PROFILE AND CHECK THAT OUT! EVERY CENT PLEDGED GOES TOWARDS A GREAT CAUSE.**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena Hope, as well as my betas 3CP, Luq707, Raven0900, Regress, Thanos, and Yoshi89 for their work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. ANYONE WHO JOINS THE DISCORD SERVER CAN READ THE NEXT FOUR CHAPTERS RIGHT NOW! THE NEXT CHAPTER RELEASES ON THERE NEXT WEDNESDAY, MEANING DISCORD MEMBERS WILL SPEND HALF THE TIME BETWEEN FFN UPLOADS BEING FIVE CHAPTERS AHEAD! If you would like to join, simply copy the link on my profile. You can do likewise to check out the ACI100 Twitter account --- \@ACI_100 --- for live updates, as well as my official website.**
+
+**If you like what you read and wish to generously support me directly, I also have a P\*T\*E\*N page, where you can support me in exchange for exclusive, Patron-only benefits. Patrons at the \$5 tier or higher get access to all of my chapters many weeks in advance of even Discord, who in turn get chapters long before FFN and AO3. ANYONE WHO SIGNS UP TO THAT PAGE WILL IMMEDIATELY GAIN ACCESS TO THE NEXT ELEVEN CHAPTERS RIGHT NOW! Chapter 51 will be posted there this Sunday. That link is also on my profile.**
+
+**SPECIAL ANNOUNCEMENT: I am partnering with fellow authors DarknessEnthroned and TheBlack'sResurgence in an effort to raise money for the Brain & Behavior Research Foundation this holiday season. The link to that fundraiser is on my profile and plastered all across my Discord server. There is more information at that link --- including donation incentives --- and any contribution whatsoever would be humbly appreciated.**
+
+**Author's Note:**
+
+My Discord server has nearly reached 5,000 members. If that happens before the start of next year, I will be posting five extra chapters on there. Three of them will be for this story, so if you want to read a handful of early chapters, help me get that to 5,000 members! The link to join is directly below!
+
+**Harry Potter and the Conjoining of Paragons**
+
+**By ACI100**
+
+**Chapter 39: Shifting Tides**
+
+***September 19, 1943***
+
+***An Abandoned Classroom***
+
+***9:12 PM***
+
+Stone spires jutted up from the floor, missing his legs by inches and stopping just short of the ceiling. A dozen spells flew through the gap between them and slammed against his hastily conjured shield. The barrier wavered then fell and he was forced to roll, avoiding another volley that left the stone floor pockmarked.
+
+*Bloody hell,* thought Harry, scrambling back to his feet, *who pissed in his pumpkin juice?*
+
+It was the most vicious Charlus had ever been. Harry had dodged a number of close calls that would have left him in the hospital wing for longer than he'd ever spent there before. *Those spires could have amputated my legs.*
+
+The spires exploded, raining down shrapnel. Harry raised his shield but still felt burning lines drawn down his arms, leaving behind thin trails of blood. *This has to end.*
+
+He transfigured shattered stones into flaming arrows and banished them at Charlus, transfiguring them again into birds just before they reached him. The Potter heir summoned flames of his own to burn the birds away, hidden behind his shield to avoid a volley while distracted.
+
+*Clever, but not enough.* "AERIA IMPULSUM!"
+
+Charlus's eyes followed the string of silver as it left Harry's wand but he looked confused just before it exploded, veiling the room in dazzling light so bright that even Harry had to blink. When it cleared, Charlus was sprawled out on the floor, groaning and with his shield shattered.
+
+"You all right?" Harry asked, walking over and offering his hand.
+
+Charlus pulled himself up and grimaced. "Yeah, I'm fine. Bloody hell, what was that last spell?"
+
+"Best I can work out, it's something like a concussive blast, but it covers an entire area and can be used on as many people as are standing there."
+
+Charlus shook his head. "Where the hell did you find that?"
+
+A shiver ran up Harry's spine at the memory. How had that happened? What when his wand connected with Emily's and how had he learned that spell? "I read about it over the summer," he lied.
+
+"I want whatever library you're reading from," Charlus muttered, scowling around the room.
+
+Something stabbed at Harry's chest. *Bloody secrets. Why can't I just tell him?* It was a silly question. *Tell him that I'm a time traveller? His grandson who played with time turners and got sent back in time?* The idea was so ludicrous that Harry almost laughed. There would be so much to tell. *I'd also have to admit I'm an Heir of Slytherin by Cerastes's definition. That probably wouldn't go over well after last year.*
+
+Thoughts of Cerastes brought back thoughts of the chamber and he shivered. *I'll never underestimate that snake again.*
+
+***About two weeks ago...***
+
+**"I'm back!"** he called, stepping through the large stone doors and into the dimly-lit chamber. The flickering torches always made it look like shadows crawled up the walls, but they were harder to ignore now after the way last year ended. *It's made me even more paranoid.* Once this had been a secure place removed from all fears, but for all the good last May had done, that peace had been shattered.
+
+Harry forced those thoughts down and looked up at Slytherin's looming statue. **"Speak to me, Slytherin, greatest of the Hogwarts four."** Something stirred inside the statue's maw and Harry looked away, waiting for the sound of the massive body slamming against the floor.
+
+**"I worried you would stay away,"** Cerastes hissed while slithering closer.
+
+*Should I have stayed away?* The thought had crossed his mind plenty since June, but it had never stayed there long. *It was for the best; both for me and for Emily.* **"No. I understand what you did."**
+
+**"Your inaction limits you. I hope you learned that."**
+
+**"I did."** It was true; drastic action had solved more problems than a lifetime of plodding could ever have. Harry heard Cerastes shift, restless but waiting. He took a deep breath. **"I appreciate what you did, but I don't like how you did it."**
+
+There was a pause before the snake answered. **"How would you have done it in my place?"**
+
+**"I would have tried convincing me, before acting behind my back."**
+
+**"I told you time and time again that action must be taken --- I even offered myself."**
+
+**"And you were right, but did you consider what might happen if someone found Abraxas dead in the bathroom? Did you think about how bad it would be if someone traced it back to me?"**
+
+**"I would have killed them."** Harry swallowed a lump in his throat. *Merlin, I believe him.*
+
+**"That's not always the answer. I don't just want to kill everything that gets in my way."** *I don't want to kill anyone.* **"Emily and I were working on Abraxas."**
+
+**"Too slowly,"** argued Cerastes.
+
+**"Maybe, but I don't want any more schemes behind my back, even if they include Emily."** He hesitated. **"I don't know if her orders take priority over mine, but---"**
+
+**"They do not. You are both heirs but you found the chamber first."**
+
+**"So you'll listen to both of us so long as our orders don't conflict, but if they do, you'll choose me."**
+
+**"Yes."**
+
+*Is it a bad thing if I believe him? Am I just setting myself up for betrayal again?* Harry crushed that thought. *No! He did it for my own good, that wasn't betrayal.* **"Okay. That shouldn't happen. Emily and I are friends now, but I don't want any schemes involving me, even if she asks you."**
+
+Silence filled the chamber. **"It will be as you say."**
+
+**"Good. One last thing --- if you so strongly believe I'm making a mess of things, tell me. I don't care if you think my plans are stupid and I won't care if you tell me so. I'd rather know that."**
+
+Cerastes's next hiss sounded almost like laughter. **"This I can do."**
+
+Harry snorted. **"Don't sound too excited about it."** His mirth faded. **"If I want your opinion on things, I should probably tell you what's been bothering me lately."**
+
+**"Yes, what ails you now."**
+
+Harry took another deep breath. **"There's this wizard named Gellert Grindelwald..."**
+
+***Back in the present...***
+
+A weight had lifted off his shoulders following that talk in the chamber. *Great,* he'd thought at the time, *now there's just the fear of a dark lord weighing on me. I wonder if that will ever go away.*
+
+"I'll show you the spell next week," said Harry, tapping his wand against his wrist and frowning at the time.
+
+"Time for one more?" Charlus asked, gripping his own wand.
+
+Harry shook his head. "Not tonight." He hesitated. "You sure you're all right?"
+
+"I'm fine, mate. Why? What's up?"
+
+"The way you duelled... there were some dangerous spells in there."
+
+"We always use dangerous spells. Just think how often we use fire."
+
+"Fire is easy to put out before it does any real damage and burns are easily healed." Harry looked back over his shoulder, eyeing the spot where shattered stones were still strewn across the floor. "If those spires would have been a few inches further back, I'm not sure that would have been healed."
+
+Charlus's face paled. Trembling fingers pressed against his temples. "Merlin," he breathed, appearing to only now realize what he'd done. "Shit, sorry, mate. I got carried away. That was fucking stupid of me."
+
+"It's all right, no one got hurt, I just wondered what was up."
+
+Charlus sighed, mussing his hair the same way Harry often did. "The war's stressing me out," he admitted.
+
+"What's changed? I thought the war has always stressed you out."
+
+"It has, but more now." He glanced around the room as if checking they were alone, ignoring the multitude of wards on the door. "Can you keep a secret?" he asked, his voice a whisper. "Even if someone like Slughorn or Dumbledore asks about it?"
+
+Dread coiled in the back of his throat. Whatever this was, it didn't sound good. "Of course."
+
+Charlus took a deep breath. "My dad was on that ICW strike team that breached Grindelwald's bases."
+
+Harry's eyes just about bulged out of his head. *I knew he was fighting, but I never knew he was that important.* A knot of sadness tightened in his stomach. *It's like I know nothing about my family.*
+
+Then another thought struck him and the dread coiled tighter. "Is he all right? Did he get hurt, or..." He couldn't finish.
+
+"No, nothing like that. It's just that he really thinks Grindelwald has eyes on Britain. This wasn't in the *Prophet,* but it wasn't just that Grindelwald was gone when they got there --- everything was. If not for the wards, they'd never have realized it was a base at all. It was just empty, like everyone had gotten up and left."
+
+*What did I change? What did I do wrong? This shouldn't be happening, he was never interested in Britain.* "That's not good," he whispered.
+
+"No it's not," said Charlus, a dark shadow flashing across his face. "I worry about Dad, too. Anyone on that strike team has to be a priority target now." He scowled. "It was clever. Now Grindelwald knows some of the people the ICW values most."
+
+Harry mustered up every bit of practice he'd had in lying over the past year and made himself smile, ignoring the dread --- coiled so tightly now that it almost choked his words. "I'm sure it'll be fine, everything will work out in the end."
+
+***September 23, 1943***
+
+***The Slytherin Common Room***
+
+***8:57 PM***
+
+"It's like they're trying to kill us," muttered Dorea, glaring at the mountain of homework laid out before her.
+
+Elena shivered. "If it's this bad now, imagine what it's going to be like in the spring."
+
+Dorea scowled. "I'd rather not, I'm having a bad enough night already."
+
+Harry smiled, his place at the table free of any papers. Most of his homework had been done with Emily, or while Dumbledore lectured the rest of the class on things he already knew.
+
+"Don't get too cheeky," said Dorea, noticing his smile. "We have double Potions tomorrow and I bet Slughorn will give us loads of homework."
+
+His face fell. "Did you have to ruin my night a few minutes before I have patrol?"
+
+Dorea put on an innocent smile. "I would never dream of ruining your night."
+
+"You're a menace," he grumbled, glancing up at the nearest clock. *A few more minutes.*
+
+"I don't understand how you're done with everything," said Elena. "Don't you have extra lessons with Dumbledore, too?"
+
+Harry shrugged. "Yeah, but he doesn't give homework the way you think of it. Anything I have to do after those lessons is practical. It's more like mastering spells and stuff, and that doesn't usually take me that long."
+
+"Remember what I told you last year?" asked Dorea. "About Dumbledore wanting you to be better than R... Emily?"
+
+"I'm not yet," said Harry, casting a glance in the girl's direction. *Odd.* She was leaning forward, her face just inches away from Dolohov's. *Very odd.* "One of the reasons I'm done my homework is because I do so much of it with her."
+
+"You're better at Transfiguration."
+
+Harry considered that, then nodded. "Yeah, probably, but not much else yet. We're about on par in Defence, but she's better at Charms and knows way more spells."
+
+"I never thought anyone else would be as good as her at anything," said Elena, looking from her to Harry. "I still don't think you realize how incredible you are."
+
+Harry's cheeks flushed. "Uh... thanks, I guess, but I'm just figuring it out as I go." He looked up at the clock again. "I've got to go. Talk to you two later."
+
+He weaved through two tables, ducking between a pair of arguing students and casting a Disillusionment Charm, then creeping closer to Emily and Dolohov. Just feet away, he strained his ears but could hear nothing. *Wards... What could they be arguing about?*
+
+Red eyes burned out from a chalk-white face and high, cold laughter left its lips before green light swallowed it whole.
+
+*No! You're past that now --- she is not becoming Voldemort! Think of what's actually happened, not what you're most afraid of.* Rain drummed against low roofs as the pair talked in Diagon Alley. Dark blue eyes glittered with mischief as they threw verbal jibes, a soft smile in place all the while. *That's the Riddle I know --- it's the only Riddle that matters.*
+
+***September 26, 1943***
+
+***The Library***
+
+***8:22 PM***
+
+Harry slid between towering shelves and stopped before the librarian's desk. It took her a moment to notice he was there. "Can I help you?" she asked tersely.
+
+He made himself smile, ignoring the nervous energy buzzing beneath his skin. "I was wondering if you had any books talking about the Elder Wand?"
+
+Weeks had passed since the wand's first mention, but it had stuck around inside his head. A wand more powerful than any other --- it sounded exactly like the kind of thing Grindelwald might want and exactly the kind of thing someone afraid of him should learn about. There was something else, too, something different pulling his mind back towards the wand. *I want it.* *Why do I want it?*
+
+Harry had never yearned for power. His retrieval of the Philosopher's Stone had only been possible because of exactly how little he wanted it. *But the wand gives nothing but power. Why could I ever want that?*
+
+It had taken some time to find the answer. That had come after his talk with Charlus. There had been something too relatable about the wariness in his eyes. *I don't want to spend the rest of my life looking over my shoulder for threats like Voldemort and Grindelwald. The wand might help me feel safe.*
+
+The librarian squinted over her desk. "The Elder Wand?" she asked. "Why would you want to read about legends?"
+
+Harry thought fast, remembering what Emily had said about it at the feast. "We're talking about Emeric the Evil in History of Magic," he lied. "The wand is mentioned in the textbook and I was a bit confused because I'd never heard of it before."
+
+The librarian kept squinting but apparently never found what she was looking for because she sighed. "Follow me."
+
+A few minutes later, Harry was alone in his corner again, a children's book of all things laid open in front of him.
+
+*Death... Why would Death give anyone anything?* There had to be easier ways to claim souls, and that was if the being existed at all. *I won't rule anything out after time travelling, but I doubt he'd just show up and talk to a few blokes who'd conjured a bridge.*
+
+Harry shook his head. There had to be better sources than this. His eyes drifted towards the Restricted Section. *I'll try in there next.* He reached for his water but paused, fingers just inches from the glass. His skin tingled and a shiver ran up his spine. *What the fuck?* He inched his hand closer. Bile filled his throat. *Someone's cursed it.*
+
+Harry flicked his wand and conjured a small bird before directing it at the glass. It flopped down to the desk the moment it touched it, alive but immobile.
+
+Harry's blood ran cold. *What the fuck?* "Homenum Revelio," he whispered. His probe touched someone lurking out of sight and he pushed back his chair, whirling just as someone sprinted from the library.
+
+Harry tried following but made it only halfway to the door before the librarian blocked his path, shaking a finger and raging at the noise he'd caused.
+
+Harry let her rant wash over him, eyes staring out the library's still open door. *Maybe things won't be quite as calm as I'd hoped.*
+
+***September 30, 1943***
+
+***The Potions Classroom***
+
+***11:58 AM***
+
+"Wonderful!" Slughorn boomed, holding up her vial of perfect potion. "Absolutely wonderful! Emily, my dear girl, I have no idea how you do it. Why, I've never seen someone with your talent for Potions."
+
+She made herself smile, ignoring the others' jealous glares. *Let them wish they were me, none of them matter. Only one other person matters.* "Thank you, sir."
+
+Slughorn reached into his pocket and withdrew a vial of golden potion. Emily's breath caught --- she had forgotten all about this, distracted as she was by the story Harry had told her last night.
+
+"As promised," said Slughorn, "one dose of Felix Felicis. Enough for one perfect day."
+
+*A perfect day,* Emily mused while leaving the class, eyes ahead. *What I wouldn't do for one perfect day...*
+
+**Author's Endnote:**
+
+**Things are chugging along nicely now. I'm excited for what's to come, but that time is not yet here.**
+
+**Please read and review.**
+
+**Thank you to my lovely Discord Editor, Idefix, for his corrections/contributions on this chapter.**
+
+**A heartfelt thank you is extended to my Primordial-level patron, Lily, my eternal love, for her incredibly generous support on that platform. The same thanks is extended to my Mage-level patron, Cup, for her unwavering support.**
+
+**PS: The next chapter will be posted in exactly two weeks. It will be released here for readers on Wednesday, December 28th, 2022. IT IS AVAILABLE RIGHT NOW FOR ANYONE WHO JOINS MY DISCORD SERVER, AS ARE CHAPTERS 41, 42, AND 43! Chapter 44 will also be made available to Discord members next Wednesday. THOSE WHO SIGN UP TO MY P\*T\*E\*N PAGE WILL GAIN IMMEDIATE ACCESS TO THE NEXT ELEVEN CHAPTERS, PLUS CHAPTER 51 WILL RELEASE THERE ON SUNDAY. Both of those links can be found on my profile. If you have trouble with either of them, a generic search of my pen name will bring up my website, and direct links to both can be found via the home page.**
+
+**DON'T FORGET ABOUT THE FUNDRAISER I MENTIONED IN THE OPENING NOTES! USE THE LINK ON MY PROFILE AND CHECK THAT OUT! EVERY CENT PLEDGED GOES TOWARDS A GREAT CAUSE.**

@@ -2,14 +2,15 @@
 story_search.py: This cog is meant to provide functionality for searching the text of some books.
 """
 import logging
+import random
 import re
 from pathlib import Path
 from copy import deepcopy
 from random import randint
 from time import perf_counter
+from bisect import bisect_left
 from typing import List, Tuple
 
-import discord
 from discord import app_commands
 from discord.ext import commands
 
@@ -34,9 +35,11 @@ class BookSearchCog(commands.Cog):
         The dictionary holding the metadata and text for all stories being scanned.
     """
 
+    story_records = {}
+
     def __init__(self, bot: Beira):
         self.bot = bot
-        self.story_records = {}
+        # self.story_records = {}
 
     async def cog_load(self) -> None:
         """Load the story metadata and text to avoid reading from files or the database during runtime."""
@@ -62,18 +65,13 @@ class BookSearchCog(commands.Cog):
                     for index, line in enumerate(f):
 
                         self.story_records[stem]["text"].append(line)
-                        if re.search(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)", line):
+                        if re.search(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)|(^\*\*Interlude \w+)", line):
                             self.story_records[stem]["chapter_index"].append(index)
-                            print(line)
-                            print(index)
-                            print(self.story_records[stem]["chapter_index"])
 
                         elif re.search(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)", line):
                             if (len(self.story_records[stem]["collection_index"]) == 0) or (line not in self.story_records[stem]["text"][self.story_records[stem]["collection_index"][-1]]):
                                 self.story_records[stem]["collection_index"].append(index)
 
-                    print(f"Chapter index: {self.story_records[stem]['chapter_index']}")
-                    print(f"Collection index: {self.story_records[stem]['collection_index']}")
             LOGGER.info(f"Loaded file: {file.stem}")
 
     @commands.hybrid_command()
@@ -85,14 +83,17 @@ class BookSearchCog(commands.Cog):
         ctx : :class:`discord.ext.commands.Context`
             The invocation context where the command was called.
         """
+        story = random.choice([key for key in self.story_records])
 
-        b_range = randint(2, len(self.story_records["pop"]["text"]) - 3)
-        b_sample = self.story_records["pop"]["text"][b_range:(b_range + 2)]
-        reverse = self.story_records["pop"]["text"][:(b_range + 2):-1]
-        quote_year, quote_chapter = BookSearchCog._search_chapter_year(reverse)
+        b_range = randint(2, len(self.story_records[story]["text"]) - 3)
+        b_sample = self.story_records[story]["text"][b_range:(b_range + 2)]
+        # reverse = self.story_records["pop"]["text"][:(b_range + 2):-1]
 
-        embed = discord.Embed(color=0xdb05db, title="Random Quote from PoP", description=f"**{quote_year}**")
-        embed.add_field(name=quote_chapter, value="".join(b_sample))
+        quote_year = self._binary_search_text(story, self.story_records[story]["collection_index"], (b_range + 2))
+        quote_chapter = self._binary_search_text(story, self.story_records[story]["chapter_index"], (b_range + 2))
+
+        embed = StoryEmbed(color=0xdb05db, story_data=self.story_records[story], current_page=(quote_year, quote_chapter, "".join(b_sample)))
+        embed.set_footer(text="Randomly chosen quote from an ACI100 story")
 
         await ctx.send(embed=embed)
 
@@ -105,7 +106,7 @@ class BookSearchCog(commands.Cog):
         app_commands.Choice(name="Ashes of Chaos", value="aoc"),
         app_commands.Choice(name="Conjoining of Paragons", value="cop"),
         app_commands.Choice(name="Fabric of Fate", value="fof"),
-        app_commands.Choice(name="Perversion of Purity", value="pop")
+        app_commands.Choice(name="Perversion of Purity", value="pop"),
     ])
     async def search_text(self, ctx: commands.Context, story: str, query: str) -> None:
         """Search the book text for a word or phrase.
@@ -124,7 +125,7 @@ class BookSearchCog(commands.Cog):
             story_text = self.story_records[story]["text"]
 
             start_time = perf_counter()
-            processed_text = self._process_text(story_text, query)
+            processed_text = self._process_text(story, story_text, query)
             end_time = perf_counter()
 
             processing_time = end_time - start_time
@@ -145,58 +146,38 @@ class BookSearchCog(commands.Cog):
                 await ctx.send(embed=story_embed, view=PaginatedEmbedView(
                     interaction=ctx.interaction, all_text_lines=processed_text, story_data=self.story_records[story]))
 
-    @staticmethod
-    def _process_text(all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
+    @classmethod
+    def _process_text(cls, story: str, all_text: List[str], terms: str) -> List[Tuple | None]:
         """Collect all lines from story text that contain the given terms."""
 
-        process_text_start = perf_counter()
         results = []
-        if exact:
-            for index, line in enumerate(all_text):
-                if line == "\n":
-                    continue
-                if terms.lower() in line.lower():
-                    quote = "".join(all_text[index:index + 3])
-                    quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
-                    # quote += "".join(all_text[index + 1:index + 3])
-                    if len(quote) > 1024:
-                        quote = quote[0:1020] + "..."
 
-                    # chapter_found = next(filter(lambda l: re.search(r"(^\*\*Chapter \d+)", l), reversed(all_text[:index])), None)
-                    quote_year, quote_chapter = BookSearchCog._search_chapter_year(all_text=all_text[:index])
+        for index, line in enumerate(all_text):
+            if terms.lower() in line.lower():
+                quote = "".join(all_text[index:index + 3])
+                quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
+                if len(quote) > 1024:
+                    quote = quote[0:1020] + "..."
 
-                    results.append((quote_year, quote_chapter, quote))
+                quote_collection = cls._binary_search_text(story, cls.story_records[story]["collection_index"], index)
+                quote_chapter = cls._binary_search_text(story, cls.story_records[story]["chapter_index"], index)
 
-        process_text_end = perf_counter()
-        LOGGER.info(f"Inside _process_text() time: {process_text_end - process_text_start:.8f}")
+                results.append((quote_collection, quote_chapter, quote))
 
         return results
 
-    @staticmethod
-    def _search_chapter_year(all_text: List[str]) -> Tuple[str, str]:
-        """Get the chapter and collection type (e.g. year, season, book) for the given line of text."""
+    @classmethod
+    def _binary_search_text(cls, story: str, index_list: List[int], index: int) -> str:
+        """Find the element in a list of elements closest to but less than the given element."""
 
-        all_text.reverse()
+        if len(index_list) == 0:
+            return "—————"
 
-        chapter, collection_header = "N/A", "N/A"
-        chapter_re = re.compile(r"(^\*\*Chapter \w+)|(^\*\*Prologue.*)(^\*\*Interlude \w+)")
-        collection_re = re.compile(r"(^\*\*Year \d+)|(^\*\*Book \d+)|(^\*\*Season \w+)")
+        i_of_index = bisect_left(index_list, index)
+        actual_index = index_list[i_of_index - 1] if (i_of_index is not None) else -1
+        value_from_index = cls.story_records[story]["text"][actual_index] if actual_index != -1 else "—————"
 
-        for index, chap_line in enumerate(all_text):
-
-            if re.search(chapter_re, chap_line):
-                chapter = chap_line
-                search_limit = min(index + 3, len(all_text))
-
-                for collection_line in all_text[index:search_limit]:
-
-                    if re.search(collection_re, collection_line):
-                        collection_header = collection_line
-                        break
-
-                return collection_header, chapter
-
-        return collection_header, chapter
+        return value_from_index
 
 
 async def setup(bot: Beira):
