@@ -2174,7 +2174,7 @@ It was time to get out of Nashville.
 
 **By ACI100**
 
-**Season 1: The Veil of Reality**
+**Season I: The Veil of Reality**
 
 **Chapter VIII: Ace Learns Acrobatics**
 
@@ -4792,7 +4792,7 @@ His vision was swimming as blackness began to close in on all sides, and his las
 
 **Season I: The Veil of Reality**
 
-**Chapter 16: Warm Welcomes**
+**Chapter XVI: Warm Welcomes**
 
 ***November 22, 2004***
 

@@ -24,7 +24,7 @@ class Beira(commands.Bot):
     Parameters
     ----------
     *args
-        Variable length argument list, primarily for :class:`discord.ext.commands.Bot`
+        Variable length argument list, primarily for :class:`discord.ext.commands.Bot`.
     db_pool : :class:`asyncpg.Pool`
         A connection pool to connect to a PostgreSQL database.
     initial_extensions : List[:class:`str`]
@@ -35,12 +35,12 @@ class Beira(commands.Bot):
         True if the bot is in testing mode, otherwise False. This causes commands to sync with testing guilds on
         startup.
     **kwargs
-        Arbitrary keyword arguments, primarily for :class:`discord.ext.commands.Bot`
+        Arbitrary keyword arguments, primarily for :class:`discord.ext.commands.Bot`.
 
     Attributes
     ----------
     emojis_stock: dict[:class:`discord.Emoji`]
-        A collection of emojis with truncated names stored on startup for easy future retrieval.
+        A collection of :class:`discord.Emoji`\'s with truncated names stored on startup for easy future retrieval.
     """
 
     def __init__(self,

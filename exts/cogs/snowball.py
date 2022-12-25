@@ -12,17 +12,17 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import Beira
-from exts.utils.sb_utils import collect_cooldown
+from exts.utils.sb_utils import collect_cooldown, transfer_cooldown
 
 LOGGER = logging.getLogger(__name__)
 
-ODDS = 0.6            # Chance of hitting someone with a snowball.
-LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
+ODDS = 0.6                  # Chance of hitting someone with a snowball.
+LEADERBOARD_MAX = 10        # Number of people shown on one leaderboard at a time.
+DEFAULT_STOCK_CAP = 100     # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 
 
 class SnowballCog(commands.Cog):
-    """
-    A cog that implements all snowball fight-related commands and database manipulation.
+    """A cog that implements all snowball fight-related commands and database manipulation.
 
     Parameters
     ----------
@@ -50,7 +50,7 @@ class SnowballCog(commands.Cog):
         with open("data/snowball_embed_data.json", "r") as f:
             self.embed_data = load(f)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=["COLLECT", "Collect"])
     @commands.guild_only()
     @commands.dynamic_cooldown(collect_cooldown, commands.cooldowns.BucketType.user)
     async def collect(self, ctx: commands.Context) -> None:
@@ -66,7 +66,7 @@ class SnowballCog(commands.Cog):
         record = await self.bot.db_pool.fetchrow("SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
                                                  ctx.guild.id, ctx.author.id)
 
-        stock_limit = 200 if ((ctx.author.id in self.bot.owner_ids) or (ctx.author.id == self.ali)) else 100
+        stock_limit = 200 if ((ctx.author.id in self.bot.owner_ids) or (ctx.author.id == self.ali)) else DEFAULT_STOCK_CAP
 
         embed = discord.Embed(color=0x5e62d3)
         if record["stock"] < stock_limit:
@@ -81,7 +81,7 @@ class SnowballCog(commands.Cog):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(aliases=["THROW", "Throw"])
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
     async def throw(self, ctx: commands.Context, target: discord.Member) -> None:
@@ -127,6 +127,7 @@ class SnowballCog(commands.Cog):
                 await self._update_record(ctx.author, misses=1)
 
                 misses_text = random.choice(self.embed_data["misses"]["notes"])
+                embed.colour = 0xffa600
                 embed.description = misses_text.format(target.mention) if "{}" in misses_text else misses_text
                 embed.set_image(url=random.choice(self.embed_data["misses"]["gifs"]))
 
@@ -136,6 +137,77 @@ class SnowballCog(commands.Cog):
             ephemeral = True
 
         await ctx.send(content=message, embed=embed, ephemeral=ephemeral)
+
+    @commands.hybrid_command(aliases=["TRANSFER", "Transfer"])
+    @commands.guild_only()
+    @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
+    @app_commands.describe(target="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
+    async def transfer(self, ctx: commands.Context, target: discord.Member, amount: int) -> None:
+        """Give another server member some of your snowballs, though no more than 10 at a time.
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context.
+        target : Optional[:class:`discord.User`]
+            The user to bestow snowballs upon.
+        amount : :class:`int`
+            The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
+            stock cap, or brings the giver's balance below zero, the transfer fails.
+        """
+
+        # Don't let users (other than the owner) transfer snowballs to themselves.
+        if ctx.author == target and (ctx.author.id not in self.bot.owner_ids):
+            return
+
+        if amount > 10:
+            failed_embed = discord.Embed(
+                color=0x69ff69,
+                description="10 snowballs at once is the bulk giving limit."
+            )
+            await ctx.send(embed=failed_embed, ephemeral=True)
+            return
+
+        # If the transfer
+
+        giver_record = await self.bot.db_pool.fetchrow(
+            "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
+            ctx.guild.id, ctx.author.id)
+
+        receiver_record = await self.bot.db_pool.fetchrow(
+            "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
+            ctx.guild.id, target.id)
+
+        # In case of failed transfer, send one of these messages.
+        if (giver_record is not None) and (giver_record["stock"] - amount < 0):
+            failed_embed = discord.Embed(
+                color=0x69ff69,
+                description="You don't have that many snowballs to give. Find a few more with /collect and you might be "
+                            "able give that many soon!"
+            )
+            await ctx.send(embed=failed_embed, ephemeral=True)
+            return
+
+        elif (receiver_record is not None) and (receiver_record["stock"] + amount > DEFAULT_STOCK_CAP):
+            failed_embed = discord.Embed(
+                color=0x69ff69,
+                description=f"Your friend has enough snowballs; this transfer would push them past the stock cap of "
+                            f"{DEFAULT_STOCK_CAP}. If you think about it, with that many in hand, do they need yours too?"
+            )
+            await ctx.send(embed=failed_embed, ephemeral=True)
+            return
+
+        # Update the giver and receiver's records.
+        await self._update_record(ctx.author, stock=-amount)
+        await self._update_record(target, stock=amount)
+
+        success_embed = discord.Embed(
+            color=0x69ff69,
+            description=f"Transfer successful! You've given {target.mention} {amount} of your snowballs!"
+        )
+        message = f"{ctx.author.mention}, {target.mention}"
+
+        await ctx.send(content=message, embed=success_embed, ephemeral=False)
 
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
@@ -230,9 +302,9 @@ class SnowballCog(commands.Cog):
             FROM snowball_stats
             WHERE guild_id = $1
             ORDER BY rank
-            LIMIT 10;
+            LIMIT $2;
          """
-        guild_ldbd = await self.bot.db_pool.fetch(query, ctx.guild.id)
+        guild_ldbd = await self.bot.db_pool.fetch(query, ctx.guild.id, LEADERBOARD_MAX)
 
         embed = discord.Embed(
             color=discord.Color(0x2f3136),
@@ -258,8 +330,8 @@ class SnowballCog(commands.Cog):
             The invocation context.
         """
 
-        query = "SELECT * FROM global_rank_view LIMIT 10;"
-        global_ldbd = await self.bot.db_pool.fetch(query, ctx.guild.id)
+        query = "SELECT * FROM global_rank_view LIMIT $1;"
+        global_ldbd = await self.bot.db_pool.fetch(query, LEADERBOARD_MAX)
 
         embed = discord.Embed(
             color=0x2f3136,
@@ -285,8 +357,8 @@ class SnowballCog(commands.Cog):
             The invocation context.
         """
 
-        query = "SELECT * FROM guilds_only_rank_view LIMIT 10;"
-        guilds_only_ldbd = await self.bot.db_pool.fetch(query)
+        query = "SELECT * FROM guilds_only_rank_view LIMIT $1;"
+        guilds_only_ldbd = await self.bot.db_pool.fetch(query, LEADERBOARD_MAX)
 
         embed = discord.Embed(
             color=0x2f3136,
@@ -304,7 +376,7 @@ class SnowballCog(commands.Cog):
 
     @commands.hybrid_command()
     async def sources(self, ctx: commands.Context) -> None:
-        """Gives links and credit to the Snowsgiving 2021 Help Center article and to the code this bot is based off of.
+        """Gives links and credit to the Snowsgiving 2021 Help Center article and to reference code.
 
         Parameters
         ----------

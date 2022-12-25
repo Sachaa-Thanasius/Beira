@@ -8664,7 +8664,7 @@ Gellert and his mother had stared at each other with wide eyes and both of them 
 
 Gellert realized what he had done. The words of his father came back to him and he could scarcely believe them, even now.
 
-*"Witches are real, Gellert; so are wizards, and they are not evil. They are great. They have powers that normal people could never dream of, and it isn't because they made some kind of deal with the devil. It's because they're special and made for greater things."*
+ *"Witches are real, Gellert; so are wizards, and they are not evil. They are great. They have powers that normal people could never dream of, and it isn't because they made some kind of deal with the devil. It's because they're special and made for greater things."*
 
 He had moved the chess pieces without touching them. He hadn't wanted them to move, but he knew it was true. Losing the game had been what had made his mind travel to less desirable places, and it made sense to his young mind that it had triggered a reaction.
 
@@ -8890,7 +8890,7 @@ One had short brown hair and a hard face with a number of scars. He looked the o
 
 **By ACI100**
 
-**Book 2: The Advancing of Shadows**
+**Book 2: The Erosion of Innocence**
 
 **Chapter 11: Trial by Fire**
 
@@ -9224,17 +9224,17 @@ Upon the wall --- beneath the bracket and limp body of Mrs. Norris --- were sini
 
 Harry stared blankly at the wall as the crowd around him began to buzz. Muttered conversations broke out like hissing wildfires, rapidly rising in intensity as though their flames were being carefully stoked.
 
-Enemies of the Heir, beware... 
+Enemies of the Heir, beware...
 
 What did it mean? Heir as in the heir of an Ancient and Most Noble House? Harry couldn't think of what other context made sense here, but that didn't seem quite right. Why would some rich pureblood be going around writing threats on a school wall? It seemed somehow beneath them. Draco might, if he had the motivation or the capabilities, but Harry doubted whatever had happened to Mrs. Norris had been Draco's doing. He had been at the feast with the rest of them.
 
-That thought triggered another memory in his mind. The memory of Weasley and Granger hurrying towards the hall just as the rest of them made their exit. 
+That thought triggered another memory in his mind. The memory of Weasley and Granger hurrying towards the hall just as the rest of them made their exit.
 
-Harry's eyes swept the crowd and found them not far from the front. They must have made a mad dash for the stairs as soon as the sound of screaming had made its way down to the gathered crowd, or else they had already been among the students climbing when it had happened. They made sense as suspects, seeing as they hadn't been at the feast, but Harry couldn't see how anyone in the crowd could have done this and been seen coming from the floor below. 
+Harry's eyes swept the crowd and found them not far from the front. They must have made a mad dash for the stairs as soon as the sound of screaming had made its way down to the gathered crowd, or else they had already been among the students climbing when it had happened. They made sense as suspects, seeing as they hadn't been at the feast, but Harry couldn't see how anyone in the crowd could have done this and been seen coming from the floor below.
 
 The two of them were staring at the wall with expressions much like the one Harry thought he must have been wearing. Their eyes were wide and full of confusion and their jaws were slack. Harry tried to meet their eyes, but he couldn't. They may have been the most likely culprits, but somehow he doubted it. He didn't know all that much about Granger or Weasley, but he didn't think either of them to be good enough actors to pull off a performance like that, especially in the face of the stress they would be feeling if the whole school really had just come about their crime scene. Weasley certainly hadn't seemed a master of his emotions during Neville Longbottom's funeral.
 
-He glanced to his other side where Daphne and the rest of his friends were standing. Most of them looked every bit as confused as Harry felt, but Blaise and Daphne served as the exceptions. Blaise's face looked perfectly blank and Daphne's looked as though she had just solved some great puzzle. There was a light behind her eyes that clashed strangely with the obvious worry and apprehension etched upon every inch of her face. 
+He glanced to his other side where Daphne and the rest of his friends were standing. Most of them looked every bit as confused as Harry felt, but Blaise and Daphne served as the exceptions. Blaise's face looked perfectly blank and Daphne's looked as though she had just solved some great puzzle. There was a light behind her eyes that clashed strangely with the obvious worry and apprehension etched upon every inch of her face.
 
 "You'll be next, mudbloods!"
 
@@ -9246,13 +9246,13 @@ It also struck too close to home for him. He was a halfblood born to a mugglebor
 
 "What's going on here?"
 
-The thick Scottish accent clearly belonged to McGonagall. She was among a procession of professors; Dumbledore led the way, but McGonagall trailed him alongside Snape, Flitwick, Sprout, and the headmaster's brother. Harry tried hard not to glare at Aberforth. The old bastard had not given him a reprieve. Harry had been hoping that if he refused to kill the lamb for long enough the codger would let him off, but he hadn't and Harry couldn't understand why the man was so needlessly cruel. 
+The thick Scottish accent clearly belonged to McGonagall. She was among a procession of professors; Dumbledore led the way, but McGonagall trailed him alongside Snape, Flitwick, Sprout, and the headmaster's brother. Harry tried hard not to glare at Aberforth. The old bastard had not given him a reprieve. Harry had been hoping that if he refused to kill the lamb for long enough the codger would let him off, but he hadn't and Harry couldn't understand why the man was so needlessly cruel.
 
 "My cat!" screeched Filch. "One of the little bastards killed my cat! I know they did! I'll kill them, whoever did it, I'll string them up by their bloody ankles and rip the head from their shoulders. Every single one of them!"
 
-"I do hope that will not be necessary, Argus," said Dumbledore, striding purposefully towards the torch from which the cat's lifeless body hung. 
+"I do hope that will not be necessary, Argus," said Dumbledore, striding purposefully towards the torch from which the cat's lifeless body hung.
 
-The students parted before him and the other professors so he reached the cat in good time. He plucked her body delicately from the torch after running his wand over her lifeless form a number of times. 
+The students parted before him and the other professors so he reached the cat in good time. He plucked her body delicately from the torch after running his wand over her lifeless form a number of times.
 
 "She is not dead." Though Dumbledore spoke softly and in a hushed tone, every student heard the words. The crowd had fallen silent as soon as the old man had reached the torch bracket.
 
@@ -9276,7 +9276,7 @@ Ron fidgeted uncomfortably as he followed Dumbledore and the other professors. T
 
 "May we use your office, Aberforth?" Dumbledore asked. "It is closest, I believe."
 
-"If you must," the man grunted. Ron liked Aberforth a great deal. He was miles better than Quirrell had been. He had arrived at the school at an ideal time for Ron, too; just as he took an interest in Defence Against the Dark Arts. 
+"If you must," the man grunted. Ron liked Aberforth a great deal. He was miles better than Quirrell had been. He had arrived at the school at an ideal time for Ron, too; just as he took an interest in Defence Against the Dark Arts.
 
 Much as Ron liked Aberforth, he found his office to be unbearably dull. Malfoy might have mocked him for his place of residence, but the thing Ron had always liked about the Burrow was that it was never predictable. It was always interesting and the house was never dull, either in terms of the atmosphere or the aesthetic. His professor's office was almost completely void of any and all decor. Only two portraits ornamented the room, and the professor had stood in front of one and moved the other out of sight with his wand before Ron could get a clear view of it.
 
@@ -9288,7 +9288,7 @@ Much as Ron liked Aberforth, he found his office to be unbearably dull. Malfoy m
 
 "It appears to me that Mrs. Norris has been petrified. By what, exactly, I'm afraid I cannot say." He looked to Snape, who had thus far not said so much as a word. "Would you care to have a look at her, Severus?"
 
-Snape nodded curtly and stepped forward, drawing his wand like a sword as he did so. His long nose nearly touched the cat's fur as he ran his wand over her, muttering in strange and ancient tongues Ron would likely never know. 
+Snape nodded curtly and stepped forward, drawing his wand like a sword as he did so. His long nose nearly touched the cat's fur as he ran his wand over her, muttering in strange and ancient tongues Ron would likely never know.
 
 He was at it for a number of minutes before he straightened. "This is nothing I have seen or heard of before." His voice was as impassive as the calm sea. "She has been touched by no curse that I can identify and I am certain that no poison was involved. I do not know what else could have done it, Headmaster."
 
@@ -9296,7 +9296,7 @@ He was at it for a number of minutes before he straightened. "This is nothing I 
 
 "Ask them!" Filch exploded, glaring at the Gryffindors with the intensity of Medusa. "It was them; it must have been!"
 
-"No second year could have done this," Dumbledore said softly. 
+"No second year could have done this," Dumbledore said softly.
 
 "Yet they are the only viable suspects we have." Snape's voice was smoother than silk and colder than the most biting of winds.
 
@@ -9304,7 +9304,7 @@ He was at it for a number of minutes before he straightened. "This is nothing I 
 
 "I have no doubt the fools never orchestrated the thing themselves. More likely, they carried out the instructions of another or acted indirectly. It may be that Weasley and Granger were simply in the wrong place at the wrong time," his lip curled in a way that made it clear how likely he thought that to be, "but they have been linked to a suspicious set of circumstances. If they are so innocent, I would ask why they were absent from the feast tonight?"
 
-Hermione's mouth opened, but her tongue failed to form the words. She was frozen, just as she had been when the two of them and Neville had landed in the Devil's Snare. 
+Hermione's mouth opened, but her tongue failed to form the words. She was frozen, just as she had been when the two of them and Neville had landed in the Devil's Snare.
 
 Ron cleared his throat. "We... uh, we were at Nick's deathday party?"
 
@@ -9346,7 +9346,7 @@ His expression was pensive as he met Hermione's gaze. "No, Miss Granger, I do no
 
 ***November 1, 1992***
 
-***An Abandoned Classroom ***
+***An Abandoned Classroom***
 
 ***10:32 PM***
 
@@ -9360,7 +9360,7 @@ He let out all of his pent up frustration at Aberforth and the situation in one 
 
 **"Open."**
 
-The wall slid noiselessly aside, allowing him to step into the hidden passage before it closed just as silently behind him. 
+The wall slid noiselessly aside, allowing him to step into the hidden passage before it closed just as silently behind him.
 
 Since coming to the revelation at Malfoy Manor that speaking Parseltongue was a very unique gift, Harry's imagination had wandered. There were a plentiful number of snakes in the dungeons. Carvings, portraits, implements in the shape of them, and even the occasional living one dwelling in the cracks of the ancient stone walls and floors. His curiosity had been piqued when he'd thought back to the London Zoo. The boa constrictor had not just heard him, it had listened. He had wondered whether or not all these snakes would do the same. Thus far, the results had been very much to his satisfaction.
 
@@ -9374,7 +9374,7 @@ Millicent opened the door almost at once and stepped aside, allowing Harry in. I
 
 "Like the rest of them," he spat, looking at Daphne. "What's up, Daphne? I usually just call it a night after these detentions. What had you so hung up on a meeting?"
 
-"Last night." Harry grew curious at once. He remembered the look in her eyes when they had seen the writing. As though she had solved some great puzzle, but also full of wariness and apprehension. 
+"Last night." Harry grew curious at once. He remembered the look in her eyes when they had seen the writing. As though she had solved some great puzzle, but also full of wariness and apprehension.
 
 "You know what it means?"
 
@@ -9390,7 +9390,7 @@ A smile played at the corner of Daphne's lips. "Patience is important, Tracey. Y
 
 "Have you ever read *Hogwarts, A History*, Harry?" asked Daphne.
 
-"Some of it," he answered. He had read a bit of it before his first year, and then some more of the book as the year went on. He had become altogether distracted by learning magic, however, so he had never finished it. 
+"Some of it," he answered. He had read a bit of it before his first year, and then some more of the book as the year went on. He had become altogether distracted by learning magic, however, so he had never finished it.
 
 "How much do you know about the Hogwarts founders?"
 
@@ -9398,7 +9398,7 @@ He shrugged. "Not a lot. Slytherin was a Parselmouth and the first in Britain wh
 
 "Diadem, but yes," said Daphne, "that's basically all correct. There's a lot more, but only one bit is really relevant."
 
-Harry looked around to see if anyone else knew what she was talking about. It was hard to tell, but he thought Bulstrode might have. The rest seemed as clueless as he felt. 
+Harry looked around to see if anyone else knew what she was talking about. It was hard to tell, but he thought Bulstrode might have. The rest seemed as clueless as he felt.
 
 "After a few years of working in peace," Daphne began, "Gryffindor and Slytherin started to argue. They argued over muggleborns; whether or not they should be allowed at Hogwarts. Gryffindor said everyone should have the chance to learn magic, and Slytherin said the risks were too high."
 
@@ -9422,7 +9422,7 @@ Harry managed to suppress the shudder this time. The words rang true with him. A
 
 "There's a reason one of Slytherin's key traits is ambition," Daphne said with a smile that stretched to her eyes.
 
-"But... surely it would have been found by now, right?" 
+"But... surely it would have been found by now, right?"
 
 "Who knows?" asked Millicent. "Maybe only Slytherin's family can get into it. Maybe you need to prove you're related. There are doors and stuff that won't happen without blood."
 
@@ -9432,19 +9432,19 @@ Blaise snorted. "I'm sure Salazar kept a pamphlet of all the laws of the world b
 
 Daphne was trying and failing to look annoyed at the interruption. She was laughing just like the rest of them. "The point is, there are ways it could have been done. That's what whoever wrote on the wall meant by the Chamber of Secrets. Enemies of the Heir must mean the muggleborns --- and maybe the blood traitors, too."
 
-That was an interesting point, Harry realized. He had no idea as to Daphne's stance on blood supremacy or traditionalism. Her family was one of the Sacred Twenty-Eight and a Founding House to boot. That and her casual usage of the term blood traitor made him think she was at least a traditionalist. On the other hand, Davis was not a noble family --- though Tracey had said she was a pureblood --- and Harry himself was only a halfblood. If she did prescribe to the blood supremacist agenda, she was definitely one of the cause's more reasonable and less radical patrons. 
+That was an interesting point, Harry realized. He had no idea as to Daphne's stance on blood supremacy or traditionalism. Her family was one of the Sacred Twenty-Eight and a Founding House to boot. That and her casual usage of the term blood traitor made him think she was at least a traditionalist. On the other hand, Davis was not a noble family --- though Tracey had said she was a pureblood --- and Harry himself was only a halfblood. If she did prescribe to the blood supremacist agenda, she was definitely one of the cause's more reasonable and less radical patrons.
 
-Harry found himself extremely curious. He thought about the ways Parseltongue caused some of the snake carvings and the like to obey him. What if that was the way to find the Chamber of Secrets? What if one of those doors in the passage he had used to speed up the trek here led right into it? Or what if it was just hidden behind another passage he had yet to find? 
+Harry found himself extremely curious. He thought about the ways Parseltongue caused some of the snake carvings and the like to obey him. What if that was the way to find the Chamber of Secrets? What if one of those doors in the passage he had used to speed up the trek here led right into it? Or what if it was just hidden behind another passage he had yet to find?
 
 He was almost curious enough to go looking, but two things stopped him.
 
-The last time he had recklessly given into his curiosity had been the night after his final exam last year. The night he had waited for Weasley, Granger, and Longbottom to return from their trek down the third-floor corridor. That had been the night he had come face-to-face with the Dark Lord, and it was the night that Neville Longbottom had died because of his actions. He had promised himself he would be more careful after that, and even more so after he had been portkeyed straight into Nurmengard. 
+The last time he had recklessly given into his curiosity had been the night after his final exam last year. The night he had waited for Weasley, Granger, and Longbottom to return from their trek down the third-floor corridor. That had been the night he had come face-to-face with the Dark Lord, and it was the night that Neville Longbottom had died because of his actions. He had promised himself he would be more careful after that, and even more so after he had been portkeyed straight into Nurmengard.
 
 There was another thing, too.
 
 *"There is a plot, Harry Potter. A plot to make most terrible things happen at Hogwarts School of Witchcraft and Wizardry this year. Dobby has known it for months, sir. Harry Potter must not put himself in peril. He is too important, sir!"*
 
-The elf's warning rang through his hair like the clattering of bells as he frowned deeply. 
+The elf's warning rang through his hair like the clattering of bells as he frowned deeply.
 
 Had Dobby known about the Chamber of Secrets? It seemed impossible, but it made sense. A petrification that not even Dumbledore could explain certainly fit the bill. Dobby had even said that there were powers even Dumbledore didn't possess.
 
@@ -9586,7 +9586,7 @@ The teams were lined up at centrefield in short order. Harry watched as Wood and
 
 The whistle's blast cut through the morning air like a sharp-edged sword. Harry rocketed skywards once more and immediately realized he had the advantage over Weasley --- who had been glaring at him as though Harry had done something personally offensive to his mother or some nonsense. He and Weasley didn't even particularly dislike each other; best as Harry could tell, the boy was just a Gryffindor who had the house's typical competitive streak.
 
-His broom rose faster than Weasley's, but he had to dodge a bludger almost immediately . The dodge wasn't difficult, but it did divert his path. Harry was grateful for it. Being struck by a bludger at high speeds had been one of the things Harry had been most worried about when he had begun to properly practice Quidditch. To have the first dodge out of the way so early was nice; he knew that he could avoid them now.
+His broom rose faster than Weasley's, but he had to dodge a bludger almost immediately. The dodge wasn't difficult, but it did divert his path. Harry was grateful for it. Being struck by a bludger at high speeds had been one of the things Harry had been most worried about when he had begun to properly practice Quidditch. To have the first dodge out of the way so early was nice; he knew that he could avoid them now.
 
 He heard something whistling through the air towards him and rolled on instinct alone. The same bludger sped past him. Harry saw it invert in the air this time before rocketing back towards him. His eyes widened. What in Merlin's name was going on?
 
@@ -10130,21 +10130,21 @@ He rolled his head to work out the cramp in his neck as he reached down and with
 
 **By ACI100**
 
-**Book 2: The Erosion of Innocence **
+**Book 2: The Erosion of Innocence**
 
 **Chapter 15: Unfortunate Timing**
 
 ***August 25, 1893***
 
-***Durmstrang Institute ***
+***Durmstrang Institute***
 
 ***8:37 PM***
 
-Gellert's feet slammed into the ground with more force than he had been expecting. Summer was still in full bloom back in his native homeland of Germany. The grass was still a lush green and the ground was softened by the sun's warm glow. 
+Gellert's feet slammed into the ground with more force than he had been expecting. Summer was still in full bloom back in his native homeland of Germany. The grass was still a lush green and the ground was softened by the sun's warm glow.
 
 None of that was true here.
 
-There was no give to the Earth that his feet slammed into. He might as well have landed on solid concrete for how tightly packed the ground was beneath him. 
+There was no give to the Earth that his feet slammed into. He might as well have landed on solid concrete for how tightly packed the ground was beneath him.
 
 That was the first thing he noticed. The next was the biting cold. September had not yet spread its wings and flown into prominence, yet the air was as frigid as one would expect in a German winter. The wind seemed dormant, but it was a small mercy. Even bundled up in so much fur that Gellert thought his legs would buckle from the weight, he shivered.
 
@@ -10154,11 +10154,11 @@ He had landed a ways up what appeared to be one of many mountains that formed a 
 
 It was a great castle, though not in the way many castles of myths were great. It was squat compared to most of them and it was not made of any bright and shiny stones. It was comprised completely of hard grey rock and had only four floors, though the ceilings of each did not seem high. There was not a great deal to say of the structure. It was solid and seemed as though it had stood forever and would endure forevermore. It looked ready to withstand a siege at any moment, though it was perhaps unfit to hold great and splendid banquets for men and women of the highest esteem.
 
-The only reason Gellert could make it out in such detail at all was because of the vantage point he had thanks to the mountain, for the castle itself was surrounded by a high wall of the same solid grey stone that it was crafted from. The wall was about half as high as the castle and there appeared only to be one gated entrance through the impenetrable wall of stone. 
+The only reason Gellert could make it out in such detail at all was because of the vantage point he had thanks to the mountain, for the castle itself was surrounded by a high wall of the same solid grey stone that it was crafted from. The wall was about half as high as the castle and there appeared only to be one gated entrance through the impenetrable wall of stone.
 
 Yet the defences did not end there. He could hear rushing water from all around him. It seemed to roar like a lion and clap against the shore like a hundred thunderbolts in the relative silence of the night. It was everywhere; he could see four lakes spread across the grounds from here alone and there was a great moat that enclosed both the castle and its wall. There were a number of bridges across that were all lowered, as far as Gellert could see, but he doubted that was often the case.
 
-The castle itself might not have been the most dazzling sight in the world, but the path that led to it was positively enchanting. 
+The castle itself might not have been the most dazzling sight in the world, but the path that led to it was positively enchanting.
 
 The entire path was lined by knights made completely from ice on both sides. They stood nearly ten-feet tall and held the largest torches that Gellert had ever seen. Yet the mechanisms in their hands did not flicker with the orange glow of fire. They shone with a pale magical light that was almost as bright as the snow. The snow and light seemed to try and outshine one another, painting the long, straight path in a pale halo of magical light that took Gellert's breath away. The lakes on either side of the path shone ghostly in their light. If not for their restless churning, Gellert suspected the light would have rendered them every bit as transparent as the shining surface of Lake Königssee all the times he had peered down from atop the mountain and looked wondrously into its depths.
 
@@ -10170,11 +10170,11 @@ A noise from below drew their collective attention and they all turned. The two 
 
 The walk was long and cold. They had to walk past many of the lakes along their trek. It had seemed windless on their perch high on one of the mountains, but the air seemed to slash across their faces like whips of ice as they passed by the water. It left Gellert's cheeks stinging and his nose running, but he did not react. His father had told him to stay strong and vigilant.
 
-The descent to the castle felt as though it took forever, but they had eventually crossed the moat and passed through the gate. There were two more knights of ice standing guard at the castle's front entrance, but they swiftly moved aside to allow the first years and their enchanted escorts to pass. 
+The descent to the castle felt as though it took forever, but they had eventually crossed the moat and passed through the gate. There were two more knights of ice standing guard at the castle's front entrance, but they swiftly moved aside to allow the first years and their enchanted escorts to pass.
 
 Torch brackets hung along the walls of a long and narrow corridor that greeted the first years as soon as they stepped into the castle. The brackets shone with the same magical light held by their escorts. Gellert thought the corridor would be nearly pitch-black if not for the light, but he wasn't sure he wouldn't have preferred that. It cast strange, leaping shadows about the walls. They seemed to lurk just out of sight before lunging forth. Several times during the walk down the hall, Gellert had taken them for sudden movement out of the corner of his eye.
 
-Finally, the corridor ended. There was another to the left and right, but before them was a massive room that they were led into by their two guards of honour. 
+Finally, the corridor ended. There was another to the left and right, but before them was a massive room that they were led into by their two guards of honour.
 
 This room was lit more scarcely than the corridor outside, though perhaps it only seemed that way because of its size. There were no windows, but it was a very long room. At its front was a table of rich, dark wood, at which sat men who must have been the professors. Less comfortable tables spread across the rest of the hall. They were longer than the professors' and lined up one behind the other like rows of desks in a classroom. There were seven of them in total and he knew at once that each of them were for a separate year. Gellert and the rest of the first years were led to the back of the hall. Only then did their guards of ice march to the front of the professors' table, bow in perfect unison to an old, hard-looking man who sat in a black, throne-like chair, and leave the hall. There were a number of other knights of ice all throughout the room; it seemed that the service of these two was no longer required.
 
@@ -10214,7 +10214,7 @@ The light behind Dumbledore's eyes seemed to dim by a margin. "As did I, Harry, 
 
 Harry's frown deepened. "I'm not seeing the pattern, sir?"
 
-"Aren't you?" Dumbledore smiled thinly. "You are the pattern, Harry." 
+"Aren't you?" Dumbledore smiled thinly. "You are the pattern, Harry."
 
 Harry's mouth went dry. "Me?"
 
@@ -10230,7 +10230,7 @@ Harry's mouth went dry. "Me?"
 
 Harry found that his mouth felt dry again. He wanted something from this conversation, but that had not been it. It had not been what he had expected, but it was a resource he would most certainly be leaning on in the future. He would be foolish not to --- what kind of idiot would turn down help from the most brilliant magician alive?
 
-"Thank you, sir. I... appreciate it. I'll think of some things you might be able to help with." 
+"Thank you, sir. I... appreciate it. I'll think of some things you might be able to help with."
 
 "Splendid," said Dumbledore, his eyes twinkling once more, "now, where were we?"
 
@@ -10260,13 +10260,13 @@ Dumbledore sighed. "I will not be the first Headmaster who has looked for Salaza
 
 "Is this the first time the Chamber of Secrets has been opened?"
 
-Dumbledore watched him very carefully. "It is not," he said at last. "I did say that dangerous things happened at Hogwarts all those years ago, did I not?" 
+Dumbledore watched him very carefully. "It is not," he said at last. "I did say that dangerous things happened at Hogwarts all those years ago, did I not?"
 
 Harry's eyes widened. "One of those things was the chamber being opened?"
 
 "Indeed." Dumbledore looked up towards the clock upon the wall. "Goodness me, the time grows late and curfew draws near. You'd best be off to bed, Harry. I would not wish for you to be late on my account."
 
-Harry made for the door, recognizing his dismissal, his thoughts whirling. He had gotten more than he had bargained for in this meeting. 
+Harry made for the door, recognizing his dismissal, his thoughts whirling. He had gotten more than he had bargained for in this meeting.
 
 ***November 21, 1992***
 
@@ -10274,9 +10274,9 @@ Harry made for the door, recognizing his dismissal, his thoughts whirling. He ha
 
 ***10:34 PM***
 
-Harry's body ached with every step he took. He was grateful for Cassie walking alongside him as they neared the smooth stone steps that led down into the Hogwarts dungeons. He thought it unlikely he would topple down them, but he would not completely discount the possibility. Tonight had been one of their more taxing practices. There had been a great deal of mock duelling. Harry was still a very long way off from even competing with Cassie, but he was improving greatly. The older Slytherin was confident she was the best duelist in the school, so she wasn't exactly who Harry should be comparing himself against. Not to say that he wasn't doing that, but it did make the bruises sting less and the aches of his muscles felt a touch more bearable. 
+Harry's body ached with every step he took. He was grateful for Cassie walking alongside him as they neared the smooth stone steps that led down into the Hogwarts dungeons. He thought it unlikely he would topple down them, but he would not completely discount the possibility. Tonight had been one of their more taxing practices. There had been a great deal of mock duelling. Harry was still a very long way off from even competing with Cassie, but he was improving greatly. The older Slytherin was confident she was the best duelist in the school, so she wasn't exactly who Harry should be comparing himself against. Not to say that he wasn't doing that, but it did make the bruises sting less and the aches of his muscles felt a touch more bearable.
 
-"Unitatis," said Cassie as they reached the common room minutes later, causing the stone wall to slide aside with its usual groan that for some reason seemed unusually ominous. 
+"Unitatis," said Cassie as they reached the common room minutes later, causing the stone wall to slide aside with its usual groan that for some reason seemed unusually ominous.
 
 The air in the common room was tense. Harry knew something was amiss as soon as he stepped inside. His eyes swept around the room and did not immediately recognize what exactly had created such tension.
 
@@ -10286,19 +10286,19 @@ Cassie --- who was years older and much taller than Harry --- must have seen. Sh
 
 When they parted, Harry wasn't sure what he had expected to see, but what he saw was not it. Two first years had been enclosed by the circle, but one was standing and one was lying face down. His robes were torn and blood pooled around him like a dark crimson puddle as he tried to rise. The one standing over him had the same golden-blond hair as Cassie and his wand was raised. He was halfway through another slash when Cassie grabbed his arm.
 
-The boy whirled and tried to bring his wand up to fire a spell, but he was frozen in place by his older sister's stare before an incantation could form on his tongue. 
+The boy whirled and tried to bring his wand up to fire a spell, but he was frozen in place by his older sister's stare before an incantation could form on his tongue.
 
 "And what exactly have you been doing?" Cassie's voice was soft, but dangerous. It was a stark contrast to her usually outgoing and borderline bubbly persona. It took Harry aback, but her brother did not waver.
 
-"Putting this prat in his place." He gestured towards the fallen boy who was still struggling to rise. Judging by the way his leg kept buckling, the gaping wound just below his shoulder blades wasn't the only damage he had taken in the conflict. Harry would be remiss to call it a duel; it had been much too one-sided by the look of it. 
+"Putting this prat in his place." He gestured towards the fallen boy who was still struggling to rise. Judging by the way his leg kept buckling, the gaping wound just below his shoulder blades wasn't the only damage he had taken in the conflict. Harry would be remiss to call it a duel; it had been much too one-sided by the look of it.
 
-He remembered what Lucius had said about the Yaxleys and what Lord Corbin had then affirmed. They were a family renowned for duelling. It was a sort of tradition for members of House Yaxley to spend several years post Hogwarts on the duelling circuit. They were trained in the art from an early age and Harry knew first-hand that both Corban and Cassandra were excellent instructors. It was no surprise that the youngest of them, Cadmus, was the better of the two first years, but this had not been a victory --- it had been a bloody massacre. 
+He remembered what Lucius had said about the Yaxleys and what Lord Corbin had then affirmed. They were a family renowned for duelling. It was a sort of tradition for members of House Yaxley to spend several years post Hogwarts on the duelling circuit. They were trained in the art from an early age and Harry knew first-hand that both Corban and Cassandra were excellent instructors. It was no surprise that the youngest of them, Cadmus, was the better of the two first years, but this had not been a victory --- it had been a bloody massacre.
 
 "There is a time and a place." Cassie spoke in the same tone of voice she had before, but still her brother remained far from cowed. "You could have killed him, you idiot." She glanced around at the gathered crowd. Most of them were first years, though a few were in the second or third year; Harry even thought he saw a few older students gathered among them. "Why did none of you stop this?"
 
-Every pair of eyes in the gathered crowd seemed to fall to the floor when Cassie spoke. The only exception Harry saw were two pairs of dark brown eyes belonging to girls who looked startlingly identical to one another. The Carrow twins, he remembered. He wondered not for the first time if witches and wizards were somehow more likely to have twins than muggles, but he was a touch more distracted by the way Cadmus Yaxley was glaring at him as though he had done the boy a great personal disservice. 
+Every pair of eyes in the gathered crowd seemed to fall to the floor when Cassie spoke. The only exception Harry saw were two pairs of dark brown eyes belonging to girls who looked startlingly identical to one another. The Carrow twins, he remembered. He wondered not for the first time if witches and wizards were somehow more likely to have twins than muggles, but he was a touch more distracted by the way Cadmus Yaxley was glaring at him as though he had done the boy a great personal disservice.
 
-He met his stare unflinchingly and raised an eyebrow. Yaxley's eyes narrowed as he turned back to his sister. "I wasn't going to kill him," he spat. "I know what I'm doing. I don't need you to teach me or lecture me on how to do things." 
+He met his stare unflinchingly and raised an eyebrow. Yaxley's eyes narrowed as he turned back to his sister. "I wasn't going to kill him," he spat. "I know what I'm doing. I don't need you to teach me or lecture me on how to do things."
 
 He wrenched his arm from his sister's grip and threw one last disdainful look at Harry before storming off. Harry watched him leave warily, his hand not far from his wand. He wasn't sure what he had done to draw the younger boy's ire, but he was not going to be attacked by him whilst unaware. It was typical that he would have to watch for yet another viper lurking in the shadows.
 
@@ -10316,21 +10316,21 @@ Harry frowned. "Why would that make him want to curse me?"
 
 "Jealousy, spite, all kinds of childish things." She shrugged. "Don't ask me to explain how a normal eleven-year-old's mind works. It's kind of depressing and I try not to think about it."
 
-Harry snorted. "Naturally." He glanced around at the rest of his friends and wondered whether Cadmus Yaxley's outburst had been the only thing of note to happen whilst he was gone. All of them were looking between him and Daphne as though they were waiting for something to happen. "Did I miss anything else interesting?" 
+Harry snorted. "Naturally." He glanced around at the rest of his friends and wondered whether Cadmus Yaxley's outburst had been the only thing of note to happen whilst he was gone. All of them were looking between him and Daphne as though they were waiting for something to happen. "Did I miss anything else interesting?"
 
 Daphne's lips curved up into a cruel smile as she leant forward, a gleam dancing in her sapphire eyes. "As it happens, you did..."
 
 ***November 25, 1992***
 
-***The Great Hall ***
+***The Great Hall***
 
 ***8:54 AM***
 
 *Harry,*
 
-*Thank you for writing to me about the elf. The creature should never have been at Hogwarts. I'm sorry for all the trouble it caused you. He has been dealt with, but not before he was questioned. It was him who enchanted that wretched bludger, so you don't need to worry about anyone else having done it. *
+*Thank you for writing to me about the elf. The creature should never have been at Hogwarts. I'm sorry for all the trouble it caused you. He has been dealt with, but not before he was questioned. It was him who enchanted that wretched bludger, so you don't need to worry about anyone else having done it.*
 
-*I'm afraid he didn't know anything about what's going on at Hogwarts. He was a mad and ill creature who hadn't been right in the head for years. There wasn't much he had to offer beyond paranoia, I'm afraid. *
+*I'm afraid he didn't know anything about what's going on at Hogwarts. He was a mad and ill creature who hadn't been right in the head for years. There wasn't much he had to offer beyond paranoia, I'm afraid.*
 
 *I'm glad that you wrote to me and hope you would consider continuing to do so. I've heard even less of you lately because of your argument with Draco, but it's lovely speaking with you again.*
 
@@ -10348,19 +10348,19 @@ Harry wasn't sure how to feel. Much of what the Malfoys had done screamed of man
 
 But Narcissa...
 
-He thought back to every time he had spoken with her and the memory of their first interaction floated to the forefront of his mind. It had been on Platform Nine and Three Quarters. His stomach had been filled with excitement despite the dreary and monotonous weather, for that had been the day he'd been set to travel to Hogwarts. 
+He thought back to every time he had spoken with her and the memory of their first interaction floated to the forefront of his mind. It had been on Platform Nine and Three Quarters. His stomach had been filled with excitement despite the dreary and monotonous weather, for that had been the day he'd been set to travel to Hogwarts.
 
 She had mentioned how the two of them were family and she had encouraged him to write her about that. Harry had never taken her up on it, but why not now? It wasn't really something she could use to manipulate him and it might allow him to get to know her better.
 
 He nodded silently to himself and leant over to reach into his bag and pull out a piece of parchment, but a horrible sound from someone near the centre of the table drew his attention.
 
-Glass shattered and sprayed everywhere. Several students cried out as it pierced their legs and coloured the hems of their robes crimson. Others manage to scramble out of the way as Damian Travers's older brother swung a knife this way and that. People practically dove for cover as he batted more silverware aside. He used one hand to slash at the air with the knife whilst he clawed at his own face with the other. Blood was blossoming on his cheeks and running down his face. 
+Glass shattered and sprayed everywhere. Several students cried out as it pierced their legs and coloured the hems of their robes crimson. Others manage to scramble out of the way as Damian Travers's older brother swung a knife this way and that. People practically dove for cover as he batted more silverware aside. He used one hand to slash at the air with the knife whilst he clawed at his own face with the other. Blood was blossoming on his cheeks and running down his face.
 
 Harry would have thought that the boy might claw his own eyes out if he wasn't careful, but nothing about this screamed of caution. It was clear that Travers was out of his mind. He must have been bewitched, or poisoned, or influenced in some other way.
 
-Poisoned... 
+Poisoned...
 
-His posture straightened so fast it was as though he had been subjected to an eletric shock. He remembered suspecting Travers of sending him bubotuber pus all those weeks ago and he remembered the few people he had told. 
+His posture straightened so fast it was as though he had been subjected to an eletric shock. He remembered suspecting Travers of sending him bubotuber pus all those weeks ago and he remembered the few people he had told.
 
 He doubted it was a coincidence this had happened after last night, either. Suddenly, Harry knew exactly who had poisoned the elder Travers brother.
 
@@ -10376,7 +10376,7 @@ He blinked. "How?"
 
 ***Back in the present...***
 
-Harry watched as the boy writhed and clawed at his own face. Professors were rushing over now and he knew it would end at any moment, but he could not help but be transfixed by the grotesque spectacle. 
+Harry watched as the boy writhed and clawed at his own face. Professors were rushing over now and he knew it would end at any moment, but he could not help but be transfixed by the grotesque spectacle.
 
 Two thoughts crashed over him as swiftly as the poison must have flowed through Travers's veins.
 
@@ -10400,7 +10400,7 @@ He looked for his friends but found only one of them. Blaise was seated in his u
 
 "Blaise," he asked in a low whisper when he took the seat to the boy's left, "what's happened? What's going on?"
 
-Blaise gave him a long, hard look. "You might want to go and see our Head of House." His voice was as pensive as the smooth surface of the sea. It gave away nothing as to what might dwell beneath. A chill ran up Harry's spine. Blaise was always guarded, but never had he spoken so carefully or with such clinical coolness. 
+Blaise gave him a long, hard look. "You might want to go and see our Head of House." His voice was as pensive as the smooth surface of the sea. It gave away nothing as to what might dwell beneath. A chill ran up Harry's spine. Blaise was always guarded, but never had he spoken so carefully or with such clinical coolness.
 
 But then, all confusion and worry over Blaise was wiped swiftly away when the boy uttered his next words.
 
@@ -10416,7 +10416,7 @@ But then, all confusion and worry over Blaise was wiped swiftly away when the bo
 
 **A massive thank you is also extended to my Olympian-level patron, ShadowWolf, for his incredibly generous support on that platform!**
 
-**PS: The next chapter will be posted next Sunday, October 3rd, 2021. Or you can read the next chapter RIGHT NOW by joining my Discord server. Anyone who signs up to my P\*T\*E\*N page will gain immediate access to the next TEN chapters. The first ever quarterly one-shot is also now available for patrons at either the Olympian or Primordial level. **
+**PS: The next chapter will be posted next Sunday, October 3rd, 2021. Or you can read the next chapter RIGHT NOW by joining my Discord server. Anyone who signs up to my P\*T\*E\*N page will gain immediate access to the next TEN chapters. The first ever quarterly one-shot is also now available for patrons at either the Olympian or Primordial level.**
 
 **Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
 
@@ -10590,7 +10590,7 @@ Harry tilted his head. "The... what charm?"
 
 "Disillusionment Charm. It's a sort of camouflage spell. It lets you blend in so seamlessly with your surroundings that if you're standing still, you might as well be invisible."
 
-*"If you will forgive my lack of modesty for a moment, I do not need a cloak to become invisible."*
+* "If you will forgive my lack of modesty for a moment, I do not need a cloak to become invisible."*
 
 Harry wondered whether or not this had been the spell Dumbledore had cast over himself that night or whether he had used something completely different. If it was this, he had exaggerated things. The spell seemed useful, but it was far from true, unimpeded invisibility. Harry would be sticking to his cloak for the foreseeable future.
 
@@ -10965,6 +10965,4748 @@ The room behind him was so quiet as he left it that every one of his footsteps e
 **A massive thank you is also extended to my Psychic-level patron, ShadowWolf, for his incredibly generous support on that platform!**
 
 **PS: The next chapter will be posted next Sunday, October 17th, 2021. Or you can read it RIGHT NOW by joining my Discord server. The next TWELVE CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page. That's the entirety of what's left in book 2!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. The next chapter is available there RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next ELEVEN CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY! The link to that can also be found on my profile or on my website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 18: Slithering Snitches**
+
+***December 15, 1992***
+
+***The Headmaster's Office***
+
+***8:30 PM***
+
+Daphne had never expected to find herself sitting across from the Headmaster in his office. If she planned to break any rules, she knew she was more than intelligent enough to avoid getting caught and she had never dreamed that she would ever take her concerns to Dumbledore of all people. Her father had never been fond of the man and he had his reasons.
+
+Daphne hadn't anticipated much that had happened this year. She was usually excellent at predicting the actions of people and the situations evolving around her, but this year had proven to be a test and she had deduced what might be going on much too late.
+
+"I must admit, Miss Greengrass, I was surprised to receive your correspondence."
+
+*I bet you were,* Daphne thought. She had no doubt Dumbledore knew exactly what her family thought of him. Hopefully, that would mean that he understood going into this meeting exactly how severe the situation at hand really was.
+
+"I'm sorry to have disturbed you, Headmaster," said Daphne, "but you were the only person who I felt comfortable bringing this to."
+
+She thought she saw the corners of his lips twitch. He had obviously spotted the half-truth as easily as she had spoken it.
+
+"I'm glad to hear it," said Dumbledore. "You were quite vague in your letter, though you did a marvellous job of professing the urgency with which you needed to speak to me. I am curious, Miss Greengrass, what is it that brings you to this enchanting room this evening?"
+
+"It's about the Chamber of Secrets, sir. I think I might know who is behind it all."
+
+"Do you now?" Dumbledore reached up and readjusted the half-moon spectacles resting upon his nose so that he could peer over the top of them at her with those deep, piercing eyes. "Tell me then, who is it you suspect of being the Heir of Slytherin?"
+
+"Harry Potter."
+
+"I see." Dumbledore's face had become expressionless the moment Daphne had uttered her first syllable and his voice gave away little more. "That is quite the accusation to lay at the feet of a fellow student. You seem quite a confident young woman with a mind as sharp as any who has ever walked these halls. Why is it that you are so confident in suspecting Harry of committing these crimes?"
+
+Daphne bit her lower lip. "Sir... Headmaster. Anything I tell you... can you promise me that the fact I told you will never leave this room? No matter who asks you or what happens, can you promise that you'll never tell anyone that I'm the one who's told you this?"
+
+Dumbledore tilted his head and studied her for a moment. The spectacles began to slip off his nose, so he reached up and righted them once more.
+
+"You have my word as the headmaster of this school that anything you say will be taken in confidence and that if I see fit to share the information with any other, I shall do so without revealing your involvement in any way."
+
+Daphne could see no flaw in the words and she was well-versed in finding them. "I'm not sure if you know, sir, but Potter and I became friends back in September. We started spending more time together as the year went on and once he had a falling out with Draco Malfoy and his group of friends." Dumbledore nodded to show that he was following along. "Well, one of my friends is Tracey Davis."
+
+"Ah, I see. I must offer my condolences for her absence. She will be put to rights before the school year is at its end." He drummed his long fingers upon the surface of his desk. "May I ask how Harry treated Miss Davis?"
+
+"He seemed to treat her well."
+
+She could have lied but had seen no reason to do so. What she had to offer was more than enough to condemn Harry Potter as the Heir of Slytherin. She was only frustrated that she hadn't seen it sooner and that he had not drunk from the goblet... that would have made things so much easier. There would have been no need to prove anything; he would have confessed his guilt or innocence for the entire hall to hear. The fact she mourned for the loss of that opportunity more than she did for the waste of Veritaserum said a great deal about her confidence in the conclusion she had come to. Prodigious in the subject or not, that had not been a swift or simple potion to brew.
+
+"That's not why I suspect him, though," Daphne went on. "Tracey... well, she's a muggleborn."
+
+"I am aware of Miss Davis's blood status," Dumbledore said softly.
+
+"Yes, well, I'm not sure if you're aware what it's like in Slytherin, Headmaster, but muggleborns don't exactly have an easy time of it. Tracey read up on Hogwarts and the wizarding world before coming and realized that her life would be hell if she didn't convince the house she was at least a halfblood."
+
+"Did aligning with you not negate that?"
+
+"She still got sneered at by some of the more elitist students, but most of them left her alone, especially once we became friends. Blood matters in Slytherin. Had she just come out and said she was a muggleborn, I'm not sure being friends with me would have helped her any."
+
+The light that seemed to constantly twinkle in Dumbledore's eyes had been cast into sharp relief by the torch sitting upon his desk that Daphne assumed he had been using to aid him in reading. Nothing seemed to dance there now. The light seemed only to show her exactly how old the man really was. Every line of his face looked as though it had been etched deeper into the flesh in the seconds that had passed and she noticed for the first time exactly how old his silvery hair made him look.
+
+"It saddens me to hear such tales," he said at last. "I have spent years since the downfall of Lord Voldemort wondering how best to mend the divide his tyranny caused within the school." He grimaced. "I must admit that I have been unable to come up with any worthy ideas. Each and every time I hear of tales such as this, it reminds me that I must find time in my schedule to devote to such things."
+
+"So you understand why she was keeping it a secret, then?" Dumbledore nodded in a way so slowly and stiff that it looked as though every inch caused him unimaginable pain. "Well, someone must have figured it out. The Heir of Slytherin wants to rid the school of muggleborns --- that's what the old stories say, at least. If Tracey was attacked, it makes sense that the Heir figured out about her blood status."
+
+"And you think that because Harry spent so much time with her, he was in an ideal position to deduce such truths?"
+
+"Yes, but there's more than that. I'm not sure if you were told, but Harry was sent a package full of bubotuber pus."
+
+"I am aware of the incident, yes."
+
+"Well, Harry knew who it was right away. I confirmed it on my own later, but he knew from the beginning just by looking at him." She let her words hang in the air, hoping that Dumbledore would pick up on their meaning.
+
+He was looking at her now in a way more calculating than he had before. "An interesting observation," he admitted. "Can I presume you believe that he used this same ability to deduce the truth about Miss Davis?"
+
+Daphne nodded. "Yes, sir."
+
+"I can understand why that may appear to you as though he might be in a position to strike," said Dumbledore. "My contention with your theory is that, for however talented Harry may be, I do not believe any second-year student capable of casting magic powerful enough to achieve what the Heir of Slytherin has thus far accomplished."
+
+"Would it change your opinion if I told you that Potter has a power that hasn't been seen in Britain for years?"
+
+Dumbledore raised an eyebrow. "And what power is this?"
+
+"He's a Parselmouth. Last night in the common room, he animated some of the snakes on a couch just by hissing at them. They followed his every command and he set them loose on a first year. Cadmus Yaxley was his name. I'm sure he'll tell you if you question him yourself."
+
+"I don't doubt you, Miss Greengrass," Dumbledore assured her. "I am unsurprised that Harry is a Parselmouth."
+
+"You're... what?"
+
+"Magic is a funny thing. I have heard rumours of your own explorations of magic and suspect much about your mind; I am sure you have come to this realization about magic as well." His expression hardened and Daphne no longer saw the old, wisened man sitting behind the desk atop a tower at Hogwarts. She was looking at the general who had led a small army against the Dark Lord during the Purity War; a man who had duelled the most evil dark sorcerer in a millennia to a standstill. "What took place the night Lord Voldemort attacked Harry was unlike anything we have ever seen. Dark magic of the sort that Voldemort used... it leaves a mark, whether it did its job or not."
+
+Daphne's eyes widened. "You think the Dark Lord might have transmitted the ability to speak with snakes to Potter?"
+
+"It is possible. I admit that I'm unsure, but it is possible. The Potters are an old and mysterious family. It would not surprise me to learn that somewhere down the line, they have a lesser-known or perhaps even an altogether hidden link to Slytherin."
+
+"Sir... if the Dark Lord transmitted the ability to speak with snakes, is it possible he passed other things along to Potter as well?"
+
+"If you are asking me whether or not the curse that touched Harry's forehead that night made him liable to act more like Lord Voldemort, then my answer is no. Magic of that sort can do many things, but I do not believe that to be one of them. Harry is very much his own person and he makes his own decisions."
+
+"But him being able to speak with snakes and being a natural Legilimens, it is a little bit suspicious with everything going on, isn't it?"
+
+"It is certainly suspicious, yes, but I would remind you that many things seem suspicious when we are spending so much of our day jumping at shadows."
+
+"I suppose."
+
+Dumbledore smiled kindly towards her. "I will take what you have said to heart, Miss Greengrass. Rest assured that it will not go unconsidered, nor will it be ignored. I thank you very much for your courage in bringing this all to me and I will do with it as I see fit." He glanced up at the clock on his wall. "Now, I do believe the hour draws late. If you have nothing else to share with me, I think it best if you return to your common room."
+
+Daphne was already on her feet and crossing the room with a blank expression upon her face. She had the strangest feeling that Dumbledore knew much more than he was letting on. What she was even more confident in was the fact that he wasn't going to act. She would give him time to prove her wrong, but if he didn't... she might have to intervene once more.
+
+***December 17, 1992***
+
+***The Great Hall***
+
+***7:28 PM***
+
+The drone of voices in the Great Hall was so loud and constant that Harry could hardly decipher one from the other. It was like the sloppy beating of a thousand deep and booming drums. Bodies were clustered here and there. Harry had entered the hall under his invisibility cloak, but finding a spot to slip it off and into his bag without being noticed proved to be more difficult than he had expected.
+
+It was the first time he had ever seen the hall so packed with people whilst a meal was not in session. Then again, it was a first on many fronts, for never before had Hogwarts organized a club exclusively for duelling and defensive magic.
+
+With the rising danger and tension around the school, Dumbledore had seen fit to authorize the creation of a duelling club to help students improve both their skills and their confidence. Professor Flitwick had taken the lead, seeing as he was a former European Championduelist. He would have other professors assisting him, too. Who they were, Harry wasn't sure. He hoped only that the Headmaster's sadist of a brother was not amongst them.
+
+He shook his head slowly as he faded into the crowd and tried to avoid getting buffeted around like an unnoticed pinball. He had felt off all day. It was entirely Grindelwald's fault, as usual, for the memory he had shown Harry had hit him in a different sort of way.
+
+***The previous night...***
+
+*Herr Grindelwald,*
+
+*We regret to inform you that Durmstrang has received correspondence from the magical authorities in relation to you and your situation outside of this school. It is my obligation to inform you that your father Johan was found dead in your family home last night. He appears to have died of completely natural causes whilst in his sleep.*
+
+*On behalf of all here at Durmstrang, I offer my deepest and most sincere condolences and wish only the best for you moving forward.*
+
+*Regards,*
+
+*Ilyn Shevchenko*
+
+*Highmaster*
+
+Gellert stared blankly down at the sheet of parchment in his hands as though it was written in a foreign language. The words seemed to swing before his eyes and flicker in and out of his line of sight. It was like the parchment was enchanted to befuddle his mind or play some sort of sick and twisted trick on his eyes.
+
+Yet the words were there. They were staring right back up at him and there was no way he could ignore them.
+
+Grindelwald did not feel fear, or anger, or an overwhelming sensation of sadness as he stared down at the parchment. He thought he ought to, but he didn't. He was sure that in time, it would come. He loved... *had* loved his father more than anyone else in the world. It had been he who had rescued him that day at the church. It had been he who had warned him of what was to come and taught him what it meant to be a wizard, and it was he who had cared for Gellert more than anyone else.
+
+Yet Gellert felt none of those things as he stared down at the parchment in his hands.
+
+He just felt blank and empty. The only odd feeling was the sensation in the pit of his stomach. It was not painful, nor was it even uncomfortable. It was just... strange. It was like a piece of something had been there and had suddenly disappeared; like he was all of a sudden one piece short from completing a puzzle he had been at for hours.
+
+Other than that... he felt nothing until that very revelation caused a feeling he was much more familiar with to rise up within him.
+
+Fear... Gellert feared, but not because his father was dead. He did not fear what he would do going forward. He did not fear what would happen to him, nor did he fear for his father now that he was beyond the grave.
+
+Gellert feared for none of these things --- what scared him was that he knew he should be feeling more.
+
+It scared him that he wasn't and he remembered without difficulty the way some of the other students whispered in the halls as he passed by with his cloak billowing behind him. The way the younger students cast furtive glances his way and the way some of the older ones paled any time he drew near.
+
+He had realized a long time ago that it was because they feared him. He knew he was better and more talented, but he had scoffed at the notion of fearing a fellow student then.
+
+But now... maybe they were right to be so wary of him. Maybe it wasn't his magic or his might they feared, but instead, the man who commanded it. If he couldn't even feel for his dead father... what did that mean for him? What did that make him?
+
+The letter was smoking in his hands. Before he knew it, it had been set ablaze and curled into ashes on his lap. He didn't remembered setting it on fire but he needed to stop looking at it. It was making dangerous thoughts race through his mind and his heart pump much too fast. If it had been allowed to continue, he might well have gone the same way as his father.
+
+***Back in the present...***
+
+Harry only managed to cease reminiscing when he noticed that the general chatter in the hall had briefly risen before dying down altogether. He was grateful for how highly elevated the stage was at the front of the hall. He would have been unable to see it whilst trying to look around many taller students who stood stubbornly in his way and seemed as immovable as ancient mountains if it hadn't been.
+
+Three men were making their way on stage. One was much shorter than the others, adorned in thin-looking robes of a deep blue. They somehow seemed to flow with every step he took and Harry could not help but wonder if they were enchanted to allow for a greater range of motion. Snape was dressed the same as always; his black robes billowing behind him as he marched behind Flitwick with a scowl. Harry's blood boiled at the sight of the third. Aberforth Dumbledore was dressed in grey to match much of his hair, though his eyes were every bit as piercing as his brother's.
+
+"Gather round, everyone, gather round!" It was the most excited Harry had ever heard Flitwick, and that was saying a great deal. Harry suspected that the Headmaster may not have been the one to initially propose the idea after all. "Welcome to the first meeting of the newly-formed Hogwarts Duelling Club! Now, the goal of these meetings will be to hone your skills with combat magic. Given the... current troubles, Headmaster Dumbledore and I thought this was the perfect time to revive a long-gone tradition of the school." He stepped aside and allowed his companions to move forward. "Professors Snape and Dumbledore will be assisting me in the running of this club. Both of them are exceptionally talented duellists in their own right."
+
+Harry could picture Flitwick duelling professionally just fine. Darting in and out, deflecting spells, and returning fire. Snape... Harry had a feeling the man fought with a very different style. One that was likely much more frowned upon than that of their Charms Professor. As for Aberforth... he had no idea.
+
+Flitwick had them pair up and practice the Disarming Charm --- Expelliarmus. It was one Harry had known for ages. He ended up paired with Lillian Moon, which was a touch awkward after what had happened with Daphne. He shot a glance in the blonde's direction as Lillian scrambled to fetch her wand. She was not looking back at him and if she felt his stare upon her, she gave him no indication.
+
+Most in the hall had no troubles with the Disarming Charm, but some of the younger years' groups had descended into chaos once it had become apparent they couldn't perform the spell in question. Granger had found herself in some sort of headlock courtesy of Millicent Bulstrode, and Ron Weasley and Draco Malfoy looked as though they might consider dropping their wands and deciding their duel the muggle way.
+
+Given the brawling, it was wise of Flitwick to try and teach them the most basic shield charm --- Aegis Vocar --- which led to considerably less chaos. He ran the entire club well and except for the early tussles, it ran smoothly right up until the point he decided to allow them to test themselves against one another in live duels.
+
+Lillian was shuffling before Harry, clearly very nervous for the duel to begin. Harry remembered what Aberforth had said during their last detention whilst goading him. About how Daphne might have thought him the Heir of Slytherin. If it was true, had she told her friends? Was Lillian worried he might petrify her if the duel didn't go his way? Or was she worried that Harry had powers the rest of them couldn't dream of and he planned on obliterating her right there in the centre of the Great Hall?
+
+"Potter!" The voice lashed at him like a whip. Harry turned with a scowl, for he recognized the voice. "I've seen what you're capable of," Aberforth said with a stern expression. "The point is to test yourself. Over here with Weasley."
+
+Harry thought for a moment that he meant Ronald but quickly realized that was not the case. He was directed not towards the tall, gangly redhead whom he had beaten to the snitch, but one of the broader fourth years who had flown around the pitch that day whilst wielding a beater\'s bat.
+
+Harry's heart began to quicken. The only student the twins' age or older he had duelled was Cassie. Those duels had never gone favourably for him, but she was supposedly a prodigy when it came to combat magic. The twins... they were devilishly clever, the both of them. They had also been malicious bastards ever since Halloween, but particularly since Colin Creevey had gone missing and Slytherin had bested them on the Quidditch pitch. It said a lot about their antics that --- until Dobby had appeared before him in the hospital wing --- Harry had seriously considered the Weasley twins as the culprits behind the cursed bludger that had landed him a night's stay with Madam Pomfrey.
+
+Harry wasn't sure which of the twins he was looking at, but it hardly mattered. The boy was leering down at him with a dangerous look in his eye. A shiver ran up Harry's spine, but he fought down the urge to shudder. He wouldn't give the bastard the satisfaction. He had seen what the twins had done to normal Slytherins --- he hardly wanted to imagine what this one was about to try and do to the one whom some suspected of being the Heir of Slytherin.
+
+"When you hear the gong," said Flitwick, "the duels will begin. Remember, nothing that can lead to any injuries, please. Now, get ready!"
+
+Harry tensed and prepared to spring to the side. He could see the twin leaning forward and he was sure the boy would rush him.
+
+*Gong!*
+
+The older boy lunged forward and Harry dove out of the way. Three spells sailed through the space his head had been a moment earlier and Harry was all of a sudden very grateful for the time Cassie had spent teaching him how to learn an opponent's body language. High-level duellists would usually either show nothing at all or potentially even mislead their opponent, but it was clear that for however clever the twin in front of him was, he wasn't necessarily experienced as a duellist.
+
+Not that the fact was helping Harry much. His casting was swift and his intent was brutal. Cutting Curses, Bludgeoning Curses, Banishing Hexes, and a number of spells Harry didn't recognize were among the boy's favourites. His casting was rapid and he was so offensive that Harry was struggling to find a pause in his casting to fire back with an offence of his own. He was constantly on the back foot and all the dodging and shielding was more fatiguing by the second.
+
+That was when he realized a third option. Harry dodged two jets of purple light and recognized the twin's next spell as a Stunner. He brought up his wand and batted the spell back towards him. The twin shielded, but Harry fired off three Bludgeoning Curses in quick succession. They slammed into the boy's shield one after another and it sparked out. Harry's next three spells were a Disarming Charm, a Cutting Curse, and a Stunner, but none of them found their mark.
+
+The boy dove to the side, but Harry had anticipated it. Weasley knew more spells than him and was more physically fit, but Harry knew what to watch for and he didn't. It was the second time it had cost the older boy, and Harry hoped it would be the last.
+
+"Depulso!"
+
+The spell caught the boy in mid-dive and he was sent sailing through the air in a fashion similar to how Harry had managed to beat Cadmus Yaxley last week in the Slytherin common room. The difference was that Harry's opponent tonight was clever enough to hit the ground rolling and avoid having the wind knocked out of him. Harry mentally cursed. With all of the ill-thought decisions the Weasley twins made, it was perfectly in character for both of them to know how to take impact as well as professional stunt doubles in the muggle world.
+
+Harry's wand had not been idle and he was sending another volley of spells soaring towards his opponent. The boy's expression had changed now. He was no longer looking like a cat who had cornered a mouse. He now had the look of a predator who had been taken off guard and backed into a corner. Harry knew how bad it would hurt the boy's pride to lose to a second year and Harry wanted nothing more than to win.
+
+Yet he knew the second he saw a gleam of mischief dance into his opponent's eye that something was wrong. He prepared to shield or deflect, but the incantation the boy shouted was not one he recognized.
+
+"Serpensortia!"
+
+The snake that seemed to leap from the tip of the boy's wand had to be nearly ten feet long. Its skin was a dark green that resembled fallen leaves, but its scales seemed to gleam more sinisterly in the torchlight of the hall than any bit of foliage could ever have.
+
+It was spitting and hissing as it slithered towards Harry, but the boy was frozen. There was nothing he could think of to counter this. He could throw a Cutting Curse towards the snake, but he doubted it would be strong enough to do a great deal of damage and it would probably do nothing but set the creature even more on edge than it already was. He had no doubt the Lacero Curse would cut it cleanly in half, but that wasn't exactly a spell he wanted to use in public.
+
+He glanced up towards Weasley and saw the shit-eating grin the boy was wearing. Anger seethed in Harry's stomach at the sight of it and he suddenly realized through some sort of strange instinct what the boy was hoping for. If Harry really was the Heir of Slytherin, he would be able to call the snake off with little more than a hiss. That was undoubtedly why he hadn't tried to disarm him whilst he was distracted. If he did, the duel would end and the snake would be dispatched before Harry could reveal himself.
+
+It was a masterstroke, Harry would grant the bastard that, but he wasn't going to play into the boy's scheme. He would let the snake bite him before he allowed the entire school to turn against him like that.
+
+"Evanesco."
+
+Snape's voice sliced through the tense atmosphere of their duel like a knife through dripping hot butter. The snake vanished as soon as the man had uttered his final syllable and Harry did not fail to notice the scowl that crossed Weasley's face as his plan was foiled.
+
+Harry's wand snapped up to continue the duel, but Snape wasn't finished.
+
+"Enough, both of you!" Harry lowered his wand with great reluctance only when he saw Weasley do the same. Only then did he realize that the entire hall was quiet. They had been the final two combatants and everyone had been watching them with rapt attention. "Weasley," Snape spat, "what exactly did you think you were doing when you conjured a snake that was very clearly venomous? What part of trying not to inflict a serious injury did you fail to understand? I thought the instructions were quite clear, but do we need to be sharper in our instructions going forward? Maybe then, they might have a chance of penetrating that thick head of yours."
+
+The boy stared back at Snape completely unabashed and Harry took the opportunity to fade back into the crowd, though his eyes never left the boy who had for all intents and purposes bested him. If the Weasley twins were out to prove that he was the Heir of Slytherin, he was going to need to tread even more carefully going forward.
+
+***December 18, 1992***
+
+***The Headmaster's Office***
+
+***9:41 PM***
+
+"I believe that will do for tonight." Dumbledore's statement was like music to Harry's ears. They had been at it for nearly two hours, though he knew great progress had been made. "Congratulations, Harry," said Dumbledore. "I do believe you have progressed through this stage in the development of your psychic defences."
+
+Harry could not help but smile. "Thank you, sir. I really do appreciate all the time you've spent helping me."
+
+"There is no need for thanks, dear boy. It is a pleasure to watch one with your talent improve. How have your studies in Transfiguration progressed?"
+
+Harry had come to Dumbledore seeking advice in Transfiguration once he had seen exactly how quickly Grindelwald had been moving through the Durmstrang material. The man had been an invaluable aid in his own progression. He had been well behind where Grindelwald had been at the same age, but the gap between them at the same point in their education was closing swiftly. Harry was even confident he could edge ahead of the former dark lord by the end of the school year if he kept at it.
+
+"They've been going really well, sir. Your advice has made a huge difference and has really helped me improve."
+
+"I am glad to hear it. I do so love teaching. I am quite fond of these sessions for that reason and I am more than happy to instruct in other things as well."
+
+"I might ask you about something with Charms and Runes after the break if you don't mind."
+
+The man's eyes twinkled. "Runes, you say? An ambitious goal for one who is not eligible to begin classes on the subject until September."
+
+Harry shrugged. "I've heard they're really useful." He had done more than hear. Runes had been how Daphne verified Harry's suspicions about Travers being the one to send him the envelope full of bubotuber pus.
+
+"They are one of the foundational branches of magic and their usefulness cannot be overstated," Dumbledore agreed. "Do not mistake my surprise for disappointment. It brings me great joy to see you taking an interest. Your ambition is just unusual for one your age."
+
+"Most people my age didn't see what I saw at the end of last year, sir."
+
+Dumbledore looked like he'd bitten into something foul. "No, fortunately, they do not."
+
+"Sir, can I ask you something that I probably shouldn't?"
+
+Dumbledore's lips twitched. "I may choose not to answer, but you may ask."
+
+"I heard a rumour that there was another attack today. Somebody said something about a ghost being petrified, but a bunch of others said that wasn't possible. Were they true?"
+
+Dumbledore sighed very deeply as he rubbed at his eyes. "I am afraid they are very much true, yes."
+
+"How is it possible, sir? For a ghost to be petrified, I mean?"
+
+"I must confess to you that I have no idea. There can be no physical interaction with beings beyond the veil, so the weapons that can be used against them are quite limited. Of the few I know of, none would match the effects this Heir of Slytherin has achieved."
+
+"Do you have any idea who the Heir might be, sir?"
+
+Dumbledore did not so much as blink as he stared straight ahead. Harry had the impression that the man was not puzzled by the question, but that he was deciding exactly how much he wanted to reveal in his answer.
+
+"I have a common theme that I am looking for in my investigation," was what he eventually decided upon in place of an answer. "I am quite certain I know who opened the Chamber of Secrets fifty years ago, so it gives me somewhere to start."
+
+"Half the school thinks it's me." Harry wasn't sure what made him say it, but he supposed it was probably the weeks of pent-up frustration over the whole thing and the stress he had been under for almost the entire year.
+
+"You are an interesting case," said Dumbledore.
+
+Harry's heart fluttered. "What do you mean by that, sir?"
+
+"You are a person who is very easy to suspect. I can understand exactly why so many people are suspicious of you." He raised a hand just as Harry opened his mouth to speak. "Please don't mistake my meaning. I do not believe you are in any way responsible for any of what has happened this past year. I simply understand where the others' suspicion stems from."
+
+"I don't," said Harry. "I sort of understand Colin, since people think I had a motive, but Tracey? She was one of the only friends I have. Why would I attack her?"
+
+"To throw the masses off of your trail, perhaps, or else because you learned some sort of secret or had been masquerading as the girl's friend all along." Dumbledore smiled thinly at the thunderstruck expression Harry knew he must be wearing. "What you must understand about people is that they will believe exactly what it is they want to believe. Once an idea blossoms in a human being's mind, most of us have a very nasty habit of framing everything we see in the context of that idea. Really, we would be much better off to try and frame that idea with everything it is we see, but alas, we are creatures composed of many biases and desires. Chief amongst the latter is the urge to be correct."
+
+"But it's stupid," said Harry. "How could I be the Heir of Slytherin?"
+
+Dumbledore watched him very closely. "Some people believe that on the night Lord Voldemort attacked you, the horrid curse that touched you did much more than rebound upon its caster."
+
+"Do they think it changed me or something? That sounds like utter rubbish."
+
+"It is, but utter rubbish, as you call it, is often rooted in some form of logic or truth." Dumbledore leant forward. "Tell me, Harry, can you speak to snakes?"
+
+Harry's throat constricted. It was like the muscles in his chest had coiled around his heart, which had risen to the challenge and was now beating so fiercely it was like it thought it could force its way through the walls of flesh and muscle.
+
+Telling Dumbledore this secret was dangerous. It implicated him as the Heir of Slytherin and might change the man's opinion in regards to his guilt. There was also the past to consider. Harry had trusted Draco with a great many things and the boy had betrayed him. Daphne had been no better.
+
+Dumbledore though... he was known as the greatest wizard alive. Could men like him fall victim to such folly? Was it likely he would betray Harry if he knew such a damning secret? Dumbledore had been one of the most positive influences Harry had ever known, but there had been a time when he'd thought the same thing about Draco...
+
+But there was more to consider here. It was an oddly specific question. It was like Dumbledore already knew. It was as though he wanted to confirm or else test him. But how? How could Dumbledore know that he was a Parselmouth?
+
+Unless...
+
+Unless one of his housemates had snitched? Perhaps one of them had come forth and spilled the story of him speaking Parseltongue in the common room. If that was true, he thought he knew which one and it meant that Aberforth's jab about Daphne suspecting him had been more true than the man had known.
+
+Harry met Dumbledore's stare head-on as he answered the man's question. "Yes, sir. I can."
+
+"May I ask when you became aware of the ability?"
+
+"I... think I might have spoken to snakes in the garden when I was little, but the first time I really remember noticing something was weird was when I talked with a snake at the London zoo." He averted his eyes. "I also made the glass disappear."
+
+Dumbledore's eyes twinkled. "An excellent piece of accidental magic, if I do say so myself." His expression became more serious. "Have you ever thought about why, Harry? Why it is you can speak with snakes when the Potter family has no known connection to Slytherin --- whom all Parselmouths in Britain are said to descend from?"
+
+"The thought's crossed my mind," he admitted.
+
+"It is my belief that you can speak to snakes because Lord Voldemort can," said Dumbledore. The fingers of his left hand drummed atop his desk as he used his right hand to stroke his long silver beard. "The curse Lord Voldemort used against you is unique in many ways. Its effects run deeper than the skin and touch the very soul. Very few spells can do this and it makes the ones that can both mysterious and unique. Nobody had survived that curse before you, so I am guessing here, but I do believe that the spell forged a connection between yourself and Lord Voldemort. A connection that may run deeper than any connection two witches or wizards have ever shared before."
+
+"So you think the spell lets me speak to snakes because he can?"
+
+"I think it is a great deal more complicated than that, but that is a simple and succinct way of saying it, yes."
+
+Harry ran a hand through his hair as he cast his eyes about the room, trying to decide how to ask his next question. "Sir... is there anything else I should know about that night? Anything else the spell did that should worry me? Voldemort didn't imprint on me or anything, did he? The spell isn't going to make me more like him, is it?"
+
+There was desperation in his voice as Harry remembered the nothingness Grindelwald had felt at the loss of his father and how eerily similar it was to how Harry felt about his own parents.
+
+***"Come... come to me... let me rip you... let me tear you... let me kill you..."***
+
+A shudder ran up his spine as he remembered the voice inside his head the first night he had spent in Aberforth's office. Could the voice be some form of Voldemort lurking inside of him? Could this explain the coldness he had felt as of late? The way he had snapped with Yaxley and why he was sympathizing so deeply with Grindelwald.
+
+Dumbledore met his gaze with the same intensity Harry had when revealing his Parseltongue ability. "No. There is nothing else about that night that needs to concern you. You have my word."
+
+***Later that night, somewhere in Albania...***
+
+A soft and bitter breeze sent dry leaves hissing across the yellowing grass as it swept across the lands, bringing with it the biting chill of winter. Several crows rose into the air and squawked as though the wind had disturbed them. Their protests echoed across the otherwise quiet land, but they eventually lowered in the sky and rested back in their perches high in the vast number of trees at the edge of a great, open clearing.
+
+Until a loud and sudden crack tore through the silence and sent them scattering. Their squawks were louder and more indignant this time, but they died in the wind as every last one of them fled, scared off by the sudden and unexplained noise.
+
+A man beneath a black travelling cloak watched the crows leave before making sure the Disillusionment Charm he'd cast upon himself before the final jump of apparition needed to take him here was still active. It had wavered slightly, but it was still in place. He made sure it was at full strength before he cast his gaze around.
+
+He stood at the edge of a vast clearing. There was virtually nothing on his left or right and he knew that there was a great deal of empty land behind him. A great forest stood before him. Trees taller than buildings stood close enough to one another that their branches were tangled so tightly it appeared as though they were tied in great knots. The foliage was so thick that even here, on the edge of the forest, the man beneath the cloak could hardly see ten feet into the great mass of trees.
+
+It did not deter him as he stepped forward and slipped into the vast cluster of branches and leaves. He had known all too well when he had departed for this place that he would have his work cut out for him. Men like him did not fear the dark nor the unknown, so he wasn't going to let the potential of getting lost or trapped dissuade him from his purpose.
+
+**Author's Endnote:**
+
+**Props to those who can figure out what is going on with that last scene. I don't think it's overly complicated, but I'm sure some will miss it.**
+
+**Next chapter will take them all up to the end of the winter break and will end with quite a bang.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors Gamerin4d, Idefix, rawmeat898, and The Darkling for their corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Psychic-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, October 24th, 2021. Or you can read it RIGHT NOW by joining my Discord server. The next ELEVEN CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page. THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. The next chapter is available there RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next TEN CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY! The link to that can also be found on my profile or on my website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 19: The Pursuit of Greatness**
+
+***May 3, 1899***
+
+***Durmstrang Institute***
+
+***11:22 PM***
+
+Gellert's heart beat rapidly as he stared down at the boy before him, crouched and pulled back as though preparing to be struck. He had planned this for some time but now that the moment had arrived, he was unsure whether he would be able to do it. His throat was as constricted as it had been when smoke rose around him in great clouds as he stood atop the flaming pyre. Every inch of him tingled with nervous adrenaline and frantic anticipation.
+
+He cast his eyes about the room as though to ensure no one was intruding, but he knew that no one would. Nobody in the castle, student or staff, was capable of penetrating the ward scheme around this room; he was sure of that. It had been at the end of his fourth year when he had begun to realize he was advancing farther than many of his professors. It had been a revelation that changed him. It was a revelation that had planted the seed in his mind that maybe he would one day be capable of achieving things that had once been mere dreams.
+
+But if he wanted to see those dreams blossom into reality, he would need to conquer this. Everything he wanted would take more than ability; it would take boldness and courage. How was he to begin making progress on those worldwide ambitions if he could not will himself to do this?
+
+Gellert looked down at the boy once more and allowed the pent-up anger and agony he had been suppressing all day to seep through self-made cracks in his Occlumency. This was his reminder; it was why he had to do this. There had to be a better solution than suppressing everything and allowing it to destroy him when he could hold it in no longer. There had to be a better alternative to the crushing pain in his chest and pangs in his stomach every time he pictured his father's body lying lifeless in a coffin exactly one year earlier. There was a better solution and he was going to find it because he knew that no one else could.
+
+He closed his eyes and crushed every one of his apprehensions with but a thought and raised his wand. His hand did not so much as tremble as the long, dark stick of wood slowly turned to point directly at the kneeling boy's forehead.
+
+"Legilimens!"
+
+Memories flashed through Gellert's mind with the speed of blinking lights. It was like the rush of colours and shapes one experienced when travelling via portkey, but every one of them was a thought or a memory that Gellert swiftly deciphered. It had taken a great deal of practice to master the offensive branch of the Mind Arts, but it had been a boon unlike almost anything he had ever learned before. And if it would allow him to do this...
+
+He pulled his attention away from the thoughts and memories and pushed deeper into the boy's mind. He didn't need to see what the brain was projecting --- he needed to see *how* it was projecting. Then he would go deeper once more. *Seeing* was not going to be enough. *Interacting* was what he needed to do.
+
+Gellert focused on his active streams of thought brought forth via Occlumency and directed several of them to work on guiding the boy's memories and thoughts towards the most painful things he had ever experienced. The rest of Gellert's brain power turned further inwards and shifted his attention to not his thoughts, but the things that caused the sensations those thoughts brought forth. He couldn't see the neurons, exactly, but he could feel them. He could feel their current and could tell what they were doing on an instinctual level. He could feel them flare at the memories of pain and distress and he took hold of that reaction and did something akin to twisting as he warped it to fit exactly what he needed to accomplish...
+
+Pain unlike anything he had ever imagined washed over him. He thought someone had cursed him from behind for a moment, but then he realized it was his other, independent streams of thought guiding the boy's memories. It was not his pain he was feeling, but that of the student whose mind he occupied. Gellert tried to block it out, but he couldn't. It was so intense that not even Occlumency could protect him. He pulled back and out of the boy's mind with a single scream as he fell backwards and twitched for a minute on the floor as the other boy screamed his throat hoarse and convulsed.
+
+Panic was flashing through Grindelwald's mind as he managed to push himself up to his knees. The world spun all around him as he did so and a reddish haze of pain seemed to cloud his vision like a crimson veil of mist.
+
+Or maybe his vision was just blurred and he was seeing the blood coming from the other boy's skull. His spell had left no physical damage, but the pain his counterpart was experiencing was so intense that he was raking at his own skull so hard he had torn much of the skin away, fingernails seeking to end pain they could not reach. Blood spattered the floor like grotesque droplets of rain. The streams were growing thicker and thicker as the boy's desperate clawing continued. Gellert knew that if he did not intervene soon, the blood would flow like a crimson waterfall and the boy might be lost forever.
+
+His arm felt as though it weighed twice his total mass and he just barely managed to lift his wand and call forth a vibrant flash of red light. He heard the boy's body slump to the floor but saw none of it; blackness had closed in on all sides and he'd crumpled as all thoughts of panic and sensations of pain ceased in one single instant.
+
+Harry awoke with a gasp and became immediately aware of bile rising at the back of his throat. A cold layer of sweat coated his flesh. It had been quite some time since a memory from Grindelwald had shaken him, but this one had done it. He had become accustomed to them. They had just become normal to him, but they had not been like this. He had been grudgingly enjoying watching Grindelwald progress through Durmstrang with unmatched prowess. He had seen him cast dark curses in those memories, but this? This was entirely different... it just felt wrong.
+
+He leant over the side of his bed and felt the acid and chunks of half-digested food come spilling forth. He was shaking badly and a chill gripped him tight as a vice. It was like a bitter wind was tearing at his bones, yet the sweat still coated him.
+
+What he had seen was unlike anything that had come before it. The memory of Wylla Nurmen's execution had been the most graphically disturbing thing Harry had ever seen. It had left scars on him that ran deeper than the skin and he knew it. The feeling of being burnt alive had been almost equally surreal, as had the crushing nothingness Grindelwald had felt after losing his father.
+
+This had been different. There had been blood, but not like before. There were no chunks of bone or mutilated organs strewn about the classroom floor like fallen autumn leaves. It hadn't even been the way the boy had screamed and clawed at his own skull. That cacophony had been disturbing in its own way, but it wasn't what bothered Harry.
+
+What bothered him was hard to describe. It was just... Grindelwald. He'd shown no regard for the boy whatsoever. He had been horrified at the result of his experiment, but Harry had not gotten the impression he was worried about the boy's condition for even a second.
+
+And the experiment itself...
+
+Harry didn't understand. He had been in Grindelwald's head and experienced his rationale, but it still made no sense to him, nor did the experiment's purpose. He had just breached the boy's mind and taken over a fundamental element of the human body.
+
+His shaking intensified at the thought. He knew that Legilimency could be used to read thoughts and see memories, but this had been something Harry had never dreamed of. It scared him more than any curse and he knew he would stop at nothing to master Occlumency now. There was no alternative after seeing that --- he would become the greatest occlumens the world had ever seen if that was what it took to keep *that* from happening.
+
+But that was the future. For now... he wanted to understand and he hated it. He hated Grindelwald, he hated the memories, he hated all of it! Most of all, he hated the way his brain made connections. He hated that he could understand where Grindelwald was coming from much of the time and he hated the fact that even now, after seeing something so sick and twisted, he was not so much repulsed as drawn in.
+
+The thought scared him...
+
+Harry closed his eyes and slumped back on his pillow, fingering the chain he had grown accustomed to sleeping with all the way back in the summer during the weeks when Grindelwald had helped him master the ability to wandlessly unlock doors.
+
+His eyes were suddenly open again, but he was not in the Slytherin common room. He was in a dark square of a room with so little light that he could hardly make out the gaunt figure sitting on the room's only bit of furniture.
+
+"So you have returned," Grindelwald said with a thin smile. "I knew you would."
+
+"Why?" Harry asked, his voice a desperate croak hardly louder than a whisper.
+
+Grindelwald made a tsk tsk sound. "Do not waste your words. Words are weapons more powerful than any spell and more versatile than any stick of wood. Use them correctly. Do not ask foolish, open-ended questions." His eyes found Harry in the oppressive darkness. "Unless, of course, you are trying to draw more information out of me. If that is the case, I have overestimated you."
+
+"All of it," said Harry. "Why did you do that to the boy? Why were you so obsessed with magic? Why are you showing me all of this?"
+
+"Three very different questions," said Grindelwald. "The boy meant nothing to me and I did not believe I could fail. I was young and arrogant. I did not believe for a single second that my masterfully constructed technique would prove anything less than perfect."
+
+"What were you trying to do? I... I didn't get it."
+
+"No, I doubted you would." Grindelwald stood to his feet and walked towards his cell's window. It was barred, just like the door, but it overlooked the shimmering surface of a frozen lake.
+
+"Is that... Lake Königssee?"
+
+Grindelwald nodded, but he did not turn back to Harry. "Do you know of the Mind Arts?"
+
+"Yes," said Harry. "The incantation you used was Legilimens. It creates a link to use Legilimency."
+
+"It does indeed. The mind is a very complex thing. It can do much more than present assailants with tales and truths. It is a powerful thing and that power can be harnessed. That is what I sought to do. Can you guess why?"
+
+"Your father's death. It was bothering you; you were thinking about it."
+
+"Yes, but also no." Grindelwald had yet to turn and face Harry. Still he looked out over the lake far below them and at the shadowy outlines of the mountains that surrounded it. From this vantage point, they loomed above even the highest of their peaks. "There is a technique used by practitioners of Occlumency who wish to guard their mind against weakness. It allows the user to suppress all emotion once it is mastered."
+
+"But that wasn't what you were doing."
+
+"It was not. That was what I had been doing for many months." Grindelwald's fingers drummed on the sill of the window. They were long and skeletal. All that made them up seemed to have faded away over time. His skin seemed to glow in the darkness and appeared as thin and frail as torn parchment.
+
+"I still don't get it."
+
+"I felt nothing for a time and feared that I had lost what it meant to be human, but it took me over in due time. My father was all I had. You saw the spiteful incarnation that called herself my mother and what she did. When I was a boy, I carried so many delusions. Delusions that I would live happily with my father for the rest of time. Delusions that the man who had saved me so bravely was untouchable."
+
+He turned slowly back towards Harry for the first time. "It was foolish of me to think such a thing. Death is a shadow that looms over the world. Its tendrils will uncoil every so often and touch whomever it pleases. It has no mercy and no judgement. It does not care who you are or what you have done. I learned that all those years ago and it is a lesson I kept."
+
+"But you tried to beat it. In the Durmstrang library... you were reading about necromancy after your father died, and of the stone from the story your father read to you."
+
+"For a time. I was foolish, as I have said. Death cannot be cheated so easily as casting a spell, nor do I believe it could be cheated by turning over a stone."
+
+"But you wanted it, didn't you? The stone, I mean?"
+
+"Oh, yes... I wanted it very badly. But I wanted them all. The Deathstick, the Reaper's stone, Death's own Cloak... I wanted them all. Only by possessing all three could one ever hope to master death."
+
+"You believe it, then?" Grindelwald raised an eyebrow; Harry could hardly see it, but the hair was white and stood out in the blackness of the cell. "I went and found a copy of the book that was translated into English in the Hogwarts library. It said that by having all three---"
+
+"That one would be the master of death. Yes, yes, I have heard that said."
+
+"And you believed it?"
+
+"I do not believe that possessing the artifacts makes one immortal. That is nonsensical; merely holding something does not grant one power beyond measure. I simply believe that the Deathly Hallows were unearthly in their powers and that by mastering all three, one might gain the power to fend off death for a time." He shrugged. "It is said that Ignotus Peverell was only claimed by the Reaper when he stepped out from under the very cloak the entity had given him. I think the facet of the story which contains Death to be a falsehood, but metaphors can be assumed and truths can be drawn."
+
+"But what about what you were doing to that boy?"
+
+"Ah, yes, getting back to the point, I see. My father's death struck me hard after a time. I detested the feelings that loss brought down upon me. I was locked in the pursuit of greatness and I could not afford such distractions."
+
+"But why attack that boy? Why not just use Occlumency like you said?"
+
+"A novice at best, I see." Harry blushed, but Grindelwald went on without paying him so much as a glance. "You do not simply turn *off* emotions. They define us; they make us human. If I had nullified grief for the rest of time, I would have ceased to be who I am."
+
+"Then what is it you had been doing?"
+
+"The suggested methodology is to suppress the emotions whilst you need to focus and allow them to slowly drip through the cracks you form later on. If you allow them to build for too long without nullifying them all together, they will surge forth in a great wave and drown you."
+
+"So you tried something else?"
+
+""I did. The conventional method was unsatisfactory. It did not meet my needs. I could not afford distractions and would never allow myself to be weak again after what it had cost me in my youth, yet if I was not human, the greatness I was chasing would be for naught. It was a perplexing dichotomy for a time, but I was so certain I had found the answer by the moment you saw me in that room had come. I was sure the way was to feel the emotion but to feel none of its effects. To allow it to exist and flow, crashing against your mind but not allowing cracks to form and spread. I was sure of this and I was certain I could do it. It would take altering the nervous system and some experimentation with particular neurons, but I thought it was possible."
+
+"You were wrong."
+
+"I was not. I found out many years later that it was indeed possible, but it would not achieve what I desired. It is of no matter. What is done is done."
+
+"What about the boy? What happened to him? Was anybody able to fix it?"
+
+It was hard to tell in the lightless cell, but Harry thought the corners of Grindelwald's mouth were threatening to tug upwards. He thought he saw smugness in the man's eyes, but he couldn't be sure.
+
+"The expert they called forth was the foremost practitioner of the Mind Arts in Europe, they said." Grindelwald's eyes gleamed. "He was utterly perplexed and to my knowledge, the boy never recovered."
+
+Harry felt as though he would throw up again. "That's it? He never recovered? You don't even care!" He spat the last words at Grindelwald as though they would cause him physical pain, but they seemed to roll off of him like streaming water down a sheet of glass.
+
+"He is of no consequence. He was all too willing to leave me crippled for life and he had no role to play in what would come. The world was better off without him; he was of no value. I took no pleasure in what happened to him, but it has never kept me up at night. His incapacitation changed nothing that concerned me."
+
+"Why are you doing this? You obviously don't care about anyone else, so why are you showing me all of this?"
+
+"Because you are different. I have answered this before. You can change the world in ways he never could. Your star shines brighter than those I snuffed out. Surely, you will see the wisdom in my work. You have seen but a taste of what drove me towards greatness and the pursuit of peace and tranquillity."
+
+"You can keep it!" Harry spat at him. "You can keep all of it! I'm done with this... I'm done with you."
+
+Grindelwald's expression went blank. "What has inspired this?"
+
+You're doing things to my mind... you're changing me. I think differently now than when I started seeing the memories." His posture had straightened and he was staring daggers at Grindelwald, his eyes alight like emerald fires. "I won't let you brainwash me like you did all those people who fought for you. Stop sending me these memories --- I'm *done*."
+
+Grindelwald looked at him for a long time; not moving once to even blink throughout the silence that lay heavy between them. "If that is what you wish," he said softly, and the world around Harry faded to black once more.
+
+***December 21, 1992***
+
+***Malfoy Manor***
+
+***8:56 PM***
+
+Lucius's office was dark and had no windows. Diana had no doubt her father could have conjured copious amounts of magical light had he desired to, but he hadn't. The only light in the room was a lantern that flickered on his desk. It sent patches of light glaring across Lucius's face, turning the regal features into something more ghostly and skeletal-looking. Shadows seemed to reach out from the flame in tendrils, pool on the floor, and leap here and there about the room. It was an intimidating sort of atmosphere and Diana wondered whether or not those were her father's intentions. Lucius Malfoy was not a man to miss out on such subtle details.
+
+"Do you think the boys' relationship is mendable?"
+
+Diana knew he was referring to Draco and Harry. Her brother had been instructed to stay at school over the holidays, but Diana had been allowed to come home under the pretence of attending several social events with her father as his heiress.
+
+"I think so." She spoke quietly and chose every word with great caution as she looked up to meet her father's dark grey eyes. "Neither of them have any real problems with the other as a person."
+
+"Then why does the conflict exist?"
+
+"Harry is upset because he feels that Draco betrayed him. Draco is just too stubborn to admit he was wrong twice." She rolled her eyes. "Especially because this time, he let jealousy ruin everything."
+
+"It is an unattractive trait he will need to curb in the near future. I will not have a Malfoy letting such petty things bring them down. He has no reason to be jealous over something as worthless as a Quidditch position."
+
+"He's still a child."
+
+"The time for Draco's childishness is at an end. It will no longer be tolerated. Changes are coming very soon. Draco will need to grow up very fast if he wishes to progress in the world after these changes take place."
+
+"Do you want me to talk to him once I'm back at Hogwarts?"
+
+"No. I want to see how Draco reacts without prompting. It will be a test. You carried him through his friendships last year and he learned nothing. A firmer hand is needed here. The time for coddling has come and gone."
+
+Diana twirled a lock of blonde hair around her finger as she tilted her head to the side. "May I ask what these changes you keep talking about are, Father?"
+
+"It is better if you don't know. Enjoy your innocence while you still can. We will speak about things this summer."
+
+Diana dipped her head. "Was that all you wanted to talk to me about?"
+
+"No." Lucius opened a drawer of his desk and snatched his wand from its surface. He flicked it and a sheet of parchment came drifting up and into Diana's hands.
+
+She skimmed it quickly. "That's... interesting," she said, "and I wouldn't have ever guessed so many people read the *Quibbler*, but what do newspaper statistics have to do with anything we've discussed?"
+
+"It isn't the statistics that concern me, it is what they represent." Lucius leant forward in his chair and folded his hands on the surface of his desk. Diana had seen this before and recognized it as her father's favourite lecturing posture. "Perception is a weapon that cuts much deeper than any spell. The best generals position themselves to win a war before a single shot is ever fired."
+
+"Is that what you're talking about? When you say that changes are coming, are you talking about a war? Are the old forces trying to come together again?"
+
+"The why is not important. All I need is results."
+
+Diana blanked her expression and met her father's eyes. "What do you need me to do?"
+
+Lucius pointed to a specific number beside each of the major newspaper publications listed on the sheet of parchment. "I trust you understand what that figure means beyond its monetary implications?"
+
+"Control." Diana's answer came instantly and without any hesitation.
+
+Lucius nodded. "You might notice that the number beside the publication we've mentioned doesn't imply a great deal of control." Diana nodded slowly, starting to understand where her father was taking this conversation. "The lunatic who runs the rag won't take money, so I would like to gain control in a different way." The spark that flashed in his grey eyes looked like a jagged line of lightning jutting across a stormy sky. "I do believe the owner of our targeted investment has a young daughter at Hogwarts..."
+
+***December 25, 1992***
+
+***The Slytherin Common Room***
+
+***8:42 PM***
+
+An odd tingle ran up Harry's spine when he stepped into the Slytherin common room the night of Yule. The day had dawned bright and sunny and he had enjoyed much of it out on the grounds with Cassius after they had opened their gifts that morning. They had only retreated back into the castle when the sun began to fall behind the horizon and its light began to wane. That had been their cue to come inside and clean up before that evening's feast in the Great Hall.
+
+That had finished some time ago and Harry had parted ways from Cassius as soon as it had. He had gone off to do his prefect rounds whilst Harry had decided to explore the castle under the guise of his invisibility cloak. He was finding more and more secrets the longer he explored. Every time he thought he had covered every inch of the castle, something new and hidden leapt out at him and renewed his interest in his explorations.
+
+Cassius had not yet returned to the common room by the time Harry entered, so he strode towards an armchair near the fire. There was an empty one beside it he would reserve for one of the only friends he had left.
+
+The common room was nearly empty apart from him. Almost all of the Slytherins had gone home for the winter break. Harry was still somewhat taken aback that Cassius seemed not to, but he never asked why. His older friend had never asked him, either. It was a sort of unspoken pact between the two of them, one that told Harry all he needed to know about the reasons for Cassius's willingness to stay behind in the drafty dungeons while the others returned to warm and spacious family manors.
+
+The only other students in the common room sat not too far from Harry. They were Draco, Crabbe, and Goyle. Harry thought it was odd that Draco had stayed behind when his sister had gone home, but he tried not to think about it. Trying not to think about Draco was much easier than actually thinking about him. It caused less frustration and didn't usually result in a headache.
+
+Harry unwittingly cast his eyes towards the group his thoughts lingered on and a snippet of conversation reached his ears.
+
+"You know, I'm surprised the *Prophet* hasn't reported all of these attacks yet." From Harry's vantage point, he could not see Draco, whose back was turned away from him, only Crabbe and Goyle.
+
+"It is weird," muttered Goyle.
+
+"I suppose Dumbledore's trying to cover it up. I would too, if I were him. He'll be sacked if the attacks don't stop. Father will make sure of that. He's been sick of Dumbledore's rubbish for years and won't put up with it if he has an excuse to get rid of him." Harry could practically see Draco sneer even with the boy's back turned towards him. "A decent headmaster would never let in slime like Creevey. Personally, I'm rooting for the Heir, whomever it is. The fewer muggleborns around here, the better."
+
+Harry did not fail to miss the way Draco had avoided his typical slur for muggleborns. He felt a leaping sensation in his heart for less than a second before something else caught his eyes.
+
+He saw... something flash across Goyle's face. It was fast, but he caught it and played it over again in his mind. It was anger. Why had Goyle looked angry? He and Crabbe usually drunk up everything Malfoy said the way a man lost in the desert might hopelessly try and suck up every last drop of an imagined oasis.
+
+So why did Goyle look so angry for what had to have been at least a second?
+
+It could have been nothing, but Harry knew it wasn't. He couldn't explain how he knew, he just did. It was the same feeling he'd had the morning he had asked Draco not to sell out Hagrid and the dragon; the morning he had suspected his former friend's betrayal but failed to act. It was that same feeling again, and it was screaming at him more insistently than ever before that something was wrong and unnatural.
+
+Draco's voice practically pierced his ears as he mocked Creevey in a voice so high and shrill that Harry feared any glass in the castle might shatter into a million broken pieces.
+
+He watched Crabbe and Goyle very closely throughout Malfoy's tirade and his suspicions only mounted just as Malfoy began inquiring after the both of them for failing to laugh at his impression.
+
+Harry squinted at the both of them. It felt as though he was trying to burn a hole straight through them with his stare alone and Goyle must have noticed. He looked away from Draco and met Harry's eye...
+
+Harry jolted so hard that he almost leapt up out of his chair. His perspective had shifted in the moment before he broke eye contact. He had not been looking at Crabbe and Goyle, but at himself and Draco. The sensations he'd felt... they were not his own. He was not feeling so tense, anxious, and irrationally angry.
+
+That had been like nothing he had ever experienced before... yet it was very similar to something he knew very well.
+
+He had somehow performed Legilimency.
+
+As crazy as the thought was, Harry could think of no other realistic answer to how the incident had come to be. There was no other magic he knew that could accomplish anything of the sort and he was very sure that what had just happened was firmly rooted in magic of some kind. There was also the fact that Goyle had gone pale. He was staring at Harry with eyes as wide as saucers and Harry was watching him even more intently now.
+
+Something was most definitely wrong.
+
+"I just wish I knew who was behind it all," Draco was saying. "I could help them... not that they seem to need it. I'd have at least liked to send them a card and some flowers."
+
+"You must have some idea who's behind it?"
+
+That had been Crabbe and it made Harry even more certain something was off. Crabbe was quiet and generally only spoke when spoken to. It was like his personality along with Goyle's had just completely changed. Almost as though they weren't even the same people...
+
+*"Polyjuice Potion is illegal because it allows one person to take on the exact appearance of another. I doubt even any of you are thickheaded enough to miss the potential implications of such a potion."*
+
+It all made sense as soon as the memory of Snape discussing polyjuice potion in one of their first lessons of the year floated to the forefront of Harry's mind. It might have seemed insane a month ago to think that Hogwarts students would use an illegal potion to try and get to the bottom of something, but that had been before Daphne had sought to poison him.
+
+Come to think of it, Snape's description of Veritaserum from that same lesson seemed strangely reminiscent of the colourless, odourless liquid that seemed to be in the goblet of pumpkin juice he had kept hidden in his dorm ever since that fateful morning in the Great Hall.
+
+"You know I don't, Crabbe," snapped Malfoy. "Father won't tell me what happened the last time the Chamber of Secrets was opened. All I know is that it was fifty years ago and that a muggleborn actually *died*. If the attacks keep going, it's only a matter of time before it happens again." He paused for a moment and Harry had no doubt his expression had shifted to something malicious. "Here's hoping that whatever the hell is attacking students gets Granger."
+
+That was when Harry was sure. The look in Goyle's eyes... it told him everything he needed to know. He met them in that same moment and felt a sudden, irrational jolt of panic.
+
+"But you have no idea who could be behind it this time? Not even a guess?" It was the person who appeared to be Goyle who spoke this time, but the tone was off. Whether it was because of Harry's intervention or otherwise, he wasn't sure, but he could see where the conversation was headed as soon as Draco cast a glance in his direction and he was going to stop it.
+
+"Well... there is Harry. That night in the common---"
+
+"Stupefy!"
+
+Harry reacted without thinking; panic had gripped him and his body had taken over. Red light blazed on the tip of Harry's wand and rocketed an inch past Draco's head before slamming into the chest of the person who was meant to be Goyle. They slumped from the armchair they had been sitting in and fell limply to the floor. Crabbe reached for his wand and tried to scramble to his feet, but Harry's wand was trained on him before he could make so much as a move.
+
+Curses flashed through his mind, swift as the impressions he'd gotten when he had somehow performed Legilimency on the imposter he was sure had been Hermione Granger. The Cutting Curse, the Bludgeoning Curse, the Gouging Curse, the Blinding Curse Yaxley had tried to use against him, and so many others came to mind, but he hesitated.
+
+Harry hesitated as the memory of blood flowing across a pale white coat of snow swam in front of his mind's eye. He hesitated at the memory of a boy screaming and clawing at his skull.
+
+*"He is of no consequence. He was all too willing to leave me crippled for life and he had no role to play in what would come. The world was better off without him; he was of no value. I took no pleasure in what happened to him, but it has never kept me up at night. His incapacitation changed nothing that concerned me."*
+
+Grindelwald had been all too willing to fire curses indiscriminately at those he cared naught for, but Harry needed to be different. A shiver still ran up his spine every time he thought about the way his thoughts had changed since Grindelwald had begun sharing his memories. He wasn't Grindelwald, he wasn't a murderer... he had to remind himself of that.
+
+"Go!" he spat at Crabbe, whom he supposed was likely Weasley. "Get out or I'll curse you! I don't want to hurt you --- go!"
+
+The boy did not need to be told twice. He muttered the incantation for the Levitating Charm and floated the unconscious form of Gregory Goyle out behind him.
+
+Harry watched them go before turning to Draco, who was watching him with complete and total awe. "In the future," he said, "maybe watch your friends a bit more carefully and if they're acting completely different than normal. Maybe don't go and spew off a bunch of sensitive information." He shrugged. "Just food for thought, it might backfire on you next time."
+
+He was halfway to the dorms when Draco's voice called after him. "Harry!" He turned and raised a single eyebrow.
+
+Draco looked as though he wanted nothing more than to shrink back into the armchair he rested on, but he restrained the impulse and leant forwards. "Thanks for the help. I... didn't deserve it."
+
+Harry just nodded, turned, and made his way back towards his dormitory. There was far too much on his mind for him to be thinking about how he felt regarding Draco and that whole situation. That was a mess he just did not need to revisit right now.
+
+***January 1, 1993***
+
+***Malfoy Manor***
+
+***12:00 AM***
+
+Harry could hear... something. It sounded almost like crazed chanting, but it was muffled... everything was muffled. He thought he could hear something more terrible, too. A high, agonized scream that seemed to come from everywhere but was drowned out. All around him was darkness and moving seemed next to impossible... until...
+
+Pain wracked his body as something solid came up to meet him. The chanting ceased then and hurried footsteps echoed as they drew near to him. Nothing was muffled now and there was light, though it was dim.
+
+He tried to struggle to his feet but he fell. His legs did not seem able to support his weight and his head seemed far too large... it was almost comical, like he wasn't human, but it was right --- he knew it was right.
+
+He noticed something else as he tried feebly to stand once more. Aside from the stone he had impacted against, he was lying in something wet, red, and sticky.
+
+Blood.
+
+It was everywhere. He had not seen so much blood in... well, a touch over eleven years, he supposed. There was so much of it that it appeared as though the room had flooded with crimson water, but it smelled of blood. Its scent was overpowering and he almost choked on it before warmth enveloped him.
+
+Harry felt himself lifted out of the blood as his perspective changed. Finally, he was at an appropriate vantage point. Blood was everywhere. It was thicker in some places, both around the woman's legs and where it had been used to draw runes of his own design. It splattered the floor in a great circle around the prone woman. She was still bleeding profusely, but Harry knew she was already dead.
+
+Harry's misshapen lips curved upwards into a cruel smile as he opened his mouth to speak. The voice that escaped him was high and cold. Malice dripped from every syllable as he peered from the blonde woman holding his infant-sized body to the small cluster of men in black robes and white masks gathered all around them.
+
+"My friends." His throat tore with the effort of speech but he persevered --- he would always persevere; he had beaten death, no pain on this Earth could halt him. "It has been so long, yet you alone stayed loyal. Your loyalty will be rewarded in time... when we craft the world anew." Something moved down below and Harry cast his eyes down towards the floor. It was a great serpent slithering around his carrier's heels and eyeing the still-bleeding corpse not far away. "**Nagini,**" he hissed, "**feast.**"
+
+A scream tore free of Harry's lungs and rushed up his throat, screeching out of his mouth as he bolted upright before falling straight out of bed. The vomit rushed from him and drenched him; he was too weak to shift his head... his head, oh, Merlin, it burned! It burned as nothing had ever burned before. He could not even think of what had woken him through the pain. He knew nothing of the dark room or the high, cold voice. All he knew was pain and the dazed pondering of whether his scar would explode.
+
+**Author's Endnote:**
+
+**A lot went unsaid in this chapter, but I have faith in my readers to figure it out without me spoon-feeding it to them. That applies to not only the last scene, but Harry's refusal to truly lash out against the imposters. I'm aware that narrative decision will frustrate some people, but in a way, that is kind of the point. You will see what I mean by the year's end.**
+
+**Before I sign off, I would like to reiterate something I've already said once in an earlier AN.**
+
+**Please, do not waste your time asking me about pairings. I am very happy to respond to PMs and I spend hours each day talking with the folks over on my Discord server, but I have no interest in discussing the pairings of my stories and I will not reveal them. There will be a pairing in this story, I know what it is already, and you will all find out much later. Let's leave it at that.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors Idefix and rawmeat898 for their corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Everyl-level patron, Jonathan Weasley, and my Psychic-level patron, ShadowWolf, for their incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, October 31ST, 2021. Or you can read it RIGHT NOW by joining my Discord server! The next TEN CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. The next chapter is available there RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next NINE CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY! The link to that can also be found on my profile or on my website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Year 2: The Erosion of Innocence**
+
+**Chapter 20: Wounded Lions**
+
+***January 3, 1993***
+
+***Gryffindor Tower***
+
+***10:31 AM***
+
+Ron swerved hard and to the left in mid-air and the bludger sailed straight past him. There was something truly exhilarating about flying. Nothing else quite compared to the feeling of streaking unassisted through the sky. The pitch sprawled out far below them, so smooth and green that it could pass for an expanse of emerald sea.
+
+The roar of the crowd was deafening. This was not Hogwarts, but a different, larger venue packed to capacity. The very air seemed to vibrate as the crowd's collective roar mounted and Ron caught a glimpse of gold from the corner of his eye and dove.
+
+His robes whipped in the wind as he rocketed down towards the pitch. They were red like always, but the shade was different and he knew without looking that there was no lion on his chest, but a Union Jack.
+
+The wind whistled in his ears so loudly that even the noise of the crowd seemed to dim, but Ron could still sense the opposing seeker nearby. He was actually closer to the snitch, but Ron knew he would get there first. His path was more direct and his movements more precise.
+
+The crowd was truly in a frenzy now as Ron raced to the snitch. They could be heard again over even the whistling wind, but the sound they made was odd. Ron could distinguish no cheers or boos, just a sharp and persistent sound, almost like someone was knocking on a door.
+
+Ron ignored them and their odd sounds --- they mattered naught to him. Not with victory so close. It was right there! Just another inch and he would have it! The other man was reaching, but he was too far away. Ron could feel his nails scrape uselessly against the back of his hand as he felt the cold metal against his palm and made to close his fingers... but Merlin, was that sound ever loud\...
+
+"Ron! Ron! Are you there? Wake up!"
+
+Ron jolted awake so fast that he sat bolt upright... and then immediately let out a loud cry of pain as he slumped back into bed.
+
+It was unlike anything he had ever felt before. It was like his nerves were on fire. Every time he demanded something of them, the flames would roar and light them ablaze all over again. His muscles felt awful. It was like they had all been tied in painful knots. The ache was unbelievable. Jolting awake had been a miraculous burst of energy. When Ron tried to sit up once more, he found himself lacking the strength to do so.
+
+"Ron!" the familiar voice called from the other side of the door to his dormitory. "Is everything okay?"
+
+"I..." Even his voice sounded like it was in pain. It was a ragged, croak of a voice that struggled to tear free from the tight grip of Ron's constricted throat.
+
+He heard the lock click then and the door swung open. "What's going on?" asked Hermione. "Ron, it's past ten and you said we were going to meet up an hour ago. What's---" she broke off then and her jaw fell open.
+
+"What?" Ron managed to croak. "W-what's happened?"
+
+"Ron... you look awful! What... what happened to you?"
+
+"Happened?" Ron had only ever seen Hermione wear that expression once before. It had been seconds prior to his sacrifice in the magical chess game far beneath the castle last June. Something must really be wrong.
+
+"You look pale as a ghost and you're shaking all over!" Ron had not noticed it until then, but she was right. Even when lying still, he trembled. But no... trembled wasn't the right word. Twitched would be more accurate. His muscles twitched of their own accord as if an electric current was ceaselessly streaming through his body.
+
+He opened his mouth to respond, but nothing came out. Ron closed it again and resisted the urge to let his eyelids fall shut with it.
+
+"Stay here," said Hermione, "something seems wrong. I'm going to get a professor!" She was gone as fast as she had appeared and Ron could do little more than stare vacantly out of the door she had just left.
+
+***That night, in the Slytherin Common Room...***
+
+Harry watched with keen interest as the returning students piled back into the common room after a long winter break. There was much bustling and even more chatter. The mood seemed light and weightless as freshly fallen snow, but Harry was less optimistic.
+
+The last few days had been extremely hard on him. At first, he had suspected that Grindelwald may have sent him that final vision in retaliation for his demand that the former dark lord cease his efforts. The more Harry considered that theory, the less he believed it held any weight or value.
+
+He had only vague memories of what he had seen, but what he remembered did not match the theme of Grindelwald's visions. Nothing about it made him think and everything Grindelwald had ever sent him had something captivating about it. The vision that had last woken Harry was different. It was just... grim. There was no more to it than that, sans the horrible pain that had greeted his stirring.
+
+None of Grindelwald's visions had ever made him feel like that. It almost felt as though it was his scar that burned, but he knew that made no sense. Wherever the pain came from, it still lingered, if barely. That first day, it had been almost blinding and without rest. Now it was bearable; a barely noticeable prickle of discomfort every now and then. What was so interesting to Harry was that nothing he seemed to do mattered. No matter how much water he drank or how vehemently he avoided light, it persisted. The spikes of pain followed no observable pattern as far as he could tell. It seemed to have nothing to do with light or motion. Something about it just seemed... wrong.
+
+But what was he to do? He would be laughed out of the hospital wing if he complained that his scar had been more painful than anything else he had ever felt. Madam Pomfrey would think he was mad and perhaps he was. Perhaps he had imagined the whole thing and Grindelwald had simply driven him to the point of insanity. Perhaps the pain in his skull was just a direct effect of remembering the pain Grindelwald had felt second-hand as he tore ruthlessly through the other student's mind.
+
+The pain was less pressing now and he tried not to think of the final vision, or the one of Grindelwald tearing the boy's mind to shreds. Both of them made him nauseous in ways so different from one another. The conversation he had shared with Grindelwald... it warranted no further consideration.
+
+What did require more attention was the fiasco on Yule. Students using polyjuice potion was a pretty big deal. Especially when those students --- infamous for wild and dangerous adventures --- had clearly been fishing for information. They had almost gotten it. Worse still, it had almost been his information. Had he not stepped in when he had, Harry was sure Weasley, Granger, and whoever else they told would by now have been aware that he was a Parselmouth and therefore the most obvious suspect in the mysterious case pertaining to the Heir of Slytherin.
+
+Harry only knew one Hogwarts student capable of brewing potions as advanced as the one used in the common room. Well, perhaps others could have brewed it, but to think of it and know how it was made?
+
+He watched Daphne Greengrass as she conversed with her group of friends. What was it she wanted? Was it possible she was aligned with Weasley and Granger? He remembered thinking back on what Snape had said about not only polyjuice potion, but yet another, equally illegal concoction.
+
+*"Pathetic, all of you. The most powerful truth serum in the world is Veritaserum. It is a colourless, odourless liquid, which makes it ideal for subtle use..."*
+
+The way he described Veritaserum was eerily similar to whatever had been put in Harry's pumpkin juice. He still had the liquid, poured from his goblet into a stoppered vial and stored in his trunk.
+
+If it really had been Veritaserum, Greengrass clearly wanted something from him. Or to know something. Weasley and Granger had been fishing for information about the Heir of Slytherin. Harry had decided some time ago that Greengrass must have thought him the Heir and sought vengeance after Tracey's petrification. It was the only thing that made sense and if that was the case, her acting through others added up. Especially after Harry had gone and revealed himself as a Parselmouth to the rest of Slytherin House.
+
+Greengrass must have felt his stare, for she looked at him and Harry felt a sharp stab of pain behind his eyes. It was not the same pain he had been feeling for days, but something different. Something that coincided with the momentary widening of Greengrass's eyes before she adopted a contemptuous expression.
+
+Harry almost shivered. The older students had been a pain in his neck all year, but he suspected they would now leave him alone after the revelation that he shared their founder's gift. Daphne Greengrass would do no such thing and Harry privately thought she was more dangerous than all the upper-year bigots combined.
+
+***Meanwhile, in the hospital wing...***
+
+Ron gritted his teeth as another agonizing tremor wracked his body. The pain had eased some since Madam Pomfrey had forced a strange and foul-tasting liquid down his throat. Her expression while doing so had stuck in his mind. Never had he seen her look so worried. She looked almost panicked despite reassuring him all would be well and that there was nothing to worry about.
+
+Hermione had returned soon after leaving his dormitory with Professor McGonagall in tow. She too had looked strangely concerned before conjuring him a stretcher and floating him down to the hospital wing. Finding the right potion to ease the pain had taken hours. The matron had tried vial after vial to no avail before deciding on the final one Ron had swallowed. Of course it had to be the foulest one that worked...
+
+"Good evening, Master Weasley."
+
+Ron almost leapt up --- or, tried to, at least --- when the new and vaguely familiar voice jolted him.
+
+"P-Professor Dumbledore?"
+
+"Dear me. I apologize for my suddenness in arriving. I suppose it must have caused quite the scare."
+
+"It's... all right. Uh... should I call for Madam Pomfrey to get you a chair?"
+
+Dumbledore smiled. "You're kind to offer, but there is no need." The old man slid a wand from his sleeve and gave it a casual flick, summoning a comfortable-looking armchair made from fine-looking leather from nowhere. "Here we are," said Dumbledore as he took his seat and interlocked his long, thin fingers. "You have given us all quite the scare today, if I may say so."
+
+"Uh... sorry?"
+
+"My dear boy, it is through no fault of your own. It is simply the truth."
+
+Ron had no idea what Dumbledore meant. Given people a scare? Did this have something to do with the expressions worn earlier that day by the matron and Ron's Head of House?
+
+"I... don't know what you're talking about, sir."
+
+"Don't you?" asked Dumbledore with a deep frown. "May I ask you some questions, Master Weasley?"
+
+"Uh... if you'd like."
+
+"Thank you." Dumbledore leant slightly forward in his chair and Ron could swear the blue of his eyes had grown brighter in the dim light of the hospital wing. "Describe how you felt after waking this morning for me, if you would be so kind."
+
+"Awful," Ron remembered with a shudder that sent a sharp shock of pain so violent through his body that he groaned aloud. Dumbledore sat patiently and waited, though he watched him very closely. "Everything ached. My muscles just wouldn't work; they felt so sore and weak, I could barely move."
+
+"And you can remember nothing that would explain such pain?" Ron shook his head; he had felt perfectly fine last night and it wasn't as though he and Hermione had done anything interesting since their failed attempt to interrogate Malfoy in the Slytherin common room. "What was the pain like, exactly?"
+
+"What was the pain like?"
+
+"Yes. Was it a dull, throbbing pain? Or sharper; more like a stab or a violent shock?"
+
+"More like that, yeah. It's... hard to explain. I've never felt anything like it before."
+
+"No," mused Dumbledore, "I doubt you have. Tell me, Master Weasley, can you remember anything of note from the past few days? Anything from last night, in particular? Anything odd or out of the ordinary? Anything at all?"
+
+"No," said Ron. "The last few days have been perfectly normal. I just remember going to bed last night, dreaming about Quidditch, and then waking up."
+
+"Do you usually remember your dreams?" Ron had to think about that. It was such an odd question and had never been something he had considered. After a moment's pause, he shook his head. "I feared not," Dumbledore said as he ran a steady hand through his long, silver beard.
+
+"Headmaster," started Ron, "what is all this about?"
+
+"Discovering the truth," said Dumbledore.
+
+"The truth?" asked Ron.
+
+"Yes, the truth. People do not simply wake up with pain so intense they cannot move. Not without reason and not pain like that which you described."
+
+"But... nothing happened."
+
+"Nothing that you remember," Dumbledore corrected gently.
+
+"What... what are you saying?"
+
+Dumbledore reached up and slid his spectacles down over his nose to look at Ron more directly. "I am saying that I believe you were attacked and don't remember the event ever taking place."
+
+Ron's eyes widened as his heart seemed to leap so violently into his throat that he thought it might spill from his mouth. "I... what? That's impossible! Why-why would anyone attack me?"
+
+"That is the question, isn't it?"
+
+"What did they do? Did they curse me? Or throw me down stairs, or something?"
+
+"I believe I know what they did." The man's voice had become grim for the first time and Ron's heart quickened still more at the change in inflection.
+
+"You do?"
+
+"I think so, yes." Dumbledore sighed as Ron waited, shaking slightly, with an expectant look about him. "Master Weasley, has your father ever told you about the Cruciatus Curse?"
+
+***January 9, 1993***
+
+***The Dungeons***
+
+***9:54 PM***
+
+Harry had been grateful for the return of classes. They had served as a welcome distraction from all that ailed him at most hours of the day. He never thought he would wish for the upper years' attacks, nor Aberforth's cruel detentions, but he lamented having so much free time this past week.
+
+He had done his best to make use of it. Large portions of his time had been spent sneaking off to abandoned classrooms to practice new magic. Curses, hexes, charms, and transfigurations all featured and Harry felt like he was really beginning to make steady progress in pulling far ahead of his peers.
+
+Not that it helped him any time he duelled Cassie. The better he got, the more pressure she applied. Harry knew that he was improving fast, but it never felt like it while duelling Cassie. She was just miles better than he would be any time soon and it showed. He did take some comfort in the way Lord Malfoy had described her. If he was to be believed, she would be one of the very best duellists in Britain by the time she left Hogwarts. That at least gave him some hope that, one day, he might reach the level he sought. Being battered around as a second year by one of the best duellists in the nation was acceptable, he supposed.
+
+This lesson had been especially brutal. Harry had pressed Cassie hard. He had a lot of pent-up frustration and the winter break had robbed him of time practicing. He was a touch spiteful and wished to make up for lost time. Pressing Cassie harder just meant that she retaliated in kind. Harry's body ached by the end of the practice, but it was the satisfied kind of ache that any who push themselves grow to appreciate.
+
+"You're getting better," Cassie told him at their lesson's end. "You're improving faster than I ever would have imagined."
+
+"Thanks. This year's shown me that I need to get better."
+
+"You have. I doubt you would have taken it to Cadmus the way you did if you hadn't improved."
+
+Harry felt heat rise up his body and take refuge in his cheeks. "I... uh, I'm sorry about that."
+
+"No, you're not, nor should you be." She sighed and swept her long blonde hair over one shoulder. "Look, Cadmus is an arrogant toerag sometimes. I'm not blind; I can see that as well as anyone else. It was his decision to start that conflict. It's now up to him to live with the consequences."
+
+"Fair enough," said Harry, blinking and unsure what else to say.
+
+"If it happens again, expect the next practice to be brutal. Earned or not, I don't appreciate seeing my little brother hurt." Her words may have had a lightness to them, but Harry knew they were no joke and that she meant every word.
+
+"I'll remember," he promised before leaving the room and beginning the trek back to the Slytherin common room.
+
+Really, he ought to thank Cadmus Yaxley. The boy's stupidity had resulted in Harry revealing himself as a Parselmouth, which in turn seemed to have driven off all threats by the upper years. It was nice walking through a corridor without worrying what would jump out from behind the next tapestry or what spell he would need to shield against next.
+
+Or so he thought, anyway.
+
+Someone did indeed step out from behind the next tapestry and Harry raised his wand instinctively and prepared to cast a shield. When no spell came, he peered at his would-be assailant more closely. Her appearance surprised him far more than any curse could have done.
+
+"Pansy?"
+
+ "Evening, Harry."
+
+It was odd how casually she greeted him. It wasn't as though they had spoken in the past three months.
+
+Theodore had stolen away to join him in the library here and there, but Harry had scarcely interacted with Pansy past the odd stolen glance. It had been maddening. She had always offered something none of the others did and he had missed that immensely in the months following his falling out with Draco.
+
+"What are you doing here?"
+
+Pansy raised an eyebrow as she looked a bit up at him. "Is it so hard to believe I just want to catch up with a friend?"
+
+"Draco's not watching you like a hawk? I'd have thought you might have tried to catch up earlier if he wasn't."
+
+"He's been... different since we got back."
+
+Harry actually frowned, beginning to walk back towards the Slytherin common room when Pansy gestured that they should do so. "Different how?"
+
+"He's more... withdrawn. It seems like he's brooding, or thinking, or something. It's... odd. It's not like Draco to not spout off about whatever's on his mind."
+
+It *was* odd of him. Harry could remember it happening before, but that had been during the scarce weeks in the fall of their first year. Looking back on it, Harry wondered whether Diana had spoken to him before each of those periods of time. They fell conveniently close to when Harry and the Malfoy heiress had spoken if his memory was serving him well.
+
+*"The Malfoys might view you as a tool, but that doesn't mean all of us do."*
+
+Daphne had betrayed him, but Harry had long since decided there was some truth in her words. How much there was had always been the question. Had Diana lectured Draco because she cared, or had it all been a ploy to maintain his friendship with Harry? He wanted to believe otherwise. Diana had been the most reliable person he had known since entering the magical world. Losing her like he had lost Draco would be pain past what he feared he could bear.
+
+"That is weird," Harry admitted, "is he sick or something?"
+
+"He's fine," said Pansy, "just sulky."
+
+"So he's not paying as close attention to you lot?"
+
+Pansy scoffed. "I doubt he knows where we are half the time."
+
+"Does this mean I can expect more drop-ins from Theodore?"
+
+Pansy huffed. "How am I supposed to know?"
+
+"Isn't knowing people kind of your thing?"
+
+"I know people and usually how they feel. That doesn't mean I know what they're going to do. How am I supposed to know how boys' brains work?"
+
+"Yeah, I guess that would be tough for you. I bet it's hard to imagine someone thinking about more than shoes or makeup."
+
+Pansy swatted at him, but Harry stepped aside and laughed. "You're a prat," she chastised, but Harry saw she could not withhold her smile.
+
+"Then you have bad taste in friends."
+
+"What was your first clue?
+
+"Draco and I. A pouty brat and the so-called Heir of Slytherin." He could feel the atmosphere change when he said it. He peered at Pansy, who suddenly looked pensive. "Do you actually think I'm the Heir?"
+
+"No," she answered at once, "but I think you're *an* heir."
+
+Harry frowned. "What do you mean *an* heir?"
+
+"You can speak to snakes, Harry. The only people who can do that are Salazar Slytherin's descendants." She looked at him pointedly. "I don't think you're going around petrifying people, but I think you could if you wanted to --- and if you found the chamber."
+
+"You actually think it's the Heir of Slytherin then? Not some older student using some obscure curse?"
+
+"I doubt it. If it was a curse, Dumbledore would have set them right by now. He's a sodding twat, but he's brilliant with magic. I doubt even Draco's father would deny that."
+
+They were drawing near to the common room now. The smooth stone wall loomed ahead like the way the face of a mountain might welcome an incoming hang glider looking for a perch to land atop.
+
+"You go ahead. I'll walk a loop of the dungeons and come back."
+
+Harry nodded. "Thanks, Pansy. It... was really nice talking to you again."
+
+"We'll have to make it happen more often," she waved and was gone as Harry stepped inside the common room.
+
+There was quite the commotion inside. Not even his entrance had quelled the noise and it had been doing that ever since he had animated snakes and set them against Cadmus Yaxley. The students all appeared to be congregated around the wall on which notices and the like were usually held.
+
+"I'll save you the effort," said Diana, walking up to him with Cassius and Cassie flanking her on either side. "They're hosting another duelling club meeting in three weeks."
+
+***That night...***
+
+Harry leant back against the wall of warmth that cradled him in its arms. The rocking motions were smooth and pleasant and he could feel his eyelids growing heavy as whoever held him hummed melodically in a somewhat familiar voice. A softly crackling fire blazed in the hearth and he could see Nagini coiled at his caretaker's feet.
+
+The effort of keeping his eyes open had just become unbearable when there came a knock from the warm room's door and the woman holding him called out in a colder, less pleasant tone of voice.
+
+"Enter."
+
+The door opened and a blond-haired man in immaculate robes stepped inside. Harry could see his eyes widen with something that looked like worry from under his own, half-closed eyes.
+
+"If our lord is asleep, I'll return---"
+
+"There is no need, Lucius," Harry said in a high, cold voice that threatened to crack on each and every syllable. "I am awake."
+
+The man hastened to kneel and bow his head. "I apologize, my lord. I did not mean to presume otherwise."
+
+"Rise," Harry commanded and the man stood to his feet once more. "What brings you to me?"
+
+"The sample has been secured, my lord."
+
+Harry felt a rush of excitement greater than any he had felt in more than a decade, minus the day he had been reborn. "Show me."
+
+The man reached a hand into the pocket of his robes and withdrew a clear vial filled to the brim with a crimson liquid Harry recognized at once. He needed not smell the vial's contents to know that it was blood. He had spilled enough of it in his time to distinguish the liquid from sight alone.
+
+"Very good," said Harry. "All went smoothly then, I take it?"
+
+"Yes, my lord. No one is aware."
+
+"Good. See that it stays that way."
+
+"Of course, my lord."
+
+"Leave me," said Harry, leaning back against the woman's chest as he smiled a thin smile. She was wonderfully warm, even if he detested the way she held him so protectively. He should not need to be protected.
+
+It mattered naught. Soon, the need for such farces would pass. Only one more step still needed to be taken. It was the most difficult of all, but he would see it through. He would see through anything necessary if it meant he could reclaim what had once been his.
+
+**Author's Endnote:**
+
+**I know this one was shorter, but I split the planned chapter into two. I think it works better for the sake of pacing and there have been a lot of chapters this year that turned out longer than I expected.**
+
+**We are getting relatively close to the end of book 2. Less than ten chapters left to go.**
+
+**In the meantime, I have posted a podcast on my YouTube channel in celebration of Halloween. It will feature not only myself, but also Sam Gabriel --- an extremely talented voice actor who has done a lot of work in this community. The YouTube channel can be found on my profile or on my website with all of my other information. The latter will come up through a generic Google search. Do check it out if you are at all interested.**
+
+**Happy Halloween, everyone!**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors Idefix, Mrs. ACI, and The Darkling for their corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Everyl-level patron, Jonathan Weasley, and my Psychic-level patron, ShadowWolf, for their incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, November 7TH, 2021. Or you can read it RIGHT NOW by joining my Discord server! The next NINE CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. The next chapter is available there RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next ELEVEN CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST THREE CHAPTERS OF BOOK 3! The link to that can also be found on my profile or on my website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Year 2: The Erosion of Innocence**
+
+**Chapter 21: Wounded Lions Part II**
+
+***January 15, 1993***
+
+***The Headmaster's Office***
+
+***9:14 PM***
+
+Tonight had been one of Harry's worst nights in Occlumency practice. Dumbledore had sat as stoic as ever, but Harry knew that there was no way the old man was not aware of his lapse this evening. Those deep blue eyes seemed to see everything. They saw through flesh and bone and seemed to pull truths from one's very soul. Harry had never sat before a man with a stare as unnerving as the headmaster's --- despite how warm it appeared.
+
+"I believe that will do," said Dumbledore, relaxing in his high-backed chair and inspecting Harry with a critical air. "What ails you, Harry?"
+
+Damned Gryffindors. For all his brilliance, Dumbledore was oftentimes as blunt and straightforward as any other Gryffindor Harry had ever met. It was off-putting sometimes. How could Dumbledore go from impassive and calculating to... this? From a chess grandmaster to a concerned old man in the blink of an eye. Dumbledore was truly an oddity, elsewise he was extremely good at playing both sides or had begun to suffer from multiple personality disorder in his old age.
+
+Harry pondered whether or not to speak. The memories sent by Grindelwald were protected under a binding magical contract. Harry couldn't share any of those, even if he wanted to.
+
+But the other visions...
+
+He was sure that the more recent visions had not been sent by Grindelwald but by another. Harry could speak about them, but did he want to? Dumbledore would surely think he was mad. One did not just claim to have dreams like what Harry had last experienced.
+
+"It's nothing," he said, keeping his face as impassive as ever.
+
+"No," said Dumbledore, "it is not." He leant forward in his chair once again. "I will not attempt to convince you to share your secrets with me, but I would like a reason as to why you wish to withhold them."
+
+"I don't think you would believe me." There was no other way to describe it. No lie Harry would have been able to come up with would convince Albus Dumbledore in such a short period of time.
+
+Dumbledore interlocked his fingers as he peered intently over his half-moon spectacles. "And why is that, if I may ask?"
+
+"It... seems impossible. Most people would just think I was going mad."
+
+"Allow me to dissuade any fears you may have. I do not think you are going mad, no matter what ails you. There is nothing you could tell me that would convince me otherwise."
+
+Harry could refuse. Dumbledore had said himself he would not be pushing for information, but was it worth it? The old man may well glean it one day from peering inside Harry's mind. Perhaps it was better to speak now and ask Dumbledore's opinion on the matter.
+
+"I've... had a couple of dreams lately that have bothered me."
+
+Dumbledore raised an eyebrow. "May I presume these have been out of the ordinary in some way?"
+
+"They're... hard to explain. I don't remember them perfectly, but... they're different."
+
+"Different how?"
+
+Harry wrung his hands as he tried to decide how to begin explaining. "I'm not me in the dreams. I'm... someone else. I see everything through their eyes, I hear their thoughts... I am them."
+
+Something flashed in Dumbledore's eyes. It was gone so fast that Harry had no hope of identifying it, but it had been there. "That is rather odd, yes," the old man said quietly. "May I ask whose mind you occupy in these dreams?"
+
+"I... don't know. They've never said."
+
+"But you believe you have the answer," Dumbledore prompted gently.
+
+Harry nodded slowly, but swallowed hard once he realized that Dumbledore was waiting for him. He took a deep, centring breath as he braced himself for the rebuke, the chastisement, or even the accusations of falsehood.
+
+"Voldemort."
+
+The name was spoken in barely more than a whisper but every syllable seemed to echo through the office. Many of the portraits depicting former headmasters and headmistresses who had been pretending to sleep a moment earlier jolted at the name.
+
+Harry paid them no heed. He watched Dumbledore's face for a reaction as the room seemed to cool. One was there, but it was not what he had expected. The lines in the old man's face had deepened. To Harry, it looked as though the Chief Warlock had aged by a decade right before his very eyes.
+
+"I had suspected as much, yes."
+
+Harry's eyes widened. "You knew?!"
+
+"Oh, no, I assure you my assumptions were made loosely and based on many unproven theories."
+
+"But... you'd guessed?"
+
+"I did," the old man admitted. "I have suspected for some time that you and Lord Voldemort share a unique and mysterious connection."
+
+"What kind of connection?" asked Harry, his heartbeat quickening as his breaths laboured. He did not wish to share a connection with Voldemort. The one Grindelwald had forged was troublesome enough on its own and Harry had even cut that link off.
+
+Dumbledore watched him very closely for a moment. His expression was more of a blank slate than Harry had ever seen it before. It was like he was pondering something very deeply.
+
+"The night Lord Voldemort sought to kill you," Dumbledore began, "he used an especially dangerous curse. The spell works in a way so unique that there is no hope of replicating anything like it. Its arithmetic equation stands as a logical fallacy, for the spell does something that violates the very laws of nature and should not at all be possible."
+
+"Sir, I don't mean to be rude, but what does that have to do with me? We talked about this before, too. When you asked if I could speak to snakes."
+
+"And just like then, the importance is in the magic, not in you. For all the masses' talk of special powers that the rest of us mere mortals knew not, it was a unique set of circumstances that allowed you to survive that night."
+
+"My mother's sacrifice?"
+
+"Precisely. It was the only thing that could have stopped that spell from killing you, but such magic is not so easily defeated. It will find a way to do the damage it was called forth to wrought. Magic like that leaves marks that will never truly fade."
+
+"Like Parseltongue?"
+
+"Like Parseltongue, yes."
+
+"Wait!" Harry raised a shaky hand and pressed a finger to his infamous lightning bolt scar. "Do you mean---"
+
+"Your scar, yes. It marks the place where Voldemort's spell touched you." Dumbledore stroked his long, silvery beard. "Tell me, has your scar ever bothered you or acted in a way that normal scars should not?"
+
+"After the dreams... my head... I'd never felt anything like it. It hurt worse than anything I've ever felt after the first one. The only thing that felt close to it was when I touched Quirrell last June. I... I thought it felt like the pain came from my scar, but that made no sense."
+
+"It is likely that the pain does come from there, yes."
+
+"Last year," Harry remembered, "when I was in Defence Against the Dark Arts or..."
+
+"When you were otherwise around the spirit of Lord Voldemort," Dumbledore finished. "You would feel similar sensations to the one you are describing now?"
+
+"Yeah, I'd forgotten all about that." He looked almost pleadingly towards the headmaster with wide, emerald eyes. "Sir... does this mean---"
+
+"That you are not imagining things? No, Harry, I do not believe you are. In fact, I am quite sure of it, though I wish I could say otherwise. I think you being a Parselmouth confirms the connection all on its own."
+
+"Why? What does it all mean?"
+
+"It... could mean nothing."
+
+"But you don't think so?" Harry pressed, borrowing Dumbledore's own probing technique from earlier that evening.
+
+"I do not," the old man admitted with a sigh. "It is apparent that your scar reacts any time you find yourself too near Lord Voldemort. Physical contact last June seemed unimaginably painful." Harry shuddered at the memories of what he'd felt before blackness had claimed him.
+
+"Well, yeah," said Harry, "but I haven't been near Voldemort all school year."
+
+"You have not, which is troubling if your scar has plagued you so. Though I do believe I have an answer that might explain what is happening." There was a dark look about Dumbledore's eyes that Harry did not like.
+
+"What do you think is happening, sir?"
+
+"I think that Voldemort's power is growing. I think that last year, as a wraith, there was only so much power his existence held over you. That is why it took physical proximity to trigger the connection."
+
+Harry felt a shiver run up his spine at the implications of what Dumbledore was saying. "You think he's gotten more powerful since the end of last year?"
+
+"I think it is very possible. Voldemort has always had and will always have his supporters. He may well have contacted some of them last year whilst masquerading as Professor Quirrell. He still showed himself to be sharp as ever and if I know Voldemort, being so close to regaining the power he once held will only drive him further."
+
+"What does more powerful mean, Professor? He can't come back without a body, can he? But he can't have a body, right?"
+
+"I don't know," Dumbledore said with a tight expression. "I certainly think he can, but I doubt he has a body in the sense that you are thinking. I imagine there would be some signs if he had regained his full power. No, I think it more likely he is somewhere between where he was when we last saw him and where he wishes to be. Powerful enough that the connection between the two of you is awakening and expanding, but not powerful enough to be an immediate threat we must hasten to contain."
+
+"What do you mean by awaken and expand?"
+
+"You have told me that last year, you felt pain only when in direct proximity to Voldemort?" Harry nodded. "That is not the case anymore, as we now know." Dumbledore's stare seemed to become even more intense if such a thing was possible. Harry swore he felt the weight of it pinning him to the back of his chair. "What can you tell me about what you dreamt while occupying Lord Voldemort's mind?"
+
+"I... don't exactly remember. Blood... a lot of blood. The first time... it was confusing. Everything was dark until it wasn't and then... more blood than I've ever seen before."
+
+"You say you felt what he felt? How did it feel to see through his eyes?"
+
+"Like I had just caught the snitch or something," Harry said with a pained grimace. "It... felt happy. Like something incredible had just happened."
+
+Dumbledore nodded stoically. "And the second dream?"
+
+Harry turned the memory over and over in his mind. It was foggier and more difficult to decipher. "I... Voldemort was in a chair or something. He was sitting on something because he could look down and see the floor, and the snake, and the---"
+
+"The snake?" cut in Dumbledore.
+
+"Er... yeah, there was a snake."
+
+"Very well, carry on."
+
+"He could see all of that from his position; he must have been sitting. Someone else was there, too. Maybe more than one person. They kept calling him 'my lord' and they said... they said something about a sample and Voldemort seemed happy again. It... was like the first time, but different. Not as strong, but more..." he shook his head; it was impossible to put the emotions into words.
+
+Dumbledore's fingers had unlaced themselves at some point during Harry's retelling and were now drumming upon the surface of his desk. He seemed to be pondering for a moment in the oppressive stillness of the room. The portraits had given up trying to feign sleep, but none of them so much as moved. It was like they were frozen in place or else unwilling to disturb the tension hanging like precipitation in the vast, circular tower.
+
+"What does it mean?" Harry asked again when he could no longer bear the pause. "I don't get it! What am I seeing? Why am I seeing it?"
+
+"You are seeing through Lord Voldemort's eyes just as he sees it."
+
+"So... that all actually happened?"
+
+"I think so, yes. The why is more complex, but I would hazard a guess and say that whenever Voldemort feels particularly powerful emotions, the link between the two of you becomes more active. It is likely that he has no idea of its existence. I am sure he would never willingly provide you such insights into his mind if he knew."
+
+"How do I stop it?" Harry asked. His heart had leapt upwards into his throat at the revelation that he really had been living parts of Voldemort's life. Grindelwald had been bad enough, but at least that had been somewhat consensual on both sides. This was different. It felt... dirty.
+
+"Occlumency," the Headmaster answered simply. "There is no other way. You must continue improving. One day, you will be able to repel such attacks on your mind whether they are deliberate or not." He looked away from Harry for the first time in what felt like an age to study the odd clock hanging on his wall. "For now, I believe this conversation has stretched on long enough. Do not allow yourself to become too troubled. Rest is all you can do for now. More will come in due time."
+
+Harry hated it; he hated all of it. It was just like the end of first year. Just like how Dumbledore had told him he would know why Voldemort had come for him, but only when he was ready. It was maddening. All of it was maddening. Voldemort, Grindelwald, Dumbledore... he felt like a ball being thrown back and forth between the three of them and he was sick of it.
+
+Harry felt the haze of anger break when a soft note played through the room. The Headmaster's prized phoenix had let out a long and haunting trill and Harry's overwhelming feelings of anger, sorrow, and helplessness had dissipated all at once. It had actually been disconcerting, but as he took to his feet and made for the door, Harry thought he much preferred this kind of disconcerting to whatever the hell the rest of his year had been.
+
+***January 23, 1993***
+
+***The Knight's Room***
+
+***8:00 PM***
+
+There was a certain gravity to this meeting that Ron had never experienced before. There had been tense gatherings, sure, but nothing quite like this.
+
+His short stint in the hospital wing had become public knowledge within hours of his arrival. What had been less known was exactly how he had wound up there. A small mercy it was, for he feared to imagine what the school would have done with the knowledge that somebody walking its halls was proficient with both the Memory Charm and the Cruciatus Curse.
+
+That fact was disturbing enough for Ron, let alone everyone else. He had spent many hours locked up in abandoned classrooms discussing with Hermione who the culprit could have been and what on earth they might have wanted.
+
+Ron thought it had to be the Heir of Slytherin. Who else would traipse about Hogwarts casually throwing around Unforgivable Curses? He had never heard of anything like this happening in the castle despite all his brothers' collective experiences.
+
+Hermione had taken a more logical approach.
+
+*"It's all well and good to be able to cast the spells,*" she had said, *"but why would the Heir want to torture you? You're a pureblood. Besides, there's no rule that says only one person with dark plans can wander around the halls at night."*
+
+Ron's only real counter to that had been that perhaps the Heir had wanted retribution for trying to track down their identity. Hermione had unfortunately bit back with something rather difficult to argue against.
+
+*"If the Heir of Slytherin was worried about you catching onto them, why wouldn't they have just petrified you like the others? That way, you couldn't go around talking."*
+
+It was all a mess. This entire damn school was a mess. So much for his parents' preaching about Hogwarts being the safest place in the world. Not even Professor Dumbledore had been able to protect the castle from the wrathful grasp danger seemed to have held on it for the better part of the last two years.
+
+Ron really would have liked to come up with some answers before facing Cedric, Susan, and Hannah. Their expectant glances upon his entrance were as crushing as a speeding bludger. Ron had known they would be there, but it did not make being subjected to them any more pleasant.
+
+He had contemplated lying about what had happened or trying to fabricate some kind of story, but he was a miserable liar. His and Hermione's confidence in their own subtlety also wasn't exactly at an all-time high after the fiasco that had been their failed intrusion upon the Slytherin common room the night of Yule.
+
+Cedric, Susan, and Hannah listened with rapt attention as Ron recapped all that had happened from the time he awoke to the time Dumbledore had finished speaking with him that night in the hospital wing. A part of him thought the three Hufflepuffs wouldn't believe him, but he could see at once that was not the case.
+
+*"You might belong in Hufflepuff,*
+
+*Where they are just and loyal,*
+
+*Those patient Hufflepuffs are true*
+
+*And unafraid of toil..."*
+
+Just and loyal was certainly one way to put it. As for unafraid... Ron thought reckless might have been more apt, but he was hardly in a position to pass judgement after how his first year had ended.
+
+"You have no idea who did it?" asked Susan.
+
+Ron and Hermione exchanged glances. "None," said the latter.
+
+Ron tried not to make a face, but judging by Cedric's narrowed eyes, he had failed. He was less sure than Hermione they did not already have a culprit.
+
+The way their probing of Malfoy had been allowed to continue for so long but had been forcefully halted the second Potter was brought into the equation. The way he had systematically taken the two of them apart before sending them packing. The look in his eyes as Ron had retreated --- it had not seemed a stretch then to imagine him petrifying students, or worse.
+
+Hermione's biggest sticking point was that a second-year student had no way of knowing anything like the Cruciatus Curse. Ron had no strong counterpoints, but when had the rules ever applied to Potter? If he had survived the Killing Curse before his second birthday, why was it impossible he knew dark and vile curses before the age of thirteen?
+
+"There's no point stewing on it for now," said Cedric, pulling Ron from his thoughts with a sudden jolt much like the one that had awoken him that fateful morning almost three weeks earlier. "All we can do is our best to make sure nothing like that can happen again."
+
+They all nodded as they raised their wands, but for the first time since Neville's death, the shadow of doubt loomed over Ron as he tried to escape from its oppressive clutches. If there were students in the school capable of such advanced magic, how were they ever to match them in time?
+
+***January 30, 1993***
+
+***The Great Hall***
+
+***8:57 PM***
+
+Harry felt the somewhat familiar rush of excitement when his opponent crumpled to the floor, hit with a Stunner that had slipped through their defences. The boy had been fast and aggressive, but sloppy. He overextended his wand movements and put himself out of position with footwork that just tried to do too much. It had been an interesting duel due to the boy's unorthodox style, but not an overly competitive one. Really, the only competitive duel Harry had faced had been against the red-headed terror who had summoned the snake back during the duelling club's first official meeting.
+
+This gathering was far more organized. Duels had not devolved into playground brawls this time around and the pairs seemed more evenly matched --- in most cases. Harry had managed to spot Cassie standing alone with her opponent seemingly unconscious on the floor. He knew first-hand exactly how lethal she was and he did not envy any of the poor sods Aberforth kept pairing up with her.
+
+The final spells of dying duels faded as Aberforth gruffly cleared his throat and prepared to speak but before he could, a louder, more unexpected noise tore through the still room and caused the floor beneath their feet to shake.
+
+"What the hell was that?" someone asked.
+
+"It came from above!"
+
+"Listen!" called another. There was a sound that was getting louder and louder. Harry thought for a moment it was directly connected to whatever had just happened, but he didn't realize until some time after that it was just Peeves. He was singing madly as he flew straight through all the floors between them and where he had been, singing about destruction and lost trinkets all the while.
+
+"The trophy room," said an upper-year Ravenclaw girl with blonde hair and blue eyes. "The bit about the lost trinkets --- whatever we just heard must have happened in the trophy room."
+
+Aberforth seemed to believe her. His wand was drawn like a sword a moment later as he made for the door, unwillingly leading a procession of several hundred students in his wake.
+
+Something felt wrong to Harry. The hairs on the back of his neck stood on end as goosebumps rose all along his arms. Something was wrong here; he could not explain how he knew, he simply did.
+
+Yet what was he to do? He had been swept up in the mob of students making their hasty exits to follow in Aberforth's wake. The man himself had barely spared any of them a glance. The only distraction he had allowed himself had been to conjure a large, silvery something and send it streaking out of the room ahead of him.
+
+Harry allowed himself to be led away by the crowd, but his eyes lingered on the Great Hall as long as they could.
+
+***Minutes later, on the third floor...***
+
+Diana had been following the crowd just like everyone else when she had seen her. The girl's platinum-blonde hair stood out stark as shining stars against the inky blackness of the night sky and she was dressed... eccentrically. What exactly was hanging from her ears, Diana had no idea, but she found she did not much care. All that mattered was that she sought to do what had to be done. Whether it took a day, a week, a month, or the rest of the school year.
+
+The girl stood alone and a fair distance away from her nearest classmates. She was short and had a frail sort of look about her. One breeze appeared as though it might be forceful enough to sweep this girl away like the last vestiges of summer fleeing the north on a south-bound wind.
+
+"Miss Lovegood," said Diana, "it's a pleasure to meet you."
+
+The girl looked startled for a moment. The girl's eyes were almost comically wide. They were among the brightest things in the corridor as they shone silver in the relatively dim lighting.
+
+"Hello," said Lovegood. "You're alone. I see you with friends all the time." She frowned. "I don't have many of those. If you've lost one, you might do better asking someone else."
+
+Diana blinked several times. This had not been what she had expected. It was well-known that Xenophilius Lovegood was an odd fellow, but this was something different altogether. The daughter of a man who owned a newspaper so... open. And not open like most people --- open in a way that suggested her brain just didn't think better of any words that slid onto the tip of her tongue.
+
+"I... haven't, thank you."
+
+"Oh," said Luna Lovegood in a sing-song kind of voice. "Well, that's nice. It's not nice to lose anything. I've been losing things all year."
+
+Diana peered at her through skeptical eyes. Part of her thought this young girl had to be playing some kind of joke or trick. Perhaps she might have chalked it up to a facade if she had been older, but she was convinced that no eleven-year-old girl could put on a mask of this nature in such a convincing manner.
+
+"I'm... sorry to hear about your year," Diana said with a smile that managed to form on her face right in the nick of time. "You're Xenophilius Lovegood's daughter, aren't you?"
+
+"That's right," said the girl, bobbing her head in an odd, discombobulated variant of a nod.
+
+Diana held out her hand. "My father has been wanting to meet yours for a long time, so I thought I would check in on you while I had the chance. I'm Diana, Heiress of the Ancient and Most Noble House of Malfoy."
+
+Luna hummed. "I don't think Daddy's ever mentioned your father."
+
+It was fortunate that her father had chosen Diana for this task and not Draco. He would surely have lost patience with this girl already. That last comment about their father would have done him in had nothing else before quite managed it.
+
+"Yes, well, your father is quite busy and doesn't seem to attend Wizengamot meetings."
+
+"Of course he doesn't," she said as though it was the most obvious thing in the world. "The Wizengamot only meets on blue moons and to discuss ways to hide the pact between the mermen and the centaurs."
+
+"The... what?"
+
+"You haven't heard of it?"
+
+"I... can't say I have."
+
+"Hm, well, I guess they're doing a good job, then. Shame. Daddy's wanted to do a piece on it in his newspaper for ages."
+
+Diana felt the crowd pressing her back the way they had come. She had not been near the front of the queue and therefore had no idea what Aberforth had found in the trophy room. Judging by the uniform drone of grumbling voices, nothing; or nothing that was of any real interest.
+
+Now the crowd was moving again and Diana felt herself pulled along with them, though she noticed that the Lovegood girl was still beside her. Good, she thought, solving this particular puzzle was going to take much longer than she had anticipated.
+
+***Soon after, back on the first floor...***
+
+The further away the crowd had drawn from the Great Hall, the more and more nervous Harry had become. He couldn't be sure why. There had been nothing back in the Great Hall, yet Harry somehow felt compelled to return there. No sinister student or mysterious monster had awaited them in the trophy room and finally, the large crowd had begun making its way back downstairs.
+
+Harry's heart beat faster with every footstep of his that echoed off the flagstone floor as they reached the castle's ground level once more. He glanced around to watch the others, but no one else seemed troubled by what was taking place.
+
+Perhaps he really was mad, no matter what Dumbledore said. Or perhaps his instincts knew something the others' didn't. He hoped this was false, but he feared that wasn't the case and as they drew near to the Great Hall once more, Harry's suspicions were swiftly confirmed.
+
+The first thing he noticed was the writing on the wall. It was done in a dark, crimson colour that looked and smelt unmistakably of blood. The writing was still wet and it dripped and seeped down the wall, falling in small droplets to break against the floor several feet below. It was difficult to see what was written despite the flamboyance of the message, for many taller, wider bodies blocked Harry's line of sight.
+
+Yet something else had stunned the crowd into silence that Harry had not yet seen. Many of the mutters died and were replaced by shocked and horrified silence. A couple of girls actually screamed. People began shoving one another to get away --- Harry even saw one girl faint. The crowd had descended into complete and total madness.
+
+Not that Harry was complaining. It allowed him to move closer to the writing on the wall and read it for the first time.
+
+*Even the queens of the jungle must one day lay before their lord and master.*
+
+Harry read the words three times but did not understand them --- not until he glanced downwards.
+
+Lying face-up beneath the words was a figure wearing straight black robes. Despite her plain attire, it was not at all difficult to recognize her. Her lips --- usually pulled in a stern line of disapproval --- were slightly parted and halfway through forming an exclamation of some kind.
+
+"Merlin," Harry heard an older student mutter from nearby, "the bastard got Professor McGonagall."
+
+**Author's Endnote:**
+
+**We are getting quite close to the end of the year.**
+
+**As for this chapter, it is nice to have that final scene written after having it planned for so long. I found myself thinking that quite often in these later book 2 chapters.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editor Idefix for his corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Psychic-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, November 14th, 2021. Or you can read it RIGHT NOW by joining my Discord server! THE NEXT ELEVEN CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST THREE CHAPTERS OF BOOK 3!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. The next chapter is available there RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next TEN CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST THREE CHAPTERS OF BOOK 3! The link to that can also be found on my profile or on my website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 22: Brewing Storms**
+
+***January 30, 1993***
+
+***The Headmaster's Office***
+
+***9:15 PM***
+
+Albus Dumbledore did not often indulge himself, but tonight he slowly poured yet another glass of oak-matured mead as he awaited his guest. He thought the mead was Madam Rosmerta's finest offering, and by Merlin could he use it.
+
+One could not tell the time by looking outside. It was a dark night filled with bitter cold and surging snowfalls. Albus could hear the wind ripping at the side of the castle, causing the glass panes in his office window to shutter softly against its surging onslaught. Flakes of white snow came down from the sky in thick flurries. Some of them splattered against the window or castle walls, but more still fell and blanketed the ground far below. It was difficult to tell from a glance, but the flakes appeared heavier than usual.
+
+Albus did not need to glance to the clock to know what time it was, though it felt much later. As he'd aged, days seemed to blur by and lifetimes seemed to pass as student after student passed through the halls of Hogwarts, but this day had felt like an entire year all on its own.
+
+What was he to do now? The attacks had moved well beyond what they had been fifty years ago. No longer were they random assaults on outspoken muggleborns. Now, they were targeted strikes against some of the most prominent members of the castle. Today's had certainly sent a strong message.
+
+Minerva was as gifted as anyone. Whatever dwelled in the Chamber of Secrets must have been immensely powerful to have overwhelmed her so utterly and while leaving no signs of a struggle. It made Albus's heart race as he pondered what it could be and whether he himself might be next.
+
+It was an interesting thought. Tom had always steered clear of him when possible. Even during the Purity War, he had only ever engaged with him when Albus himself had forced his hand. Even then, it had been swift and ended with a tactical retreat at the first available opportunity. He was no fool. Tom was not afraid of him and he was not delusional enough to think that was the case, but he had always been wary and grudgingly harboured a healthy respect.
+
+Yet this was perhaps Tom's best chance. Unleashing something on him he didn't know the identity of was the greatest opportunity he would ever have to dispatch of him. On the other hand, chaos would descend upon the castle if that were to happen, and Tom knew it. Even in his darkest hour, Albus knew Tom would never do anything that could close the castle's doors forever. That had been one weakness he had always been able to count upon.
+
+It was reassuring to know that any incarnation of Tom would think this way, for it was difficult to know exactly what he was dealing with. He could not see how Tom was doing all of this from so far away. Perhaps he had ensured the loyalty of another last year, or perhaps... no. He would know if Tom had gone so far. There was no way that could happen without his knowledge.
+
+There came a knock on the door and Dumbledore called for his guest to enter. Severus looked as calm as ever as he strode forward and took the chair across from him.
+
+"You look tired," Snape said by way of an introduction.
+
+"I certainly feel tired. It has been a long and trying day. I don't suppose the search of the castle turned up anything of note?"
+
+"No. We have enlisted the house elves' assistance, but they have been no more successful than the rest of us."
+
+"A clever ploy nonetheless. I thank you, Severus, and I apologize for what must come next."
+
+"What must come next?"
+
+"You know the position you must fill now?"
+
+"Deputy Headmaster. I am ecstatic for the extra paperwork, I assure you." His face twisted into that trademarked scowl. "Why you insist upon labouring me with the position when Flitwick has been teaching at this institution since I was a boy, I will never understand."
+
+"Oh, I think you understand just fine. You may simply be unprepared to admit it to yourself." Snape said nothing as he stared blankly back across the desk, his black eyes seeming to swallow all the dim light that flowed through the room. "There will come a time when I am no longer wanted here."
+
+"They may try to remove you," Snape acknowledged.
+
+"I fear they may well be successful. This has moved beyond strikes on muggleborns. The purebloods' attention will be drawn now that a professor has been attacked. I don't know who the assailant may target next, but a couple more influential strikes and I imagine my tenure at the castle will be at its end for a time."
+
+"For a time?"
+
+"Yes, for a time. They may remove me, but I have no plans of staying removed."
+
+Snape dipped his head, though his expression stayed neutral. "And you still don't know who is behind these attacks?"
+
+"I suspect I know who has facilitated them, but I am as out of ideas as anyone as to who is carrying them out."
+
+"Who was behind them last time?" Snape sneered. "How they could ever have imagined *Hagrid* capable of such things---"
+
+"Yes, it was quite ridiculous to think a man as compassionate and kind-hearted as Rubeus would do anything so heinous." Snape's lip curled at the deflection, but he said nothing.
+
+"It was a boy," Albus said at last. "A prefect from your house who was in his fifth year. Tall and pale, he commanded the attention of all in the day whilst he traipsed about the shadows at night."
+
+"You are sure it was him?"
+
+"I am."
+
+"And you believe it is him again." It was the first time Snape's expression had changed, sans his scowl. His lips had pressed together and there was an intense look in those dark, unnerving eyes.
+
+"Any other answer would be too great a coincidence." The two men sat in silence for a moment; the only sounds in the room were the deep, sleeping breaths of the former headmasters and headmistresses in their frames and the softly crackling fire still burning in the hearth.
+
+Snape conjured a glass and reached for the bottle of mead without prompting. The sound of pouring liquid filled the room. They could have been camping in the wilderness, what with the fire and a sound that could pass for running water.
+
+"He is coming back," Snape said after a long pull from the glass.
+
+Dumbledore sighed but nodded as he himself reached to refill his own drink. "Yes, I believe so."
+
+"The mark has begun to burn again. Not hot enough for a summons, but more painfully than it has since he failed to kill Potter."
+
+"How long has this been happening?"
+
+"For the better part of a month. Two times in particular I had feared he may truly have returned."
+
+Two times the mark had burned red-hot... two times Harry had shared a mind with Voldemort...
+
+*"...but I would hazard a guess and say that whenever Voldemort feels particularly powerful emotions, the link between the two of you becomes more active."*
+
+It was not surprising, but it was troubling.
+
+"I believe that on both occasions, he did at least take significant steps towards a return to power."
+
+Snape's eyes narrowed. "How is it you have come by that assumption?"
+
+"Harry has dreamt of him. His memories are vague, but what he described of the first dream he had sounded to me like some kind of dark and twisted ritual."
+
+"Potter... dreamt of him?"
+
+"He did."
+
+"And... you place stock in these dreams?"
+
+"I do not believe that they are dreams at all. Visions would be more apt."
+
+"I see no reason to assume that Potter, of all people, is a seer."
+
+"Nor do I. Need I remind you how hesitant I was to allow Divination to be taught here at all?" Snape's expression darkened but he shook his head jerkily.
+
+Albus took to his feet. The tumultuous surge of thoughts and emotions had become too much to bear whilst sitting still as Minerva lay in the hospital wing. His precious phoenix let out a soft trill as Fawkes lifted his head and Albus felt the load upon him lessen some. He paid the bird a passing smile before he came to stand near the window that overlooked a large portion of the Hogwarts grounds.
+
+"Harry shares a unique connection with Lord Voldemort," he said after a time. "I have suspected it for some time, but I am sure of it now."
+
+"A... connection? With the Dark Lord?"
+
+"The Killing Curse touches the very soul. That kind of twisted magic is not so easily defeated."
+
+"Does this... connection pose any threat to the boy?" Snape asked, slowly and clearly enunciating each and every syllable.
+
+"Not yet, but in time, that may change. There is little to be done for now. We have our own pressing set of circumstances we must attend to."
+
+"I suppose that we do," Snape agreed as Dumbledore moved to retake his seat. There was something different about Snape's eyes. A vacant air about them that had not been there before.
+
+Good, Albus thought. If that was what it took to make Severus understand how dire things could swiftly become, then so be it.
+
+***February 14, 1993***
+
+***The Great Hall***
+
+***8:46 AM***
+
+Harry knew something was wrong even before he entered the Great Hall. Valentine's Day had arrived with none of the splendour he remembered from the previous year. The walls had been luridly decorated and the suits of armour had been utilized. There was none of that now. Just an unmistakable air of tension the second he entered the Great Hall for breakfast.
+
+Well, a tenser air than usual, he supposed. Moving about the castle had felt like navigating a minefield as of late. Everyone was on edge after Professor McGonagall had been petrified. It was one thing when the victim was an annoying first-year muggleborn. It was another altogether when it was an esteemed professor who had served at the school for decades. McGonagall would have been labelled as untouchable if Harry had been forced to categorize her, and would have been near the very bottom of any list of potential targets he could have drawn up.
+
+Rita Skeeter's article had not helped matters. She had finally begun covering the Chamber of Secrets and the attacks at Hogwarts. A part of Harry wondered why she hadn't done so earlier. Perhaps attacks on a couple of unknown students and a cat just weren't enough to attract her attention, or perhaps students hadn't felt the need to spread the word over the winter break.
+
+All of that had changed the day after Professor McGonagall had been found petrified. It had been front-page news --- a bold headline splattered across a vivid depiction of the Slytherin House emblem. Skeeter had also promised to get to the bottom of things. From the little Harry knew about the woman, that could only mean a great deal of trouble. He just hoped that whatever she did, she did not decide to take up arms with the Gryffindors and paint him as Lord Voldemort's heir apparent.
+
+Gryffindor House had taken its leader's downfall very poorly. They wrought all sorts of misery upon Slytherins any chance they could. Harry, in particular, had become something akin to the house's punching bag these past two weeks. He had taken to wandering the castle under the guise of his invisibility cloak in the daytime hours. He still preferred to move around unimpeded by the cloak at night, so long as curfew had not yet fallen, but doing so in the middle of the day had become genuinely dangerous. A number of unpleasant spells had found their mark in the past two days alone and the twins had tried to ambush him four times in the last week. Every time they failed, they seemed to grow more and more spiteful as their plans became more and more malicious.
+
+It was immensely frustrating. Professor McGonagall had been one of the teachers whom Harry had liked a great deal, for one thing. For another, he had only shaken off the upper-year Slytherins a month earlier as a result of revealing himself as a Parselmouth. He had been enjoying that respite and was more than a little bit bitter to see it come to such a sudden end.
+
+It had been a long two weeks, but this morning was different. Harry knew that before he understood why, but it was not difficult to put it together.
+
+A hush hung over the Slytherin table. It was unlike anything Harry had ever experienced whilst at Hogwarts. All the other students seemed to be looking at them. Harry thought for a moment it was just the usual hateful stares, but there was more than that. He realized that the second he felt someone's eyes burning a hole straight through him.
+
+It was Greengrass. She had looked at him often since her return from the holidays, but this... Merlin. Harry had never seen anyone watch him so hatefully. When he looked back at her, that was when he realized.
+
+Tracey Davis was not the only one missing from her usual gaggle of friends. Bulstrode, Moon, and even Pansy were with her, but the tall, dark skinned boy who usually hung just behind her like a creeping shadow was noticeably absent.
+
+That was when it clicked.
+
+Blaise Zabini had been petrified. The son of the infamous black widow had been struck down on Valentine's Day and it sent a very clear message.
+
+Not even the pureblooded Slytherins were safe from whomever it was behind these escalating attacks.
+
+***February 27, 1993***
+
+***The Dungeons***
+
+***9:56 PM***
+
+Harry sidestepped a purple spell from Cassie and dove to the side. There was no use throwing up a Shield Charm against the kind of magic she was using. It would eat straight through whatever magical protection he was capable of conjuring.
+
+She was so fast --- the spells seemed to come without pause, hurtling towards him one after the other. He was going to buckle under their onslaught soon, but there was one thing he could at least try.
+
+He dodged a dark blue spell, leant out of the way of a sickening crimson one, and then saw the Stunner flying towards him. Harry's arm felt like lead, but he forced it to raise nevertheless. His shoulder screamed with the effort of it; this had been one of the longest duels he and Cassie had ever engaged in.
+
+He lashed out with his wand as the spell drew near. His wand's tip met the jet of light in mid air and sent it spinning back towards its target. Cassie just barely managed to bat the spell back towards Harry, who this time sidestepped and cast a string of spells as fast as he could. It put Cassie on the back foot and he advanced, but his onslaught did not last long before it and he had been cut down.
+
+"You're better than I thought you were," Cassie commended. "I saw you deflect my brother's curse in the common room, but I don't think you've used that against me until now."
+
+"I haven't. I wasn't confident when I did it against Cadmus. It just sort of happened."
+
+"It's impressive," said Cassie. "Plenty of novice duellists can't deflect spells. That alone will help you beat a lot of witches and wizards."
+
+"It's not enough to beat someone like you, though."
+
+She smiled thinly. "No, it's not, but you really are getting better. I might have to find someone a bit less experienced to come practice with you sometime. I'd be curious to see how you did against an older student who isn't me."
+
+"Your casting speed got me," Harry admitted. "I know you'd have beat me no matter what, but I don't understand how you cast so fast."
+
+Cassie eyed him critically. "Well," she said after a moment's pause, "since you seem to have gotten the hang of spell deflection, I suppose I can show you."
+
+Harry's eyes widened. "Really?"
+
+The older girl raised an eyebrow. "Are you here to learn, or not? Yes, of course I can show you," she said with a smile. "That's the entire reason we're here."
+
+That was something Harry had always liked about Cassie. She was easy going despite her prowess with a wand. She was deceptive that way. A bubbly personality who could cut you to pieces if you ever gave her just cause. And she really enjoyed duelling. She wasn't just good at it, she enjoyed it. She enjoyed talking about it and she enjoyed teaching it. Harry found it infectious.
+
+His trust in people had waned this year and Cassie was no exception. The more skeptical he became of the Malfoys, the more he pondered Cassie's motives, but he liked her. Whatever her aims were, he knew that and hoped immensely it was a friendship he could retain. So long as she did not betray him like so many others, he really could not have had a better teacher.
+
+"Get out your wand again, we still have some time. When I cast rapidly, I'm using a technique called chain casting..."
+
+***Meanwhile, in an abandoned classroom...***
+
+"What if we slipped him a poisoned sweet?"
+
+"Don't be thick, they'd expel us if we killed the git."
+
+"Oi! I never said anything about killing him!"
+
+"But you want to play around with poisons?"
+
+"Do you have any better ideas?"
+
+"Clearly not, brother dear. If I did, we might not still be in this room."
+
+"Novel idea, that. I'm getting sick of seeing the inside of this room. Why can't we just roll up on the git and curse him into oblivion?"
+
+"Do you really need me to answer that?"
+
+"No, but it would be fun."
+
+"It would, but not worth it."
+
+"I hate when you're right."
+
+"Only when I'm right about something you don't want to hear."
+
+"Well yes, Forge, that's how narratives work."
+
+Both twins chuckled as they brushed red locks of hair from their eyes in unison. They had been bent over stacks of paper for the best part of six hours now and their necks had long since begun to ache.
+
+"Seriously though," said George, "we really need to solve this before one of us goes mad."
+
+"One of us? We both know if one of us goes off the deep end, the both of us will drown."
+
+"Touché." George opened his mouth to say more, but he was interrupted by a loud tapping sound that came from the room's window. "What the..."
+
+Both boys turned their heads and saw that there was an elegant-looking eagle owl flapping its wings outside. A roll of parchment looked to be tied to its leg.
+
+The twins exchanged looks as they made their way towards the window. "We really need to work out how owls find us in places like this," Fred said as he opened the window and allowed it inside.
+
+"I never have quite got that," George agreed as he untied the parchment from the owl's leg and removed its burden. "Like, how the hell does this thing get off finding us here?"
+
+The owl squawked loudly once the letter had been removed from its leg and shot back out the open window and into the brisk winter air before either twin could so much as move.
+
+Both of them had moved on by now and were leaning over the letter. As their eyes moved down the parchment, they grew wider and wider.
+
+"Blimey," said George. "This is it, isn't it?"
+
+Fred grinned sharply as a devilish gleam came alive in his eyes. "I think it is, brother dear."
+
+***March 8, 1993***
+
+***The Knight's Room***
+
+***8:43 PM***
+
+The sound of Hermione's wand clattering to the floor seemed to echo through the hidden room as though someone had shattered glass in an otherwise empty void filled only by darkness and silence. Everyone seemed to stop what they were doing and turn their attention to her and Ron, whose jaw hung open.
+
+He was as surprised as anyone to have disarmed her. Nobody but Cedric had managed to get the best of Hermione in a duel. It was actually a strange feeling to watch her scramble for her wand. Her cheeks were tinged pink and she did not meet Ron's stare, but he didn't care.
+
+The sound of her wand against the floor had sent a rush through his body. It was as good as any Quidditch victory he had ever known. Catching the snitch was one thing, but this was different altogether.
+
+He had been on a warpath to improve ever since their ill-fated attempt to recover the Philosopher's Stone ended so miserably last June. Nothing could compare to the crushing pain Ron had felt whilst standing atop the hill and peering down at Neville's grave through eyes that stung with the salt of tears.
+
+His efforts had only been redoubled after he had been tortured and enchanted to forget the whole thing had ever happened. Crushing dread had filled him then at the daunting challenge the school faced, but it had eventually solidified into a drive that had never been paralleled.
+
+To see all of that manifest in one moment as the brilliant muggleborn's wand was torn away from her... it was powerful. Something seemed to awaken and roar within Ron's chest as a warm, primal glee surged forth to fill him like a scalding drink on a cold winter's night.
+
+This was the beginning. This is what it would take to become the wizard he needed to become in order to honour Neville's memory and to make sure nothing else so horrible befell him or his friends. It was only the beginning, but it was a good one. Ron squared off against Hermione once more, ready to go again and continue his thrilling journey.
+
+***March 20, 1993***
+
+***The Dungeons***
+
+***10:11 PM***
+
+Harry's streak of good nights spent duelling with Cassie had ended tonight. One of the bastards in the hallway had caught him with something vile. It caused all the muscles in his calf to contract horribly. They had felt fit to burst and it had been very fortunate that a sixth-year Ravenclaw prefect had been there to reverse the spell's effects. Even after they had been reversed, Harry still limped on the leg heavily. It made duelling a right pain. It made duelling someone as talented as Cassandra Yaxley next to impossible. That night had consisted mostly of Harry getting battered around as Cassie put in minimal effort and did as she pleased. Not the greatest night for morale, but it had at least reaffirmed to Harry that he was resilient and was now beyond panicking when the exchanges were not going his way.
+
+He was beyond sick of students cursing him in the halls. It had been nearly two months since McGonagall had been attacked. Harry had hoped briefly after Zabini had been petrified that perhaps there would be a reprieve and his hopes had been quickly dashed.
+
+The general consensus among the Gryffindors seemed to be that Harry had attacked Zabini to cover his tracks. He had even heard a couple of Hufflepuffs go as far as to mention that Voldemort had been notoriously cruel to those who had served him. If one dark lord had acted in such a way, surely it was only natural that the next one followed in his footsteps?
+
+Harry was sick of it all. Sometimes, it made him want to do things that Voldemort and Grindelwald would likely have been proud of.
+
+Grindelwald... that was a name Harry had not pondered in some time and it was better that way.
+
+He cleared his mind with Occlumency as he rounded the next bend on his way back to the common room...
+
+And froze at the sight before him.
+
+*No,* he thought, *this can't be happening.*
+
+Large red letters spelled out a vivid message upon the wall, but there was no body sprawled across the floor. Was this what it looked like for the alleged Heir's victims before their monster struck? Had Harry walked in on the setup of an attack seconds before it took place.
+
+But no, that was not right --- the lettering was different. It was crimson and resembled the colour of Gryffindor house more than it did human blood.
+
+Oh, Merlin, that was not a good sign.
+
+Harry put the pieces together just as he read the writing on the wall but by then, it was much too late.
+
+*The little snake's bite might turn students to statues, but the snake should be careful that statues don't bite back.*
+
+Then a sound tore through the corridor as something nearby exploded outwards. Harry could see rushing fire and felt many sharp objects pierce his skin as dreadful heat enveloped his body, but blackness claimed him before he could piece together exactly what had just happened.
+
+**Author's Endnote:**
+
+**You'll all have to forgive this one being uploaded later than usual. I've been without working Internet today and it's only decided to come back on recently. This has been the week of technology issues for me.**
+
+**As I'm sure you can tell by how fast the months are speeding along, the setup for the year's climax is mostly complete and the pace has picked up drastically. There are only seven chapters left to go in book 2.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors ArtyWords and Idefix for their corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Psychic-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, November 21st, 2021. Or you can read it RIGHT NOW by joining my Discord server! THE NEXT TEN CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST THREE CHAPTERS OF BOOK 3!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT CHAPTER IS AVAILABLE ON THERE RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next NINE CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST THREE CHAPTERS OF BOOK 3! The link to that can also be found on my profile or on my website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 23: The Rallying of Forces**
+
+***March 22, 1993***
+
+***The Hospital Wing***
+
+***3:44 AM***
+
+Harry seemed to glide as he moved down the hall, his steps not making so much as a sound. It was late and the halls were void of bodies and noise. The torches still flickered in their brackets hung upon the walls, but they seemed dimmer somehow. Almost like the thicker than usual darkness of this place was swallowing as much of their blazing light as it could.
+
+Harry rounded the next corridor and froze in mid stride. Red writing was splattered on the wall and the corridor smelled unmistakably of blood. Its coppery scent hung so thickly in the air that Harry almost gagged. It was hard to breathe through it. Its smell filled his nostrils as its taste inexplicably invaded his mouth and its thin, sticky texture seemed to run down his throat.
+
+Then he noticed the bodies on the floor and looked down. Diana and Cassie stood out most. Their blonde hair was the brightest thing in the corridor despite the skin of each fallen victim having grown as pale as the full moon. Cassius was there, with his throat torn open and the same substance that splattered the wall having run down his body like a thick layer of sweat before soaking through his robes and staining them with its mark. Pansy and Theodore lay there, still and unmoving. If not for the unnatural pallor of their skin, they could have passed for two people in a deep and peaceful sleep.
+
+After what felt like a stunned age alone in silence, a sound reached Harry's ears. It echoed loudly through the corridors of Hogwarts as it drew nearer. By the time Harry recognized it, its source was upon him.
+
+Footsteps.
+
+It was Draco. His skin too was as pale as the victims on the floor, but his eyes were different. Their normal grey had been replaced by an unearthly scarlet that gleamed in the dim light of the hall. It had invaded his iris as well as his pupil --- there was no telling where one ended and the other began.
+
+"Draco? What... what's happening here?"
+
+More bodies appeared around them. Harry recognized each and every one. The mangled guards from Nurmengard with their twisted necks, spines that pierced their skin like the handle of a child's lollipop sticking out from its wrapper; even the inverted head on the third, with his spine protruding up through his skin and stuck straight through his jaw like an embedded arrow shaft.
+
+They were not the most gruesome sight. The boy from Grindelwald's final vision was there. He must have clawed his very skin away trying to suppress the pain wrought by what Grindelwald had done, for pale bits of bone showed all about his skull. The little skin that remained was peeling away like aged and weathered paint subjected to a harsh torrent of rain.
+
+Yet the most horrific and tauntingly familiar body was the smallest of all.
+
+Wylla Nurmen lay there in the corridor with her horribly punctured body and the shattered remains of her skull. The part of the corridor she laid upon was not made up of stone, but pale, shimmering snow that was beginning to darken as her blood stained it a dark and vivid red.
+
+It was all too much.
+
+Harry fell to his knees and screamed. He screamed like he had never screamed before as he pressed his fingers against his temples and wished for it to end. Let him take one of their places if it meant this misery would be over. Let it be finished for good.
+
+"Harry! Harry, it's okay. You're okay."
+
+The corridor was gone, but he was still screaming. Why was he screaming? Everything ached or stung like it never had before, but the pain was not so unbearable that he needed to scream loudly enough that he had surely woken half the castle. What had happened?
+
+Then the dream began to come back to him and he shuddered violently as if bent against the strong and bitter winter wind outside of Grindelwald's boyhood home. The room he was in felt stiflingly warm, but a cold sort of sweat clung to him in spite of that fact. The pale sheets that cocooned him in warmth were twisted all about him like a child's swaddling clothes; he must have been thrashing around horribly in the midst of his nightmare.
+
+Which begged the question --- where was he now?
+
+Pale sheets, pale ceilings, pale walls, and a feminine voice that had woken him. It was certainly not the Slytherin common room, but he began to suspect something else.
+
+"Hospital wing," he muttered. "Something about statues and explosions."
+
+"Harry, are you okay? You woke up screaming."
+
+He let his eyes follow the source of the voice and shivered more violently still. It was Diana. Her hair was every bit as bright as it had been in the dream, but her skin was flushed with the natural sheen of life and did not resemble a marble statue. Cassie was there, too. Both girls sat side by side. The first voice --- the one that had jolted him --- had been Cassie's, Harry realized.
+
+"I'm... fine. Just... delayed reaction, I guess."
+
+"Delayed is one word for it." There was a certain edge to Cassie's words that Harry had never heard there before. It made him frown as he glanced about the room.
+
+"What time is it?"
+
+"Almost 4:00 in the morning," answered Diana.
+
+"So I've been out... what? Six hours?"
+
+The two girls exchanged glances. "Harry, you've been out for a day and a half. We're surprised to see you awake so soon."
+
+His eyes bulged. "A day and a half?"
+
+Both girls nodded as Harry tried and failed to free himself from the sheets. Just them resting against his skin caused unimaginable pain. It was like somebody had scraped him with a razor the day after he'd received the world's most painful sunburn. He grit his teeth against it and let himself fall back against the soft mattress underneath him.
+
+"Don't try and move too much," said Diana, standing to help gently untangle the sheets from Harry. It hurt like hell, but much less with her aid.
+
+"What happened?" Harry asked once she had finished. "Why does..." his voice trailed off when he caught sight of his right arm. The skin was raw and tinged pink all over. He wanted to look away, but couldn't. There was a certain sick fascination about it.
+
+"Somebody set up a trap for you," Cassie explained. "You walked into a trapped corridor on the way back from our last practice. There was a message on the wall kind of like what the person behind the petrifications seems to do. I'm guessing the suit of armour exploded when you were nearby because I heard something go off and rushed ahead but by the time I got there, it was in pieces and you... were in a bad state."
+
+Harry winced. "How bad is 'bad', exactly?"
+
+"There were shards of the armour embedded in your skin," Cassie went on with a grimace. "Your torso looked like a pin cushion."
+
+"Lovely, is that why it hurts to move?"
+
+"No," said Diana, "Madam Pomfrey fixed that pretty quickly. It's the burns that were the problem."
+
+"The... burns?"
+
+"You were caught in the explosion. Whoever rigged the suit of armour either wants you dead or underestimated the blast radius. You were on fire when I came into the corridor." Harry saw a slight tremor in Cassie's shoulders and her voice wavered, if only for a second. "It was all I could do to put you out and get you to the hospital wing as fast as I could."
+
+Harry spared her a slight smile. Perhaps she would not betray him. If she wanted to, surely she would have let him die in that corridor, for it sounded like that was what would have happened had she not intervened.
+
+"Thanks, Cassie," he said with a blush, looking away and swiftly clearing his mind of all memories of being forced to say those words for far less genuine things. "You probably saved my life in that corridor."
+
+She spared him a thin and tired smile.
+
+"You should sleep," said Diana. "I know you've been out for a while, but I don't think it was restful and you'll need your strength. You're not recovered yet."
+
+Harry grimaced but did not argue as the two girls quietly filed out of the room, Diana removing the Silencing Charms she had placed around Harry's bed as they did.
+
+What a mess. Now he not only had to deal with everything, but he ought to find out who had tried to kill him and why.
+
+***Later that day...***
+
+Harry wasn't sure what he had expected to feel after someone had done their best to murder him. Anger, perhaps? Overwhelming rage that would set him on a warpath? Fear, maybe? It would be logical to be wary of more attempts in the future.
+
+He felt none of those things, which struck him as odd. Even more so because the only thing he felt was an overwhelming sensation of nothing.
+
+It was like he was numb to it all. Perhaps he was lost to shock, or perhaps years of horrendous treatment at the hands of the Dursleys had prepared him for this. Maybe he was not as surprised as he ought to have been that someone had tried to murder him whilst at school.
+
+Not that he didn't care. He most certainly did and his top priority at the moment was piecing together exactly who had been behind the attack.
+
+It hadn't been the alleged Heir of Slytherin. Harry was relatively sure of that. This was too different from their style and Harry had not forgotten the way the writing on the wall had shimmered with the crimson light of the Gryffindor crest. The Heir of Slytherin was prideful. They took credit for their work and would not have hidden behind something that implicated anyone but them.
+
+Yet if it was a Gryffindor, Harry was having trouble coming up with who could be behind it. The Weasley twins were the obvious candidates, but would they really try and kill him? Their antics had become more and more troubling in the subsequent weeks and months, but never had they tried anything like this. They were malicious bastards, sure, but murderous ones? They had never struck Harry as psychopaths, but he supposed he didn't know them.
+
+His bets currently rested on one of the upper-year Slytherins --- and wasn't that a fun thought? The knowledge that someone who shared a common room with him each and every night may have tried to kill him was not one that put Harry's mind at ease. Yet it made sense. None had dared to oppose him after his Parseltongue ability had been revealed, but striking from the shadows made sense. It was probably what Harry would have done if he had been so inclined to attack himself in their spot.
+
+It was all a complete and total mess.
+
+Harry heard someone clear their throat from nearby and looked up. It was Madam Pomfrey and for a moment, Harry dreaded she would look over him again. She had already done that four times today and he was not so eager for the fifth.
+
+"You have a visitor who would like to see you," she said instead. "I don't like it, but he's an important man who's come a long way, so I'll allow it if you'd like for me to let him in."
+
+"Who is it?" Harry asked, thrown by her demeanour.
+
+"Mr. Malfoy."
+
+Lord Malfoy had come to Hogwarts? It was almost an inconceivable idea, but he remembered suddenly that the man was the Head of the Hogwarts Board of Governors.
+
+Harry's heartbeat quickened.
+
+*"The Malfoys might view you as a tool, but that doesn't mean all of us do."*
+
+Could he trust Lord Malfoy? He was the one who Harry had the most doubts about. The man had seemed a saint to him once and had always treated Harry like royalty, but had Daphne been onto something before she had betrayed him? Was it all for his own game and only so Harry could be used as a pawn in the man's machinations?
+
+"I'll see him," Harry decided. Whether he was being used or not, Lord Malfoy had always been generous. Perhaps he would be so again. Harry could take advantage of the man's generosity without buying blindly into everything he said.
+
+That... was actually quite the revelation. Harry from the start of the year would never have had that thought, but now... it seemed so glaringly obvious. He didn't need to cut all ties with the Malfoy family or to be the best of friends with them. There was a middle ground that could be of great benefit without leading him too far astray.
+
+Madam Pomfrey had disappeared, but Lord Malfoy was sweeping into the room now. His blond hair was immaculate as ever, as were his dark green robes.
+
+"It's good to see you again," said Lord Malfoy, taking a seat next to Harry's bed. "I do wish we were meeting under more... favourable circumstances for you."
+
+"Thank you, sir, and it's good to see you again, too."
+
+"Can you explain to me what happened?"
+
+The man sat attentively as Harry explained everything Cassie had relayed to him.
+
+"I think it might be one of the upper-year Slytherins." This much, at least, he trusted with Draco's father. There was no reason the man wouldn't give him an honest read. If he wanted to use him, he needed Harry alive.
+
+"You think one of your own housemates did this?"
+
+"I don't see who else could have. They've been making my life hell for most of the year and I don't know any Gryffindor who would have done this."
+
+Lord Malfoy's eyes darkened. "Do not underestimate the lions' propensity for maliciousness. Sirius Black was a Gryffindor and there were many atrocities on Dumbledore's side of the last war as well. I think you will find that Gryffindors are perfectly willing to put the morals that they are so very proud of aside if it's to further a cause they themselves believe in." He was smiling, but there was no warmth in his expression. Just an edge so sharp it could cut through steel. "Funny how that works out, isn't it?"
+
+"So you think it really was a Gryffindor?"
+
+Lord Malfoy shook his head. "I am much too removed from the castle and its dynamics. What I will say is that you should never dismiss a suspect because of virtues you believe them to hold. Your parents did that and it cost them dearly."
+
+Harry felt his heart skip a beat. "My parents?" he asked. "What about them?"
+
+"Oh, dear," Lucius muttered, twirling a lock of hair. "Another time," he decided, "you have quite enough on your plate right now. This summer, I will tell you the story. It is not a pleasant one."
+
+Harry wanted to argue. He had to wait to know why Voldemort killed his parents, he had to wait until he would be able to force the connection between him and Voldemort closed, and now he had to wait to learn of what his parents had done. It was maddening and he was sick of waiting, but he held his tongue with great difficulty.
+
+"I do have some good news for you pertaining to the summer holidays," said Lucius. Harry waited, watching the man with wide and curious eyes. "Do you remember the conversation we had about your poor treatment and unacceptable living arrangement?"
+
+Harry swore his heart stopped beating for a full two seconds. He opened his mouth and tried to speak, but it was to no avail. Something seemed to be obstructing his airways, so he simply chose to nod.
+
+"I have begun making headway on remedying that problem. My political influence was quite tied up forcing amendments to Weasleys' damnable Muggle Protection Act. Now that that's done, I will be focusing my full attention on shifting your guardianship off of those filthy creatures who you have been forced to live with."
+
+Harry's heart went from not beating at all to pounding so hard he thought it might explode. It was quite the jarring shift, and suddenly the room seemed to spin all around him.
+
+"It's... actually going to happen?" he asked quietly.
+
+He almost leapt up from the bed when Lord Malfoy startled him with a hand on his shoulder. "There are many things that can be said about the Malfoy family, but we always keep our word."
+
+***April 1, 1993***
+
+***The Library***
+
+***9:22 PM***
+
+"I do wish you wouldn't leave me," Luna said in that sing-song way of hers. "Everyone seems to leave me. Ginny's hardly spoken to me at all this year."
+
+"Ginny?" Diana asked carefully. "The youngest Weasley?"
+
+"Mhm. I thought we were friends." A contemplative expression spread across the first-year's face. "We should be friends. I don't see her with anyone else; we have a lot in common."
+
+Diana instinctively glanced around the library, but no one turned their heads towards them. There were privacy wards in place so that was only natural, but she feared those things.
+
+The Lovegood family was an old one, but the name had lost any real prestige long ago. Any lustre it had once carried died the moment its current lord began spreading his nonsensical ramblings in that rag he called a newspaper. Some people would be quite displeased to see her associating with his daughter. Diana suspected it was only her status as the Malfoy heiress that had kept some of the blunter Slytherins off her back so far. That and her father's reputation; they probably thought Lucius Malfoy's daughter had to be using Luna Lovegood in some way or another.
+
+They would be right, of course. Had her father not encouraged her, Diana doubted she would ever have spoken a word to the Ravenclaw outcast, but Lovegood had a funny way of almost making her feel guilty.
+
+Almost.
+
+"I'm sure you could be friends if you put in the effort."
+
+Luna's face fell. "No," she said thoughtfully, "I don't think so."
+
+Diana tilted her head. "Why not?"
+
+"My housemates aren't very nice to me. I don't think Ginny would like them being the way they are." Diana tried to construct her next reply, but Luna's mind seemed to have moved on before she could. "Will you leave me?"
+
+Diana frowned. "Pardon?"
+
+"You're leaving me for the holidays---"
+
+"Merlin, Luna. I'm not leaving you. My father wanted me to come home; that's all I'm doing."
+
+Luna just hummed. "Will we be friends when you come back?"
+
+What an odd situation Diana had found herself in. She had meant to cultivate a friendship when the two of them had spoken for the first time at the Duelling Club's last meeting, but Merlin, she had never known what she was in for by slowly talking more and more. Now they met at least once per week in the library, and those hours spent with Luna were some of the strangest and most jarring Diana had ever lived through.
+
+"Why wouldn't we be friends when I came back?" Luna opened her mouth, but Diana cut her off. "You know what? No, it doesn't matter. Don't think like that, Luna. Of course we'll be friends. No one event is going to change that any time soon."
+
+Luna smiled knowingly back at her. "If you say so."
+
+***April 2, 1993***
+
+***The Entrance Hall***
+
+***10:37 AM***
+
+The Easter holidays had arrived and never had Harry seen so many people leaving the castle for the occasion. Not that he could blame them. He would have joined them if he could, but for now, the Dursleys still presided as his official legal guardians. And wasn't that just the most pathetic thing in the world? He could take them all apart in minutes if he so chose. Grindelwald had been right about one thing. Wizards allowed the muggles to lord over them in many ways, and it made no sense. It infuriated Harry and the talk with Draco's father had brought all those emotions to the surface once more.
+
+There had been no new attacks since Blaise Zabini had been petrified, but Harry suspected a large portion of the departing students wished to flee from the alleged Heir of Slytherin and the chaos they had brought down upon the school. Everything had kicked up a notch the night Professor McGonagall had been petrified and it had not gone back down since.
+
+The one positive thing to come out of it all was that Dumbledore had been teaching Transfiguration for more than two months now. McGonagall was an excellent teacher, but Dumbledore had a way about it and pushed Harry in ways McGonagall never had. When he saw that Harry could complete a task without issue, he would give him something different and more challenging to do. Harry could also ask him questions about the subject both in class and in his office each Friday evening. That was something he had begun doing more often; asking Dumbledore about Transfiguration and about magic in general. The Headmaster had been a great help and Harry's rapid progression in Transfiguration had been nothing short of astonishing.
+
+Diana and Cassie were leaving for home once again, as were Pansy and Theodore. The only friend Harry would have left at the castle was Cassius, but he didn't mind. The air outside had begun to grow less frigid with the coming of spring and the snow had thinned so much that by now, it was almost gone. Harry and Cassius intended to spend more time flying this break than they had in months, discounting Quidditch, and Harry was greatly looking forward to it.
+
+One person he did not see leaving the castle was Draco. He wished his friends a happy Easter and then turned on his heel. Harry had not watched him go, but he suspected Draco had returned to his dormitory to brood. Harry still didn't understand why Diana had returned home each break whilst Draco remained at Hogwarts. It was very unlike what he had seen from Lucius Malfoy to treat either of his children like anything short of royalty.
+
+Harry and Cassius began moving away from the castle's main doors once their friends had left. "Look on the bright side, a lot of the dickheads in red who have been giving you a hard time are gone for a week."
+
+Harry's expression was somewhere between a smirk and a grimace. "There's that, at least. Honestly, if I could just get---"
+
+"Harry, watch out!"
+
+Harry dove to the side on instinct alone and he heard Cassius follow. Something rained down from above and splattered against the hard stone floor where Harry had been standing a moment earlier.
+
+He rolled to the side and leapt to his feet, wand in hand. The floor was covered in a horrible green substance with a consistency like sick. It hissed and seemed to writhe on the floor. No one was around, but this strike was clear. None in the castle other than the Weasley twins would rig something like this. What that green something would have done had it covered Harry, he did not wish to know.
+
+He glanced towards where the voice had come from and came up short. Draco was standing in an alcove, staring at Harry with an odd look in his eyes that the raven-haired youth could not place. Draco must have been watching them from the shadows. It was an odd thought, but not nearly as odd as his former friend saving him from impending disaster.
+
+The two of them stared at each other for a long and awkward moment while Cassius continued to scan the corridor for any sign of the twins.
+
+"Uh... thanks," Harry said after a minute, not quite knowing what to say.
+
+Draco nodded. "We're even. You spared me from a disaster on Yule. I didn't forget." He waited for Harry to say something, but the boy himself kept quiet. Harry thought he saw a sad look appear in Draco's eyes after a minute, but it was hard to say. "Have a happy Easter, Harry," the blonde said before turning on his heel and striding away from them down the corridor.
+
+Harry watched him go with warring emotions and a blank expression.
+
+***April 11, 1993***
+
+***Malfoy Manor***
+
+***12:00 AM***
+
+Harry had grown stronger in the months since he had regained some semblance of a body. He still sat upon his hostess's lap, but he no longer fell back into her and hadn't the need for constant support any longer. He was now able to lean forward and survey the few followers that remained to him here with the woman maintaining only a soft hold on him to ensure he did not fall.
+
+They sat at the head of the table, the four chairs nearest them occupied by men in dark robes. There were two of them on each side of the table sitting across from one another. On his left sat Lucius with his blond hair gleaming in the light of the lantern that sat just in front of him. Beside him sat Tiberius, who was aimlessly twirling his wand whilst he waited for the meeting to begin. The man's eyes never left him even as he did so. Tiberius was one of the only ones who looked at him now. Him and the man across from Lucius were the only two not so repulsed that they looked away. Harry could not blame them. He had become a disgusting excuse of a creature. That would cease being true in due time.
+
+Across from Lucius sat Regulus. His gaze was on him as always and it was unblinking. Harry thought Regulus may well be his most valuable follower as of now. He was nearly as loyal as Bellatrix, commanded the influence held by his family, and was one of the foremost experts on archaic magic alive. His knowledge could not compare to Harry's or that of the old fool, but there were only two others he knew of with knowledge to rival him. One was in Azkaban; a man Harry had known for many years. The other had turned traitor more than eleven years ago. His time would come.
+
+Perhaps it would come at the hands of the fourth man if Harry himself did not choose to do the deed. Corban Yaxley had always been an outstanding duellist. Whether or not he could beat the traitor in open combat remained to be seen, but if any of his followers could, it would be him, Bellatrix, or Dolohov. The latter two still sat imprisoned on that hovel of an island, but they would be free in time. Their patience would be rewarded, but not now. He was much too weak to even stand.
+
+"An update, Lucius?" Harry asked in that high, cold voice. It was clearer than the last time he'd heard it and less filled with cracks.
+
+"I am making progress, My Lord. It is difficult to hint at these things without being too heavy handed."
+
+"Err on the side of caution. They will know when I have returned. I simply wish to ensure they make the wisest choice when that beautiful day comes."
+
+"Yes, My Lord."
+
+"And what of your other plan, Lucius?"
+
+"It will not be as easy as I had hoped," Malfoy said with a bitter scowl. "Dumbledore will fight tooth and nail to keep the boy away from me. The man distrusts me and I have no connection to him. Narcissa, yes, but not I."
+
+"I may have a solution if I may, My Lord?" Regulus seldom spoke at these gatherings, but people listened when he did.
+
+"Go on."
+
+"My brother was the boy's godfather and my aunt was his grandmother. Dumbledore will have a harder time dismissing my claim."
+
+Harry could practically feel his own eyes gleam. "Very good. See it done and ensure it happens before the solstice arrives."
+
+"Yes, My Lord."
+
+There was excitement now, excitement unlike anything he had felt in years. Soon, his power would return alongside all the sniveling cowards who called themselves loyal. But Harry would not need to rely on them for long. Not when his true loyalists were free and not when new blood had been captivated.
+
+Everything was going to plan --- now, he just had to ensure that it stayed that way. Now, he just had to hope that all inside the castle went to plan when the time came.
+
+**Author's Endnote:**
+
+**That last scene was an odd mix of blunt and subtle foreshadowing, so I'm curious to see what you all take from it. I did split my initial draft of this chapter, but I felt like that was a natural point to end this one.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors Idefix and The Darkling for their corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Psychic-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, November 28th, 2021. Or you can read it RIGHT NOW by joining my Discord server! THE NEXT NINE CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST THREE CHAPTERS OF BOOK 3!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT CHAPTER IS AVAILABLE ON THERE RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next EIGHT CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST THREE CHAPTERS OF BOOK 3! The link to that can also be found on my profile, Discord server, or website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 24: The Falling of Pawns**
+
+***April 16, 1993***
+
+***The Headmaster's Office***
+
+***9:48 PM***
+
+Harry's Occlumency had grown in leaps and bounds over the course of the school year. He was now able to repel Dumbledore's lighter Legilimency probes without much effort. Getting started with Occlumency had been extremely difficult. Learning to clear his mind was one of the hardest things he had ever done. The first meditative stage had seemed to last forever and for a time, Harry had feared he may have strayed from the path and that he might never see the light at the end of the tunnel.
+
+Once he had finally gotten past that stage, everything had become much easier. Defending his mind felt almost effortless compared to how finding it had been. Controlling it was still difficult. Grindelwald had mentioned many months ago how one could master and control their own emotions. That still felt so far out of reach to Harry that he might as well have been trying to jump high enough to touch the moon.
+
+Yet he had made vast improvements in actively defending his mind this year. Dumbledore was beginning to vary his psychic attacks now and had long begun to increase the pressure that he applied. The more difficult the attacks became to repel, the faster Harry felt as though he was improving. It was like he had been thrown in water at first and nearly drowned but once he had overcome that obstacle, he took to moving about the seas with the ease of a fish.
+
+"That will do for tonight," said Dumbledore. Harry sat back in his chair and let out a deep breath as he raised his hands to his temples. Dumbledore had broken through on one of his last attacks. Every time he did so whilst Harry was defending, it sent stabs of sharp and persistent pain coursing through his skull.
+
+"I am very pleased with your progress. You should be very proud of what you've already accomplished."
+
+"Thank you, sir. Do you think I'll be able to keep actual attacks out soon? Ones that would be used by people who actually wanted to take something from me?"
+
+"Oh, yes, I think you could keep out less skilled practitioners already." Dumbledore raised a hand. "Do not mistake me. If you allowed them to attack your mind for an extended period of time, they would break through, but I think you could hold long enough to break eye contact and sever their connection."
+
+"When do you think I'll be able to hold out against full-on attacks?"
+
+The old man pursed his lips. "Who can say? You have improved faster than I anticipated and your question is not a simple one. I think you will find yourself able to defend your mind from most sooner than you might expect. That does not extend to somebody like Lord Voldemort. That is another matter altogether. Most men will never be ready to stand against that assault."
+
+"Do you think I will, sir?"
+
+"I do. All you need is to hold out long enough to sever the connection. I think that is an achievable goal."
+
+"And what about our connection, Professor? You said I would be able to block it with enough practice. How hard will that be? How much practice will that take?"
+
+Dumbledore rubbed his eyes. "I'm afraid I cannot answer you in good faith. The connection you share with Voldemort is completely unique as far as I am aware. It is difficult to answer questions about it."
+
+"But you're sure I'll be able to do it?"
+
+"As sure as I can be, yes. It will take a combination of active and passive Occlumency, but I believe it can be done."
+
+Harry frowned. "Active and passive Occlumency?"
+
+"Yes. Active Occlumency is what we have been practicing here; it is the art of defending one's mind from psychic attacks."
+
+"What about the other?"
+
+"The other pertains to more subtle manipulations of one's own mind. Clearing it is the most basic form of passive Occlumency, but there are others as well."
+
+So that was where Grindelwald's experiments fell. They had been some twisted form of passive Occlumency. Or, that had been Grindelwald's goal, anyway; to discover a method with which doing that was possible.
+
+"What other kinds of things can you do with it, sir?"
+
+"Many things, Harry, but I do believe that is a conversation for another time. It is growing late; we should both pack in for the night unless you have anything else you wish to discuss."
+
+"I do, actually." Dumbledore folded his hands in his lap and peered expectantly towards his pupil. This was often the time in the lesson when Harry would ask the wizened old man about magic or ask him for advice on how to get better at facets of it, but tonight, Harry had darker things to discuss. "I dreamt of Voldemort again."
+
+"Did you?" asked Dumbledore as he sighed, looking all of a sudden a great deal wearier than he had been a moment before. Harry nodded grimly. "Very well. What is it you saw?"
+
+"Some kind of meeting. There were people at a table. Three or four of them, maybe, and then Voldemort."
+
+"Do you remember who any of the people were?"
+
+Harry thought he remembered one, but it was vague and hazy. He could remember Voldemort pondering about one of them. Harry only remembered the way his hair had gleamed in the lantern nearest him and he thought he remembered recognizing him well.
+
+But could he tell Dumbledore this? It had been something he had contemplated deeply for the better part of a week. If not for that inner conflict, he'd have rushed off to meet with the Headmaster that very next day.
+
+Whether he trusted the man fully or not, condemning him in the eyes of Dumbledore for something Harry wasn't positive he was connected with sat wrongly with him. It really was quite hazy and Harry was not at all sure he was remembering things right.
+
+And even if he was, did he want to turn the man over to Dumbledore? The one man who was trying to get him out of the miserable situation life had thrown him into more than eleven years earlier? One of the only men who seemed to genuinely care about Harry, no matter what his intentions were. If he wanted to use him, he needed him in good shape. Did Harry want to throw such a valuable aid away because he might have sided with a man who Harry did not know? No matter what he had done, his words at the end of last year had given Harry some small margin of pause.
+
+"I don't, no. It's... fuzzy. I don't know why I remember the first one so well. The others have been hazier."
+
+"It could be due to any number of reasons," said Dumbledore. "Perhaps Voldemort's emotions were at their strongest during the first vision, or perhaps it happened whilst you were most awake. There are many things it could be."
+
+Harry nodded, scratching his head and brushing a loose strand of raven hair from his eyes. "They were discussing something," he remembered. "Something about Voldemort's followers. How Voldemort thought they would come back to him or something."
+
+"I fear that he assumes correctly. Many of his ilk would flock to him out of fear, if for no other reason."
+
+"Right. Somebody else had suggested something, or asked him something. That's what made Voldemort mention it." Dumbledore nodded to show that he was still listening in silence. "There was... something about his other followers. He didn't say it, but he was thinking about them. The ones who weren't there but who were loyal."
+
+"Many of his most violent followers are serving life sentences in the wizarding prison known as Azkaban. Bellatrix Lestrange was one of his Death Eaters and is famous for proclaiming her undying allegiance to Voldemort and his cause before being led off to the prison alongside her accomplices, but there are more. She is not the only notorious member of his inner circle to have willingly gone to Azkaban rather than lie their way out of a sentence."
+
+Harry pondered Dumbledore's last sentence. Something nagged at the corners of his mind, but it eluded him. It jogged something in his memory but he could not decide what it was. That last bit had confused Harry, but it also made him feel like he was missing something.
+
+"Right," he continued, shaking off the feeling. "There was more, too. He... assigned someone else a task, but I can't remember what it was. And Professor? There was something about Hogwarts. He never mentioned it, but he thought about it. I don't know what it is, but something is planned here at Hogwarts."
+
+"It does not surprise me."
+
+Harry's next words died on his tongue as he gaped at the old man before him. "It... doesn't?"
+
+Dumbledore seemed to age a decade before his very eyes and for the first time since Harry had known him, Dumbledore looked as frail as one his age ought to have appeared.
+
+"No, Harry, it does not. I have suspected that Voldemort has his hand in whatever is going on at the castle this year for some time now. I am simply out of ideas as to how he could be manipulating things from afar, and have no way to prove my suspicions in any case."
+
+"You... think he's involved with the Chamber of Secrets? If you think there actually is a Chamber of Secrets," Harry added hastily; Dumbledore did not know he had overheard him that night in the hospital wing. He ought not to, at least. Sometimes, it felt like the man was omniscient.
+
+"Oh, I am sure of both," Dumbledore said with a twisted smile. Harry thought it almost looked bitter.
+
+"How can you be, sir? If you don't mind me asking."
+
+"No, I suppose not," Dumbledore said with another sigh. "I ought to have told you some time ago, but I had hoped I would be able to resolve this madness one way or another before it concerned you."
+
+"Concerned me? Why would it concern me?"
+
+"Because it concerns Lord Voldemort very deeply and as we have covered, the two of you are linked in inexplicable ways."
+
+"I thought you said that you only thought Voldemort was involved?"
+
+"This is not the first time the Chamber of Secrets has been opened. I am afraid to say that it is not even the first time it has been opened whilst I've dwelled inside this castle."
+
+"Professor," Harry asked with narrowed eyes and mounting suspicion, "what does this have to do with Voldemort?"
+
+"It has everything to do with him," said Dumbledore. "Lord Voldemort was once a boy just like any other. A very troubled boy named Tom Riddle who was twisted by the hardships of his upbringing, but a boy nevertheless. He attended Hogwarts much like any other talented student his age would and was sorted into Slytherin, much like yourself."
+
+Harry felt a shiver run up his spine as his skin seemed to crawl and his hairs stood on end.
+
+That... reminded him far too much of himself. It scared him. The voice he had heard all the way back in September, the way Grindelwald's visions had changed him, and now this? He was already not the person he had been when he'd arrived at Hogwarts this past September, let alone before his first year. Was he walking the same path as Voldemort?
+
+No, he couldn't be. Not if Dumbledore was going where Harry thought he was going. He wouldn't... he would never.
+
+"You think he was the one to open the Chamber of Secrets the first time, don't you?"
+
+"I am certain of it. Voldemort has boasted for many years of being Salazar Slytherin's final heir."
+
+"And you believe him?"
+
+"Oh, I more than believe him. I know his claim is true; I have researched it extensively and I do not believe any who were not blessed with Salazar's gift could find the chamber."
+
+"You mean Parseltongue?"
+
+Dumbledore looked at him then and there was an intensity about his stare. "Yes, Harry, I mean Parseltongue."
+
+"Sir, that means if we found the Chamber, I could---"
+
+"No. I would never have you risk yourself in such a way."
+
+Harry scowled but knew by Dumbledore's tone that arguing would be fruitless. He was so sick of waiting. Why could Dumbledore not appreciate that he was not a child? He had seen things no child should ever see and had lived in what had felt like three lifetimes on Privet Drive. If Dumbledore only had confidence in Harry, they could end the threat now. Harry would not have been thrilled to involve himself in this mess, but if Voldemort really was involved... Voldemort, who would doubtlessly want Harry dead after the conclusion of their last confrontation...
+
+"How do you know that it was Voldemort who opened the chamber? Is that the only reason you think it was?"
+
+"Oh, no, there is much more. He did a rather poor job of framing Hagrid, for one thing."
+
+"Hagrid‽" Harry asked incredulously. "He framed Hagrid‽"
+
+"It was the very reason young Rubeus was expelled. He would have found himself an exile had I not intervened and secured him the position of Gamekeeper."
+
+"How... how did anyone think it was Hagrid?"
+
+"A good question, and one I myself have asked for many years. Armando Dippet was the Headmaster of the time --- he is the one sleeping in that portrait there, right behind my desk. He was very old and a wonderful man, but I believe his mind had begun to slip by the time Tom arrived at school."
+
+Harry wasn't surprised. Dippet looked ancient in his frame. Thin, frail, and balding, with only scarce wisps of thin white hair left atop his head. The man looked fit to keel over at any second.
+
+"Armando was very fond of Tom. All of the professors were. He was very charming and had a way with words. I'm sure it didn't hurt that he was probably the most brilliant student to ever pass through this school."
+
+"So, he... what? Just talked his way out of it and blamed Hagrid?"
+
+Dumbledore's expression darkened. "Hagrid himself had been raising a very dangerous magical creature in the school that same year. Tom discovered it and blamed it for the attacks that had been said to have been carried out by Slytherin's monster."
+
+"And it... it couldn't have just gotten away from Hagrid and been behind them, could it?"
+
+"It could have, very easily, but I know it never did. It is something I myself questioned, though I was sure Tom was guilty. I was a mere Transfiguration professor at the time and failed to convince Armando of my beliefs. It was one of my many failures regarding Tom Riddle."
+
+"Your... failures?"
+
+"A conversation for a different time. One that will come when you are older and wiser."
+
+There it was again. That irrational twinge of anger and annoyance at having things loom ahead of him but feel so unreachable at the same time.
+
+"So, you think Voldemort is somehow behind it again?"
+
+"Oh, yes, I am quite sure of it. I always thought he might try again once he had left Hogwarts and I think he is the only one capable of such a thing. Slytherin has no other living descendants that we know of and it is only those descended from him who can speak his sacred tongue."
+
+"Is that it? Is that why you think it concerns me?"
+
+"No. I think your ability to speak with snakes has nothing to do with this mess."
+
+"Then why, sir?"
+
+Dumbledore watched him very closely. "Because I think Lord Voldemort is interested in you above all other things. Any plans he carries out at Hogwarts have you in mind."
+
+"But... nothing about the chamber has had anything to do with me."
+
+"Has it not? The last two students to have been attacked were Slytherins from your year, both linked to Miss Greengrass. She suspects you are the Heir of Slytherin entirely because of that first attack and the last will only make her more intent on proving herself right."
+
+"They... what?" Harry had wondered whether Daphne thought him the Heir of Slytherin. This really just confirmed it, but it was the matter of fact manner with which Dumbledore said all of this. And that last part... "What about wanting to prove it?" Then, it clicked. That colourless, odourless liquid... it really had been Veritaserum.
+
+Oh, Merlin, this was a mess...
+
+"Miss Greengrass was very upset with you. She told me some interesting suspicions not long before the winter break. She was logical. Brilliant girl, Miss Greengrass. She may be the most naturally gifted intellectual to have passed through this castle since Voldemort himself. She was very adamant that I act against you. I, of course, suspected the truth even then and did nothing.
+
+"But none of that is important. What is important is that Voldemort will have picked up on this in one manner or another and is trying to use a dangerous foe against you. He is already moving pieces into play that will make your life difficult and soon, more may fall into place."
+
+***April 24, 1993***
+
+***The Library***
+
+***8:36 PM***
+
+Ron was finding it more and more difficult to not nod off by the second. He and Hermione had spent hours that day in the library, just like they had for many days in the past number of months.
+
+They had not dropped their quest to expose the Heir of Slytherin after their miserable attempt on Yule. Their efforts had only been redoubled once Ron had been attacked and Professor McGonagall had turned up petrified. Yet despite months and months of trying, they had not been all that successful.
+
+There really just wasn't much to work with. Headmasters and Headmistresses had allegedly scoured the castle for generations in search of this fabled Chamber of Secrets and every single one of them had come up empty.
+
+The only useful bit of information they had was that the Chamber of Secrets had been opened fifty years ago. That was helpful, but finding records of that time was... difficult. The library had an entire section dedicated to school records. There were many copies from each year, but most of them from fifty years ago seemed to have been edited. Hermione was insistent that one must have slipped through the cracks with how many copies there were, but Ron had grown well beyond skeptical many weeks ago now.
+
+He had stopped staring at the mountain of papers before him some time ago and instead allowed himself to be drawn in by the rhythmic flickering of the candle that sat upon their desk and illuminated the scrolls of text spread across it. Dark spots had begun creeping all around the fire so that it almost gave the impression that the flame was sputtering, even though Ron knew he was simply becoming drowsy.
+
+It took a titanic effort, but he pulled his attention away from the bright light and glanced around the room. The library was scarcely populated at this time. There were a few older students with their heads bent over hulking textbooks and heaps of parchment almost as large as Ron and Hermione's, but these students were sparse. The only other pairs of students Ron could see were the two pale first-year twins from Slytherin who seemed eerily united at all hours of the day, and the odd couple pairing of the older Malfoy girl and Luna Lovegood; a very strange girl who lived near the Burrow and who Ginny had shared an on and off friendship with for the better part of the last few years. That was the oddest pairing Ron could imagine, but he had seen the two of them here more and more often as the months dragged on. What Diana Malfoy could possibly be doing entertaining Luna Lovegood of all people, Ron could only guess.
+
+"Ron," whispered Hermione, pulling him from his thoughts, "come look at this."
+
+She had found more records from that year and Ron immediately noticed a difference. These ones looked more well-preserved somehow and there were several small bits of text he didn't remember seeing anywhere else.
+
+Hermione indicated three sections with her finger. They all seemed to have taken place in quick succession, so Ron leant forward to look and his eyes widened at the first entry.
+
+"Myrtle," he whispered, "she was the student who died?"
+
+"Well, it doesn't say that it was because of the Heir of Slytherin, but look at these next two."
+
+Ron did and he could immediately see what Hermione meant. It had been an eventful day at Hogwarts. Tom Riddle had been given the award Ron had scrubbed to perfection earlier that year on the same day and Hagrid...
+
+"Blimey," Ron muttered, "this was when Hagrid got expelled?"
+
+"They're connected," said Hermione, "they have to be. But that means---"
+
+"Come off it," said Ron, "there's no way they thought Hagrid was the Heir of Slytherin."
+
+"He's the only student I can find who got expelled that year and these are the only set of records that even show Myrtle's death. What else do you think is the answer?"
+
+Ron hadn't the foggiest of ideas, but it made no sense. Surely no one had been foolish enough to think Hagrid had been behind the death of a student? It was complete and utter madness.
+
+"He can't have done it," Ron said numbly.
+
+"I know," said Hermione, whose voice shook as she whispered, "but you know who did then?"
+
+"Uh... no?"
+
+"Tom Riddle got an award for special services to the school the same day this happened. I'll bet he framed Hagrid. He was an upper-year Slytherin when this all happened; it makes sense."
+
+Oh, Merlin... it did. It all made far too much sense. "But... what does this mean for this time?"
+
+Hermione's face was twisted into a steely look of determination that was only made all the grimmer by the dim room and flickering candle. "I don't know, but we have to find out."
+
+***April 27, 1993***
+
+***The Great Hall***
+
+***8:16 AM***
+
+***THE LIFE AND LIES OF ALBUS DUMBLEDORE***
+
+***COMING THIS SUMMER!***
+
+***By Rita Skeeter***
+
+"What the..." Harry muttered as he took the paper and turned it over.
+
+Diana shared a smirk with Cassie. "Sounds like an interesting read to me," she said, gesturing for Harry to place the paper in a spot where they could all read the article. Cassius leant forward along with them, beady eyes suspicious, but searching.
+
+*I told you all a number of months ago that I would be running some investigative work on the Chamber of Secrets and the attacks that are plaguing Hogwarts School of Witchcraft and Wizardry.*
+
+*Well, dear readers, I did what any sensible detective would do when investigating strange happenings at Hogwarts...*
+
+*Start with the Defence Against the Dark Arts Professor!*
+
+*My digging is far from done and I have yet to find anything that implicates Albus Dumbledore's younger brother in anything regarding the Chamber of Secrets, but I have found much else. Things that implicate both him and his brother in things just as dark... if not darker.*
+
+*To anyone who thinks Albus is a paragon of the light and that his family can do no wrong, I fear you are in for a rude awakening this summer when I present to you, 'The Life and Lies of Albus Dumbledore'.*
+
+*Fear not, my investigations into the Chamber of Secrets are still ongoing and I will be sharing some insights from the book before the summer arrives. Insights that might make you all think I was onto something when starting with the less-famous Dumbledore brother.*
+
+"I'll buy it," Cassius said with a smirk. "It'll be interesting to see someone go at Dumbledore. Nobody's really ever had any real success with that.
+
+"If anyone can do it," said Diana, "it's Skeeter. The woman's mind is almost as sharp as her quill."
+
+"It sounds like she's writing a biography," said Cassie. "I don't know how she thinks she's going to get enough information for that."
+
+"It's Skeeter," Harry dismissed, "she'll just make it up."
+
+"I don't think so," said Diana. "That would be risky. Dumbledore's supporters would hang her out to dry if she didn't come with factual information to support wild stories.
+
+"She'll need at least a source," Cassie agreed.
+
+Harry just sat back and nodded. It was an interesting development that would likely get lost in a storm of interesting developments, but perhaps it would add a layer of intrigue to the fast-approaching summer.
+
+***May 1, 1993***
+
+***The Knight's Room***
+
+***10:29 PM***
+
+Cedric, Susan, and Hannah listened on in enraptured disbelief as Ron and Hermione told them what they had found the night they next met. It was a mark of how serious all of this was that no one had yet discussed the fast-approaching Quidditch match between Gryffindor and Hufflepuff despite how high the stakes were following the badgers' loss to Slytherin earlier that year.
+
+"Who is this Riddle person?" asked Susan. "I've never even heard of them."
+
+"He was brilliant," said Hermione. "He took thirteen OWLs and scored outstanding on all of them --- same goes for his NEWTs. Some of his work on runes, archaic magic, and counter curses even got published before he ever graduated Hogwarts."
+
+"Riddle's not a name I recognize," said Cedric. "You would expect the Heir of Slytherin to come from an old and prestigious family."
+
+"Would you?" asked Hermione. "If they came from one of those, don't you think everyone would know they were the Heir? What if Slytherin or one of his descendants just wound up marrying a muggle or a muggle born or something?"
+
+Cedric frowned deeply. "I suppose it's not impossible, but you would expect any connection at that point to be so distant that it might well be dormant. It's hard to say, though."
+
+"It adds up though," said Susan. "It would explain why we've never heard of him as the Heir of Slytherin and the timeline works well. My auntie says that there are rarely coincidences in law."
+
+Ron was fidgeting restlessly. "That's great and all, but what do we do? Do we tell someone about Hagrid being expelled for something he didn't do? Do we tell them about Riddle?"
+
+Cedric, Susan, and Hannah exchanged looks. "It's... going to be really difficult to get anyone to reverse a decision made fifty years ago," said Hannah.
+
+"Probably impossible," Susan agreed.
+
+"But someone should know, right? That's still on Hagrid's criminal record."
+
+"Someone should probably know, but do you think they'll really believe you?"
+
+"Not without more proof," said Cedric. "If you could find something more. Whether that's who's doing it this time or something to prove that Myrtle was really the one who died and that those three pieces all go together. Then... maybe."
+
+"I will!" Hermione promised with a huff, crossing her arms and looking ready to storm back off to the library at that very moment.
+
+***May 7, 1993***
+
+***The Library***
+
+***8:56 PM***
+
+"Diana?"
+
+It was a Friday night and exams were approaching. Diana knew that in the next half an hour, the room would be much emptier but for now, it was rather busy. Most of the students were her age or older --- some of them visibly stressed while preparing for their OWL or NEWT exams.
+
+Not that there were no younger students in the room. Weasley and Granger had been in here for some time, as was usually the case, and the Carrow twins had just entered and taken a seat near the Gryffindor duo. Diana watched them as they set down their bags. Hestia flicked her wand, either to get some spec of dirt off of it or to cast something, but Diana saw nothing happen. They must have been here to read up on whatever spell was giving them trouble. The two of them did *everything* together.
+
+That was just not something the younger girl understood. The need for subtlety seemed completely lost on her and tact was clearly a foreign concept altogether. Diana did not dislike her, per se, she just found her... off-putting. She was kind, sweet, and strangely adorable, she was just never the type of person Diana would have associated with if her father had not so bluntly prompted it.
+
+"Yes, Luna?"
+
+"Would you like to come and visit me this summer? I wrote to Daddy asking if you could and he's excited to meet you."
+
+That was it? This was all it was going to take to earn a meeting with Xenophilius Lovegood? Just a few months of spending time with his daughter and treating her like any decent human being ought to have done? It was almost depressing.
+
+"If my father will allow me to," answered Diana, knowing all too well that the man would be more than happy to do just that. "He usually keeps me busy during the summers with social gatherings and the like."
+
+"You can come whenever you'd like," said Luna. "Just pop in. I don't really have friends, so seeing you would be nice." It was one of those blunt things Luna said with complete nonchalance that would have made Diana feel uncomfortable if she was any less composed.
+
+"We'll... schedule something," said Diana. "I'll try and find a time that works for you and your father as well as me and mine."
+
+"Daddy won't mind. Just make sure it doesn't interfere with our travels in July."
+
+"Oh? Where are you off to in July?"
+
+"To find the crumple-horned snorkack. We almost found it last summer, but it got away. Daddy is sure that this will be the year. We just need to keep the wrackspurts away. He said they clouded our judgement and made us too impatient."
+
+Diana just nodded numbly and turned back to her book. Sometimes, that was all anyone could do whilst dealing with Luna.
+
+***May 8, 1993***
+
+***The Quidditch Pitch***
+
+***9:00 AM***
+
+Harry enjoyed Quidditch immensely. Playing it was one of his absolute favourite things in the world and one of the few things that always made him feel light and gleeful. Even watching it had a certain majesty to it; a splendour that not many things could replicate with such ease.
+
+The air seemed so thick with tension that it would take a Cutting Curse to slice through any of it at all. This was a must-win game for both teams. Gryffindor had defeated Ravenclaw after losing to Slytherin, whilst the badgers had fallen to the snakes several months ago before more recently beating Ravenclaw, who was well and truly out of the running. Either team could stay in contention for the Quidditch Cup with an impressive enough victory with only one match left to be played. Harry and the rest of the Slytherin team would face Ravenclaw at the end of the month. It was their easiest matchup on paper and the confidence both from the house and team were at an all-time high, though Marcus Flint had been doing his best to ensure none of his players became too overconfident.
+
+Harry was hoping that Weasley would make a mistake and catch the snitch early on in the game. Beating Diggory to the golden ball would be no small feat --- he'd had a howler of a time doing it back in March --- but he knew that Diggory was too sharp to make that mistake. If Weasley became emotional the same way he had during the lions' match against Slytherin, then it was possible he would make the ill thought catch without considering the consequences.
+
+The levels of noise exuding from the crowd rose and rose as the players took to centre field, but just as Madam Pomfrey rose the whistle to her lips, there came a loud, echoing bang that drew the attention of all onto the person who had summoned it.
+
+It was Snape. He was striding towards centre pitch with his wand held aloft. Professor Sinistra walked alongside him. She had taken over as Head of Gryffindor House once Professor McGonagall had gone missing, but she did not look brave now. She was pale and shaky, a stark contrast to Snape, who was as stern and impassive as ever.
+
+"ALL STUDENTS ARE TO RETURN TO THEIR COMMON ROOMS IMMEDIATELY," Snape's magically amplified voice declared, ringing through the stadium with great power and authority. "ANY WHO ARE CAUGHT DISOBEYING THIS ORDER WILL BE EXPELLED. THERE HAS BEEN ANOTHER ATTACK. THIS GAME HAS BEEN INDEFINITELY POSTPONED."
+
+Harry heard gasps, moans, and even a few screams from the gathered crowd. A sharp intake of breath from his right was what caught his attention.
+
+It had come from Draco, who was sitting between Crabbe and Goyle and looking wildly around the stadium. It did not take Harry long to ponder out why. Pansy was not with him, nor was she sitting with Daphne Greengrass and her ilk.
+
+Which meant...
+
+No... surely not, Pansy! Why Pansy?
+
+*"Miss Greengrass was very upset with you. She told me some interesting suspicions not long before the winter break. She was logical. Brilliant girl, Miss Greengrass. She may be the most naturally gifted intellectual to have passed through this castle since Voldemort himself. She was very adamant that I act against you. I, of course, suspected the truth even then and did nothing.*
+
+*"But none of that is important. What is important is that Voldemort will have picked up on this in one manner or another and is trying to use a dangerous foe against you. He is already moving pieces into play that will make your life difficult and soon, more may fall into place."*
+
+Dumbledore had been right. Greengrass was glaring at him openly and he could see her fighting against outraged tears. Not even her Occlumency was helping her hold them back. Voldemort had moved yet another piece into play and done exactly what Dumbledore had feared, but it was worse than that.
+
+If he really was watching Harry so closely, could he have noticed the way he and Pansy still shot each other friendly glances when Draco wasn't watching? Could he have even discovered that the two of them still met up to speak on occasion?
+
+One way or the other, Voldemort --- or whoever had opened the Chamber of Secrets this time around --- had now made things personal and for some reason, Harry dreaded what would come next.
+
+Yet even that was not all...
+
+Why had Sinistra joined Snape out on the field? He was the Interim Deputy Headmaster. The last thing he needed was the backing of Professor McGonagall's stand... oh... Merlin!
+
+She was the representative of Gryffindor House and was looking every bit as shaky as any of her students.
+
+It had been a double attack.
+
+**Author's Endnote:**
+
+**Things are really going to heat up in the next chapter. We are awfully close to the year's climax and then its conclusion. I am very excited for both. I hope you all are as well.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors Bart and Idefix for their corrections/contributions on this chapter.**
+
+**A massive thank you is also extended to my Psychic-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, December 5th, 2021. Or you can read it RIGHT NOW by joining my Discord server! THE NEXT EIGHT CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST THREE CHAPTERS OF BOOK 3!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT CHAPTER IS AVAILABLE ON THERE RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website. The Discord link can also be found on my website's homepage, which is easily found via a generic Google search of my pen name.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next SEVEN CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST THREE CHAPTERS OF BOOK 3! The link to that can also be found on my profile, Discord server, or website.**
+
+**SPECIAL ANNOUNCEMENT: I have launched a fundraiser on my Discord server to support the charity Doctors Without Borders --- a medically focused, international humanitarian organization that does work in conflict zones and disease-impacted areas all around the world. There are incentives to donate that can all be found on the Discord server. This fundraiser can also be found and donated to via the homepage on my website, which can be found by searching my pen name or via the link on my profile. Any donation at all would be appreciated; let's see how big a difference this community can make around the world!**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 25: The Final Straw**
+
+***May 8, 1993***
+
+***The Hospital Wing***
+
+***9:26 AM***
+
+There was no increase in Ron's heartbeat as he peered down at his best friend who lay face-up in a hospital bed. Her eyes were open and unnaturally wide. Ron could only guess that she had glimpsed whatever had attacked her seconds before it had stuck.
+
+He did not feel anger or sadness yet, though he knew both would come. He just felt... numb. It was like when Neville had died last June all over again. Their adventurous escapades had led to yet another tragedy, even if this one was reversible. The Mandrakes were said to be almost ready, but that did little to ease Ron's mind.
+
+It was seeing Hermione like this that mattered. It was seeing what had happened when they'd tried to be proactive. It was seeing, once again, a clear example that they were still only children. It stung, it burned, it cut so deeply that Ron could feel blood seep out of him even though not so much as a drop hit the floor.
+
+What could he do now? Hermione had been researching Tom Riddle and the time period that the chamber had been opened right before she had been petrified. Did this confirm her theory? Had she been attacked as a means of silencing her? If that was true, was Ron next? Did the Heir of Slytherin know Hermione had been relaying all she had learned to him?
+
+There were too many questions and not enough answers. Did he dare continue the chase? Without the cleverest witch he knew, did he stand any chance? Had he and Hermione together ever stood a chance?
+
+Tremors began to grip his body and Ron could do little to fend them off. It was all his fault. It had been he who had been unwilling to give up after Yule. It had been he who had seen a fire lit underneath him when he had been attacked and tortured in January. It had been he who had pushed further and further despite having long-since realized that their hopes were bleak at best. He could remember all too well that crushing feeling of hopelessness he had felt the Saturday after he'd woken up unable to stand.
+
+Yet he had pushed on, and Hermione had followed his example and even took charge. Had he not acted the way he had, perhaps she would not be in this position now: sprawled out across a hospital bed, unable to move and dead to the world.
+
+It was maddening.
+
+Ron lurched forward and clutched Hermione's hand in his. It was cold, but not so cold as to indicate death. There was still life inside of her, and that was what he had needed to feel. After Neville... no, he could not bear losing Hermione too.
+
+Something did feel odd against his palm, though, and he stepped back and looked down. There was something clenched tightly in Hermione's fist. A roll of parchment, by the look of it. Frowning, Ron knelt down beside her and slowly began unravelling the roll of parchment from her grasp. It was no small feat. She must have been gripping it like a vice when she had been petrified, for her frozen fingers showed no interest in parting and allowing him access to what they held.
+
+When it eventually came free, Ron could do little more than step back and peer down at the parchment as thin beads of sweat now trickled down his forehead. There was writing; Hermione's thin, neat script. What was written was not long, but it painted a clear picture to Ron. One so mesmerizing that it created a strong spell of dizziness that slammed into him like a wall of concussive force.
+
+*Pipes... it must move through pipes. Myrtle died in the bathroom and swears the last thing she saw were big yellow eyes emerging from near one of the sinks. One of the exits for the monster is in her bathroom. It explains how it moves so stealthily and how no one has been able to pin it down.*
+
+Ron stumbled so violently he had to clutch the edge of the bed to stay on his feet.
+
+It was so obvious! Moaning Myrtle! That must have been where Hermione had gone. They had even told him she had been found separate from Parkinson, in a scarcely used corridor on the second floor. Hermione had realized how oblivious they had been to ignore Myrtle. She must have rushed off at the break of dawn to remedy their oversight. It explained why Ron had not seen her this morning and it explained why she had been so easily caught. If she had lurked so near one of the places the monster dwelled while learning about it and its history...
+
+What was he to do with this? Dumbledore was the only one he could think of who might be capable of handling this, but how would one even find Dumbledore? Last year, McGonagall had dismissed their concerns as though they had meant nothing. Surely, Flitwick would do the same, and who else was he to go to? Snape, the new Deputy Headmaster? No, that would not do. Ron would sooner swallow one of the foul things that hung in glass jars down in the man's office.
+
+He would need to give the note to Dumbledore during a meal. That was his only real course of action. The castle was locked down for today --- the only reason Ron was even here was because Professor Sinistra was waiting outside the hospital wing to escort him back to the common room.
+
+Yes, he would need to wait until the lockdown was lifted and then he would need to pass the message along to Dumbledore. And it had to be to Dumbledore directly. This was much too important to be dismissed or overlooked. It was the only way.
+
+It had not been difficult to sneak into the hospital wing. Not with the aid of his invisibility cloak. Harry had simply slipped it on and followed Ron and Professor Sinistra. The woman was as nervous as she had looked. Harry could hear her casting Homenum Revelio under her breath every so often, but he knew the spell would not work whilst his cloak protected him. It was exactly what Voldemort had tried and failed to locate him with last June.
+
+It had been a mere matter of following Weasley into the hospital wing before the door shut and then standing off to the side and watching as he stood over Granger.
+
+A part of Harry could not help but feel bad for Ron Weasley. Longbottom had been a close friend of his. Harry wondered whether Weasley would ever come to know how the boy had really died. He doubted it; that was perhaps the saddest thing of all. That and the image of him, shaking and broken atop that hill at Longbottom's funeral. A sight that had stained the corners of Harry's mind ever since.
+
+Now, this. He could not claim to like Weasley. Not after he had tried to curse Pansy in September, and not after he had snuck into the Slytherin common room under the guise of Polyjuice Potion, but he didn't dislike him, either.
+
+Weasley himself was doing something peculiar then. Prying something from Granger's still fist, or so it appeared. Harry watched on for a number of moments before the boy straightened up, peered down at the parchment, and staggered. Harry thought he would fall for a moment before he grasped the side of the bed. His breathing had grown louder and sliced through the room's thick and heavy silence with every heave of Weasley's chest serving as the next powerful stab.
+
+Harry thought upon the Yule incident once again as he watched Weasley make hastily for the door, suddenly as pale as the bed sheets his muggleborn friend laid upon. That instance could even somewhat be chalked up to Weasley wanting the same thing that Harry himself now desired.
+
+Merlin, did he ever want it badly...
+
+He had stayed far away from everything pertaining to the Heir of Slytherin for the better part of a year. What business of his was it if a mysterious monster had been let loose at Hogwarts? What business of his was it if muggleborns he had never met were being attacked in the dead of night?
+
+Harry thought now that he ought to have known it was more complicated than that once he had realized the Chamber of Secrets had been what Dobby had warned him of back at Malfoy Manor. He had not known until recently what the elf had meant, but he did now.
+
+He even now knew what Dobby had meant by vague insinuations about it not being Voldemort. If Dumbledore's theory held true, the elf had technically not lied since it was not Voldemort himself opening the Chamber of Secrets. Harry could not see how on earth it could be.
+
+Anything orchestrated by Voldemort would place Harry in a significant amount of danger by default. Voldemort's plan at Hogwarts meant nothing good for Harry. Especially not now. Not with first Blaise and now Pansy being attacked. The first was an implication to Greengrass, but this was more. It would do much the same as the former, but it was more personal. Pansy was a friend; one of the very few friends Harry had left. Seeing her lying motionless in a hospital bed off to the left of Granger's was sending waves of tumultuous anger coursing through Harry's body.
+
+What was it with dark lords and using him as their chess piece? Could they not realize he was but a child and not worth their attention? And why did others have to suffer for it? He had as good as killed Longbottom in his haste to stop Voldemort, and now others were suffering just by virtue of knowing him? It was not fair! None of this was fair! Nothing this year had been fair and Harry was sick and tired of all of it!
+
+Voldemort's preaching, the ideological uncertainty Harry still found himself gripped by, Neville's death, the portkey on the Hogwarts Express last June, his treatment at the hands of the Dursleys --- hell, the fact he'd had to go back to those filthy creatures in the first place --- Draco's betrayal, Grindelwald's visions and the way they had broken him so badly he had begun hearing voices, Aberforth's cruelty, Daphne's blame and betrayal, the fact Voldemort STILL seemed to be targeting him, and now this? How could one boy deal with so much and not break beyond repair?
+
+Fury gripped him as he looked from Pansy to the spot Weasley had just occupied, and back again.
+
+It would be so much easier if Voldemort did not insist on making Harry a pawn in his games. Had he not attacked Pansy, Harry would happily have continued standing back and watching. He had no stakes in any of this --- it was the Dark Lord who was forcing his hand. Harry hated it! How was he to live his life with the shadow of Voldemort looming over him? He would do anything to be rid of it and the shadowy threats it posed.
+
+*"Your mother died to save you. If there is one thing Voldemort cannot understand, it is love. He didn\'t realize that love as powerful as your mother\'s for you leaves its own mark. Not a scar, no visible sign... to have been loved so deeply, even though the person who loved us is gone, will give us some protection forever. It is in your very skin. Voldemort, full of hatred, greed, and ambition could not touch you for this reason. It was agony to touch a person marked by something so good."*
+
+Dumbledore's words from the conclusion of last year replayed on repeat in Harry's mind. A shiver ran up his spine at the memory of how agonizing it had been to touch Voldemort, but he had not been the one whose skin had melted and whose body had decayed.
+
+He did not wish to face Voldemort again. He had no desire to fight him, but if his hand was forced...
+
+For now, he didn't need to fight him. Dumbledore was still in the castle and if Weasley's dumbstruck expression had been any indication, he might have just found something that the Headmaster would be very interested in.
+
+***That night, on the seventh floor...***
+
+Harry had been waiting for so long that he feared the common room entrance may never open. The castle was on lockdown, but surely someone would sneak out or something would disrupt the peace and quiet.
+
+He had fled the hospital wing quickly that morning after his plan had developed. Harry had known the Gryffindor common room was somewhere on the seventh floor. It had just been a matter of catching up to Weasley and Sinistra to figure out exactly where it was. Sneaking after them under the cloak had been easy and catching up had not been much more difficult. The secret passages of Hogwarts were familiar to him. Harry reckoned he knew more of them than anyone in the castle sans Filch, the Weasley twins, and perhaps a couple of older students here and there.
+
+The problem was getting into the common room. Harry had heard the password uttered that morning and remembered it well enough. The issue was that if the entrance just opened and those inside saw no one enter, surely somebody would know that something was going on. Given the panic over the Heir of Slytherin and the full lockdown of the castle, they would all more than likely assume the worst and their inevitable cries would summon one of the professors.
+
+That would not do.
+
+It turned out to be one of the professors who inadvertently allowed him entrance into the common room. Sinistra returned almost an hour after Harry arrived outside the common room to perform a final check on her house before turning in for the evening. Harry waited until she had stepped inside before sliding in behind her, tuning her ramble out as he allowed his eyes to sweep over the new and unfamiliar room.
+
+It was a strange rush to see it. One of the major rooms in the castle he had not yet seen, yet never pondered. Perhaps that ought to be a goal for next year; to see all of the common rooms and what they were like.
+
+This one was warmer and cozier than the Slytherin one in the dungeons. It was circular and was dominated by a large fire. The chairs around the fire were smaller than theirs, but they were plusher and looked more comfortable. There were windows here where light would doubtlessly stream through them and illuminate the better part of the common room when the sun was up. It was a nice and homely place; Harry could see its appeal and realized with a jolt that his parents had likely spent many happy days lounging in this room.
+
+It was a jarring thought, to be standing where his parents had dwelled for seven years --- it was the closest he had ever been to either of them. The first time he had truly thought of them since Voldemort's monologue at the end of last year and, before that, while peering into that damnable mirror.
+
+Harry shook himself from those thoughts with great difficulty. The last time he had thought about his parents had been in a situation that ended in disaster. Doing so now was not conducive. They were gone and that was all that mattered. They had given him his life and he would be forever grateful, but he could not dwell on them. Years of doing so at the Dursleys had taught him that such thoughts only led to unshakable bouts of misery.
+
+*"This mirror will give us neither knowledge nor truth, Harry. Men have wasted away before it, entranced by what they have seen, or been driven mad, not knowing if what it shows is real or even possible. The mirror will be moved to a new home tomorrow, and I ask you not to go looking for it. If you ever do come across it again, you will now be prepared. It does not do to dwell on dreams and forget to live. Remember that."*
+
+It took him a moment to locate the dormitories once he returned to inspecting the room. Harry had become so accustomed to looking for stone tunnels that sloped down into the bowels of the castle. Here it was different. There were two sets of stairs that led upwards. It made sense to him that the dormitories were higher in the tower, but it was an amusing contrast. The two houses really were polar opposites; their founders had even designed them as such.
+
+He waited for one of the boys to retreat up the left of the stairs before following. The doors to each dorm were clearly indicated. Harry glanced around the lowly-lit hallway before arming himself with his wand and pointing it at his desired target from underneath the folds of his invisibility cloak.
+
+"Alohomora."
+
+The lock clicked not a second after his whispered incantation and Harry quietly placed a Silencing Charm on the door's hinges before slowly pushing it open.
+
+Everyone slept in their own four poster bed just like in the Slytherin dorms, but the hangings here were crimson red instead of emerald green.
+
+This was going to be the difficult part. Finding Weasley's bed without alerting the entire room to the fact he was here.
+
+Harry listened carefully for anything that might give the boy away. If he snored like he ate, that would be easy enough to follow, but no sounds like that stood out. The only thing Harry could hear that was a bit out of the ordinary was... squeaking?
+
+He listened more carefully. Sure enough, something was squeaking and Harry was flummoxed for a time before he remembered Draco's mocking laughter one day in their first year when he'd learned that Ron Weasley's treasured pet was an old and weathered rat named Scabbers.
+
+He crept slowly towards the squeaking sound. It was coming from behind one of the sets of hangings. Very slowly and as quietly as he could, Harry pulled the hangings aside.
+
+Weasley did not so much as flinch. He just continued lying there with his face buried in the pillow, his arm curled under him, and a thin line of drool protruding from the visible corner of his mouth.
+
+Harry made a face before looking around. It wasn't exactly hard to find. It seemed that Weasley had learned nothing from their first year. Had the dragon incident not taught him that leaving valuable bits of parchment out on one's bedside table was a poor and ill-thought idea?
+
+Harry wasn't complaining. He snatched up the bit of parchment and whirled towards the door, scanning the handwriting as he went.
+
+His eyes nearly bulged out of his head.
+
+*Pipes... it must move through pipes. Myrtle died in the bathroom and swears the last thing she saw were big yellow eyes emerging from near one of the sinks. One of the exits for the monster is in the bathroom. It explains how it moves so stealthily and how no one has been able to pin it down*
+
+Myrtle? That whiny ghost that Pansy so often complained about? She was the one who had died? How had Dumbledore not put that much together?
+
+*"Oh, I more than believe him. I know his claim is true; I have researched it extensively and I do not believe any who were not blessed with Salazar's gift could find the chamber."*
+
+*"You mean Parseltongue?"*
+
+*"Yes, Harry, I mean Parseltongue."*
+
+*"Sir, that means if we found the Chamber, I could---"*
+
+*"No. I would never have you risk yourself in such a way."*
+
+There it was again. Dumbledore protecting him. First, he had needed to wait for the reason why Voldemort had attacked his family. Surely he was owed that explanation. Who was Dumbledore to keep that from him in the first place? Then there was keeping a whole side of Occlumency from him. Still, the topic of passive Occlumency had not arisen again. Then there was this. Endangering Harry and everyone else just by 'keeping him safe.' When was Dumbledore going to realize that the last time he had tried to keep Harry safe, he had subjected him to ten years in the depths of hell, locked away with disgusting creatures whose kind was more fit to lick the grime off of Harry's shoes than they were to rule over him?
+
+Grindelwald had been cruel, but at least he had been honest and he had never coddled Harry. He almost missed those visions now. If he did not fear so intensely for the changes they had brought forth and the voices they had summoned, he might have asked for their return. It would have been nice to escape his own troubles no matter what he was being thrown into. It would have been nice to see that somebody at least cared not for coddling him and making him wait.
+
+It took a titanic effort and an almighty breath for Harry to regain his composure. Dumbledore was not his enemy. He was frustrating but well-meaning. There was just so much stress, so much going on... Harry feared that he would soon snap and be unable to fit the pieces back together.
+
+It was better for now not to think about that and simply to creep his way back out of the Gryffindor common room. There were more pressing things that needed to be attended to.
+
+***Minutes later...***
+
+Harry took the final corridors to Dumbledore's office at a sprint. He heard voices behind him. They might not be able to see him, but they would not fail to notice the headmaster's gargoyle step aside and now was not the time to draw suspicion.
+
+Harry was breathing heavily by the time he ascended into the landing outside Dumbledore's office. He was through the door and inside before the man had time to call for him to enter.
+
+Dumbledore himself jerked his head up from a pile of papers on his desk. Harry was struck by how tired the man looked. The lines in his face seemed deeper somehow and his blue eyes appeared sunken and a touch less vibrant.
+
+"Harry! My goodness, what is it that brings you here at such unlawful hours of the evening? In the midst of a school-wide lockdown at that?"
+
+"I'm... sorry... sir," Harry forced out, still breathing heavily. "Give me detention or whatever if you need to, but... sir, this is important. It's about the Chamber of Secrets."
+
+Dumbledore's postures stiffened and his demeanour shifted all at once. He no longer appeared the old man slumped and weary, but a general who had once conquered one dark lord and led the fight against a second.
+
+"What is it you wish to tell me?" he asked, his eyes twinkling with the intensity of a thousand stars.
+
+"Sir... the chamber. I think I've found it! Well... er, not me, exactly, but---" Harry jumped when a sound came from behind him. For a moment he was unsure of what it was, then, he realized there had been a knock at the door.
+
+Dumbledore looked from Harry to the invisibility cloak he had discarded as he stepped into the room and the Slytherin youth got the message, scrambling back under the cloak as Dumbledore turned his attention to the door.
+
+"Enter."
+
+Two men stepped into the office. Harry realized with an internal curse that they must have been the two voices he had heard while on the way.
+
+The first man was one whom Harry recognized well. Tall and graceful, with long blonde hair and storm grey eyes was Lord Lucius Malfoy. He was swathed in a black travelling cloak and leaning leisurely on his serpentine cane as he eyed Dumbledore with an expression Harry had never seen the man wear before. It reminded him of Dudley any time he had Harry cornered in some sort of alleyway.
+
+The other man was new to him. He was almost a head shorter than Mr. Malfoy and he moved with none of his grace. He was a portly man with a mess of rumpled hair. There were specs of brown here and there, but it had long since begun to grey and time had won out. The most striking feature of the man was the cap he had swept off his head upon entering the room and now held under his arm. A vivid, lime-green bowler cap.
+
+"Good evening, Lucius," Dumbledore said with a passive expression before turning his eyes on the other man. "You as well, Cornelius."
+
+Harry jolted at the name. He couldn't mean... but it had to be. Someone named Cornelius accompanying one of the most important men in the country to Hogwarts in the dead of night? This could be no one but the Minister for Magic. Harry had never seen him before, but the man looked underwhelming. He was the last of the three men in the room who Harry would have guessed was the minister upon a first glance.
+
+"Dreadful thing, Dumbledore," Mr. Malfoy said lazily, taking out a long roll of parchment, "but the Hogwarts Board of Governors feel it is time for you to step aside. This is an Order of Suspension --- you'll find all twelve signatures on it. I'm afraid we feel you're losing your touch. How many attacks have there been now? Two more this afternoon, wasn't it? At this rate, there will be no muggleborns left at Hogwarts, and we all know what an awful loss that would be to the school."
+
+Dumbledore looked to Fudge as though he expected the man to object, but he didn't. Harry himself almost did, but crushed the impulse.
+
+This could not be happening. If Voldemort was behind this, Dumbledore was the one man who stood any chance of putting an end to it. And now, of all times? Harry had the answers in his hand! Dumbledore could investigate right now if they would only allow him!
+
+ "Interesting that you come to me now. The attacks have been happening for quite some time. What has changed, Lucius?"
+
+"We do not owe you our justification, Dumbledore."
+
+"Of course not, but if you will excuse what may be taken as arrogance, I do not plan to stay suspended long. I wish to know how I might improve my performance upon returning to the castle."
+
+Harry thought he could see Mr. Malfoy bite his lip to stop it from curling. "Read the paper tomorrow morning. I'm sure it will have a number of suggestions for you."
+
+"Ah, yes, the paper. I do hope Miss Skeeter does not slander your good intentions based on today's events."
+
+Mr. Malfoy's eyes narrowed. "And why would she do that?"
+
+"Rita will do what Rita does. She could very easily latch onto the fact that the action came so swiftly after a friend of your son was targeted."
+
+The smile the Malfoy patriarch offered Dumbledore was as cold and hard as a frozen lake. "I appreciate your concern, but it is not necessary. I'm sure dear Rita would never harm my reputation. She seems quite busy at the moment at any rate. I am quite excited to read your biography."
+
+"I am humbled by your interest." Dumbledore dipped his head before casting his eyes about the room. They landed on the exact spot Harry was standing. Dumbledore seemed to stare at him for a moment before shaking his head so minutely that Harry was unsure he had seen it. Was it a signal to do nothing? How could Harry stand by and allow them to remove the only chance he had at removing what could potentially be a threat to his life?
+
+The choice was immediately taken away from him. There was a nearly imperceptible movement under Dumbledore's robes and Harry felt his arms and legs snap together. He tried to open his mouth, but he couldn't as he slumped back against the wall behind him. Dumbledore had sensed his unease and bound him against speaking before his restraint could waver.
+
+"If the governors want my removal, Lucius, I shall of course stand aside." His eyes were still on Harry as he spoke. "However, you will find that I will only truly have left this school when none here are loyal to me. You will also find that help will always be given at Hogwarts to those who ask for it."
+
+"A sentiment to be proud of," Mr. Malfoy said with a short bow. "Now, it is late, Dumbledore. I have come to deliver the news and Cornelius was kind enough to join me as the ministry's witness to the event. Please follow us, if you will."
+
+Harry could do little more than watch on with panic and a strong sense of helplessness as Dumbledore was led from the office that was rightfully his. Not until the men must have been some distance away from the castle did Harry feel the spell's effects lift.
+
+He slumped against the wall and buried his head in his hands. What was he to do now? He could not go after this Heir of Slytherin and their monster on his own. Who else would help him? Flitwick, maybe, but Harry did not trust the man with something as important as this. This was not a question about Charms or magical theory. This was a life or death situation that Harry would not be taking up with anyone he did not trust.
+
+Eliminating Flitwick left only Snape, a thought that was even more laughable. The man despised him and would probably break out into song if the monster swallowed Harry whole.
+
+No, he would have to wait. He would have to write to Dumbledore and explain things. All he could do then was hope to hear a reply before it was too late.
+
+***May 15, 1993***
+
+***The Library***
+
+***10:23 PM***
+
+"I think we should head back to our common rooms," Diana told Luna as the hour grew late.
+
+The lockdown had reluctantly been lifted in the castle on Monday morning. The students were escorted to and from classes, but the teachers still allowed them to use the library, though few did.
+
+Diana thought it was madness. If the teachers didn't trust them to attend classes on their own, she didn't understand why they were allowed in the library other than to prepare for the end-of-year exams. She had never realized how much those meant to the professors until this year, but she was not complaining. She'd had a lot on her plate this year between Luna, Draco, a social life that grew more complicated by the day, and of course, this business concerning the Chamber of Secrets and the alleged Heir of Slytherin.
+
+"Do we have to?" asked Luna. "They've extended curfew by an hour until exams so we can prepare."
+
+"I would rather not cut it close. Not with whatever lunatic is roaming around the halls and not with how strict everything is right now. Can you imagine what one of the professors would do if they caught students out after curfew?"
+
+Luna stared unblinkingly back at her. "They would probably be nicer than my housemates."
+
+There was no bitterness in her voice. No anger, not even sadness. It was just said matter-of-factly, as though it was a prediction about some sort of upcoming Quidditch match or something of the like.
+
+"What about your housemates?" asked Diana with narrowed eyes. "Luna, have they been giving you trouble again?"
+
+"Oh, yes," she said in that dreamy way of hers. "My things keep going missing. Marietta swears that no one is stealing them, but I don't think I believe her. Her wrackspurts act up any time she lies and there were a lot of them when she said that." Luna paused and suddenly began drumming her finger upon the edge of the table. "Well, I suppose they also act up any time she thinks really hard about something. Maybe she was just trying to remember---"
+
+"Oh, for Merlin's sake," Diana cut her off. "Luna, you have to stop letting people do things to you like that. Here, I'll take you to your common room and get things sorted. If they don't listen to me, I'll go to Cassie."
+
+"Cassie? I don't know a Cassie, but that's a pretty name. Tell her I like it."
+
+"Her name is actually Cassandra. We all just call her Cassie and she's one of the fifth-year prefects, but... I'll pass your message along."
+
+Luna hummed, then skipped to her feet and looked expectantly at Diana, who blinked, smiled vaguely, and followed.
+
+"Cassandra isn't as pretty as Cassie," Luna said as they left the library, "I'm not quite sure I like that as much. Tell her she should get her name changed to Cassie. I like that one."
+
+***Meanwhile, in the dungeons...***
+
+Harry had found himself walking the halls of Hogwarts often since Dumbledore had been driven from the castle. The reason why eluded him. Perhaps he was hoping that answers also frequently broke curfew and would stumble into him along the way, or perhaps he simply needed to escape other people and at least feel like he was trying to decide what to do?
+
+There was just... nothing.
+
+He had written to Dumbledore, but there had been no reply as of yet. Harry wondered where the man had travelled to if he had still not been able to receive and return a simple letter. The temptation to go to Snape was becoming stronger and stronger by the day, but Harry feared the man would dismiss him outright. If he did, he would watch Harry more closely and sneaking out after more harshly enforced curfews would become even more difficult.
+
+It was the most frustrating thing in the world. Harry was terrified and had no one to turn to. It was like all those years on Privet Drive all over again. Hoping in vain for a saviour who would never come.
+
+**"Blood... I smell blood. The right blood... the demanded blood. Rip... tear... kill!"**
+
+Harry froze as all colour fled from his skin. It was the voice again; the same one that had haunted his nightmares for months and indicated what could be the beginning of a descent into insanity.
+
+Except there was something...
+
+Different.
+
+**"Closer... closer... come to me. Let me rip you... let me tear you... let me kill you!"**
+
+It wasn't in his head. His eyes widened like saucers when the realization slammed into him with speed and force the likes of which Dobby's cursed bludger could only dream of.
+
+It was not him! He wasn't going mad! Grindelwald had failed to drive him mad!
+
+He laughed right there in the corridor for a moment before his mind caught up. It was a crazed, maniacal laugh that escaped him in a wild howl as his body was wracked with its intensity. This was euphoric. The lightest he had felt since escaping the Dursleys last summer.
+
+The voice was moving! It could not possibly be in his head, for it was moving swiftly away from him.
+
+**"...blood!"**
+
+It was growing fainter now but Harry's heart had started beating fiercely as a new question sprang to life inside his mind.
+
+What the hell *was* that voice and why could he hear it back in September when Aberforth could not?
+
+That was when it struck him like the very same bolt of lightning that so closely resembled his world-famous scar. It struck him at the same moment that a horrible, high-pitched scream tore through the corridors with such explosive vigour Harry thought glass might shatter.
+
+*"Oh, I more than believe him. I know his claim is true; I have researched it extensively and I do not believe any who were not blessed with Salazar's gift could find the chamber."*
+
+*"You mean Parseltongue?"*
+
+*"Yes, Harry, I mean Parseltongue."*
+
+Oh... FUCK!
+
+The monster in the Chamber of Secrets --- it was a snake!
+
+It was the only thing that made sense. A mysterious voice that only Harry could hear, one that moved through walls and seemed capable only of shrewd calls for blood, mutilation, and death.
+
+Of course it was a fucking snake! It was Salazar Slytherin's fabled monster!
+
+But that meant...
+
+He remembered the night Cadmus Yaxley had sought a fight with him, remembered how the snakes upon the sofa had come alive with a single hiss, and remembered how, even now, they were loyal to him.
+
+The answer was so simple. It was Parseltongue!
+
+Without thinking, Harry tore off in the direction of the hissing and screaming.
+
+***A minute or so later, in Severus Snape's office...***
+
+The last week had been the most stressful Ron could remember. Never had he felt so weighed down by everything in his life. He constantly felt on the verge of vomiting because his stomach was tied so tightly in anxious knots.
+
+The scroll of parchment from Hermione had been stolen that first night he had slept after taking it. There was no other solution. It could not have simply been lost; Ron had scoured every inch of the dormitory not once, not twice, but thrice. He had even looked around as much of the common room as he could and it had been nowhere.
+
+Yet not even that had been the worst occurrence of the past seven days.
+
+Dumbledore had been removed from his position in the middle of the night and was no longer even dwelling in the castle. The one man who Ron could take his grievances to was nowhere to be found and this left him with very few options.
+
+Ron had done the only thing he could think of --- explore the bathroom for himself.
+
+He had spent a frantic hour scrambling around the place before he remembered what Hermione had done and called upon Moaning Myrtle. Convincing her to speak had taken some time, but she had eventually pointed him in the right direction, and there it was --- a subtle, serpentine carving upon one of the taps.
+
+The trouble was, Ron had no idea what to do next. He had researched as many opening and revealing spells as he could, but none of them seemed to make the sink budge and last night, he had finally decided that it would take someone much more skillful than him to crack the code and hopefully put an end to this madness.
+
+His first choice would have been Professor Flitwick, but the man had fallen ill and was not taking any visitors.
+
+That left Ron with only one option...
+
+"Enter," called the newly appointed Interim Headmaster of Hogwarts when Ron knocked upon his door.
+
+The office was as horrible as always. Sick-looking green things dangling from the ceiling and odd, misshapen objects swimming in murky liquid and thick, slimy concoctions in floating vials all around the room.
+
+Snape himself was burdened with several rolls of parchment longer than his hair. His black eyes narrowed as his lips pulled into that trademarked sneer of his as he inspected Ron with clear disdain.
+
+"What is so urgent that you felt the need to disturb the master of this castle, Weasley?"
+
+"It's important," Ron defended, his face flushing with furious impatience.
+
+"So important that you could not have taken it up with your standing Head of House---"
+
+"I know where Slytherin's monster is coming from!" Ron blurted so loudly it echoed off the walls. "It might even be the entrance to the Chamber of Secrets."
+
+It was the first time Ron had ever seen Snape look surprised. The expression was present on his face for only a second, but it was the most viciously satisfied Ron had been in a very long time.
+
+"And where do you believe this to be?" Snape asked in a sickeningly soft tone of voice.
+
+"The out-of-order girls' bathroom on the second floor, it's---"
+
+"Idiot boy!" Snape snarled. "Is this a joke to you, Weasley?"
+
+"P-Professor---"
+
+"You come here and interrupt my business with the illusion of presenting a real solution to a serious problem---"
+
+"Sir, I---"
+
+"Silence! You will not interrupt me again! You come here under the guise of nobility and throw this nonsense in my face? Is this a twisted joke on the behalf of you and the dimwitted imbeciles you call brothers?"
+
+"Sir, I'm not---"
+
+"You come to me, the long-time Head of Slytherin House and spout off this nonsense that Slytherin's noble founder would choose that hovel for his---" Snape stopped talking all at once as a terrified scream tore through the dungeons.
+
+It was of a pitch so high, a Mandrake would have been proud. It came from a meaningful distance away, but Ron could tell it had emanated from the dungeons.
+
+So could Snape, for he took to his feet, armed himself with his wand, and stormed out his office door without even bothering to see if Ron had stayed or followed.
+
+The redhead looked from the door, to the desk, and back again, before snarling with livid frustration and sprinting after his rapidly-moving headmaster.
+
+***Elsewhere in the dungeons...***
+
+Harry's lungs were burning by the time he reached the place from which he thought the scream had come. It had to be here, for it was a dead end with no branching corridors.
+
+Yet there was nothing.
+
+There was no snake and no victim, just an empty stretch of wall...
+
+Harry's blood turned to ice as his breath caught in his throat.
+
+It was an empty stretch of wall splattered with familiar-looking red letters.
+
+*Their skeletons will lie in the chamber forever.*
+
+The words made no sense. Whose skeleton? What was happening? Then, Harry's senses picked up two equally disturbing things.
+
+There were three pieces of jewelry strewn about the floor at his feet. The first two, he did not recognize. They appeared to be strangely-shaped earrings, but there was some sort of... something dangling off of them. It almost resembled vegetation, but it was no vegetable that Harry had ever seen.
+
+The other...
+
+His heaving breath caught in his throat when he saw it. A splendid, ornate ring adorned with a crest that was all too familiar --- a ring the likes of which important, pureblood heirs and heiresses would wear around their fingers.
+
+But that was not all.
+
+Something was moving behind Harry. He could hear it approaching and approaching fast. His only thought now was whether or not he would soon be joining Diana and whoever was unfortunate enough to have been attacked alongside her.
+
+**Author's Endnote:**
+
+**That was a whole mess of logistics to get lined up. It was probably the single hardest chapter of this story for me so far, but I am pleased with how it turned out and that we are finally ready for the book 2 climax. Trust me, there is going to be more than what you might expect.**
+
+**Please read and review.**
+
+**A massive thank you is extended to my Othrian-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, December 12th, 2021. OR YOU CAN READ IT RIGHT NOW BY JOINING MY DISCORD SERVER! THE NEXT SEVEN CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST THREE CHAPTERS OF BOOK 3!**
+
+**Also, don't forget to check out the fundraiser! If you have any money to spare for a worthy charity, that would mean the world!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT CHAPTER IS AVAILABLE ON THERE RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website. The Discord link can also be found on my website's homepage, which is easily found via a generic Google search of my pen name.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next EIGHT CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST THREE CHAPTERS OF BOOK 3! The link to that can also be found on my profile, Discord server, or website.**
+
+**SPECIAL ANNOUNCEMENT: I have launched a fundraiser on my Discord server to support the charity Doctors Without Borders --- a medically focused, international humanitarian organization that does work in conflict zones and disease-impacted areas all around the world. There are incentives to donate that can all be found on the Discord server. This fundraiser can also be found and donated to via the homepage on my website, which can be found by searching my pen name or via the link on my profile. Any donation at all would be appreciated; let's see how big a difference this community can make around the world!**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 26: The Hatching of Serpents**
+
+***May 15, 1993***
+
+***The Dungeons***
+
+***10:54 PM***
+
+Ron skidded around the corner so fast that he almost fell. His nerveless feet rendered movement difficult. It felt as though they had frozen in a cold winter's snow, but he knew that was not the case. They had frozen for entirely different reasons.
+
+There had been another attack.
+
+There was no other possibility. Ron had known it in his heart the second he had heard the terrible scream. Snape must have known as well as him, for Ron had never imagined the old bat could move so fast. His cloak whipped behind him as he ran through the corridors, the Gryffindor youth hot on his heels.
+
+Both of them were breathing heavily by the time they came to a dead-end corridor whose wall was splashed with familiar red writing.
+
+*Their skeletons will lie in the chamber forever.*
+
+"This is too far," Ron heard Snape whisper. There was an edge to his voice that Ron had never heard there. Oftentimes it was smooth as silk, but now it seemed as jagged as the rough face of a steep and rocky cliff.
+
+"Professor? Who was petrified?"
+
+Snape must have seen something Ron didn't because he stooped and picked something off the floor. Two somethings. Strange earrings with things hanging from them that Ron had never seen. Well... he had seen something similar, but not quite that.
+
+"They look like earrings a friend of my sister's used to wear."
+
+Snape had ignored his existence since leaving his office, but finally, the man looked back and met his eyes. "Who is this friend you speak of?"
+
+"Luna Lovegood."
+
+Snape's expression remained impassive, but Ron could see the vein in his jaw pulse. "That is part of your answer," he said.
+
+"Part?"
+
+"'Their skeletons', Weasley. It implies more than one victim."
+
+Ron's sharp eyes swept around the corridor. He had become accustomed to finding a small speck of gold when no one else could, but he found nothing more in that corridor.
+
+Snape was turning now, looking all around them but still he saw nothing. "You will return to your common room if you value your life," he said.
+
+"Sir! I know where the---"
+
+"Enough of your games, Weasley."
+
+"Sir, I---"
+
+"Can you not see that the time for them has long-since passed?
+
+"I'm not---"
+
+"This has escalated too far and I must take steps towards putting an end to this madness. Dumbledore must know and this castle must be locked down. Now, begone!"
+
+Ron wanted so badly to argue. This was the most foolish thing a professor had ever done. McGonagall dismissing their concerns last year had been one thing, but this? He knew where the monster was coming from. Surely that same place could lead them down into the Chamber of Secrets. They could retrieve the stolen students and confront the Heir of Slytherin. It was the only way they were ever going to put an end to this lunacy.
+
+Yet Snape would hear none of it and Ron knew that. The man would never let him finish, let alone take heed of what he was told. Snape was stubborn in his ways and his mind would remain unchanged. Ron was just a petulant child who knew nothing and understood too little to be of any use.
+
+Arguing with the interim headmaster would do neither him nor the victims any good. Professor McGonagall was petrified, Professor Flitwick was so ill he was not seeing students, and Ron doubted any of the other professors would heed him.
+
+That left him only one option.
+
+He was going to need to find a way to reveal whatever passage the monster was using in Moaning Myrtle's bathroom. It was the only way; he would wait until the beast next appeared and slip in after it had left if need be. The madness had to end.
+
+***Minutes later, in the Slytherin common room...***
+
+The Slytherin common room was packed to capacity, but Draco could hear nothing but the vast emptiness of ringing silence. Never had he heard this room so noiseless. The only sounds that hung in the air were the collective breaths of all gathered.
+
+Draco could feel something red-hot rising up within him.
+
+They had all known something had happened when Professor Snape had announced via his magically amplified voice that the castle was in a full and complete lockdown --- and that any caught outside their common rooms would be expelled. That was far stricter than any lockdown that had come before it, so all of them knew something dire had happened.
+
+Another attack, no doubt, and the room had been on edge. The last two victims had not been muggleborns, but Slytherins; and purebloods, the both of them. No one was safe; that was clearer now than ever.
+
+There were two students missing when the heads had all been counted and Draco's blood had run cold even then.
+
+Diana and Harry.
+
+The prefects had all done their best to stay calm in hopes the room would mimic them. It wasn't all that late. Not with exams approaching and Harry's known aptitude for disappearing and showing up again that next morning despite never having been seen re-entering the common room.
+
+There were dark whispers, of course. Whispers about how Harry was taking out his friends one by one. He was the Heir of Slytherin, after all. Zabini had once called him a friend, as had Pansy, and now Diana.
+
+Draco did not believe a word of it.
+
+Harry was many things and Draco wished he was many more. He wished that Harry was more patient and also more defensive. Perhaps then he might have talked him down back in September, back before all had gone completely off the rails. Draco wished Harry was less stubborn than himself. Perhaps then, they would not have remained at such a painful impasse for so long. Draco wished he was more forgiving, but that last one he understood. He had been lucky to win Harry's forgiveness back last year. Diana had told him so and she had been right, but that did not mean that he couldn't wish for it now.
+
+Draco knew Harry well. He had made foolish choices and passed judgement with ill thought, but he knew Harry perhaps better than any other.
+
+Harry Potter was not the Heir of Slytherin.
+
+He might seem cold and distant to everyone else and to some extent, it was even true. Many nights Harry had abandoned them to go sloping off on his own, but that was just his way. Draco's father was much the same; he had grown up with that, he understood it well.
+
+Harry cared for his friends even if he did not wish to spend every passing minute with them. He had been prepared to second Draco in a duel he did not understand, he had attacked Weasley for Pansy back in September, and he had even spared Draco from... whatever had happened in the common room the night of Yule. There had been selfish motives in the last, but Draco had not missed the look in his eyes. A part of Harry had still cared, at least back then.
+
+He would not attack his friends in the way that some suggested. Certainly not Diana, who had never ceased showing him kindness.
+
+So the question was --- where was Harry, and where was Diana?
+
+The answer became more and more obvious as time ticked by. Draco's eyes watched the entrance to the Slytherin common room, but it never gave way and admitted neither of them entrance. Dread built in his stomach. It swelled like a great and terrible bruise but it throbbed with pain that was far greater than he had ever imagined. It was pain unlike anything he had ever felt before. Pain so raw and all-consuming he could think of nothing else.
+
+His legs shook underneath him as he took to his feet. His mind whirled in chaotic circles as he felt something sting at the corner of his eyes and saw his vision blur just a bit near the edges. He would not cry here. Not in front of all his housemates. He was Draco Malfoy, the youngest son of Lord Lucius Malfoy. He did not let emotions like this conquer him --- especially not in front of a room filled with so many others.
+
+Nobody called after him as he marched towards the common room's exit with as much dignity as he could muster. Snape's warning of expulsion had all but fled his thoughts by the time he was out of the room. Only then did he pause and think.
+
+What was he to do?
+
+Harry was his first instinct. The Boy-Who-Lived was a Parselmouth even if he was not the Heir of Slytherin. Surely that meant something when dealing with Salazar Slytherin's monster, right?
+
+But that was no good. Harry had no reason to heed him and even if he did, Draco knew not where he was, nor how to find him. He didn't even know what he would say when he did. Draco knew nothing of the Chamber of Secrets or how to find it. What would he say? 'Can you help me get into this chamber in a location I don't know?' It was madness.
+
+The only thing he knew about the Chamber of Secrets was that it had been opened fifty years ago. A muggleborn had died and whoever had opened the chamber had been both caught and expelled.
+
+It was almost no information to work with. It had all been kept very quiet and Draco would never have known had his grandfather not attended Hogwarts at that time. All students had been urged never to speak of it and the staff had pretended it had never happened the very next year.
+
+Perhaps if Draco knew more of that, there would have been something he could do. Even if he knew where the victim had died. If this monster was of great size, he doubted it moved far. That would at least narrow down a location, but how was he to find one? Decades had passed since that fateful day. Nobody at the castle now knew what had happened, and even if they did, they had no reason to tell Draco.
+
+Except... there were beings that did know exactly what had happened. Whether or not they would tell Draco... that was another matter altogether. Surely only one of them would even consider it and he was someone who Draco had pointedly avoided ever since that first night at the welcoming feast. Ever since he had sat beside him and seen the way his life's blood clung to him like a second layer of skin.
+
+But what other choice did he have?
+
+Draco sniffed and shuddered, biting back tears the best he could. It was now or never.
+
+***Meanwhile...***
+
+Harry barely had enough time to snatch Diana's ring before the two figures were upon him. First, he had expected the Heir of Slytherin and their vaunted monster. When it became clear that was not who approached, he then expected to be caught out. Harry had actually been confused when their eyes had skipped over him. It took several seconds before he realised he was still covered in the silvery fabric of his invisibility cloak.
+
+Still his heart beat as he watched Weasley and Snape. Any doubts he might have had over not going to the interim headmaster with the information he had were crushed there and then. Weasley was shrugged off as though he was little more than an insect.
+
+It made Harry livid. All of it made Harry livid. Adults as a concept made him livid. They were held above children and put in positions of power, yet all Harry had ever known at their hands was negligence, foolishness, or utter torment. Only Dumbledore had served as an exception thus far, but even he had been a fool to place him with the Dursleys. Narcissa had been unwaveringly kind to him, but there was always the chance she was as scheming as he suspected her husband to be.
+
+Professors would not be solving this problem. They had made that obvious to him, but it needed to be solved.
+
+Shock had befallen him when he had found Diana's ring. Shock so heavy that his knees had buckled beneath its oppressive weight. He knelt on the floor whilst Weasley and Snape traipsed about the corridor and argued like petulant children while the Heir of Slytherin made off with Diana and, Harry supposed, Luna Lovegood if Weasley was to be believed.
+
+Diana was his oldest friend. She had shown him kindness sooner than even Draco, but hers had never waned. It still shone as brightly as the sun despite Draco's having dimmed and died altogether ages ago. Diana helped him learn to have friends. She, Cassius, and Cassie had been the only ones who had never let him down. Whether she was caught up in whatever scheme her family might be running or not, she meant something to Harry. Something he could not quantify through words or thoughts, but something that tore at him like a rabid dog trapped unwillingly in a small and shabby kennel.
+
+The pain started in Harry's stomach before spreading outwards. It was like there was another invisible figure in the corridor who had stabbed him roughly through the gut. It was a piercing sort of pain that made his stomach ache and his intestines curl under the weight of loss and sorrow. It rose into his chest and his heart felt fit to tear before the feeling reached his throat. He was back at Saint Bartholomew's church again, standing atop the pyre in Grindelwald's body as acrid smoke wafted up around him in billowing clouds so thick that they obscured his vision. This feeling wrapped around his throat and choked him just as the horrid smoke had choked Grindelwald more than a century ago. Drawing breath was suddenly as arduous as it had been while climbing walls and the like to get away from Dudley as a child. Every heaving breath made black spots dance before his eyes as the room spun on its axis like a child's top.
+
+The realization he came to then was one that caused something else to settle in the pit of his stomach.
+
+Harry would do anything to set Diana free. She was one of only three true friends he had left. Theodore too, but that was only when Draco was not watching. Pansy seemed even further away, lying prone and unmoving on her soft bed in the hospital wing.
+
+Harry hated it. He hated much about this year, but that ranked highly. The feeling of loneliness. He had needed time to himself when he had been friends with Draco, Crabbe, Goyle, Theodore, and Pansy. He had needed it often, but that was different. *Being* alone was one thing, but *feeling* alone was another altogether.
+
+It was always meant to end this way, he realized. Voldemort had wanted for it to be this way ever since Harry had vanquished him at the end of his first year. Framing him, setting his own friends against him, taking Pansy and now Diana away from him. It was all meant to draw him in. Dumbledore had said that any plan Voldemort hatched at Hogwarts would have Harry in mind, and now he knew what the old man had meant.
+
+Yet Dumbledore was gone. Vanquished by that same plan and forced untold miles away. The former headmaster was in no position to help Harry vanquish Voldemort again or to deal with whatever pawn he was using in his stead. The man had yet to even answer Harry's letter.
+
+He would need to go to Moaning Myrtle's bathroom. There were no two ways about it. None of the professors would help him and he doubted any student could. For all of Cassie's prowess with a wand, Harry feared she would be little help against the serpentine monster of Salazar Slytherin. Harry was at least a Parselmouth. That was something. Snakes had always obeyed him without a second thought. Perhaps he could take control of Slytherin's monster, if not at least keep it away from him long enough to retrieve Diana and maybe even ambush the Heir of Slytherin.
+
+It was a crazy plan. The Heir could be anyone. It could be a seventh year of prodigious skill for all Harry knew. His best course was surely to retrieve Diana and take her to the professors as proof. Maybe then they would help him; maybe then somebody would be able to face this monster.
+
+That sat worst with him. Of all the things about this that bothered Harry, that had to be right at the top.
+
+By now, he had accepted that he was going to take a leap of faith he knew was foolish, to go try and save Diana, yet Harry knew nothing about what he was facing. He knew not who this Heir of Slytherin was, nor did he know a thing about the monster they controlled.
+
+That was truly what bothered him. What if Granger had been wrong and it wasn't a snake at all? It made sense, but what if? His entire plan hinged on the fact that the monster would heed him because he was a Parselmouth. Even that was next to nothing, but if that proved untrue...
+
+Harry's throat constricted even tighter when he realized there was no way for him to know. Too much time had passed and there was little left to spare. He would need to take the chance and hope all was well once this bout of emotions had passed and once he could breathe again. He reached for his Occlumency to pull it under control, but then...
+
+His eyes had been closed for some time against the spinning of the room, but they shot open now like he had been awoken from a deep dream by the touch of ice cold water.
+
+There was a way for him to learn what this monster was. There was at least a hope that he could learn, though it relied on something he did not wish to do.
+
+But what choice did he have?
+
+Diana was worth it, surely, and if Voldemort truly wanted him dead, Harry needed to put a stop to whatever was going on. Hogwarts grew more perilous by the day; he could only imagine what would become of the castle if this all continued to escalate.
+
+His heart was beating faster than it had in many moons. This was perhaps more foolish than facing the unknown in the Chamber of Secrets, but he would have to deal with its repercussions later. For now, he needed this and he knew it. Harry hated it, but there was no denying its truth.
+
+The pendant still hung on Regulus Black's chain, but it was ice cold where Regulus's gift was warm against his skin. This had always felt cold. Perhaps it was reflective of the man who had given it to him, or perhaps it was a mark of the magic that had been used. Harry did not know, but it filled him with foreboding as he fingered the pendant and closed his eyes, clearing his mind of all thought and hoping that everything around him would fade away.
+
+It happened faster and easier than he had expected.
+
+His eyes were still closed when the voice drifted towards him, but he did not miss a single syllable and could picture the small, dark room easily enough.
+
+"What a surprise," said Gellert Grindelwald, though Harry could hear a smirk. "You have returned at last."
+
+***Atop the Astronomy Tower...***
+
+The trip up to the Astronomy Tower's peak had been one of the longest treks of Draco's short life. Never had he felt like he was moving so slowly. It was like his limbs had been filled with sand and like he had been climbing the long, spiralling staircase attached to the tower all the way.
+
+The air bit at him when he did finally step outside. It was cold for May. The air itself was warm enough, but the late-spring breeze had an unexpected bite that made Draco shiver. The moon was nearing full, much of it obscured behind a thick layer of dense grey clouds that hid it from vision.
+
+Draco cared naught for the clouds, nor the wind, nor even for the moon. Nothing his eyes could see or his skin could feel meant anything to him. It was his ears that mattered and he listened hard, hoping beyond hope that he had not come here in vain.
+
+And there it was. The telltale clinking sound he had been waiting for. The one that many had complained about during the two years he had spent so far at Hogwarts. To him, it was both the most terrifying and most beautiful sound he had ever heard. It drew him in like a flickering fire might a band of swarming moths, but his stomach quivered harder and harder with every step he took. He crept around the perimeter of the tower's peak and out into its centre.
+
+The Bloody Baron was there. Dark, iron chains hung from his hands as he clinked them loudly together over and over again. His back was to Draco but in the dim light of the night, he shone brighter even than the half-obscured moon.
+
+"Baron!" Draco called; he could think of no other way to get the ghost's attention.
+
+The chains stopped clinking for a moment before the ghost turned to face him. Draco shuddered at the sight; the Baron had always unnerved him. Those eyes seemed darker than the night all around them and his face was gaunter than any corpse. Ghosts were supposed to look like the men they represented at the moment of death, but the Baron looked like he had been dead for many years before his spirit returned. Draco might even have thought that was true if not for the fresh stains of silvery blood splattered upon robes as dark as his eyes.
+
+The two of them faced each other, student and ghost. Draco felt the hairs on the back of his neck stand up, but he did not waver. He would not show fear now. One did not need to wear crimson and gold to be brave; he was a Malfoy, that alone was more than enough.
+
+"You sought me?" The Baron's voice was deep and rumbling. Draco didn't know why he had expected it to be broken and rasping. No ghost he'd ever known had sounded that way, but it was what he had braced for.
+
+"I did," Draco said boldly.
+
+The Baron watched him very closely. "It has been a long time since anyone has."
+
+"I need your help," Draco said. He hated the way his voice trembled and nearly broke. It threatened to catch in his throat, but he had forced it out through willpower alone.
+
+He felt the first tremor run up his body and cursed. *Not here,* he thought, *not now.* There was a time and a place to break down. In the midst of this chaos and in front of the vaunted Bloody Baron was not it.
+
+Rather than looking disgusted by his weakness, the Baron's expression changed in a different way. "Why have you come?" he asked, and his voice was quieter this time.
+
+"I need your help," Draco spoke louder and clearer this time, wiping a half-formed tear from the corner of his eye.
+
+"I turned away the last boy who asked for my aid," the Baron said stiffly. Draco thought he sounded almost bitter. "I will not help you find the treasure that boy sought."
+
+"Treasure?" asked Draco. "I'm not looking for treasure." He hesitated before speaking the word his father had so often told him he was above, throwing it at the Baron like an axe meant to kill. "Please!" Draco begged. "My sister's been taken by the Heir of Slytherin. I need to find the Chamber of Secrets."
+
+The Baron's expression remained blank, but Draco thought the ghost stiffened if such a thing was even possible. "I cannot help you," he said after another pause. "I have never known where Salazar hid his chamber."
+
+"But you must know something," Draco pleaded. Tears had come again, but this time, he could not fight them. He shivered as they fell from his eyes and hung cold against his cheeks in the night's bitter wind. "I-I need to f-find my s-sister. PLEASE!"
+
+The Bloody Baron watched him with those cold black eyes just as the clouds overhead parted and the tower was suddenly bathed in a halo of silvery light. It made those seem even darker, especially now that the ghost did not seem to shine quite so bright. Draco could see right through him. The constellation Ophiuchus shone down straight through the Baron. He was like a looking glass through which Draco could observe the night sky and one of the first constellations he had ever known; a tall figure holding a serpent in each hand.
+
+Then, the Baron spoke and Draco's breath caught in his throat as he remembered a hundred of Pansy's rants that all made sense in a single, dizzying moment.
+
+"The mudblood died in the bathroom she still haunts."
+
+***Elsewhere...***
+
+"Not for you," said Harry.
+
+The first thing Harry saw when he properly opened his eyes was the upward curve of Grindelwald's lips. "No, I think not. You have come not for me, but to ask something of me."
+
+"Will you answer," asked Harry, "or am I wasting my time?"
+
+"Time in the company of wise men is never wasted." Grindelwald must have seen the way Harry was glaring at him even though the room was near pitch-black. "I will answer," he said. "I promised you that I would, and I am a man of my word." His eyes gleamed in the low light of the room. They were blue as the eyes of death but with a silvery hew about them. "I will answer," he repeated, "but I have conditions you will agree to before I do."
+
+Dread clamped down on Harry's heart like an iron vice. "I thought you said you already promised to answer."
+
+"And so I did. You will find this to be true if you search your memory." His lips were smirking again. "I think you will also find that I never promised I would not have conditions of my own."
+
+"Fine," said Harry. What was he to do? There was nothing for it. Diana's life hung in the balance and his might well also. "What are your conditions?"
+
+"I will leave you in peace until the school year's end and allow you to recover from all you have been through." Harry waited patiently for the metaphorical penny to drop. "Once your school year concludes, you will allow me to share my past once again. You will take it in objectively. You will not fear what you feel, but instead, you will ponder it. You will allow it to wash over you and we will discuss it. I will not lead you. I will answer any questions you might have. Whether they may be about me, the time, my thoughts, or even some of the magic you see. But you will watch and you will not complain. You will speak with me and you will not cringe away. This is my price, Harry Potter. Take it, or leave it."
+
+Harry could hear the wind whistling fiercely outside the tower. It was a wonder the floor did not lurch underneath his feet. The bars shuddered in their frames as the cool air blew off of Lake Königssee and into the small prison cell Harry shared with the former dark lord.
+
+"Fine," he said through gritted teeth. "I accept your terms."
+
+"As I knew you would," said Grindelwald, folding his hands in his lap and peering at Harry with those bright and piercing eyes. "Now, tell me what ails you."
+
+"The Chamber of Secrets has been opened at Hogwarts. I'm not sure if you---"
+
+"I am aware of the legend, yes. I took quite an interest in all things of that nature as a teen, as you yourself have seen."
+
+Myths and legends, yes. Grindelwald had read many of them. The story of the Hallows was the one that had consumed him most, but there were others, too. Many of them featured a wand much like that which Death had granted Antioch Peverell, but there were some more varied legends sprinkled here and there.
+
+"The chamber has been opened," Harry said again.
+
+"You are sure of this?"
+
+"Positive."
+
+"Very well. Continue."
+
+"Students have been turning up petrified."
+
+"Petrified?"
+
+"Yes, petrified. They're alive, but they're frozen. Their pulse is there, but they're completely unresponsive. Nothing will wake them up or counter the spell except Mandrake Draught. That's being brewed by the Herbology Professor and it's almost ready, but this has been happening for months. Can you think of any monster that could have caused it?"
+
+"Tell me more," said Grindelwald, drumming his fingers upon his knee as he stared out the open window, looking upon the clear, star-lit sky above.
+
+"The monster's probably a snake and it's moving through the pipes. I know that it's coming from a bathroom. The first attack was outside that room. A cat was petrified and there was water everywhere."
+
+"What can you tell me about the other attacks?"
+
+"The second was a boy with a camera. The film inside was smoking when Dumbledore took it out." Harry saw something flash in the old sorcerer's eyes at the mention of his rival. Harry could not tell what, but it didn't matter, nor was it a surprise. Dumbledore was the reason Grindelwald was here, after all.
+
+"How many attacks have there been?" asked Grindelwald
+
+"Four more. The next one was a professor. She was attacked near the Great Hall. The next was a student attacked near a mirror on the third floor. Two people got attacked next time out. One was in the dungeons and was found near a suit of armour. The last one was near the bathroom again."
+
+"That is three if you are counting the one with two victims as a single strike," said Grindelwald.
+
+"Tonight was... different."
+
+"How so?"
+
+"I don't know if they were petrified, because they were just taken. The Heir of Slytherin said that their skeletons would lie in the chamber forever."
+
+"And you wish to prevent this?"
+
+"Yes," said Harry. "One of them... she's one of the only friends I have left."
+
+Grindelwald was thinking hard, Harry could see. This appeared far more difficult for him than getting Harry out of his relatives' house. The moon had moved some in the sky since Harry's arrival and the cell became suddenly illuminated by its silvery light. Harry could see Grindelwald more clearly now and track the path of his stare. He appeared to be looking up at a shining constellation. The stars coiled across the sky to form the vague outline of a long and powerful serpent. Serpens, Harry remembered. It was one of the constellations they had covered in Astronomy.
+
+"Tell me more about the third attack," Grindelwald said slowly. "The one with the professor."
+
+"What about it?"
+
+"Describe to me where it happened. What was the area like?"
+
+"Uh... it was in a corridor. An open corridor connecting the Entrance Hall to the Great Hall."
+
+"Were there any windows?"
+
+That struck Harry as quite an odd question, but he nodded slowly. "Near the front doors, yeah. Close to where Professor McGonagall was found."
+
+Grindelwald did not take his eyes off Serpens for some time. When he did, there was a look about them Harry had never seen before; an intensity that glued him to the spot and sent a tremor running up his spine.
+
+"I believe I have discovered the monster. If you must face it, you will listen closely to me before you do."
+
+Harry leant forward, eyes wide with anticipation as he nodded.
+
+***Minutes later, on the second floor...***
+
+"GAHHHHHH!"
+
+Ron could do nothing but scream. He had been at it now for the better part of an hour, but nothing had changed. Just like every time he had come here this past week, nothing had changed. He was sure he had found it --- the serpentine carving on one of the taps could be nothing but the secret passage he was looking for --- but opening it still seemed as distant a goal as making the World Cup winning catch for England.
+
+Ron brought his fist down so hard against one of the faucets that it clattered down into the empty sink below. Ron snatched it, turned on his heel, and threw it at the wall with such force that it shattered into a dozen crystal pieces.
+
+He was shaking so violently that he could hardly stand. Ron bent double over the sink, closed his eyes, and allowed deep, shuddering breaths to escape him one by one.
+
+This was ridiculous! He had been here every day for a week; what had he expected to change? He had not found any new spell nor birthed any new ideas. All was the same, yet he had expected a different result. He was every bit as delusional as he had been the night they went after the Philosopher's Stone. Just in a way that was somehow even more painful.
+
+"Having a breakdown, Weasley?"
+
+Ron flinched so badly that he smacked his own nose off the bowl of the sink. A thin line of blood trickled from his nostril and stained the crystal sink crimson.
+
+Draco Malfoy was standing in the doorway, his blond hair gleaming in the low light of the room. His face was less pale than usual; it was oddly red and his eyes seemed puffy for some reason or another. It was a less impressive figure than the boy usually struck, but Ron could not will himself to care about him. There were things so much more important than a stupid, childish spat with a git who didn't matter.
+
+"Shove off, Mal---"
+
+"Shut your mouth, you filthy blood traitor!" Ron stiffened and went for his wand, but Malfoy's next words hit him so hard that he nearly toppled into the row of sinks that were now at his back. "How about you stand back as *your* sister gets taken down into the Chamber of Secrets. Then, you can tell me to shove off. Until then, you will shut your mouth or you'll never open it again!"
+
+Ron stood there, rooted to the spot and aghast at what Malfoy had just said. "Your... sister?" was all he could repeat.
+
+The blond's eyes flashed. "Yes, Weasley, my sister! I know you don't give a damn, so how about you get your worthless hide out of my way!"
+
+"Your... sister got taken?"
+
+Draco's face twisted into something vile and Ron could see that he meant to throw a retort at him so hard that it would break him in two, but all that came out was a strangled choking sound as Malfoy buried his head in his hands and began to shake.
+
+It took a moment for Ron to realize that Malfoy was crying. Openly crying right in front of him. Never in his life had he been so surprised to see anyone do anything. It was the absolute last thing he had expected. Ron found himself taken completely aback and with no idea what to do, but he finally began to process Malfoy's words.
+
+His sister had been taken into the Chamber of Secrets and he was here. He wanted Ron to get out of the way. Merlin, he would be damned. Draco Malfoy was ready and willing to risk his own life to save his sister's.
+
+Slowly and with great trepidation, Ron stepped forward and placed a hesitant hand on Malfoy's arm. Malfoy tensed, but did not pull away so Ron slowly guided him towards the sinks just as the boy appeared to regain control of himself and hastily wiped at his eyes with the arm Ron did not have a hold of.
+
+"This is the sink that I think leads to the chamber," he explained.
+
+"Th-this one?" Malfoy asked.
+
+"Yeah," said Ron, pointing at the small, serpentine carving. "Can you see that?"
+
+Draco leant forward and squinted. "A mark," he said in a low voice. "Slytherin must have left it there."
+
+Ron nodded. "Trouble is, I have no idea what the hell to do with it."
+
+"Lucky for you, Weasley," came another voice from the door, "I think I do."
+
+Both boys turned and gawked at the exact same time.
+
+"Potter?" asked Ron, who would have thought by now he was dreaming had his nose not throbbed so horribly.
+
+"Sorry to intrude," Potter said with a small inclination of his head. "I didn't think I'd ever see the two of you working together. Congratulations, Draco; you might actually have grown up." The blond's face flushed with even more colour as Potter moved forward. "This sink you said, Weasley?" he asked. "The one with the carving that looks like a snake?"
+
+Potter waited for a moment before turning, annoyed to see Ron gaping at him and taken too far aback to speak. These were the last two people who he would ever have expected to be going after the Heir of Slytherin.
+
+The boy sighed before turning towards the sink and... hissing.
+
+Ron gasped as his eyes widened, hardly even noticing the sink slide aside.
+
+Not until it had opened fully did Ron speak. "You-you're a bloody Parselmouth!?"
+
+Potter paused at the mouth of the grimy tube long enough to shoot a glance towards Ron over his shoulder. "Why so surprised, Weasley? You seemed pretty sure I was the Heir of Slytherin back in December."
+
+With that, he was gone, leaving a gaping Ron Weasley and Draco Malfoy to do little more than exchange glances and follow.
+
+**Author's Endnote:**
+
+**The original plan was for this chapter to contain at least part of the coming confrontation, but I realized pretty quickly that wouldn't happen when 5, then 6, then 6,500 words came and went with no end in sight.**
+
+**That confrontation will take place next chapter, then there will be more two more left in the year.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editors Asmodeus Stahl and Idefix for their corrections/contributions this week.**
+
+**A massive thank you is also extended to my Othrian-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted next Sunday, December 19th, 2021. OR YOU CAN READ IT RIGHT NOW BY JOINING MY DISCORD SERVER! THE NEXT EIGHT CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST FIVE CHAPTERS OF BOOK 3!**
+
+**Also, don't forget to check out the fundraiser! If you have any money to spare for a worthy charity, that would mean the world!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT CHAPTER IS AVAILABLE ON THERE RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website. The Discord link can also be found on my website's homepage, which is easily found via a generic Google search of my pen name.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next SEVEN CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST FIVE CHAPTERS OF BOOK 3! The link to that can also be found on my profile, Discord server, or website.**
+
+**SPECIAL ANNOUNCEMENT: I have launched a fundraiser on my Discord server to support the charity Doctors Without Borders --- a medically focused, international humanitarian organization that does work in conflict zones and disease-impacted areas all around the world. There are incentives to donate that can all be found on the Discord server. This fundraiser can also be found and donated to via the homepage on my website, which can be found by searching my pen name or via the link on my profile. Any donation at all would be appreciated; let's see how big a difference this community can make around the world!**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 27: The Striking of Snakes**
+
+***May 16, 1993***
+
+***Severus Snape's Office***
+
+***12:23 AM***
+
+The room dimmed around him for a moment as Severus Snape's eyes flickered. Exhaustion pulled at his eyelids but he fought it off. He would fend it off with Occlumency if that was what it took.
+
+The letter had been sent to Dumbledore, but Merlin only knew where the old man was. He had said nothing before leaving and Snape had heard nothing since. The man felt half a world away and Snape had never needed him more than now.
+
+He was not fit to lead a castle, least of all in times like these. He had always followed. Whether it had been the pureblood fanatics back at Hogwarts, the Dark Lord during the Purity War, or Dumbledore himself ever since Lily's life had become forfeit, Snape had never known what it meant to lead. Being thrown into the position now of all times felt especially cruel.
+
+What was he to do? There were no clues about the Heir of Slytherin and even less about the monster. It must have crept through the castle silent as a shadow and struck swift as the hand of death, but that was all Snape could say he knew. It being a snake made a degree of sense, but he knew of no serpent that could so easily overpower the likes of Minerva McGonagall.
+
+And now a double attack --- one involving Lucius Malfoy's daughter nonetheless. The man's wrath would rain down upon them like a hundred vengeful thunderbolts. The castle would be fortunate if it stayed open until the week's end. Malfoy would demand the aurors investigate what had before been kept within the confines of the castle. It would stir all manner of problems and Snape knew the aurors would be of no use.
+
+How could one fight the unknown? The Dark Arts were like that, but they were different. They were like a hydra that showed two new heads every time one was cut down. Hydras were ancient, powerful, and unimaginably dangerous, but at least you could see them and the heads that needed to be destroyed. Battling a hundred hydras seemed easier than dealing with the Heir of Slytherin.
+
+Snape might have fled if things were different. What did he care if the castle was closed? His livelihood, he supposed, but he'd never wanted the post and the years of service had not swayed him. The Potter boy was here; that was all that mattered. So long as the Dark Lord made moves within the castle, Lily's son was in mortal peril. That was what Snape was fighting. This mess had to end before the Dark Lord forced yet another confrontation with Potter. Lightning had struck not once, but twice; Severus would not gamble on a third instance.
+
+Snape's fingers flexed. How he urged to draw his wand and end this whole charade. Even failure would be better than sitting idle whilst any number of things could be happening all around the castle.
+
+For now, he was battling shadows and he wished only for guidance about how to move next. The shadows had crept further forward than he had expected, slithering forth like dark serpents with their tongues probing and their fangs bared.
+
+Severus stiffened in his chair, if only for a moment. Something had moved outside his office. The halls should have been as still and silent as a cemetery, yet something had moved. He could feel it brushing against the wards that protected his office each night. The interim headmaster reached out with his Legilimency senses, but he could feel nothing.
+
+The hairs on the back of his neck stood on end. That was even more ominous. Whoever was moving outside was a master Occlumens. That was troubling. Albus was gone and he knew of no other in the castle who could rebuff him with such ease. That could only mean one thing.
+
+His wishes had been answered. The Heir of Slytherin had come and it was time to face them on the treacherous fields of battle.
+
+Snape tried to stand but never made it to his feet. Pain erupted inside him. It was a red hot pain that shattered his focus, if only for a second. Not because of its brutality, but because of what it meant. Severus Snape had not felt pain like this in nearly twelve long years. Not since lightning had first struck, taking the Dark Lord away with its storm like a whisper of the wind. He knew this pain without looking, knew it without thinking.
+
+His Dark Mark had burned --- truly burned --- for the first time since the Dark Lord's downfall and that could only mean one thing.
+
+Dumbledore was right --- he really was coming back.
+
+Snape grasped for his Occlumency and cleared his mind faster than any man could blink, but even that was too slow and too late.
+
+The door to his office exploded inwards with the force of his assailant's spell. Snape felt his wand torn from him and a sensation of weightlessness come over him just as he realized what had happened.
+
+The burning of the mark had been orchestrated --- likely little more than a distraction --- and he had fallen right into the ambush laid out for him.
+
+***Somewhere beneath Hogwarts Castle...***
+
+Harry knew the others had followed even as he plunged into the belly of the castle. Wind whipped at his robes and sent them billowing around him as he flew down the pipe. It was not unlike soaring through the air on his broomstick save for the grime that had coated him long before he reached the place where the sloping tube ended.
+
+He threw his head to the side to pull his hair from his eyes and look out around him. There was nothing but the tube and darkness for as far as he could see. He wondered if this was how the prey of serpents must feel. The way the pipe twisted this way and that did make it look something like a coiled snake fast asleep. The idea of that coming at you from the darkness was not one Harry envied, though it was perhaps more favourable than what he was charging head-long into if Grindelwald was right.
+
+***Earlier that night...***
+
+"What is it?" Harry asked, hardly daring to believe that the ancient sorcerer had put the pieces together.
+
+"A basilisk," said Grindelwald with no preamble.
+
+"A what?" asked Harry.
+
+"A basilisk," Grindelwald repeated. "They are massive serpents that can live hundreds or even thousands of years. Their scales are said to withstand all but the vilest magics and they can kill with their stare alone."
+
+Harry's jaw nearly clattered to the floor, but something sparked inside his mind. "Hang on," he said, "kill? Nobody's died."
+
+"Not this time, no, but I am aware that a girl was said to have died there fifty years ago when the Chamber of Secrets had allegedly been opened."
+
+"How do you---"
+
+"It was where Dumbledore dwelled. Do you think I was ignorant of what my most daunting foe was doing?"
+
+Harry shook his head; that thought had not even crossed his mind. "But... how do you explain no one having died this time?"
+
+"I have no need. You have done that for me already."
+
+"I've... what?"
+
+"All of the victims saw reflections of the monster's eyes. In pools of water, cameras, mirrors, or windows."
+
+"So... if you see the stare through something, it doesn't kill you? Just petrifies you?"
+
+"I don't think that hypothesis has ever been tested, but I think it is logical. Most people believe that basilisks have never existed at all."
+
+"They... what?"
+
+"Yes, an oversight made by many. They are the creatures of myths and legends. Those who speak of Herpo the Foul tell of how he once commanded a mighty basilisk that massacred cities for its master. There are other tales of them, but none pay them the heed they deserve." The man's eyes sparkled with an odd sort of light as his lips curved upwards into a condescending smirk. "People have a way of overlooking myths and legends. It cost them dearly against me and it has cost them once again. I doubt anyone even considered a basilisk. Albus ought to have, but he was never much for tales. Only the Hallows and only because he lived so close to the family in the story."
+
+"So you think Dumbledore doesn't even know about basilisks?"
+
+"I'm sure he's heard of them, but perhaps he has not read enough to realize they are more than the tales of legends. Who am I to say? It has been decades since I laid eyes upon my oldest friend. I can only guess at the man he has become."
+
+"Oldest friend?" asked Harry. It could have been a barb, but somehow, that did not seem like Grindelwald's style.
+
+"Think nothing of it for now," the man said. "If you must face this monster, you will do so armed with all I can give you."
+
+***Back in the present...***
+
+Harry could hear nothing but the whistling wind as he plunged deeper and deeper into the darkness. He had given up on keeping his hair out of his eyes by now. It tickled his forehead as he thought back on the vision he'd shared with Grindelwald.
+
+The man hadn't had much to offer. A spell to conjure glass, one to impair the basilisk's eyes, and the knowledge that a rooster's cry would kill the monster. Harry had no time to fetch a rooster, so he would need to make do with glass, the Conjunctivitis Curse, and Parseltongue. It was the latter he planned to lean on, but Grindelwald need not know that.
+
+Finally, Harry felt the chute level out and had only that as a warning before his feet slammed so hard against a rough rock floor that his knees buckled and he was sent sprawling. His hand stung like it had been stabbed by a dozen tiny needles and he did not realize why until he lifted his arm. Small pebbles had punctured the skin on his palm and round rivulets of blood welled up like the broken shards of shattered rubies.
+
+Harry heard Draco coming long before he saw him. The youngest Malfoy had shown courage Harry hadn't known he possessed by following him down into the Chamber of Secrets, but that courage did not extend to plunging through empty darkness with quiet dignity.
+
+He shot straight out of the tube in much the same manner Harry had a moment earlier. He too tumbled and was even sent rolling, but he appeared uninjured by the time he retook his feet.
+
+Harry met his eyes for the first time that night and was surprised by what he saw. There was no regret or trepidation there; only cold, grey resolution with defiance flashing here and there like jagged streaks of lightning.
+
+Harry contemplated saying something, but Weasley was barreling down the tube not far behind him and Harry knew there was no time to waste. His wand was in his hand a moment later and he was marching, Draco trailing in his wake and Weasley cursing in a hissing whisper not far behind them.
+
+"Get him to shut up," Harry whispered and Draco fell back. He paused for a moment to let both boys catch up to him. They were both mercifully silent now. "The monster is a basilisk. The important thing is that if you look it in the eyes, you'll die. Best avoid doing that if you can manage."
+
+He did not wait for a reply and noticed that both of their steps faltered for a moment whilst his pressed on. One after another they sounded dully against the ancient stone floor like the sound of falling rain drops in one of Hogwarts' many courtyards.
+
+The tunnels were wide and high-ceilinged. However huge the snake was, Harry had no trouble imagining it slithering through these passages. They were clearly made for it and the fact only made Harry all the more wary. It was maddeningly dark, but Harry didn't dare light his wand. Anything that could draw the monster's attention was something to be avoided at all costs.
+
+His resolve on that front was tested a moment later when he came upon something so massive it made him pause and shut his eyes. Harry waited there for Death's caress, but it never came and so he realized that what he had seen must not be the monster that dwelled somewhere within these halls.
+
+"Bloody hell," Harry heard Weasley curse from behind him. "Look at the size of that thing!"
+
+Harry did look, and his eyes widened in the dark. He heard something behind him and turned. It was Weasley fumbling for his wand. Why he hadn't had it out already, Harry could not imagine.
+
+"Not now," he hissed.
+
+Weasley's head snapped around to face him. "What---"
+
+"I said not now! How thick are you, Weasley? Do you want us to send up a flare next?"
+
+"I---"
+
+"If you light your wand, whoever and whatever is down here can follow the light right to us."
+
+Weasley had no response for that and Harry couldn't see his face, but he liked to imagine the boy was blushing with embarrassment. Harry turned back to the massive shadow. It was a skin; one that must have belonged to the basilisk at one time or another. It was impossibly long --- dozens of feet at least --- and its colour was a green so vivid that the skin itself looked poisonous.
+
+"How the hell are we going to fight that?" Harry heard Draco ask from behind him.
+
+"You're free to do whatever you like," Harry said over his shoulder, "but I have no plans of fighting it."
+
+"Then how---"
+
+"Parseltongue," Draco reminded Weasley with a slow and steady nod before looking back at Harry. "Do you think you can---"
+
+"I have no idea. I won't know until I try. Now, let's go; quiet again."
+
+It was odd to lead like this, but there was no one else to do it. Cassie was back up in the castle and Diana was down here somewhere, alone and perhaps even petrified in this infernal darkness. Harry was the best of what they had. He had not asked for help, but these two were here and Harry would not begrudge them that. Taking down the Heir of Slytherin was a task so daunting he would take all the help he could get.
+
+They walked for some time before Harry realized that the tunnel was coming to an end. Their footsteps had sounded loud before in the otherwise silent void, but the sound had drifted up and been lost in the nothingness high above them. The longer they walked, the louder their footfalls became as something seemed to throw the noise back at them.
+
+That something eventually loomed out at them from the blackness up ahead and Harry heard Draco take a sharp inhale as it came into sight.
+
+It was a pair of heavy stone doors weathered by the centuries that had passed since their construction. There was a pair of elaborate and interwoven serpents carved on them. Their eyes glowed in the darkness and they seemed to watch Harry's every move.
+
+The Boy-Who-Lived looked from Ron Weasley, to Draco Malfoy, and then back at what could only be the chamber's main entrance before he took a final deep breath and hissed.
+
+"**Open!**"
+
+The sound was much too loud. Anyone or anything inside the chamber would know they were coming, their arrival heralded by the rumbling of stone grinding against stone. It was like somebody trying to start a fire with a flint, but a hundred --- no, a thousand times louder.
+
+The chamber was larger than Harry had ever imagined, though lacking in splendour. It was dominated by a countless number of stone pillars that stretched so high, they were lost in the canopy of darkness far above. Harry was sure that a ceiling was there, but it loomed so high that it was lost to sight. Torches flickered in brackets hung along the walls. The room was so vast that their shadows leapt around gleefully, revelling in their freedom as they played tricks on Harry's eyes.
+
+"Blimey," Ron whispered from behind Harry. The raven-haired youth pulled his eyes away from the nearby architecture and immediately knew what Weasley meant.
+
+There was a towering statue at the end of the hall. It rose almost to the ceiling, stretching up so far that its face was shrouded in shadow. What Harry could see was dark eyes, high cheekbones, and a long beard that fell most of the way to the floor.
+
+A part of him expected Draco to take pleasure in the statue, but his former friend had seen something Harry had not and abandoned any pretence of stealth or silence.
+
+"Diana!"
+
+"Damn!" Harry cursed under his breath. If anyone was waiting for them and somehow hadn't heard the doors open, they had just lost any potential of an ambush.
+
+Sure enough, Diana was there at the foot of the statue lying beside another, smaller figure who Harry could only assume was Luna Lovegood. Her hair was as pale as the Malfoy heiress's and her chest rose and fell with slow, rhythmic movements.
+
+There was a third girl sprawled closer to the trio than Diana, her skin paler than milk. She looked dead to Harry and he would even have thought so had she too not visibly been breathing. Her breaths were different. There was nothing rhythmic about them. They were deep and rasping; Harry could hear the sounds of them even from afar.
+
+"Diana, please!" Draco was pleading. "It's me, your brother, wake up! Diana, I'm here, just listen to me!"
+
+"She won't wake," came a voice from the shadows that Harry had never heard before. His wand snapped up and took aim, but there was a moment's pause before anyone appeared.
+
+The form of a boy shimmered into being just off to the right of where the three girls lay. He looked young --- no older than sixteen or seventeen. He was slim and very tall for his age with pale skin, dark blue eyes, and hair as black as Harry's own. There were three boys before him, but he seemed to have eyes only for Harry. Those dark, unnerving eyes sent a shiver up his spine as they seemed to dissect him.
+
+"Who are you?" asked Weasley, his wand too raised.
+
+The boy tilted his head to one side. "So the future students of Hogwarts don't know me by sight. Shame. I had hoped they would." The boy's eyes flicked to Ron for a moment, but they landed back on Harry just as fast. "I expected only one of you."
+
+"What have you done with my sister!?" Draco stormed, rounding on the boy with murder in his eyes.
+
+"Very little. She's alive and quite all right. As is her friend."
+
+"What about the other girl?" Ron asked, gesturing to the figure who laid a ways apart from the others.
+
+"She's... alive."
+
+"What have you done to her?" Weasley asked furiously.
+
+"That\'s an interesting question,\" said the boy. "It's quite a long story. I suppose the real reason she's like this is because she opened her heart and spilled all her secrets to an invisible stranger.\"
+
+\"What are you talking about?\" asked Harry, suddenly distracted by this third girl. She looked familiar and he was wracking his brain trying to remember where he had seen her in the past.
+
+\"The diary,\" the boy said with a gesture towards something Harry had not noticed. It appeared to be a plain black book. "My diary. She and her sister have been writing in it for months and months, telling me all their pitiful worries and woes."
+
+'She and her sister...'
+
+It clicked all at once. This was one of the dark-haired twins who had been sorted into Slytherin at the beginning of September. Carrow, her name was, but if they had both written in what Harry could only assume was some kind of cursed diary that had once belonged to Voldemort...
+
+"Her sister won't be with us tonight, I'm afraid," the boy went on. "She has... other business to attend to."
+
+***Back in Severus Snape's office...***
+
+Snape struggled uselessly against invisible bindings that pinned him to the wall. His wand had clattered to the floor and he cursed himself then for never learning how to summon it without a wand. It had been an experiment he'd contemplated as a youth, but he had become too preoccupied by pursuing Lily and inventing new magic.
+
+Snape wasn't sure what he expected to walk through his office door. The Dark Lord, perhaps, or one of his more talented underlings. He did not know, but he was certain of one thing: he had most definitely not expected the small, slight form of one of his very own first years.
+
+"Carrow!" he snarled, fending off shock with Occlumency as he fixed the young girl with the most dignified glare he could muster. "What is the---" he felt his voice die in his throat with a lazy, dismissive wave of the girl's hand.
+
+His eyes widened. Wandless magic from an eleven-year-old girl? Surely that was impossible. He had never known anyone so gifted; he doubted even Dumbledore or the Dark Lord had been so advanced at such a young age.
+
+But it mattered not, for the girl did not remain wandless for long.
+
+Hers was in her hand a moment later and pointed directly at Snape. Not at his chest, or throat, or face, but at his left arm of all things. He wondered what on earth she thought she was doing before his blood ran cold at her next words.
+
+"FIDELIUS OCCULTUM!"
+
+***Meanwhile, in the Chamber of Secrets...***
+
+The boy paused and cocked his head to the side as though listening to some sound only he could hear. "Business that has now been taken care of," he said with a smile. "She will not be here regardless."
+
+"I don't get it," said Draco, realizing by now there was nothing he could do for his sister until the new enemy was dead. "Who are you and why did the Carrow twins write in some cursed book? They ought to have more sense!"
+
+"You would think so, wouldn't you?" asked the boy with a sharp smile that made Harry's skin crawl. "I\'ve always been able to charm the people I needed."
+
+"But how did that lead to this?" asked Harry, who had never imagined magic of this kind.
+
+"They poured their souls out to me, and their souls happened to be exactly what I wanted\... I grew stronger and stronger on a diet of their deepest fears, their darkest secrets. I grew powerful, far more powerful than them. Powerful enough to start feeding them a few of my secrets, to start pouring a little of my soul back into them..."
+
+\"What d\'you mean?\" asked Weasley, whose jaw had tightened with every word this menace uttered.
+
+\"Haven\'t you guessed yet?" asked the boy with mockery filling his voice.
+
+"It was the Carrows," Harry said quietly. "They were the ones who opened the Chamber of Secrets because he convinced them to."
+
+"What?" sputtered Draco.
+
+"The attack on McGonagall was set up by more than one student. We've known that for months. Now, we know why."
+
+"How clever," said the boy with that same, twisted smile. "Perhaps the Boy-Who-Lived may live up to his lofty reputation."
+
+"Who are you?" Weasley asked again. "I've never seen you at Hogwarts."
+
+"That's because he isn't at Hogwarts," said Harry. There was the familiar serpent on his chest and beside it gleamed a shining silver badge that marked him as a prefect. Harry knew all of Slytherin's prefects and this boy was not one of them.
+
+It explained a lot, actually. How Voldemort had been orchestrating everything this whole year, how the Carrows had been getting into the chamber despite not being Parselmouths, why this ghost of a boy was so blurry around the edges, almost like he was not entirely human.
+
+"You know who I am." It was not a question the boy asked, but a statement as he met Harry's eyes directly.
+
+Harry did not blink. "Your name is Tom Riddle, but you won't go by it forever. One day, you'll grow up to take a different name and murder my parents."
+
+Draco staggered backwards with a hand on his chest as he gaped comically at the ghost-like figure. Weasley just stood there, dumbstruck and uncomprehending as he stared between Harry and Riddle, whose eyes gleamed.
+
+"He's... *him*?" asked Weasley. "But... how?"
+
+A malicious light danced in Riddle's eyes. "I see that some things went to plan. You may not know the name Tom Riddle, but I see that the moniker of Lord Voldemort has meaning even now. It was a name I was already using at Hogwarts."
+
+Harry could see Draco glancing between him, his sister, and Riddle and almost cursed.
+
+That was when he put it together.
+
+*"Years ago, my father was accused of something horrible. Something he never actually did. He was proven innocent by the Wizengamot and everything. Longbottom's parents... they're not dead, but they're in no state to be his parents. They were attacked at the end of the last war, and they've been locked up in St. Mungo's --- the major wizarding hospital --- ever since. They're as good as comatose, so Longbottom has been raised by his grandmother and she's basically run their family ever since."*
+
+Diana's words from so long ago floated back to Harry like the smell of a distant fire on a strong autumn breeze. Words spoken atop the balcony the two of them had so often found themselves lurking on... words that Harry intuitively now knew were lies.
+
+There could be only one way Draco was hesitating to act despite his sister lying motionless at this monster's hands --- his father had once served a version of this man.
+
+It explained everything.
+
+Why the Malfoys had taken such an interest in him, why the Longbottoms and Weasleys despised them so much, and now this. This hesitation had Draco pinned to the spot.
+
+Harry could not lose him now. The odds of three of them against Voldemort were not favourable no matter how old this version of the Dark Lord was. If Draco turned on Harry and Ron, it would squander the small chance they still had remaining.
+
+There was little Harry could do to convince Draco he was better off putting faith in Harry than Voldemort. Harry could think of only one desperate plan, one born from an aimless thought he'd had often enough when thinking of the Dark Lord over the past two years.
+
+"Why hide behind a mask? Why would the Heir of Slytherin take on a fake name? I don't get it."
+
+"Don't you," hissed Riddle with venom in his voice. "There are some things about me that you don't yet know."
+
+"Clearly."
+
+"Let me explain it then. Do you think I was going to use my filthy muggle father\'s name forever?" Harry heard Draco's gasp from off to his side and could only pray he had taken from that comment what Harry hoped he had. "I," continued Riddle, "in whose veins runs the blood of Salazar Slytherin himself through my mother\'s side? I keep the name of a foul, common muggle who abandoned me before I was born just because he found out his wife was a witch? No, Harry --- I fashioned myself a new name, a name I knew wizards everywhere would one day fear to speak when I had become the greatest sorcerer in the world!\"
+
+"What I don't understand is how you're here. You were a student fifty years ago."
+
+"I was," Riddle admitted. "Fifty years... yes, I suppose that's right. For me, it feels like no time has passed at all."
+
+"Are you a ghost?" asked Weasley, eyeing the odd blur around Riddle's body. Harry had heard of Weasley's skill at chess and he could believe it now. The way his eyes scanned Riddle up and down as though they were trying to spot any signs of weakness.
+
+"A memory," said Riddle. "One that grows stronger as the Carrows grow weaker." For a moment, Harry swore Riddle's eyes had flashed scarlet. "Now that Flora's business up in the castle has concluded, she's joined her sister in pouring everything she has left into the diary. When they're done, I will be reborn again."
+
+Harry's breath caught in his throat. Was this Voldemort's master plan? Resurrect a younger version of himself so that it could help him regain his power? It made some sense, Harry supposed. If Voldemort could add a clone of himself, it would be an immeasurable boon to his forces.
+
+Harry was scared now. It was one of the first times he could ever remember being scared like this. He had felt dread at the Dursleys, but scarcely ever fear. The only time he could ever remember feeling this way was when he had landed inside Nurmengard Prison and looked upon the desecrated corpses that had once served as guards.
+
+If Riddle was telling the truth, then they had no hope. They had to somehow stop the Carrows from pouring themselves into the diary, but how were they to do that? Harry hadn't the faintest idea how magic like this worked and there was no time now to communicate with Grindelwald and ask for help. If Riddle was reborn, the three of them would die in this chamber and Britain would be plunged into a war worse than even the last.
+
+"You won't get away with this!" Weasley bellowed.
+
+"Why ever not?" asked Riddle, his stare finally falling on Ron.
+
+"Because Dumbledore will stop you if we don't."
+
+Riddle's expression twisted into something ugly. "Dumbledore has been driven out of this castle by the mere memory of me."
+
+"He's not really gone," said Harry, taking a sudden bout of inspiration. "Not as long as people here are loyal to him."
+
+They were foolish, childish words and he knew it, but he could think of nothing else that might throw Riddle off his game. Dumbledore had been called the only one Voldemort had ever feared. Harry hoped that was even truer of the boy than it had been of the man.
+
+Music was suddenly coming from somewhere, cutting Riddle off just as he made to open his mouth. He whirled around to stare down the empty chamber but was greeted only by the towering pillars and dancing shadows.
+
+The music was growing louder. It was eerie, spine-tingling, unearthly; it lifted the hair on Harry\'s scalp and made his heart feel as though it was swelling to twice its normal size. As the music reached such a pitch that Harry felt it vibrating inside his own ribs, flames erupted at the top of the nearest pillar and a familiar-looking crimson bird the size of a swan was suddenly there, piping its ethereal music to the vaulted ceiling. It had a glittering golden tail as long as a peacock\'s and gleaming golden talons, which were gripping a ragged bundle.
+
+The bird let out its loudest note yet and spread its wings. Suddenly, it was flying straight at Harry, Ron, and Draco. It dropped the ragged thing it was carrying as it flew over Ron before landing heavily on Harry's shoulder. Harry looked up and saw as it folded its wings that it had a long, golden beak and a beady black eye.
+
+The bird stopped singing. It sat still and warm next to Harry\'s cheek, gazing steadily at Riddle.
+
+"Fawkes?" Harry asked quietly as he stroked the bird's feathers. It gave a single nod but did not look away from Riddle. Behind him, Harry could hear that Weasley had retrieved whatever the phoenix had dropped.
+
+"This is what Dumbledore sends his defenders!" Riddle mocked with glee in his eyes. "A songbird and an old hat! Do you feel brave, Harry Potter? Do you feel safe now?\"
+
+Harry just stared back at Riddle as his two companions tensed. All of them could tell that the fight was about to start. Harry thought it was for the better. Riddle was becoming less blurry the longer they spoke.
+
+*"I grow stronger as the Carrows grow weaker"* he had said. Perhaps it was best to try and finish him before he grew too strong.
+
+"I find myself with the opportunity to crush two myths in a single night," said Riddle, eyes gleaming. "Let\'s match the powers of Lord Voldemort, Heir of Salazar Slytherin, against the famed wisdom of Albus Dumbledore and the mysterious enigma that is Harry Potter." Riddle smiled that bone-chilling smile again. "Let us deal with the former first, shall we?"
+
+Riddle's stare fell momentarily back on Harry and there was a rabid sort of hunger in his eyes. But then he whirled around to face the towering statue of Salazar Slytherin and spoke words that only Harry understood.
+
+**"Speak to me, Slytherin, greatest of the Hogwarts four!"**
+
+For the third time that night, Harry could hear the sound of stone grinding against stone as yet another entrance opened with the gaping of Slytherin's gigantic mouth. Harry could see the outline of something green and massive slithering about inside the founder's maw.
+
+"Don't look at it!" Harry shouted as something immensely heavy fell against the floor. It spat and hissed, but Harry could not make out what it was saying over Riddle's singular command.
+
+**"Leave the boy with the bird on his shoulder. Kill the others."**
+
+"Run!" Harry shouted as the snake lunged towards Weasley and Draco. They both rolled out of the way with reflexes born of a seeker before bolting in opposite directions. The snake sputtered for a moment as it tried to decide which to kill first, but Harry could not focus on them. He had to hope they could stay alive while he did his best to deal with the Heir of Slytherin.
+
+***Outside Hogwarts Castle...***
+
+Dumbledore had known the time to return to Hogwarts had come when a flash of fire had illuminated his world and Fawkes had left him a single golden feather. He wished the phoenix could take him down into the Chamber of Secrets, but it would have been ill-advised to try. Fawkes could pass through any ward but ones as potentially hostile as Slytherin's might well do damage to those he took through.
+
+Getting back onto the Hogwarts grounds without Fawkes had been simple and oddly satisfying. It had been a long time since Albus had gotten to use his deluminator. It was one of his most ingenious inventions, yet it seemed forever overlooked. A shame, really.
+
+He appeared on the sloping front lawns in the centre of a pale halo of light. The shadowy outline of the castle appeared the brightest and most beautiful thing Albus had ever seen.
+
+What he was going to do, he did not know, but it began with finding Severus and learning anything from the man he could. Elsewise... he would wait.
+
+***Back in the Chamber of Secrets...***
+
+Ron's chest heaved as he ran faster than he had ever run before. He could hear Malfoy scamper off in the other direction and hear the loud thuds as the basilisk pursued him. Better Malfoy than him, but it was only a temporary respite. The monster would kill him, then it would come for Ron and the youngest male Weasley had no idea what to do about any of it.
+
+He was running so fast and irrationally that he nearly ploughed straight into the chamber's back wall. He stopped as fast as he could but wound up toppling to the floor and sliding ribs first into a pillar anyway. A sharp pain like that of a jagged blade stuck in his chest and tore the breath from his lungs. They ached with a flaming sort of pain, but there was nothing Ron could do about that.
+
+For a moment, he thought he had fainted as he tried to fill his lungs again. Everything had suddenly grown dark. Then, he realized what he had been carrying and that it had fallen over his head.
+
+*Help me,* he thought, desperately pleading with the Sorting Hat to offer any advice it had. *I don't know what to do! Please, help me!*
+
+Something hit him so hard over the head that Ron thought the hat was scolding him. Lights danced before his eyes like miniature stars, but they began to fade quickly, leaving Ron in the darkness once again.
+
+No... that was not right. It was no longer dark; whatever had hit him in the head had pushed the Sorting Hat off of him. Ron looked down through squinted eyes, afraid the snake had finished off Malfoy and had come to kill him next.
+
+His eyes flew wide open with shock a second later when he saw a silver sword encrusted with rubies so splendid they looked fit for gods. There was a single name etched into the sword, one that Ron knew all too well. It was the only name Ron could think of that could have given him so much hope while all around him seemed so dire.
+
+Slowly and with legs shaking like thin, spindly branches in the harsh winter winds, Ron clambered to his feet.
+
+"To business, Harry," said Riddle. Harry looked calmly back at him and ignored everything else going on in the room only with the help of months and months of practice clearing his mind and keeping it that way. "We met in your past and in my future, yet you survived. How?"
+
+Harry blinked dumbly. "What?"
+
+"How is it that an infant with no extraordinary magical power vanquished the greatest sorcerer of all time? Tell me. The longer you talk, the longer you live."
+
+Harry couldn't and he knew it. If this Riddle won the day and made it back to Voldemort, Harry could not have him knowing. Not when he was unsure if Voldemort himself even knew what had truly happened that night.
+
+"What's it to you?" asked Harry. "Are you afraid you might not be able to kill me now?"
+
+"I do not fear you, I am simply interested in you. We're similar, you know. Both halfbloods, both orphans raised by muggles unfit to lick the hems of our robes. We were both sorted into Slytherin House and quickly became prodigies. We're probably the only two Parselmouths who have come through this school since the great Salazar Slytherin himself and we even look somewhat alike. Can you blame me for being intrigued about you? I want a measure of what you could become before I take it all away."
+
+Harry tensed. The moment was coming and he knew it. Once he refused to play Riddle's game, the time for talking would swiftly end.
+
+"I don't fear you either, Riddle."
+
+"You should."
+
+"No, I don't think so. Not now. I've seen what you've become." Harry watched him through bright, emerald eyes. "Do you know that Samhain 1981 wasn't the only time we've crossed paths?" That hungry gleam was back in Riddle's eyes and it spoke the answer louder than the boy himself ever could. "I saw you last year --- I know what you've become."
+
+"What I have become?"
+
+"A parasite," spat Harry. "A bitter spirit leeching off stronger men to stay alive. You're pathetic, you're broken, and I beat you again. So no, Tom Riddle, I do not fear you."
+
+Harry knew the spell was coming; he could feel it building on the tip of the wand Riddle held in his hand. Harry saw his arm lift and prepared to dodge out of the way, but the phoenix spread its wings and took flight before Harry could so much as move.
+
+"AVADA KEDAVRA!"
+
+It was an incantation Harry had never heard, but it sent tremors up his spine. Something about it sounded different and the air around the jet of green light that lunged from Riddle's wand like a hunting serpent seemed to cringe away as the vile magic hissed through the air.
+
+Harry would not have been fast enough to dodge. He had never seen a spell move so fast, but the phoenix was there, interposed between Harry and Riddle and directly in the path of the sickening green light.
+
+There was a flash of the same colour so bright that the chamber faded to nothing for a moment before returning. Harry heard a horrible squawk, but he paid it no heed. Fawkes was a phoenix. He could not be killed no matter what Riddle had just hit him with. He had bought Harry the time he needed; that was all that mattered.
+
+"Ossio Fracto!"
+
+It was the first spell that came to Harry's mind when he tried to think of something powerful and dangerous. It was one Grindelwald had used against an older boy who had once ambushed him in one of Durmstrang's many dark corridors.
+
+He was almost surprised when the bolt of red light leapt from his wand. It was a powerful bit of magic and not a simple spell from what Harry knew. He had never even tried casting it before now, but the spell had come easier to him than many of the charms and transfigurations he had worked on this year.
+
+Riddle made no move to defend himself as the Bone-Breaker came near and Harry realized why a second before the spell sailed straight through his opponent. Riddle was still 'a memory'. There were not yet any bones to speak of. How he could hold a wand, Harry did not know, but he supposed he had other, more troubling things to worry about.
+
+"This is your final chance. Speak the truth! I will have it from you before you die!"
+
+"Lacero!" Harry started his spells with the dark Cutting Curse before following it up with a Stunner, Disarming Charm, and another Lacero. They were all strung together in the way Cassie had been teaching him. Spell chaining had been one of the more difficult things he had learned so far, but it made a noticeable difference in how fast he could cast.
+
+Yet it mattered not. Riddle allowed the Cutting Curses to pass through him as he batted away the other two before sending back a volley of his own. Harry had never seen at least half of the spells and the speed with which Riddle cast left him in awe.
+
+"Imperio!"
+
+"Protego!" Harry called, cornered against a pillar and unable to move.
+
+It was like his shield had never been there. There was no indication it had even collapsed; it was like the magic had moved right through it.
+
+Not that he had time to ponder it. Why would he ponder anything when he felt so blissfully light and free? It was like nothing existed and he was floating down a noiseless river that never ended. He thought how nice it would be to just close his eyes and drift away to sleep, but a voice from far away demanded his attention before he could.
+
+"Tell me how you survived the Killing Curse?"
+
+Harry felt his mouth open to answer, remembering the explanation Dumbledore had given him last June, but the words stuck in his throat.
+
+Why would he give something so important away? That made no sense and besides, he was much more comfortable this way. Why would he trouble himself answering questions when all felt so warm and peaceful?
+
+"Tell me!"
+
+The voice was louder this time, as if the person it belonged to had taken several steps closer. This time, Harry's mouth didn't open and something nudged at the corner of his mind. Something... less pleasant than how he felt right now, yet insistent. Something that deserved his attention far more than this troublesome voice that wouldn't leave him alone.
+
+"I said tell me!"
+
+"NO!"
+
+The spell was broken with that single word and Harry collapsed to his knees. His legs felt like lead and his lungs like they had been smashed in. His chest heaved with deep, rattling breaths as though he had just run a hundred miles. His hair was damp with the moisture of sweat and several long strands of it were sticking to his forehead.
+
+Riddle looked less angry than he had a moment ago, but Harry found this version of him far more intimidating. "No?" he asked softly. "Harry, people do not tell Lord Voldemort no."
+
+"Shove off!" Harry gasped, pushing himself roughly back to his feet. His legs wobbled beneath him and his body swayed as he placed a hand on a pillar for balance. It was like fighting off that last spell had taken everything he had.
+
+Riddle's eyes flashed scarlet again and this time, Harry was sure he had seen correctly. "That is no way to speak to your lord, Harry. You must be punished for such offences." Harry tried to raise his wand and defend himself, but he knew he would be too slow.
+
+"Crucio!"
+
+It was pain unlike anything Harry had ever known. The room faded away once more, but this time, it was not replaced by bliss, but by jagged spikes, roaring fires, and unimaginable pain. His scar had been nothing to this. Not even the agony he'd felt whilst destroying Quirrell's body held a candle to this. This was monstrous, it was evil, and Harry wanted so badly for it to end. He would do anything for it to end; he hoped it killed him so he could be done with it and move on.
+
+Air returned to Harry's lungs with the sudden sharpness of a well-timed sword thrust. It felt like one, too. His entire body felt like it had been subjected to one brutal stab after another.
+
+He waited for Riddle to say something, anything, but he did not. Slowly, he opened his eyes and could hardly believe what he saw.
+
+***Minutes earlier...***
+
+The sword felt perfect in Ron's hands. It was not too heavy despite its size and length, nor was it too light.
+
+It was perfect.
+
+Ron was jolted by a horrible crashing sound as one of the pillars further up the chamber gave way. Malfoy was running back towards Potter and Riddle. It wasn't like he had much choice in the matter. The snake was leading him back that way, probably hoping to corner him against the statue of its one-time master.
+
+The sword suddenly did feel just a touch heavy in Ron's hands as he realized what he had to do.
+
+*"He chose to do what was right instead of what was easy and for that, he will be fondly remembered by all."*
+
+Those words had stayed with Ron for almost a year now. They had been part of the ringing endorsement Dumbledore had bestowed upon Neville and his courage, and Ron knew there was truth to them. He had known long before Neville had met his end, known since he was old enough to be told what had happened to his uncles, Gideon and Fabian Prewitt.
+
+There was honour in death defending what was right, but there was no valour in standing aside and watching others die --- whether you liked them or not.
+
+Ron squinted and prepared to close his eyes at any moment as he charged towards the basilisk, sword in hand. It must have heard him coming because it turned. Ron slammed his eyes shut and leapt forward, thrusting his sword as he did. It passed through thin air as he leapt, but it stuck in something when he fell crashing back to the ground.
+
+Ron knew something horrible had happened. The sword had not slammed harmlessly against stone. Its end had stuck in something and Ron had felt whatever it cut through give way under its edge. His hands trembled as he finally dared to look.
+
+It was worse than he could ever have imagined.
+
+The sword's end was buried in the chest of a small girl with blonde hair and silver eyes who had looked so very innocent sleeping at Salazar Slytherin's feet. Blood spread out from the gaping wound Gryffindor's sword had opened. It pooled, seeped through her robes and stained the floor around her. Its scent spread like poison; a coppery scene that made Ron nauseous.
+
+Something slammed hard against his side and Ron lurched to his right just as something much larger slammed head first into the chamber floor. The basilisk had lunged at him as he knelt over the young girl he'd just murdered, but Draco Malfoy had knocked him out of the way. Draco Malfoy, of all people, had rescued him.
+
+Ron glanced briefly at Malfoy, but he was already on his feet and moving away from the basilisk. Ron had no idea where he was going, but there was no time to consider it. The snake had slammed its fang so hard into the floor that it had stuck, but it was pulling itself free.
+
+It was now or never.
+
+Ron lunged forward and grabbed the sword before shutting his eyes tight and whirling to face the great snake, bringing the sword up and down as hard as he could. His battle cry reverberated off the chamber walls like the sounds of stones tumbling down a silent mountain in the midst of an almighty avalanche.
+
+There was another sound, then. A horrible, high-pitched cry from the monster who Ron had just stabbed. He let go of the sword and leapt backwards out of the way. He knew without looking that the snake was dead; he heard its body slump loudly against the chamber floor.
+
+So why was there still screaming?
+
+"Weasley!" Ron opened his eyes without thinking and almost slammed them shut again before remembering what had just happened. "Weasley!" Malfoy called again and Ron looked at him. He was standing some distance away with something small in his hands. It took Ron a moment to realize that it was Tom Riddle's diary; the one the Carrows were pouring themselves into even as they spoke.
+
+"What---"
+
+"The sword, Weasley! Give me the sword!"
+
+It took Ron a moment to realize what the other boy was thinking, but then it dawned on him.
+
+*"I grow stronger as the Carrows grow weaker."*
+
+"Catch!" called Ron, throwing Godric Gryffindor's fabled sword with all the might he could muster. Draco stepped to the side and reached up, catching its handle with all the grace of a seeker before driving its point --- still dripping with poison from the fang it had punctured --- straight through the cursed book that had caused all at Hogwarts so much hardship that year.
+
+The screaming behind them stopped... only to be replaced by a single, more horrible wail so loud and powerful that it threw both Ron and Draco to the floor.
+
+**Author's Endnote:**
+
+**I contemplated splitting up this chapter. It is the longest in book 2 by a meaningful number of words, but I decided it was fitting for this arc's climax.**
+
+**I can already see the reviews telling me that Harry didn't do enough in this battle. I will lay out my reasoning here and then those reviews will go largely ignored:**
+
+**The basilisk was never going to be beaten by anything other than Gryffindor's sword and Harry in this story could never have pulled it from the hat. He was never going to outduel Riddle and though some will say he should have been the one to destroy the diary, you will all soon see that it does *so much* more for Draco's character than it could ever have done for Harry's.**
+
+**It was also *extremely* important for Harry to feel like he'd lost this battle for reasons that will be obvious soon enough.**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editor Idefix for his corrections/contributions this week.**
+
+**A massive thank you is also extended to my Othrian-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted on January 2nd, 2022 on account of the upcoming holidays. OR YOU CAN READ IT RIGHT NOW BY JOINING MY DISCORD SERVER! THE NEXT EIGHT CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST FIVE CHAPTERS OF BOOK 3!**
+
+**Also, don't forget to check out the fundraiser! If you have any money to spare for a worthy charity, that would mean the world!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT CHAPTER IS AVAILABLE ON THERE RIGHT NOW! If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website. The Discord link can also be found on my website's homepage, which is easily found via a generic Google search of my pen name.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the next SIX CHAPTERS RIGHT NOW! That is the REST OF BOOK 2 IN ITS ENTIRETY, PLUS THE FIRST FIVE CHAPTERS OF BOOK 3! The link to that can also be found on my profile, Discord server, or website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 28: The Telling of Secrets**
+
+***May 16, 1993***
+
+***The Chamber of Secrets***
+
+***1:24 AM***
+
+Harry's mind was still weighed down by the haze of confusion and pain that clung to him like malicious drops of sweat. His chest rose and fell with great difficulty. Every breath he took sounded every bit as hoarse and rasping as Carrow's from earlier in the evening. Lifting his head seemed next to impossible. It was like somebody had draped a chain around Harry's neck with a boulder on the end in place of a pendant. Everything was on fire. Every time he tried to move, his entire body shook and spasmed. It was unlike anything he had ever felt before. When the first spell had been lifted, all it had left behind was a heavy sense of exhaustion. This left traces far harder to cope with in its wake and Harry wondered if he would even be able to stand.
+
+Something made a sound from near Harry's right hand. It took a titanic effort for him to tilt his head and look. It was Fawkes. Where a great phoenix had perched upon his shoulder, a small, featherless bird now nudged something towards Harry's palm. It was his wand; he must have dropped it while under the effects of Riddle's final spell.
+
+"Thanks, Fawkes," Harry mumbled, just barely managing to close his fingers around the holly wand. Just holding it sent a surge of warmth and energy through his body. It was far from enough to clamber to his feet, but he did finally manage to lift his head and survey the room around him.
+
+It was complete and total bedlam.
+
+Several of the pillars had broken apart, their rocky contents strewn all about the floor. Harry was sure the ceiling would have collapsed on all of them had some form of magic not held it up. Something massive lay upon the floor near Slytherin's feet. Its head was pressed against the floor, but Harry didn't need to see it to realize it was the basilisk. Nothing else in this room could be so hulking. He wondered how his companions had killed it, for it must be dead to lay so still and quiet.
+
+The snake was not the only thing gathered around the statue of the Hogwarts founder.
+
+All in the room but Harry seemed to be there. There was Carrow not far away, the snake, curled and shrunken by death, and Draco kneeling over Diana, who laid face up in a bed of blood.
+
+That made Harry's heart stop. Had something happened to Diana? Had she been hurt during the battle? Was she... no, she had to be alive! That was a thought Harry wouldn't even think.
+
+Then, he saw Ron Weasley and suddenly, he understood.
+
+The boy was knelt over a blonde much like Draco, but his eyes were on Luna Lovegood and not the Malfoy Heiress. Harry knew why as soon as his eyes found them.
+
+Harry couldn't see the girl well from his vantage point with Weasley in the way, but he could see the streaks of blood coiling out from the girl like an opening fist with crimson fingers. The smell hung thick and heavy in the air. Harry was surprised he hadn't noticed before, but he supposed he had been preoccupied by exhaustion and agony.
+
+Harry tried to blink the black spots from his eyes, but his vision only swam with more of them the harder he tried. The room began to move all around him. The flaming torches were suddenly an orange blur that was spinning faster and faster until he wondered if his vision was just tinged orange because it seemed to be everywhere. He could feel his body shaking once more and thought the floor felt colder somehow as exhaustion tugged harder than ever at his weary eyelids.
+
+Everything went black.
+
+***Some time later...***
+
+The dream began in the body of another, though Harry would not come to realize that until some time later.
+
+He was in the same dark drawing room in which he'd held court during the last meeting of the few followers he had left.
+
+"You have something urgent to report, Lucius?" His voice was almost human now. Only the hint of a rasping hiss not quite fit for a man lingered. It was a good sign. It meant that things were moving along at an appropriate pace and that his shell would be ready to shed itself soon.
+
+"Yes, my lord."
+
+"Then report," Harry said in that high, cold voice of his.
+
+"The plan was successful, my lord. The distraction was successful and our target was taken care of."
+
+There was such trepidation about the man; he was nervous. Harry would not have expected such reluctance to speak from a man who appeared to be delivering such glowing news.
+
+"What else, Lucius?"
+
+"M-My lord?"
+
+"I said what else? You are nervous. What is it you fear telling me?"
+
+Harry could see the way the man chewed his lip. It would be very unpleasant news indeed. "We... lost communication soon after the job had been done, my lord."
+
+Harry felt anger and worry flash behind his eyes, but he quelled them both just as fast as they had come. "And what of the book?" he asked.
+
+"I don't know, my lord."
+
+"You will find out. You will go to the castle and you will learn of what has happened. You will do this immediately."
+
+"Yes, my lord."
+
+"Go!"
+
+Lucius stood from the table and swept towards the room's exit. Harry could feel how relieved he was to be free of him for now. His anger must have leaked through, for the others in the room appeared just as worried.
+
+"Leave me," said Harry. "I require time alone."
+
+They all fled and were gone in an instant, all but the tall woman with blonde hair and blue eyes who had been his keeper over these months. She looked much like her daughter. It was easy for Harry to imagine Diana when looking at her... so easy that the dream changed.
+
+Harry felt different now. He was taller, for one thing, and his mind felt more... familiar. He must have woken --- he was back in the Chamber of Secrets. Dust still rose from the places the pillars had collapsed, mixing its smell with that of blood and the already rotting corpse of the basilisk.
+
+What was odd was that Weasley and Draco seemed to have left him. He was all alone kneeling over Diana. A jagged fang stuck in her chest and Harry pulled, feebly trying to free it from her. His hands still shook from the exhaustion and every muscle burned with the effort it took to pull upon the sword. All he was doing was painting the floor around her a deep crimson. Her eyes were open in the dream like they had not been in life and there was pain and anguish within them.
+
+Harry realized it would be no good and allowed numb fingers to relinquish their grip upon the fang. He slumped beside Diana as tears stung the corners of his eyes. He reached out for her hand and took it. It was not yet cold, but her feeble grip betrayed how little time she had left.
+
+"No," Harry begged. "Diana, please! You're going to be okay, just stay with me!"
+
+Blood trickled from Diana's mouth when she tried to speak. She coughed and sputtered just as the light behind her eyes went out, leaving Harry to stare agonizingly at his own reflection... or the reflection that should have been his.
+
+His cheekbones were higher than they ought to have been and his eyes were a deep, pupil-less scarlet instead of a bright and vivid green. The reflection opened his mouth and from his mouth too trickled a thin stream of blood, but a voice followed it. Not Harry's voice; it was colder yet smoother and it sent shivers up his spine.
+
+*We're similar, you know. Both halfbloods, both orphans raised by muggles unfit to lick the hems of our robes. We were both sorted into Slytherin House and quickly became prodigies in our own right. We're probably the only two Parselmouths who have come through this school since the great Salazar Slytherin himself and we even look alike."*
+
+This time, Harry was sure he had awoken. There was no Diana, no dark room he had never visited in life, and no haunting imagery that tore his heart to shreds. There was nothing but the soft bed beneath him, the warm covers on top of him, and aching pain that came from everywhere.
+
+Harry heard a sigh from beside his bed and looked over. It was jarring to see Draco's father there so soon after he had seen him in his dream. Harry knew what it meant by now, but how was it Lucius had gotten here so fast? Had that much time truly passed?
+
+"Good gracious, you're awake," the man said. "Thank Merlin for that. You must stop scaring us like this, Harry."
+
+Harry could see the man looked stressed even in his current state. There was a weariness behind his eyes that usually chose other places to dwell. His hair was as immaculate as ever, but there was a slight flush in his cheeks.
+
+"Sorry, sir. I don't exactly like ending up here either."
+
+"No," said Lord Malfoy, "I suppose you don't."
+
+"What time is it, sir? How long have I been out this time?"
+
+"Not terribly long compared to the last. It's almost 5:00, you\'ve hardly been asleep for three hours."
+
+That explained why Harry still felt exhausted and why his muscles felt so heavy. Or perhaps that was still part of whatever effects lingered from the curse he had been hit with.
+
+"Did Madam Pomfrey diagnose anything?" Harry asked carefully.
+
+"She looked you over, but it was the headmaster who passed the diagnosis."
+
+Harry almost asked after Dumbledore before remembering the man meant Snape. "And what did he think?"
+
+"He thought nothing; it was obvious that you had been tortured."
+
+That lined up, yes. A torture curse was an apt description of whatever Riddle had used. "Can you tell me what spell I got hit with?" Harry asked in a quieter voice. "I'd never seen it before."
+
+"I would certainly hope not." There was a sharpness in Lord Malfoy's words that Harry had never heard before. Harry did his best to look hopeful and the man sighed, casting his eyes about the hospital wing to ensure they were alone. "The Cruciatus Curse," he said after a moment. "It's a torture curse so heinous that the use of it on any fellow human being means a one-way trip to Azkaban with no hope of release."
+
+"What about the curse before that?" Harry questioned. "Did Madam Pomfrey find anything from it?" The man shook his head. "It was... different," Harry explained. "It felt like I was far away and like nothing could go wrong. The voice... I wanted to listen. It was---\"
+
+"Merlin's beard, boy," hissed Lord Malfoy. "Who in the hell was using Unforgivable Curses so liberally?"
+
+Unforgivable Curses was a phrase Harry had never heard before, but it gave him something to work with --- something to research since Lord Malfoy seemed hesitant to speak of them. He supposed they must be some sort of list of spells that were punished in a similar fashion to this Cruciatus Curse.
+
+"No one to worry about." His words were ominous and he knew that Draco's father would misunderstand him, but they were the only words he could force himself to speak.
+
+"Harry," the man said, leaning closer, "if you tell me, I will be sure this man never steps foot outside of Azkaban Prison ever again. I can---"
+
+"Why are you so eager to help me while you're working for *him*?"
+
+The words had escaped him in a tumble of pent-up fury and confusion. Months of stress and worry had culminated all at once now that Harry's worst fears had been confirmed.
+
+Lucius went as still as a statue, but Harry pressed on. "Why would you help the---"
+
+"Silence!" hissed Malfoy, sliding his wand from his sleeve. Harry thought the man would curse him for a moment, but he only cast some sort of privacy spell around the room before hiding his wand once more and glaring at Harry for the first time the boy could remember. "Have you no sense? Never speak of such things in places like this!"
+
+"I want an answer," said Harry, his eyes burning like emerald fire. "Why would you help me when you're working for Voldemort---"
+
+"Don't speak his name!" Lord Malfoy snarled. Harry could see it had unnerved him, but he didn't care. This had been building and building for months.
+
+*"The Malfoys might view you as a tool, but that doesn't mean all of us do."*
+
+"Fear of the name increases fear of the thing itself. Your master doesn't scare me."
+
+"You understand nothing. You know nothing of what he was like and what he made---"
+
+"I know you supported him willingly --- and you still do."
+
+"The Dark Lord is---"
+
+"Alive and getting stronger. You've met with him. You're here at Hogwarts for him. He wanted you to check on something --- some kind of loss of communication."
+
+The widening of Malfoy's eyes showed Harry at once that he was right and the dreams really were passages into Voldemort's mind.
+
+"I see that you cannot be reasoned with in your current state of mind," the man said as he stood to his feet with a slightly shaky stance. "I will leave you with two things. The first is that I have officially won the case to transfer guardianship of you from those vile creatures to Lord Black."
+
+Harry's heart soared. Anything was better than returning to the Dursleys. Even if Regulus was a Death Eater like Lucius... well, that would be more complicated, actually...
+
+"The second," Malfoy continued, "is that the Dark Lord does not want you to fear him. He does not want you as an enemy. You don't need to fight him to survive; he is more than happy to let you prosper as long as you like."
+
+This revelation made Harry's heart stop.
+
+He was lying, surely.
+
+Why would Voldemort want him to prosper after all Harry had done? After he had vanquished him not once, but twice. Especially now that he had opposed his plans for a third time.
+
+No, Lucius Malfoy had to be lying. It was the only thing that made sense.
+
+***Meanwhile, in the dungeons...***
+
+Ron had spent what felt like forever in Snape's dungeon classroom. There had been a crowd waiting for them by the time they had gotten there.
+
+***About three hours earlier...***
+
+"Professor Dumbledore!" Ron cried the second he saw the man pacing back and forth across Snape's office.
+
+The old man's head whipped around at the sound. His piercing blue eyes went first to Harry, who was being levitated behind them with Diana and the Carrow girl. Getting them up out of the pipe had been an absolute nightmare. Ron and Draco had needed to alternate between levitating and climbing out themselves. It had been one of the hardest things Ron had ever done. Luna had been left down there. They would need to have Potter help retrieve her body; there had just been no way they were going to manage getting anyone else back out of the chamber.
+
+"What are their conditions?" Dumbledore asked, allowing his eyes to move on from Harry and roam over Malfoy and Carrow. Ron thought his gaze moved on rather reluctantly.
+
+Draco Malfoy was being pulled aside by his father, so it was up to Ron to answer. "I don't know, sir. Carrow... she's probably in rough shape. Potter and Malfoy... I don't know."
+
+"We must see them to the hospital wing. Severus, can you---"
+
+"I'm taking Harry and my daughter," said Lucius Malfoy. "I can take the Carrow girl with us if you wish."
+
+"Thank you, Lucius, I would be most appreciative."
+
+"Think nothing of it, Dumbledore. Come, Draco, we can talk while walking."
+
+"If I may impose---"
+
+"No, Dumbledore, you may not. My son has had a long and trying night. I will be taking him home with me."
+
+Dumbledore glanced from Snape to Malfoy, but neither of them flinched. "Very well, Lucius," he said. "I am in no position to stop you."
+
+"No, you aren't," said Malfoy with what Ron thought was a very calculating look. "I think you'll find that you might again find yourself in one if you're more agreeable outside of the castle."
+
+Dumbledore's expression darkened. Ron had not seen him look like that since he had explained Neville's death in the final chamber beneath the castle last June. "You would hold a child's safety hostage, Lucius?"
+
+"I would do no such thing. He would be happier with my proposal and you know it. He asked me for it himself. Would you block a child's wishes after having him be mistreated for so many years?" The man's eyes had flashed with something that looked like lightning in their stormy depths. "Do not vilify me, Dumbledore. We both know I'm in the right this time."
+
+The two men stared at each other for long moments as Ron tried to puzzle together what the hell they were on about. "I will cease my opposition to your proposal. I will be speaking with him," Dumbledore warned. "If he raises any objections, I will renew my efforts with vigour the likes of which you have never known."
+
+Malfoy dipped his head. "A pleasure, Dumbledore. Naturally, I will do my part to make life easier for you in return."
+
+"Good night, Lucius."
+
+Suddenly, Ron found himself left alone with Dumbledore and Snape. "Now, Master Weasley," said Dumbledore, "I ask you once again to explain to me what has happened after another display of valour at the end of another trying year."
+
+***Back in the present...***
+
+So, Ron had told them. He'd been numb when he'd started the tale, but the shocked sense of apathy began to wane as he went on and on. The closer he came to the part about Luna, the harder it became to speak. It was like every word tore so violently at his throat that it had swollen shut by the time that part of the story had come around.
+
+He had looked from Dumbledore to Snape and the guilt had consumed him. It was more physically painful than anything he had ever gone through before. The aftereffects of the Cruciatus Curse had nothing on this sort of pain. It was like a rabid pack of dogs had been trapped in his stomach and told the only way they would get food was to tear their way out.
+
+How could he tell Dumbledore this? Snape would despise him even more, but Ron didn't care what the old bat thought. But Dumbledore... his parents... everyone.
+
+Quidditch and his bravery last year were the only two ways he had ever been different from any of his brothers. Being overshadowed by so many was painful, but this? The guilt he felt for his mistake was monstrous, but others' reactions would be even worse. He would go from the unimportant Weasley to the horrible one overnight.
+
+No... Ron couldn't do it. He could not force himself to tell Snape and Dumbledore what had happened, so he hadn't; only that Luna had been killed by the snake.
+
+Keeping his emotions under check had been the most difficult thing Ron had ever done, but he had somehow avoided breaking down long enough to escape the confines of Snape's office and find a nearby abandoned classroom.
+
+Only then did his knees give out and only then did the floodgates open.
+
+The pain in his stomach had become too much and he heaved and heaved until a small pile of vomit covered the floor in front of him. Its smell wafted through the empty classroom and tears followed. Ron found he could not stop them. They fell and fell like a salted waterfall and Ron's face soon stung with them. His throat quivered each time his body sobbed and Ron wondered if it would ever end.
+
+It did, but only when sleep took him some time later.
+
+***That night, in the Headmaster's Office...***
+
+That day at Hogwarts had been a very odd one. Everybody knew something had happened, but no one was quite sure what. Most did guess correctly once it was announced at dinner that Dumbledore would reassume his position as the castle's headmaster, but there were many questions.
+
+Harry felt miserable. There was actually much to be happy with, but it was difficult when he could hardly move. Sitting up felt as taxing as climbing a mountain and as painful as getting run over by Uncle Vernon's company car. The pain was ebbing as the day aged, but it lingered. Whatever the Cruciatus Curse was, Harry vowed never to be hit with it again.
+
+Not until the sun sank low in the sky and cast long shadows across the hospital wing's floor did Madam Pomfrey give Harry her leave.
+
+"But hurry right back as soon as you're finished," she ordered. "Honestly, I don't know what Dumbledore's thinking asking for you. If it was anyone else---"
+
+"Thank you, Madam Pomfrey," Harry said with a laboured wave. "I'll make sure to be back."
+
+Never had he been so thankful to escape the hospital wing, but he quickly realized Madam Pomfrey had a point. Under his invisibility cloak, no one troubled him, but it did not make climbing the sets of stairs any easier. Harry had never been so grateful for the ones leading up to Dumbledore's office. They at least had the courtesy to carry him up.
+
+"Ah, Harry," said Dumbledore once the youth had stepped inside his office, "how good to see you again. Please, take a seat."
+
+Dumbledore looked tired. One would think nothing had been resolved by looking at him. "It's good to see you again too, sir."
+
+"I am happy we now meet with the year's primary trouble behind us."
+
+"So am I."
+
+"How are you feeling? I understand you went through quite the ordeal."
+
+"Not great," Harry admitted. "Getting up here wasn't easy, but Madam Pomfrey said it would pass."
+
+"I apologize deeply for requesting your presence, but this is of the utmost importance."
+
+"I know, sir, it's okay."
+
+"You know what I must ask of you?"
+
+"You want to know what happened?"
+
+"I do. Young Ronald shed some light on things from his perspective, but you were noticeably absent from the tail end of his recollection."
+
+"Everything sort of split up once we got to the Chamber of Secrets."
+
+"A wise course of action," Dumbledore praised. "It was your only hope. What the three of you achieved was nothing short of spectacular. Now, what can you tell me that I might not know?"
+
+Harry told him everything from the moment he'd heard the voice in the dungeon all the way up until Riddle had been vanquished. The only part he left out was that he had heard the voice of the basilisk earlier in the year. It was best not to explain why he had withheld that information until now. Especially when Harry was reasonably sure that the magic of Grindelwald's pendant would stop him if he tried.
+
+"So," said Dumbledore once Harry had finished, "you met Tom Riddle."
+
+"I did."
+
+"I imagine he was *most* interested in you."
+
+"He was."
+
+It was difficult for Harry to speak about Riddle after last night's dream. The teenaged dark lord had only furthered the fears that Harry had been having for months. He knew now that Grindelwald's visions were not changing his mind, but he worried this year had taken its toll on him with its challenges and its betrayals.
+
+"What is it he said that bothers you?" Dumbledore asked. Harry despised his perceptiveness as much as he did his boldness at times.
+
+He considered avoiding the question, but something gave him pause. If anyone knew whether there was any truth to what Riddle said, it would be Dumbledore. "He said that we were similar."
+
+"Did he now?"
+
+"Both halfbloods, both orphans sorted into Slytherin, both gifted with magic, both Parselmouths --- he said we even look alike."
+
+"And what do you think?"
+
+Harry hesitated. "I... don't know."
+
+Dumbledore's expression was passive. "Don't you?"
+
+"Well... all of those things are true, aren't they? And... I just don't know. I... wouldn't be surprised."
+
+"There is no shame in being like Tom Riddle," said Dumbledore. "Do notice the distinction."
+
+"You used his old name."
+
+"I did. Tom Riddle was just a boy as he said. His father was a wealthy muggle who abandoned his pureblooded mother when he realized she was a witch. His mother's family saw her as a disgrace and were never going to welcome her back. She sold off all her possessions to stay alive just long enough to give birth to her son in a London orphanage on a cold winter's day."
+
+"His father---"
+
+"Never came for him. I'm unsure whether he ever knew he had a son. If he did, he never asked after him."
+
+Harry felt rage boil up in the pit of his stomach. Of course he hadn't; he was just a muggle. What did they care about witches and wizards, blood or not? They would sooner see them struggle and fail than support them whether they were family or not. It disgusted him. He couldn't believe that he was offended on Voldemort's behalf, but in that moment, Harry would have wrapped his hands around his father's neck and squeezed until the blood left his face.
+
+"You look troubled," Dumbledore observed.
+
+"I don't like the idea of *any* witch or wizard being abandoned to a muggle orphanage."
+
+Harry saw something flash in Dumbledore's eyes, but it was gone in an instant. "No," he said softly, "I imagine you don't."
+
+"What happened to his father?" Harry asked.
+
+"Murdered," Dumbledore answered with a sigh, "by Riddle himself, I suspect."
+
+Harry felt something spread wings and soar in his stomach. *Good,* he thought. For all the horrible things Voldemort had done, Harry could not say he blamed this one act of evil. If there was any act so heinous that he could forgive, this was it.
+
+"So, Riddle and I had similar upbringings?"
+
+"You did, though you never resorted to the lows that he did as a child."
+
+"What did he do, sir?"
+
+"A story for another time, I think." Dumbledore watched Harry closely. "There are strange likenesses between you and Tom Riddle. I will not lie to you, Harry, you deserve more than that. What sets you apart is your nature. Tom Riddle was a brilliant boy tormented in his youth. His vice was vengeance and his armour was hate. That weighed on him over the years until there was very little of Tom Riddle left and all that remained was the monster we know as Lord Voldemort. See that you walk a different path and there is nothing wrong with sharing likenesses to the most brilliant student who has ever walked these hallowed halls."
+
+Harry nodded very slowly. "Thank you, Headmaster."
+
+"I do have one more thing to trouble you with before I give you something that I think you want."
+
+"Something that I want, sir?"
+
+"Something you think you want. First, I must ask you whether or not you made requests of Lucius Malfoy pertaining to your legal guardianship."
+
+A year ago, Harry would have cringed and looked away. Six months ago, Harry would have shrank back and panicked. Two weeks ago, Harry thought he would have lied.
+
+He did none of those things now. He met Dumbledore's stare with passion. "Yes, sir."
+
+"And you are aware who your guardianship is set to pass to?"
+
+"Lord Black, yes."
+
+"And you are satisfied with the arrangement?"
+
+Satisfied was the word. It was difficult to say Harry was happy with the arrangement, but satisfied... he thought so. Regulus Black might well be a Death Eater, but Harry thought that was better than living with the Dursleys. He didn't think there was any witch or wizard less desirable than those vile creatures.
+
+*"The second is that the Dark Lord does not want you to fear him. He does not want you as an enemy. You don't need to fight him to survive; he is more than happy to let you prosper as long as you like."*
+
+Harry tried not to ponder Lord Malfoy's words, but the smallest bit of him wondered. Voldemort had seemed willing to spare him last year and Grindelwald had freed him from the Dursleys and saved his life. Harry was no fool. He knew that Grindelwald was using him and he was sure Voldemort would be no different, but... was that the worst thing?
+
+Harry had accepted that the Malfoys were using him and chose to move on, and look where it had got him. Free of the Dursleys and with a life more prosperous than Harry could ever have imagined on Privet Drive. Grindelwald was using him but the more Harry played the dark lord's game, the more he won. It was a treacherous path that Harry walked with great caution and he would rather Voldemort not be on it at all, but if he was... maybe, just maybe...
+
+"I am."
+
+"I will respect your wishes, but please, promise me you will be careful around Lord Black. His family has many skeletons in its vast and messy closet."
+
+"I will, sir. I promise."
+
+"Very well," said Dumbledore, who looked as though the conversation had aged him half a decade. "I suppose the time has come."
+
+"The time for what, sir?"
+
+"The time for you to have the answer that I denied you last June." Harry's heart fluttered as his breath caught in his throat. "Do you remember what you asked me?"
+
+"Why Voldemort wanted to kill me."
+
+"Precisely. I told you then that I would tell you when your Occlumency was at a level I was comfortable with."
+
+"And it's there?"
+
+"It isn't," Dumbledore admitted. "Do not mistake me, you have made excellent progress this year, but there is much still to do."
+
+"But you're going to tell me anyway?"
+
+"I am."
+
+"Is there a specific reason why?"
+
+"Like I told you then, it is an answer you deserve to have. I now think it might be relevant to you much sooner than I had once hoped."
+
+"Because you think Voldemort is getting stronger?"
+
+"Voldemort is most certainly getting stronger; that is a large part of it, yes." The old man was tugging restlessly on his beard. Harry could tell this was not a decision he was fond of making. "I must warn you that the information may frighten you and that it may lead you to assume all manner of things. I will only give you a part of the full truth today. When you're older and your mind is stronger, then I will share it all. You have my word."
+
+"I'm ready for whatever you'll tell me."
+
+"Very well," said Dumbledore as he leant back in his chair and seemed to sag against its back. "Lord Voldemort attacked *you* because of a prophecy. One that he viewed as a danger to his very existence."
+
+**Author's Endnote:**
+
+**A very eventful chapter full of long-term foreshadowing despite it being quite low on action. There will be one more chapter in book 2 and then there will be a break in posting. I hope you all enjoy what I have in store for the year 2 cliffhanger :)**
+
+**Please read and review.**
+
+**Thank you as always to my lovely Discord Editor Idefix for his corrections/contributions this week.**
+
+**A massive thank you is also extended to my Othrian-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: The next chapter will be posted on January 9th, 2022. OR YOU CAN READ IT RIGHT NOW BY JOINING MY DISCORD SERVER! THE NEXT SIX CHAPTERS can be read right now by anyone who signs up to my P\*T\*E\*N page! THAT'S THE ENTIRETY OF WHAT'S LEFT IN BOOK 2 PLUS THE FIRST FIVE CHAPTERS OF BOOK 3!**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Fezzik, Luq707, Raven, Regress, and Yoshi89 for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. If you would like to join, simply copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website. The Discord link can also be found on my website's homepage, which is easily found via a generic Google search of my pen name.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the NEXT FIVE CHAPTERS RIGHT NOW! THAT IS THE FIRST FIVE CHAPTERS OF BOOK 3! The link to that can also be found on my profile, Discord server, or website.**
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 2: The Erosion of Innocence**
+
+**Chapter 29: Wading Through the Wreckage**
+
+***May 30, 1993***
+
+***The Great Hall***
+
+***8:48 PM***
+
+It had been two weeks since Harry, Ron, and Draco had united to slay Slytherin's monster, vanquish his heir, and close the Chamber of Secrets. Hogwarts had by now well and truly realized what had happened.
+
+The Mandrake Draught had been brewed and the basilisk's petrified victims were finally awake and well again. Dumbledore had decided that a feast would be thrown in celebration, and Pansy had practically hung off Harry and Draco all night. It was a miracle, really. Harry sat with both his older set of friends and Draco's group. It was blissful to speak with Pansy and Theodore so openly, though Harry and Draco still scarcely shared a word.
+
+They had not spoken since the blond had returned four days after the Chamber of Secrets had been closed. They had only shared a single glance when Draco had walked into the common room and seen Harry and Theodore sitting together. The youngest Malfoy had watched the both of them for a moment before slowly nodding to Harry and making his way over towards Crabbe and Goyle. That had effectively been him giving his blessing for Harry to openly associate with his group again and Harry had taken full advantage of it --- not that he needed it.
+
+He had missed Theodore and Pansy, but he hadn't realized how badly until now. Between their company and the lack of students trying to kill him in the corridors, Harry felt lighter than he had since his argument with Draco all the way back in September. It was like his shackles were free and he could move again, or like he was a bird who had forgotten how to spread its wings and now finally remembered. It was liberating in a way that only escaping the Dursleys could match.
+
+That had been one oddity over the past two weeks. Harry had written to Regulus more often than not since being released from the hospital wing after spending two days at Madam Pomfrey's tender mercy. Being told to call him Regulus had been odd, but not nearly as odd as writing to an adult so often. He and Narcisssa had written to each other frequently, but nothing like this. Harry thought he liked Regulus, but the verdict had not yet been finalized. There were also still his allegiances to consider and what they could mean for Harry.
+
+Dumbledore had opened the festivities with an uplifting speech and by cancelling the exams for everyone who was not a fifth or seventh year due to everything that had happened. This had gotten him tumultuous applause so loud that Harry feared the cliff beneath the castle might well tremble so hard it would collapse.
+
+That was only the beginning. Harry, Ron, and Draco had all been ambiguously presented with awards for 'special services to the school' and had each been given two hundred points for their respective houses. The Slytherin table cheered so loud that Harry swore he saw the windows quiver. This practically guaranteed them the House Cup unless anyone did something monumentally stupid.
+
+They all feasted, chatted, and celebrated after that. It was the most fun Harry\'d had all year, but it was also exhausting. People were something he had all but avoided since being freed of the hospital wing, with the exception of those he actually liked. Now, everyone and their sister seemed to want his attention. Either to congratulate him on the award or, in most cases, to ask him what had happened in the Chamber of Secrets. The question had been easy to shrug off before regardless of what the school thought, but it wasn't so easy now. It was hardly difficult to put together. Harry, Ron, and Draco went missing in the middle of the night, the Chamber of Secrets allegedly closed, and then the three of them received shiny trophies two weeks later.
+
+Harry found that he needed a break from it all. The chaotic hustling and bustling was beginning to wear on him. He found that sweat was clinging to him and that his muscles were beginning to tire from being tense for so long.
+
+The air felt lighter and easier to breathe outside of the Great Hall. The further away from the drone of voices he got, the more and more he began to relax.
+
+It was a wonderful feeling.
+
+"I thought I'd find you out here eventually."
+
+Harry startled at the voice and reached for his wand, but then the figure stepped out of the shadows and the torchlight made his blonde hair gleam like platinum fire.
+
+"Draco?"
+
+The boy glanced around the Entrance Hall. "Can we talk?"
+
+Harry clamped down on his Occlumency to try and keep his mind clear. "If you'd like."
+
+"I made a mistake," Draco admitted with the same air one might expect from somebody confessing to murder.
+
+"Just one?"
+
+"I was jealous." The words sounded like chalk on Draco's tongue; Harry was surprised he hadn't choked on them.
+
+"Jealous of what, Draco?" Harry asked, his voice rising. This had been building for months, just like the confrontation he'd had with Draco's father.
+
+"You---"
+
+"Me?" Harry actually laughed; he couldn't help it. "What were you jealous of that I had? Not the fact I grew up with the scum of the earth and never knew about magic---"
+
+"Harry---"
+
+"Not the fact that my parents are dead, surely. You seem to get on with yours well enough---"
+
+"It's not like that---"
+
+"Then what is it like, Draco? You have everything anyone our age could ever want. Was it the stupid Quidditch position? Or the ring? Do I want to know how many gifts your father has bought you from Knockturn Alley?"
+
+"It was stupid," Draco said with a grimace. "It... felt like Father was shoving me to the side and focusing only on you."
+
+There it was again. Another sign that Lucius Malfoy had been playing him the whole time. Though if Draco hadn't known --- and Harry was sure he had not, for Draco could not act nearly this well --- then that was something. Perhaps it meant Diana had not been tainted by his schemes, or even that Narcissa was innocent as well. It was impossible to say.
+
+"What do you want, Draco?" Harry asked bluntly. "I doubt you came here to talk about how awful a person you were. You've never been good at anything but praising yourself."
+
+"To apologize," said Draco. "I... realize what I've done. You've forgiven me once and I'm not sure you'll do it again, but I'm sorry. I'd like to at least be on good terms again if we can."
+
+Harry watched him very closely. He remembered all the times he had enjoyed with Draco. That first practice session when they and the others had chased around the abandoned classroom playing tag with Tickling Charms. He remembered how innocent they had been, how their laughter had filled the room until there was none of it left. It was so odd to contrast Harry then and now. He knew much had changed and he shivered at what he had been back then. It would be so easy to do what Harry of those days would have done and forgive Draco.
+
+But the boy was right --- he had forgiven him once already and this year had taught Harry just how fickle people really were. Lucius Malfoy had used him, the student body had abused him, and both Draco and Daphne had betrayed him. Now one of them was asking for forgiveness just weeks after the school had suddenly forgotten all about their past claims and hailed Harry as a hero once more.
+
+It all made him sick.
+
+"I don't forgive you," Harry said coolly and Draco flinched back and lowered his head. "I'm not sure I'll ever forgive you... but, I won't hold it against you." That head of blonde hair rose again so that Harry could see his grey eyes once more. "We start from the beginning. I'll treat you decently if you treat me the same. We'll see what happens from there. I'm sick of getting stabbed in the back, Draco. I won't be letting it happen again."
+
+"Deal," said Draco, stepping forward and extending his hand. Harry realized how much he'd grown this year. Harry's body was very slowly shrugging off the years of neglect on Privet Drive, but Draco had grown even more than he had. These were the sorts of observations that passed Harry by when the two had scarcely spoken all year.
+
+Draco left him alone in the hall once their handshake was complete. Maybe Harry had been too easy on him; it was difficult to tell, but he remembered what he had told himself that day in the hospital wing while talking to the boy's father. If people were going to use him, sometimes, it was best to let it happen whether he liked it or not. Draco was a Malfoy and there was much a relationship with him could bring --- so Harry would at least try to humour him for now.
+
+"Touching."
+
+For the second time, Harry startled --- he really needed to learn how to detect people nearby. This voice was gruffer than Draco's and belonged to a man who sounded far older.
+
+Harry recognized it and glanced over his shoulder. "Good evening, Professor."
+
+"Evening, Potter," said Aberforth Dumbledore. "Come with me."
+
+"Where are we going, sir?" Harry asked carefully as he trudged several feet behind the Defence Against the Dark Arts Professor with his hand still on his wand.
+
+"Just out for a stroll on the grounds. I want to talk to you and I don't want anyone hearing."
+
+They walked in silence until the two of them passed through the large oak doors and out onto the grounds. It was a breezy night for late spring, but the wind was warm and pleasant. It licked more than it bit and its tongue left a comfortable sort of warmth behind.
+
+"What is it you wanted to talk to me about, Professor?" Harry asked once they had travelled some distance from the castle.
+
+"I wanted to talk about you and teach you some history."
+
+"About me, sir?"
+
+"Yes, Potter, that's what I said, isn't it?"
+
+"Of course, sir."
+
+The man paused in the shadow of a large oak tree and turned to face Harry. He was glaring. "I never trust anyone who speaks all that wish-wash. My brother's no better. Most of them are hapless arse-kissers who won't make a thing of themselves, but it's the ones who aren't you gotta worry about."
+
+"You don't trust me," Harry said bluntly.
+
+"Yes and no. I don't think you're malicious."
+
+"But there's something about me you don't like."
+
+"I don't like the path you're on and I don't like some things I see."
+
+"What things?"
+
+"Things like going straight to curses over school yard spats, things like hiding your emotions behind that damned hogwash my brother's been teaching you, things like how your only friends are upper years from shady families who supported Voldemort last time around."
+
+Harry was almost surprised to hear someone other than the Headmaster use Voldemort's chosen name. Dumbledore was the only other person he'd ever heard speak it. He would have been taken aback had it been anyone else. For all the things he could say about Aberforth Dumbledore, he was no coward and his lack of regard was admirable, if foolish.
+
+"Voldemort killed my parents," said Harry. "What do you expect me to do? Become his right-hand lieutenant?"
+
+"Shared traits make for strange bedfellows." Something sinister loomed behind the professor's eyes; Harry was taken aback by how grim he looked. "Trust me, boy, I know better than anyone."
+
+"So you're worried I'll side with Voldemort if he comes back?" Harry didn't ask how Aberforth seemed so certain the man was alive.
+
+"Join him, take up his ideas, model some things after him. Nothing would surprise me. Not after the things I've seen."
+
+"You keep hinting at that but you aren't saying anything. I'm taking it that\'s the history you want to teach me?"
+
+"It is," the man agreed. "You're not the first kid I've seen with talent. There's my dear old brother, but his friend might have been better than he was. It's hard to say."
+
+"Friend?"
+
+"Something like that," Aberforth muttered. There was a stiffness about him now and his eyes appeared almost clouded by something. Sadness? Anger? Grief? It was hard to tell. "You all know my brother as this wonderful hero, but none of you know how close it was."
+
+"How close it was to what?" Harry asked.
+
+"How close he was to running off and making himself worse than Voldemort has ever been --- all because of a stupid goal that didn't even matter. All because he thought he was right over something that he wasn't. All because of *him*."
+
+"I have a hard time imagining the Headmaster being worse than Voldemort."
+
+"Oh, I'm sure, but you wouldn't if you knew what I knew. Hell, you might know soon enough with that Skeeter woman hovering like a damned vulture."
+
+"The biography she's writing, you mean? You don't think that's all going to be lies?"
+
+"It doesn't need to be. She has all the material she could ever want. All she needs to do is find it. If people only knew what my brother did, what our family dealt with." He shook his head. "We've strayed from the point. The point is that you walk down paths in life all the time. You think they're right but sometimes, they're not. The more talented you are, the worse those wrong paths get. Ask my brother about that some time; he'll wax poetic until the skin's rotted off of him."
+
+"I'm not your brother," said Harry.
+
+"You're not --- most people don't come back from what he almost did."
+
+"What are you trying to tell me, Professor?"
+
+"I'm trying to warn you. Monitor yourself and be honest about it. Don't lie to yourself; that's when the real problems start. Once they do, they're hard to stop. You're talented, Potter. I reckon you'll be damn good by the time you graduate --- maybe even as good as my brother was. Use that talent for the right things or you'll have big problems on your hands."
+
+Harry's eyes narrowed as his fingers twitched towards his wand. "Are you threatening me, Professor?"
+
+"Just warning you. It's the freedom and the confidence that kills. They think they can do anything, then it all comes crashing back down." He shook his head. "I came here to watch you. I'm telling you what I see and giving you more honest advice than anyone else will give before I'm gone."
+
+"Gone?" asked Harry. "Why would you be gone? Nothing's happened to you; you've beaten the curse."
+
+Aberforth chuckled darkly as he pulled his black cloak more tightly around him. "Wait for Skeeter's book and then tell me I beat the curse. My brother has enough titles to give up. He'll give away one of them to appease the rioters when the storm blows in and then wait for it to blow over, but he'll never give this up." He gestured to the shadowy outline of the castle behind them. "Me... I won't be sticking around for all of that nonsense. Albus and his wise old ass can keep it."
+
+Harry didn't know what to say as Aberforth walked away and back up towards the castle. It was one of the stranger and more ominous conversations he could ever remember partaking in.
+
+***June 4, 1993***
+
+***The Black Lake***
+
+***1:33 AM***
+
+Harry had awoken from another vivid dream. This was one he could hardly remember upon waking. Voldemort had spoken to someone about their commitment. He had questioned whether they had what it took to do what must be done in the end. The man had looked more terrified than Harry had ever seen anyone look before. Harry thought his face had been familiar, but it was little more than a blinking shadow in his memory now.
+
+Not remembering somehow made it worse. Humans feared the unknown for a reason. It was a terrible and monstrous thing --- cloaked in shadow, immeasurably large, and unimaginably powerful. Its claws reached out every now and then and trapped humans in their vices. Only when the time came for it to reveal a part of itself did it relinquish its hold. That time had not yet come and Harry found that his heart was having a difficult time slowing down.
+
+Harry's memory must have been faulty that night. He hardly remembered dressing and leaving the dungeons, throwing on his invisibility cloak for good measure.
+
+It was even later than when he typically explored and the castle was as quiet as death. Not even the reanimated Mrs. Norris stumbled across his path and since gaining back life and mobility, she had stalked around the castle with renewed vigour.
+
+It was much the opposite of the night he had spent traipsing around the grounds with the Defence Against the Dark Arts Professor. The grounds were as quiet as the castle. It was a hot, windless night. The loudest sound Harry could hear was that of his own feet moving as quietly as they could through the grass as he walked down the sloping lawns and towards the Black Lake. There was not a cloud in sight. The grounds may have been quiet, but they were flooded with moonlight.
+
+Harry saw him from far away thanks to said light. A figure sitting near the edge of the Black Lake. No stones were thrown, no water was disturbed, and not so much as a blade of grass seemed to shift around him. The boy was sitting so still that for a moment, Harry thought he had fallen asleep.
+
+When he drew closer, he began to understand. His red hair seemed darker than it usually was tonight and he looked gaunter than Harry had ever seen him.
+
+"You couldn't sleep either, huh?"
+
+He didn't know what made him say it. The two of them had never shared a friendly conversation even though they had never quarrelled the way Weasley had with Draco. The closest they had come was whilst playing Quidditch against one another, but Harry had spent the vast majority of that match trying not to die.
+
+The boy looked up at him with glassy eyes that quickly cleared as recognition filled them, followed by something akin to trepidation. Harry could see the hesitation, the pondering over what to say or whether to speak it all. Finally, Weasley nodded.
+
+"I've barely slept since the chamber."
+
+"Mind if I sit?" Weasley shook his head and moved over to allow Harry a seat. It was a nice view. "Did you know her?" Harry asked.
+
+Weasley took a shuddering breath. "My little sister did. She was around the orchard near our house a couple of times, but I never really talked to her. She was... weird."
+
+"That doesn't make it any easier."
+
+There was an odd fire in Weasley's eyes, almost like Harry had offended him. "How would you know?"
+
+Harry pondered for a moment, drumming his fingers upon his knee as he considered Weasley. What he wanted to do was foolish, but it made sense to him. The one thing he had never managed to let go from first year was the way Longbottom had died. Not the death itself, but the way it had come. It had been his doing and this would be the best chance Harry had to morally wash his hands of the deed.
+
+"You're not the only one who's seen someone die."
+
+"You remember?" Weasley asked.
+
+"Remember what?"
+
+"Well, uh..."
+
+Then, Harry realized what he meant. "I wasn't talking about my parents, but I remember... bits of that night. Not much of it." Harry actually saw Weasley's mouth open before he forced it closed. Doubtlessly, he wanted to ask some kind of question. Harry was in a morbidly cynical mood, so he obliged him. "I remember Voldemort more than them." Weasley recoiled from the name and Harry sighed. "Grow up, you've fought against some form of him twice and survived both times. I don't understand why you're so scared of his name."
+
+"Sorry," Weasley said, blushing. "It's just... I've only ever heard Dumbledore say it."
+
+"Dumbledore told me to say it. He said that fear of a name only increases fear of the thing itself. Anyway, I remember him more than anything else. His laugh and his eyes. That's really it, other than a bunch of green light and a bad pain where my scar is."
+
+"Why are you telling me all this?"
+
+Harry cocked his head to the side. "Entirely selfless reasons, I promise."
+
+Weasley snorted. "Slimy git. I doubt the lot of you have done anything selfless in your lives."
+
+"Draco and I went into the chamber." Weasley looked away from him. "There's something else bothering you," Harry said slowly.
+
+"What do you mean?"
+
+"Something happened in the chamber while I was duelling Riddle. I... kind of lost track of everything. Something else is bothering you; it's more than just seeing Lovegood die."
+
+Weasley gave him a strange look. Harry could see that the boy wanted to tell him. He probably hadn't told anyone and was filled to bursting with whatever it was.
+
+"Promise me you won't go blabbing about it? Not even to Dumbledore?"
+
+Harry narrowed his eyes. "That bad, huh?" Weasley just nodded. "If you promise to do the same for something you deserve to know, then you have a deal."
+
+The two of them shook hands and Weasley took another of those deep, shuddering breaths. "I killed her."
+
+Harry stiffened. "You did what?"
+
+"I killed her," he whispered. "I didn't mean to, but... but... the sword. I...I tried to stab the snake, but-but." Tears were rolling down Weasley's cheeks. They looked like liquid glitter in the moonlight as they fell and Harry stared at him, transfixed. This was all so horribly twisted. The luck some people had... the universe had to be playing some sort of cosmic joke. "She was my sister's friend," Weasley was going on, "and I... I..."
+
+"Made a mistake." There were very few things Ron Weasley could have said to make Harry sympathize with him, but he had hit on the biggest one at the moment.
+
+"But-but... she didn't deserve that. I... it's horrible. I'm horrible."
+
+"If you're horrible, Weasley, I'd rather not think of what that makes me."
+
+Weasley's head jerked up, suddenly too surprised to sob. "What?"
+
+"Dumbledore lied to you."
+
+"What are you---"
+
+"He lied to you to hide two truths. One of them, he was afraid of getting out. The other, he hid for my sake." Weasley looked almost hypnotized, peering at Harry with wide, curious eyes. "Neville Longbottom never died in the final chamber underneath the school last June."
+
+Weasley was as still as the moment Harry had first found him here. "You're sure?"
+
+"Positive," said Harry, steeling himself for the worst. "I... I killed him."
+
+Harry expected Weasley to rage at him, curse him, or perhaps even try and kill him, but he just sat there in silence for nearly a minute. "How did it happen?"
+
+"Quirrell came out of that corridor with the Philosopher's Stone and with Longbottom as a hostage. Don't ask me how I was there; it was literally dumb luck. He tried to recruit me before Dumbledore showed up. The two of them had a standoff. Quirrell told Dumbledore to let him leave with the stone or else he'd kill Longbottom."
+
+Weasley was gaping at him now. This was all new to him. Dumbledore had told him none of it and the shock showed clearly upon his face. It made him look like some sort of gaping zombie in the eerie setting and sparkling moonlight.
+
+"I thought I could help." Harry's voice didn't break, but it was a near thing; a hoarse whisper that could have passed for the wind playing tricks on Weasley's ears, yet the boy had heard it. "I tried to ambush Quirrell... he was faster than me. Dumbledore was going to let him go. If I'd left him, Longbottom might still be alive."
+
+Weasley's eyes looked dazed, but he shook his head very slowly as if to clear his thoughts. "Why are you telling me this?" he asked for the second time.
+
+"Guilt. It's the one thing from that night I haven't been able to let go. This is the closest I can get to paying Longbottom back. I didn't know him, but I think he'd want you to know." He hesitated. "You can tell Granger if you want, just... make sure no one else knows."
+
+The two boys sat there in silence as several crickets began to pipe up. Something splashed in the water not far from where Harry sat and he could feel a light spray against his face. It was a nice way to break the heat, but it did nothing to ease the silence between the two second-year boys.
+
+"Merlin, this is so messed up," Weasley muttered.
+
+"Twisted," Harry agreed.
+
+"I don't blame you." Harry's head snapped around. He had been looking out over the lake until Weasley's last words, but he was peering at the boy now. "It wasn't your fault," he said. "You were trying to save him. You're all right with me." He held out his hand.
+
+Harry considered him for a moment before taking it slowly. "And you with me. Lovegood's death wasn't your fault. You were fighting a basilisk. The fact any of us made it out alive is a miracle and you and Draco saved my life. Riddle would have killed me had you not killed the snake and had he not destroyed the book."
+
+"I'll kill him," Ron said quietly. "You-kn... Voldemort."
+
+Harry watched him closely. "Plenty of people tried; he killed some of the best witches and wizards alive." Harry remembered Hagrid's words that first night out on the rock when he had told him the truth.
+
+*"No one ever lived after he decided ter kill \'em, no one except you, an\' he\'d killed some o\' the best witches an\' wizards of the age --- the McKinnons, the Bones, the Prewetts..."*
+
+"I'll die trying if he's out there," Weasley promised.
+
+And Harry knew it was true. The force in his words could not be ignored --- Voldemort really had made an enemy in Ron Weasley and this enemy would not stop trying until he or Voldemort were dead.
+
+***June 19, 1993***
+
+***The Trophy Room***
+
+***9:41 AM***
+
+*Tom Marvolo Riddle*
+
+The name was everywhere in this room. Exam records, acknowledgements of academic excellence, even something called the Barnabus Finkley Prize for Exceptional Spell-Casting.
+
+And, of course, the award for special services to the school --- the one that rested directly beside Harry's.
+
+He wasn't sure if he hated Voldemort. He had once, but he was coming to agree with him about some things. He hated what he had done to his parents and, by extension, him, but the man himself seemed almost unreal to Harry. It was difficult to formulate an opinion on him one way or the other.
+
+What Harry did know was that the thought of becoming another Voldemort made him shiver. It haunted his dreams and crept through his psyche like slow-acting poison.
+
+He needed to be better than Riddle in every way imaginable. He would avoid the pitfalls Voldemort fell into and he would obliterate every one of these records. It was the only way he would ever put an end to the idea that they were similar.
+
+Harry heard movement from behind him and he whirled to face it.
+
+"Harrikins!" called a burly redhead Harry knew well.
+
+Well... he knew the two of them well --- Harry actually had no idea which one was which.
+
+"Terrors," he said with a cold glare. He did not relinquish the grip he held on his wand. "What do you want?"
+
+"Not to fight," said one twin.
+
+"Not with the one who closed the Chamber of Secrets," said the other.
+
+"That would be a death wish!"
+
+Harry gave them nothing. "Aww, come on," said the second twin. "You can tell us."
+
+"I don't make a habit of telling people things after they've made my life hell all year."
+
+The twins exchanged looks. "Uh... funny you should say that," said the second twin. "We're... huh, that is to say..."
+
+"Oh, stop blubbering, Forge," said the first twin, turning to Harry. "Look, we fucked up. There isn't really any two ways about it."
+
+"We thought you were the Heir of Slytherin like a lot of people did and we take things further than most people."
+
+"It's our specialty."
+
+"We'd like to apologize," they both said together.
+
+"Seriously, mate," said the second, "we didn't ever mean for it to go as far as it did. We assumed, it escalated, and... we fucked up. Bad."
+
+"I'll accept your apology if you answer me a question." The twins both looked worried, but they nodded. "Were you the ones who rigged that exploding statue that almost killed me?"
+
+"Er..." said the first.
+
+"Yes and no," said the second. "We always planned to attack you and send you to the hospital wing, but we never planned on *that*."
+
+"Then how did it happen?" Harry asked with narrowed eyes.
+
+The second twin hesitated and the first smacked him upside the head. "Oh, come off it, the kid almost died --- he deserves to know." He turned to Harry. "We hadn't figured out plans yet and then we got a letter from someone offering help. They said they were a Runes expert and that they could rig something to take you out... we didn't realize they meant permanently."
+
+"We did the setup," said the second twin, "but the runes were all them. We just figured out where you usually walked, rigged the trap, and waited."
+
+This was actually even more disturbing. At least if it had been the twins, Harry wouldn't have needed to consider any new and dangerous enemies. This was troubling. Someone who was more vicious than them after him? Something lurked at the corner of his mind, a half-formed idea that he couldn't quite put together.
+
+"Who sent you the letter?" he asked.
+
+They exchanged looks one final time before speaking words that would set Harry's anger ablaze, words that would make Harry crave vengeance for the first time in his life.
+
+"Daphne Greengrass," they said as one.
+
+***A little over an hour later, atop the Astronomy Tower...***
+
+From the top of Hogwarts' highest tower, one could see the Hogwarts Express pulling out of Hogsmeade station and beginning to slither away from the castle like a great, crimson snake. The day was fair but unremarkable. It was warm and windless, but clouds covered the sky far above and hid the sun from sight. The bright train with its golden letters stood out starkly in the conditions even from afar as a pale figure wearing black robes stained with silvery blood watched it pull away.
+
+"I thought I might find you here," said a familiar voice from behind the ghost. The Bloody Baron did not turn. He simply waited for his counterpart to glide soundlessly up beside him and take his own post looking out over the castle's grounds, Hogsmeade, the mountains, and the speeding Hogwarts Express.
+
+"A wise guess then," said the Baron in that deep, carrying voice he so seldom used.
+
+Nearly-Headless Nick chuckled from beside him. "My dear Baron, it was hardly a guess at all with how much time you've spent here as of late."
+
+"It is a quiet place where I can think."
+
+"Yes, we've all noticed you haven't been rattling those chains of yours much lately."
+
+The Bloody Baron finally turned to glare at his transparent companion. "What is it you want, Nicholas?"
+
+"To ask if you have taken leave of your senses."
+
+"You dare---"
+
+"Yes, Baron, I dare. Do you forget what happened the last time we meddled at this castle? Lest we forget what happened the last time one of our number spilled secrets they ought to have kept to themselves?"
+
+"Helena was coerced---"
+
+"Far too easily---"
+
+"Enough!" His voice cut through the air with efficiency the axe swung at Nick centuries ago had never had. "You push too far. I am not Helena! I have not been charmed by some foolish child with delusions of grandeur. I have watched longer than you, Nicholas, watched since before your living spirit was even thought of. I care naught for your warnings, nor for your lectures. Make your point and leave."
+
+"I think you have made a mistake involving yourself in the affairs of the students at such a critical time."
+
+"If I had not involved myself, there would be no students here to speak of."
+
+"Perhaps not, but perhaps that would be for the best. You know what is to come as well as I do."
+
+"His return will not herald the demise of this castle. He treasures it too deeply and respects its master too much."
+
+"And what if it is not him I speak of?"
+
+The Baron's eyes flashed. "Guard your tongue---"
+
+"No, open your eyes. It is happening again just like it happened fifty years ago. Do you not see what the boy is? Do you not see what he is to become?"
+
+The Bloody Baron stared at Nearly-Headless Nick with those dark, unblinking eyes. "What of it?"
+
+Nick spluttered. "What of it?" he asked incredulously. "Baron, you know what they say of the last of your students to ascend in such a manner! You know what he has done! You know what he is!"
+
+The Baron met Nick's eyes one final time before speaking his parting words and gliding back down the tower.
+
+"I know that history is written by the victors, Nicholas. You will come to learn in time that not all creatures of darkness come forth to spread evil."
+
+***June 21, 1993***
+
+***Little Hangleton***
+
+***12:00 AM***
+
+Harry hated being so frail. There was nothing worse than the feeling of panic that had gripped him as the slender woman had lowered him gently into the cauldron.
+
+The liquid had looked just like water, although it felt like anything but. Harry heard the loud hissing sound as he held his breath and submerged. He began to tremble almost at once. The potion ripped at him like a thousand leeches and the worst had not yet begun. The frailness made him rage. Any human would have been able to tolerate this, but it was among the worst pain Harry had ever felt, eclipsed only by that fateful night his power had been lost.
+
+Something floated down into the cauldron. Harry felt it caress him on the way down, but he paid it no mind. Opening his eyes was something he did not dare do --- despite the potion's appearance, it was anything but water.
+
+He could feel it heat up around him as though to illustrate his point. There was now irritation as well as pain. His scaly skin itched more persistently than a niffler digging for gold.
+
+He turned his mind inwards --- he was the greatest sorcerer alive with a grip on the Mind Arts no one could match; this process would not conquer him.
+
+His mind was forced clear of all but the excitement surrounding what was to come by the time he heard the splash. Harry felt it brush up against him and he recoiled. It was disgusting. No part of his feeble servant should touch him.
+
+Yet he was too weak to move away on his own and by the time the blood taken back in January trickled into the cauldron, his concentration had broken, though it mattered not.
+
+No amount of Occlumency could have prepared him for what came next. It was that horrible Samhain all over again. Every part of him exploded outwards as an indescribable pain gripped him and he was torn from the pathetic shell. It was all for the pursuit of greatness, but that did not lessen the pain. For a split-second, Harry wished for weakness again. Anything but this; he would suffer through anything to end this all-consuming pain.
+
+It was over as fast as it had begun. The sound of hissing steam filled his ears as sensations other than pain returned to him just as he realized he could rise at long last.
+
+He did so reverently, surveying all around him with those red, pupil-less eyes.
+
+The graveyard was just like he remembered from all those years ago. Tombstones were arrayed in simple lines and all was quiet but for the steaming cauldron and the caw of a raven somewhere off in the distance. It was difficult to see through the clouds of thick steam, but Harry thought he saw the one who had sacrificed for him lying on the grass and cradling the place where a finger had been for all his life.
+
+Then the steam billowed, taking with it the unnatural heat that had swaddled him and exposing him to the world for the first time in nearly twelve long years.
+
+The first breeze of summer tickled his milk-white skin as he peered out at the few faces around him and smiled with glee the likes of which none had ever known, glee the likes of which one could never know until they had seen Death, spat in his face, and returned to the might they had once wielded.
+
+So good it was to feel the soft air against his bare skin, so good it was to smile with real lips, so good it was to be whole once more.
+
+**TO BE CONTINUED IN**
+
+**BOOK 3:**
+
+**HARRY POTTER AND THE LOOMING OF SHADOWS**
+
+**COMING LATER IN 2022**
+
+**Author's Endnote:**
+
+**It feels quite surreal to have finished the second book in this series. I'm sure many of you have put a lot of things together about this year. For those who haven't, it will all be explained in book 3.**
+
+**Following that same line of thought, I will be recording a podcast soon during which I answer fan questions about book 2 and the story in general. If anyone has questions for that, either message me on here, leave it in the reviews, or join my Discord server, where there are dedicated channels for this kind of thing. I will also definitely be writing a blog post in which I discuss book 2 at some point. I'll be announcing that's release when I write it via Twitter and Discord, so feel free to join the server and/or follow me on Twitter.**
+
+**I know some people have trouble with the Discord link, but this is most often because you need to update your browser. If that doesn't work, find my website via a generic Google search of my pen name and use the direct link on the homepage. There are over 3,300 people on there who are always willing to discuss any number of things, so I encourage everyone to check it out. They will also get book 3 chapters AT LEAST a month before FFN or AO3.**
+
+**I should probably mention that the scene with Nick and the Bloody Baron was probably inspired by the one in *Harry Potter and the Prince of Slytherin.* I don't remember that scene well, but I can't confidently say mine wouldn't have happened without it, so credit where credit is due.**
+
+**There will be a meaningful delay in posting between books whilst I outline the third instalment of this series, but I'll try not to keep you all waiting for too long. My current goal is to begin posting book 3 here in the summer, but that is by no means set in stone and may very well change.**
+
+**If you don't want to wait, the first five chapters of book 3 are already posted on my P\*T\*E\*N page. I'll be consistently updating this story over there and it will not be posted here until I finish book 3 or at least get close to doing so. Feel free to sign up to that using the link on my profile if you want to avoid the wait.**
+
+** Until then, enjoy my other works and stay tuned for the twists and turns still to come.**
+
+**Please read and review.**
+
+**Thank you to all of the lovely Discord Editors who left edits on early-access drafts over on the Discord server at some point during the course of book 2:**
+
+**ArtyWords, Asmodeus Stahl, Bart, Gamerin4d, Idefix, Kaido, Mrs. ACI, NB, Newuser, PrideInMoi, Rabul, rawmeat898Deprogrammer, Sakkiko, The Darkling, and Zare**
+
+**A massive thank you is also extended to my Othrian-level patron, ShadowWolf, for his incredibly generous support on that platform!**
+
+**PS: THERE WILL BE A DELAY OF SEVERAL MONTHS BEFORE THE START OF BOOK 3, BUT THAT WAIT CAN BE CIRCUMVENTED BY SIGNING UP TO MY P\*T\*E\*N PAGE. CHAPTERS WILL BE POSTED CONSISTENTLY OVER THERE. DISCORD MEMBERS WILL ALSO STAY AT LEAST A MONTH AHEAD OF FFN AND AO3 DURING BOOK 3, SO I ENCOURAGE YOU TO JOIN THE DISCORD SERVER IF YOU HAVEN'T ALREADY.**
 
 **Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
 
@@ -13588,7 +18330,7 @@ A rocky spire jutted up between them, breaking his concentration.
 
 Gellert turned slowly, facing a familiar face whose wand was trained on him. "Leave."
 
-Ice seeped through his veins. *He can't take his side.* "Did you not hear the spell your brother---"
+Ice seeped through his veins. *He can't take his side.* "Did you not hear the spell your brother---"
 
 "I said leave, Gellert. You've done enough."
 
@@ -13972,7 +18714,7 @@ A time turner, resting in the palm of her hand. *I can do things with this... so
 
 Harry examined his own emotions as he climbed the spiral staircase. Pleasant memories came with this climb, but so too did knowing long-buried secrets. *Why does what he did that summer bug me more than what Grindelwald did?* It all came back to treachery. *Dumbledore was willing to leave his family... I could never do that.*
 
-"Enter," Dumbledore called once Harry knocked upon his door. The office remained unchanged but for the headmaster's desk, upon which lay the largest pile of parchment Harry had ever seen .
+"Enter," Dumbledore called once Harry knocked upon his door. The office remained unchanged but for the headmaster's desk, upon which lay the largest pile of parchment Harry had ever seen.
 
 "Busy start to your year, sir?" he asked, taking the seat across from Dumbledore.
 
@@ -14803,3 +19545,235 @@ Harry read the words again but still missed their meaning. *What is he talking a
 **DON'T FORGET ABOUT THE FUNDRAISER I MENTIONED IN THE OPENING NOTES! USE THE LINK ON MY PROFILE AND CHECK THAT OUT! EVERY CENT PLEDGED GOES TOWARDS A GREAT CAUSE.**
 
 **All those links can be found on my profile. If any give you trouble, search my pen name on Google, click on my website, and use the direct links on its homepage.**
+
+**Disclaimer: This is a work of fanfiction based on the Harry Potter universe. All recognizable characters, plots, and settings are the exclusive property of J.K Rowling. I make no claim to ownership.**
+
+**Acknowledgements: Thank you to my editor Athena, as well as my other betas 3CP, Luq707, Raven, Regress, and Thanos for their incredible work on this story.**
+
+**Self-Promotion: I have a Discord server where you can chat and read all of my chapters early. THE NEXT FIVE CHAPTERS CAN BE READ THERE RIGHT NOW! If you would like to join, then copy the link on my profile. You can do likewise to follow the ACI100 Twitter account --- \@ACI_100 --- for live updates and to check out my official website. The Discord link can also be found on my website's homepage, which is easily found via a generic Google search of my pen name.**
+
+**If you would like to get my chapters even earlier than Discord and receive other, exclusive benefits whilst generously supporting me at the same time, I have a P\*T\*E\*N page. Anyone who signs up to that page can read the NEXT TWENTY-FIVE CHAPTERS RIGHT NOW! THAT IS THE ENTIRETY OF BOOK 3, PLUS THE FIRST TEN CHAPTERS OF BOOK 4! The link to that can also be found on my profile, Discord server, or website.**
+
+**SPECIAL ANNOUNCEMENT: I am partnering with fellow authors DarknessEnthroned and TheBlack'sResurgence in an effort to raise money for the Brain & Behavior Research Foundation this holiday season. The link to that fundraiser is on my profile and plastered all across my Discord server. There is more information at that link --- including donation incentives --- and any contribution whatsoever would be humbly appreciated.**
+
+**Author's Note:**
+
+My Discord server has nearly reached 5,000 members. If that happens before the start of next year, I will be posting five extra chapters on there. Two of them will be for this story, so if you want to read a handful of early chapters, help me get to 5,000 members! The link to join is directly below!
+
+**Harry Potter and the Perversion of Purity**
+
+**By ACI100**
+
+**Book 3: The Looming of Shadows**
+
+**Chapter 12: Shaken Psyches**
+
+***October 2, 1993***
+
+***An Abandoned Classroom***
+
+***10:13 PM***
+
+Harry's knee slammed against the stones, sending a lance of pain down his leg. It throbbed so fiercely that any previous pain was forgotten.
+
+His pain vanished. Harry still felt muscles wriggling beneath his skin, but they were beginning to calm. He took a deep breath.
+
+"Don't rush to your feet," came a voice from some distance away.
+
+Harry gave himself a moment, then stood. The pain was gone but his right leg was stiff. It felt like the muscles of his calf had curled into a tight, unyielding ball.
+
+Cassie tossed him his wand. "I never even saw the spell," he admitted. "What was it? The Sfíximo Curse?"
+
+Cassie raised an eyebrow. "I didn't think you'd know the spell."
+
+Harry shrugged. "I read about it in the Black library." The truth was that Harry had watched Grindelwald use the spell in a skirmish at Durmstrang.
+
+Cassie flipped a lock of hair behind her ear. "It's impressive how many spells you know for your age."
+
+"Was I right?" Harry asked. "Was it the spell you used?"
+
+"It was. I almost missed --- the spell clipped your leg as you sidestepped."
+
+*Shame I didn't step a bit further.* "Can you show me the wand movement? I've never actually cast it, but I'd rather avoid that one."
+
+Cassie traced her wand slowly through the air. "There's a countercurse, but I don't envy anyone casting it on themselves. The curse isn't easy to ignore or shrug off."
+
+"Maybe if you got hit with it enough times, your pain tolerance would just adapt."
+
+Her lips curved down. "I doubt it. There are ways of raising your pain tolerance quickly, but they're frowned upon and considered unsafe."
+
+Harry gave her a piercing look. "You just conjured spikes under my feet and threw a minor torture curse at me and now you're lecturing me about being safe?"
+
+Cassie grinned. "I wasn't lecturing you. I never once said you couldn't do it or that I would hide it from you."
+
+"Then how do you do it?"
+
+"There's more than one way."
+
+Harry put on an exaggerated scowl. *Is she trying to be difficult just for the sake of it?* "What are they, then?"
+
+Cassie chewed her words. *Weird. She's usually pretty open*. "They're... not natural things."
+
+Curiosity coiled tight about him. *What is that supposed to mean?* Harry held her gaze. "What are they?"
+
+"Rituals."
+
+"I've heard of them." A handful of books had referenced them, but never more than that. *Not that the idea is hard to work out*.
+
+"Black family library again?" Harry nodded and she sighed. "No one in their right mind should ever have given you access to that place." She was probably right given what he had seen. *And I've avoided all the worst books. I wonder what's hidden in them*...
+
+"So some of these rituals... what, boost your pain tolerance?"
+
+Cassie twirled a strand of blonde hair. "There are different types. Most people just think they're parts of horror stories, but my father's said that they really can work. He just doesn't think they're worth it."
+
+"What do you mean by worth it?" Harry asked.
+
+Now she was tugging on that strand of hair. *She looks stressed*. "It's complicated. You don't just do a ritual and get better at something. There's always risk and sacrifice, at least that's how it is in the stories. You should ask someone who knows more than me. Just... be careful."
+
+*That won't be a problem*. Between Voldemort and Grindelwald, there was a treasure trove waiting for him. *I bet the Black library has some books that actually explain them, too*. Harry had hoped books like that lurked in the Chamber of Secrets, but he had found nothing so far. *There has to be something down there. It can't just be empty rooms*.
+
+Harry had planned to ask about Occlumency and whether that could be used to numb pain, but he decided against it.
+
+*I should change the topic; she looks really stressed.* "Have you found anything out about Astoria?"
+
+Harry had asked Pansy to pass along a note about Astoria and ask whether or not Cassie would investigate the rumours. She was uniquely positioned as a sixth-year prefect; they worked closely with the first years and made sure their classes went smoothly.
+
+Cassie stopped tugging at her hair. "I talked to her yesterday."
+
+*Good.* "And?"
+
+"She was petrified just talking about it. It was weird."
+
+"That's not that weird, is it? Aren't most first years embarrassed if they don't do well?"
+
+"I don't think she was embarrassed. She looked really stressed."
+
+Harry drummed his fingers on his knee. "Did she say anything?"
+
+"Just that the rumours are true; her spells don't work right. I know Pansy told you about the Lumos incident, but it's not the only one. Her Colour Changing Charm turned the whole desk blue and it took Flitwick ages to turn it back. I've never heard of anything like it."
+
+His curiosity mounted. "That makes no sense." Harry twirled his wand between his fingers. *Now I'm actually curious. This was just supposed to be getting back at Daphne*. It still was, he told himself, but there was another motive now. *I don't like not knowing things...*
+
+***Soon after...***
+
+Harry's footsteps echoed, mingling with his tangled thoughts. *Should I feel guilty?* *Aren't I just planning to do the same thing the Malfoys did to me*? It made him uneasy but he forced those thoughts down. *Better uneasy than blown up by a statue*.
+
+What surprised him was how easily Cassie followed his lead. Suspicion prodded him sharply. *It would make sense if she's working for Voldemort*. It mattered not for now. Voldemort was on his side for the time being --- he would worry about that if it changed.
+
+That thought bothered him less now. No matter the morality of his plans, he felt better having them. Being in control of things after such a chaotic summer was a relief. *One day I'll feel like this all the time; one day I'll control everything, I just need to be stronger*.
+
+A shadow crawled up a nearby wall --- first a head, then the rest. *I really need to work on noticing when people get close*.
+
+"Oh, it's you," said Draco, sliding his wand back up his sleeve.
+
+Harry did the same, falling into step beside him. "I didn't expect to find you wandering the halls."
+
+Draco's cheeks filled with pink. "I'll have you know that I wasn't wandering at all."
+
+"Walking, wandering --- same thing, really."
+
+Draco sneered at him. "Are you going to ask where I was, or are we going to spend the next ten minutes talking around the point?"
+
+Harry raised an eyebrow. Draco's patience for quips and banter was shorter than he remembered. *He's been like this since the train ride*. "What were you doing?"
+
+The two boys walked in silence, unbroken until the common room loomed ahead. "I was practicing."
+
+*Draco practicing?* "Practicing what?"
+
+"Isn't that part obvious? Aren't you supposed to be the smart one?"
+
+"I'm not sure smart has anything to do with understanding you. Sanctity." The stone wall slid aside, admitting them into the common room.
+
+A wall of noise greeted their entrance. Older students clustered around bottles of fire whiskey whilst lower years quibbled over cards or chess. Some students worked in the common room's corner, shrouded in shadow and slaving over piles of parchment. *They almost make me not like Saturdays*. Two armchairs sat unoccupied near the fire, surrounded by naught but empty space.
+
+Harry glanced towards the armchairs. Draco sighed, but nodded. *We've hardly spent any time alone since making up*.
+
+"You were practicing magic in secret, weren't you?"' Draco nodded, staring into the fire. "Was it the boggart? Did it represent something about the Chamber of Secrets?"
+
+"The Chamber of Secrets?" Draco asked. "What does that have to do with anything?"
+
+Harry studied him but saw no signs of deception. *Why is Tom Riddle his boggart, then? Why is everything so confusing lately?*
+
+"Just a guess," he muttered. "I thought it might have represented the way you felt after Diana was captured or something. It would explain why you started practicing." Draco just shook his head. "So what were you practicing for? Your grades are good, aren't they?"
+
+"My grades are fine, it isn't about that."
+
+Harry considered the things that motivated him. Neville's death, the Malfoys' manipulations, Voldemort's wand hovering just inches from his metaphorical throat...
+
+"That feeling isn't your boggart, but it's why you're practicing, isn't it?" Draco gave no answer, but that was all the confirmation Harry needed. "What are you working on?"
+
+Draco stared straight into the flames. "Curses."
+
+"Have you actually practiced with another person?" Draco shook his head. "You should ask Theodore if he wants in." He would have offered himself, but he was busy enough and would just have thrashed Draco. *That wouldn't be helpful; Theodore's a better match*.
+
+Draco twisted the fabric of his sleeve. "I'll think about it."
+
+*I expected him to just reject it*. "You really have grown up. When you said it on the train, I was wondering if you were serious. You were, weren't you?" Draco nodded. "What changed?"
+
+"Everything."
+
+*That could mean anything*. His tone was enough to make up Harry's mind. "If you ever need help with anything, let me know."
+
+Draco finally looked up from the fire. "I didn't think we were friends."
+
+Harry made himself smile. *Draco's earned this last chance; I can give him that*. "We weren't. We started over. I wanted proof that things would be different." He offered Draco his hand. "I think this is enough proof for now."
+
+Draco hesitated for only a heartbeat before seizing his hand, wearing the first genuine smile Harry had seen on his face in months.
+
+***October 5, 1993***
+
+***The Gryffindor Common Room***
+
+***8:56 PM***
+
+Ron stepped into the common room, flanked by Fred and George. Panes of glass rattled, shaken by the fierce winds outside. Ron shivered in memory.
+
+Their practice had started smoothly. It was a bright, clear night flecked by a thousand shining stars. The air was warm and the visibility was excellent; they could not have asked for better conditions.
+
+Then the wind had died and an awful cold seeped through Ron's blood, halting his breath and chilling his bones. A hundred shadows glided over the high-winged gates, floating towards the pitch. Ron's grip had slackened as he buried a ruby-encrusted sword into Luna Lovegood's chest over and over again, feeling it halt then sink deeper each and every time.
+
+George had noticed his plight and signalled to Wood, who ended the practice. Ron had been dragged into the changing room, where he remained until the dementors retreated back off the grounds.
+
+"I don't get it," he snarled once he and Hermione had been left alone, sitting near the fire. "How do you lot just deal with them when I almost fall off my bloody broom? It's pathetic!"
+
+"What's pathetic is the fact they're here at all," Hermione said. "Honestly, I know Professor Dumbledore argued, but surely there must have been something he could do."
+
+Ron scowled. "Dumbledore's lost some power. Not that he can overrule someone like the minister anyway."
+
+"But why would the minister want dementors near students? It's so incredibly backwards!"
+
+"I dunno, but I'd like to take one of those beaters' bats and hit whoever suggested it over the head."
+
+"I just don't understand how these people have any power in the first place. I thought we had it bad with some of the idiots in the muggle world, but then I came here."
+
+Ron tried to shrug, but the effect was ruined by a shiver. He wrapped the scarlet blanket more tightly around himself, trying not to think of bloody fingers stretching across the chamber's floor each time he looked at it. "It's just how it is."
+
+"But why?" asked Hermione. "Surely *someone* could do *something*?"
+
+"I kind of just want to figure out what to do about those bloody dementors. I'm sick of feeling useless any time they're around."
+
+Hermione looked out the window, scowling. "Yes, let's focus on that." She stood, looking expectantly down at him.
+
+"Where are we going?" he asked, clutching at his blanket.
+
+Hermione rolled her eyes. "The library, Ron, where else would we go to learn new spells?"
+
+**Author's Endnote:**
+
+**Don't get too hung up on the teases about rituals and the Chamber of Secrets. Neither of them is going to dominate this story going forward, they're just small pieces of a much larger puzzle.**
+
+**Please read and review.**
+
+**Thank you to my lovely Discord Editor, Idefix, for his corrections/contributions on this chapter.**
+
+**A heartfelt thank you is extended to my Primordial-level patron, Lily, my eternal love, for her incredibly generous support on that platform. The same thanks is extended to my Mage-level patron, Cup, for her unwavering generosity.**
+
+**PS: The next chapter will be posted on Saturday, January 7th, 2023. The delay in posting is due to the next two Saturdays being Christmas Eve and New Year's Eve respectively. That being said, I will post at least one chapter on Discord during that time, so if you don't want to wait three weeks, I recommend joining the Discord server.**
+
+**ALL DISCORD MEMBERS CAN READ THE NEXT FIVE CHAPTERS RIGHT NOW! THE NEXT TWENTY-FIVE CHAPTERS CAN BE READ RIGHT NOW BY ANYONE WHO SIGNS UP TO MY P\*T\*E\*N PAGE! That is the entirety of Book 3, plus the first ten chapters of Book 4. Two more chapters of this story will be posted there this coming week.**
+
+**DON'T FORGET ABOUT THE FUNDRAISER I MENTIONED IN THE OPENING NOTES! USE THE LINK ON MY PROFILE AND CHECK THAT OUT! EVERY CENT PLEDGED GOES TOWARDS A GREAT CAUSE.**
+
+**All those links can be found on my profile. If any give you trouble, search my pen name on Google, click on my website, and use the direct links on its homepage.**
+
+**Happy holidays, everyone! Stay safe and enjoy the time.**

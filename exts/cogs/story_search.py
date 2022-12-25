@@ -21,14 +21,25 @@ LOGGER = logging.getLogger(__name__)
 
 
 class BookSearchCog(commands.Cog):
-    """A cog with commands for people to search the text of some ACI100 books while in Discord."""
+    """A cog with commands for people to search the text of some ACI100 books while in Discord.
+
+    Parameters
+    ----------
+    bot : :class:`bot.Beira`
+        The main Discord bot this cog is a part of.
+
+    Attributes
+    ----------
+    story_records : :class:`dict`
+        The dictionary holding the metadata and text for all stories being scanned.
+    """
 
     def __init__(self, bot: Beira):
         self.bot = bot
         self.story_records = {}
 
     async def cog_load(self) -> None:
-        """Load the story metadata text to avoid reading from files or the database during runtime."""
+        """Load the story metadata and text to avoid reading from files or the database during runtime."""
 
         query = "SELECT * FROM story_information"
 
@@ -43,11 +54,37 @@ class BookSearchCog(commands.Cog):
         for file in project_path.glob("data/story_text/**/*.md"):
             if "text" in file.name:
                 with file.open("r", encoding="utf-8") as f:
-                    self.story_records[str(file.stem)[:-5]]["text"] = [line for line in f]
+                    stem = str(file.stem)[:-5]
+                    self.story_records[stem]["chapter_index"] = []
+                    self.story_records[stem]["collection_index"] = []
+                    self.story_records[stem]["text"] = []
+
+                    for index, line in enumerate(f):
+
+                        self.story_records[stem]["text"].append(line)
+                        if re.search(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)", line):
+                            self.story_records[stem]["chapter_index"].append(index)
+                            print(line)
+                            print(index)
+                            print(self.story_records[stem]["chapter_index"])
+
+                        elif re.search(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)", line):
+                            if (len(self.story_records[stem]["collection_index"]) == 0) or (line not in self.story_records[stem]["text"][self.story_records[stem]["collection_index"][-1]]):
+                                self.story_records[stem]["collection_index"].append(index)
+
+                    print(f"Chapter index: {self.story_records[stem]['chapter_index']}")
+                    print(f"Collection index: {self.story_records[stem]['collection_index']}")
+            LOGGER.info(f"Loaded file: {file.stem}")
 
     @commands.hybrid_command()
     async def random_text(self, ctx: commands.Context) -> None:
-        """Display a random line from the story."""
+        """Display a random line from the story.
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context where the command was called.
+        """
 
         b_range = randint(2, len(self.story_records["pop"]["text"]) - 3)
         b_sample = self.story_records["pop"]["text"][b_range:(b_range + 2)]
@@ -59,6 +96,10 @@ class BookSearchCog(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    '''
+    story=[app_commands.Choice(name=value["story_full_name"].split(" ")[3:].join,value=key) for key, value in self.story_records]
+    '''
+
     @commands.hybrid_command(aliases=["find_text"])
     @app_commands.choices(story=[
         app_commands.Choice(name="Ashes of Chaos", value="aoc"),
@@ -67,7 +108,17 @@ class BookSearchCog(commands.Cog):
         app_commands.Choice(name="Perversion of Purity", value="pop")
     ])
     async def search_text(self, ctx: commands.Context, story: str, query: str) -> None:
-        """Search the book text for a word or phrase."""
+        """Search the book text for a word or phrase.
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context where the command was called.
+        story : :class:`str`
+            The acronym or abbreviation of a story's title. Currently, there are only four choices.
+        query : :class:`str`
+            The string entered by the user to search for in the story.
+        """
 
         async with ctx.typing():
             story_text = self.story_records[story]["text"]
@@ -75,6 +126,7 @@ class BookSearchCog(commands.Cog):
             start_time = perf_counter()
             processed_text = self._process_text(story_text, query)
             end_time = perf_counter()
+
             processing_time = end_time - start_time
             LOGGER.info(f"_process_text() time: {processing_time:.8f}")
 
@@ -127,7 +179,7 @@ class BookSearchCog(commands.Cog):
         all_text.reverse()
 
         chapter, collection_header = "N/A", "N/A"
-        chapter_re = re.compile(r"(^\*\*Chapter \w+)|(^\*\*Prologue.*)")
+        chapter_re = re.compile(r"(^\*\*Chapter \w+)|(^\*\*Prologue.*)(^\*\*Interlude \w+)")
         collection_re = re.compile(r"(^\*\*Year \d+)|(^\*\*Book \d+)|(^\*\*Season \w+)")
 
         for index, chap_line in enumerate(all_text):

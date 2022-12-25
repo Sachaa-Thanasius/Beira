@@ -2,3 +2,4 @@ config.json
 help-alpha.py
 *.log
 scripts/extension_loader_reference_umbra.py
+scripts/froopy.py
