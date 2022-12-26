@@ -39,7 +39,6 @@ class BookSearchCog(commands.Cog):
 
     def __init__(self, bot: Beira):
         self.bot = bot
-        # self.story_records = {}
 
     async def cog_load(self) -> None:
         """Load the story metadata and text to avoid reading from files or the database during runtime."""
@@ -53,6 +52,9 @@ class BookSearchCog(commands.Cog):
             self.story_records[temp_rec["story_acronym"]] = dict_temp_rec
             self.story_records[temp_rec["story_acronym"]]["template_embed"] = StoryEmbed(story_data=dict_temp_rec)
 
+        re_chap_title = re.compile(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)|(^\*\*Interlude \w+)")
+        re_coll_title = re.compile(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)")
+
         project_path = Path(__file__).resolve().parents[2]
         for file in project_path.glob("data/story_text/**/*.md"):
             if "text" in file.name:
@@ -62,15 +64,19 @@ class BookSearchCog(commands.Cog):
                     self.story_records[stem]["collection_index"] = []
                     self.story_records[stem]["text"] = []
 
+                    temp_chap_index = self.story_records[stem]["chapter_index"]
+                    temp_coll_index = self.story_records[stem]["collection_index"]
+                    temp_text = self.story_records[stem]["text"]
+
                     for index, line in enumerate(f):
 
-                        self.story_records[stem]["text"].append(line)
-                        if re.search(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)|(^\*\*Interlude \w+)", line):
-                            self.story_records[stem]["chapter_index"].append(index)
+                        temp_text.append(line)
+                        if re.search(re_chap_title, line):
+                            temp_chap_index.append(index)
 
-                        elif re.search(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)", line):
-                            if (len(self.story_records[stem]["collection_index"]) == 0) or (line not in self.story_records[stem]["text"][self.story_records[stem]["collection_index"][-1]]):
-                                self.story_records[stem]["collection_index"].append(index)
+                        elif re.search(re_coll_title, line):
+                            if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
+                                temp_coll_index.append(index)
 
             LOGGER.info(f"Loaded file: {file.stem}")
 
@@ -87,7 +93,6 @@ class BookSearchCog(commands.Cog):
 
         b_range = randint(2, len(self.story_records[story]["text"]) - 3)
         b_sample = self.story_records[story]["text"][b_range:(b_range + 2)]
-        # reverse = self.story_records["pop"]["text"][:(b_range + 2):-1]
 
         quote_year = self._binary_search_text(story, self.story_records[story]["collection_index"], (b_range + 2))
         quote_chapter = self._binary_search_text(story, self.story_records[story]["chapter_index"], (b_range + 2))
@@ -96,10 +101,6 @@ class BookSearchCog(commands.Cog):
         embed.set_footer(text="Randomly chosen quote from an ACI100 story")
 
         await ctx.send(embed=embed)
-
-    '''
-    story=[app_commands.Choice(name=value["story_full_name"].split(" ")[3:].join,value=key) for key, value in self.story_records]
-    '''
 
     @commands.hybrid_command(aliases=["find_text"])
     @app_commands.choices(story=[
@@ -114,7 +115,7 @@ class BookSearchCog(commands.Cog):
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
-            The invocation context where the command was called.
+            The invocation context.
         story : :class:`str`
             The acronym or abbreviation of a story's title. Currently, there are only four choices.
         query : :class:`str`
@@ -147,13 +148,19 @@ class BookSearchCog(commands.Cog):
                     interaction=ctx.interaction, all_text_lines=processed_text, story_data=self.story_records[story]))
 
     @classmethod
-    def _process_text(cls, story: str, all_text: List[str], terms: str) -> List[Tuple | None]:
+    def _process_text(cls, story: str, all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
         """Collect all lines from story text that contain the given terms."""
 
         results = []
 
         for index, line in enumerate(all_text):
-            if terms.lower() in line.lower():
+
+            if exact:
+                terms_presence = terms.lower() in line.lower()
+            else:
+                terms_presence = all([term.lower() in line.lower() for term in terms])
+
+            if terms_presence:
                 quote = "".join(all_text[index:index + 3])
                 quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
                 if len(quote) > 1024:

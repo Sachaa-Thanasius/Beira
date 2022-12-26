@@ -18,6 +18,7 @@ class SlashTest(commands.Cog):
     bot : :class:`discord.ext.commands.Bot`
         The main Discord bot this cog is a part of.
     """
+
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
@@ -29,7 +30,7 @@ class SlashTest(commands.Cog):
         await ctx.send("Test")
 
     @commands.hybrid_command()
-    async def echo(self, ctx, arg) -> None:
+    async def echo(self, ctx: commands.Context, arg: str) -> None:
         """Echo back the user's input."""
 
         await ctx.send(arg)

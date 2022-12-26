@@ -15,7 +15,7 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LittleHelpCommand(commands.MinimalHelpCommand):
-    """A very small customization of MinimalHelpCommand."""
+    """A very small customization of MinimalHelpCommand with embeds as message bodies and generous cooldowns."""
 
     def __init__(self):
         super().__init__(command_attrs=dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user))))
@@ -39,7 +39,7 @@ class LittleHelpCog(commands.Cog):
         self.bot.help_command.cog = self
 
     def cog_unload(self) -> None:
-        """Resets help command to its original default."""
+        """Resets help command to its default state before unloading."""
 
         self.bot.help_command = self._old_help_command
 
@@ -78,4 +78,6 @@ class LittleHelpCog(commands.Cog):
 
 
 async def setup(bot: Beira):
+    """Connects cog to bot."""
+
     await bot.add_cog(LittleHelpCog(bot))

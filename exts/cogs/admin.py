@@ -2,9 +2,9 @@
 admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
 """
 import logging
-from typing import Optional
 from os import listdir
 from os.path import abspath, dirname
+from typing import Optional, List
 
 import discord
 from discord import app_commands
@@ -17,6 +17,7 @@ LOGGER = logging.getLogger(__name__)
 # List for cogs that you don't want to be reloaded.
 IGNORE_EXTENSIONS = []
 
+# Find all extensions using the file path.
 _ALL_EXTENSIONS = []
 cogs_folder = f"{abspath(dirname(__file__))}"
 for filename in listdir(cogs_folder):
@@ -33,12 +34,20 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
     @commands.command()
     @commands.is_owner()
     async def walk(self, ctx: commands.Context) -> None:
-        """Try to see all commands, maybe app commands, maybe on tree, who knows."""
+        """Walk through all app commands globally and in every guild to see what is synced and where.
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context where the command was called.
+        """
 
         guilds_to_check = self.bot.guilds
         all_embeds = []
 
-        def create_walk_embed(title, cmds):
+        def create_walk_embed(title: str, cmds: List[app_commands.AppCommand]) -> None:
+            """Creates an embed for global and guild command areas and adds it to a collection of embeds."""
+
             descr = ""
             for cmd in cmds:
                 descr += f"**{cmd.mention}**\n{cmd.description}\n\n"
@@ -62,7 +71,16 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
     @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in _ALL_EXTENSIONS])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def reload(self, ctx: commands.Context, extension: str) -> None:
-        """Reloads an extension/cog."""
+        """Reloads an extension/cog.
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context.
+        extension : Choice[:class:`str`]
+            The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
+            path needs to be typed out from the project root directory with periods as separators.
+        """
 
         if extension:
             embed = discord.Embed(color=0xcccccc,
@@ -96,20 +114,36 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
         app_commands.Choice(name="[^] —— Clear all commands from the current guild target and sync, thereby removing guild commands.", value="^"),
-        app_commands.Choice(name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing global commands.", value="-"),
+        app_commands.Choice(name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.", value="-"),
         app_commands.Choice(name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", value="+")
     ])
     async def sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object] = None,
                    spec: Optional[app_commands.Choice[str]] = None) -> None:
-        """
-        Syncs the command tree in a way based on input. Originally made by Umbra.
+        """Syncs the command tree in a way based on input. Originally made by Umbra. A sync performed with parameter
+        `spec` is mutually exclusive with that of parameter `guilds`.
 
-        !sync -> global sync
-        !sync ~ -> Sync current guild
-        !sync * -> Copy all global app commands to current guild and sync
-        !sync ^ -> Clear all commands from the current guild target and sync (removes guild commands)
-        !sync - -> Clear all global commands and sync (removes global commands).
-        !sync id_1 id_2 -> syncs guilds with id 1 and 2
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context.
+        guilds : Greedy[:class:`discord.Object`]
+            The guilds to sync the app commands if no specification is entered. Converts guild ids to
+            :class:`discord.Object`s.
+        spec : Optional[Choice[:class:`str`]]
+            The type of sync to perform if no guilds are entered.
+
+        Notes
+        -----
+        Here is some elaboration on what the command would do with different arguments. Irrelevant with slash
+        activation, but replace '!' with whatever your prefix is for prefix command activation:
+
+            "!sync" : Sync globally.
+            "!sync ~" : Sync with current guild.
+            "!sync *" : Copy all global app commands to current guild and sync.
+            "!sync ^" : Clear all commands from the current guild target and sync, thereby removing guild commands.
+            "!sync -" : Clear all global commands and sync, thereby removing all global commands.
+            "!sync +" : Clear all commands from all guilds and sync, thereby removing all guild commands.
+            "!sync <id_1> <id_2> ..." : Sync with those guilds of id_1, id_2, etc.
         """
 
         if not guilds:
@@ -152,4 +186,6 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
 
 
 async def setup(bot: Beira):
+    """Connects cog to bot."""
+
     await bot.add_cog(AdminCog(bot))
