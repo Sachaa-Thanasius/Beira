@@ -108,7 +108,7 @@ class SnowballCog(commands.Cog):
         if record["stock"] < stock_limit:
             embed.description = f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping" \
                                 f"some snowballs. You now have {record['stock']} of them—let 'em fly!"
-            embed.set_image(url=self.embed_data["collects"]["image_success"])
+            embed.set_image(url=random.choice(self.embed_data["collects"]["image_success"]))
 
         else:
             embed.description = "You've filled your armory to the brim with about 100 snowballs! Release some of your" \
@@ -162,6 +162,7 @@ class SnowballCog(commands.Cog):
         else:
             embed.colour = 0x000000
             embed.description = "Oops! You don't have any snowballs. Use the /collect command to stock up!"
+            embed.set_image(url="https://media.tenor.com/wNdxxIIt1zEAAAAC/polar-vortex-winter-break.gif")
             ephemeral = True
 
         await ctx.send(content=message, embed=embed, ephemeral=ephemeral)

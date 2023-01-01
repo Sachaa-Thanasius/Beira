@@ -1,6 +1,7 @@
 {
     "collects": {
-        "image_success": "https://images-ext-1.discordapp.net/external/E9ROIdIhkUg5m5OJrxncIKnjM8Gqe4FPcuzi-Bvh_hk/https/c.tenor.com/NBqwJNBaSXUAAAAC/playing-with-snow-piu-piu.gif?width=400&height=225",
+        "image_success": ["https://c.tenor.com/NBqwJNBaSXUAAAAC/playing-with-snow-piu-piu.gif?width=400&height=225",
+            "https://media.tenor.com/odNpnufgwkYAAAAC/anime-cute.gif"],
         "image_failure": "https://c7.alamy.com/zooms/9/e2305f4b2e734529a9abcaf94f8ec8e2/2cr87x3.jpg"
     },
     "hits": {
@@ -14,7 +15,11 @@
             "https://media.tenor.com/9pbG2ld4H8UAAAAC/snow-snowing.gif",
             "https://i.imgur.com/ZO5AoH9.gif",
             "https://media.tenor.com/A-7WMFWiG9UAAAAC/snow-face.gif",
-            "https://media.tenor.com/7ybvhz-LT4sAAAAC/snow-day-snowball-fight.gif"]
+            "https://media.tenor.com/7ybvhz-LT4sAAAAC/snow-day-snowball-fight.gif",
+            "https://media.tenor.com/pvMYzXPpVLIAAAAd/acchi-kocchi-anime.gif",
+            "https://media.tenor.com/gQAWuiZnbZ4AAAAd/pokemon-anime.gif",
+            "https://media.tenor.com/ffjph2ZxJCMAAAAC/perris-howard-snowball.gif",
+            "https://media.tenor.com/FGCpXFkX3dIAAAAC/anime.gif"]
         },
     "misses": {
         "notes": ["{} is just too quick! You missed!",
