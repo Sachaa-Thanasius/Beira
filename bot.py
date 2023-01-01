@@ -56,13 +56,18 @@ class Beira(commands.Bot):
         self.initial_extensions = initial_extensions
         self.testing_guild_ids = testing_guild_ids
         self.test_mode = test_mode
+
+        # Things to load before connecting to the Gateway
         self.emojis_stock = {}
+        self.friend_group = {}
 
     async def on_ready(self) -> None:
         """Sets the rich presence state for the bot and loads reference emojis."""
 
         if len(self.emojis_stock) == 0:
             self._get_emojis()
+            self._load_friends_dict()
+            await self.is_owner(self.user)                  # Trying to preload bot.owner_id
 
         await self.change_presence(activity=discord.Game(name="/collect"))
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -70,7 +75,6 @@ class Beira(commands.Bot):
     async def setup_hook(self) -> None:
         """Sets up database, extensions, etc. before the bot connects to the Websocket."""
 
-        await self._fetch_owners()
         await self._load_extensions()
 
         # If there is a need to isolate commands in development, they will only sync with development guilds.
@@ -101,14 +105,6 @@ class Beira(commands.Bot):
                     except discord.ext.commands.ExtensionError as err:
                         LOGGER.exception(f"Failed to load extension: {filename[:-3]}\n\n{err}")
 
-    async def _fetch_owners(self) -> None:
-        """Sets up owner ids based on configuration and application data."""
-
-        owners = CONFIG["discord"]["owner_ids"]
-        info = await self.application_info()
-        owners.append(info.owner.id)
-        self.owner_ids = set(owners)
-
     def _get_emojis(self) -> None:
         """Sets a dict of emojis for quick reference. Most of the keys used here are shorthand for the actual names."""
 
@@ -129,6 +125,11 @@ class Beira(commands.Bot):
 
     # TODO: Set up custom prefixes for different servers.
     # async def get_prefix(self, message: Message, /) -> Union[List[str], str]:
+
+    def _load_friends_dict(self):
+        friends_ids = CONFIG["discord"]["friend_ids"]
+        for user_id in friends_ids:
+            self.friend_group[self.get_user(user_id).name] = user_id
 
 
 async def main() -> None:

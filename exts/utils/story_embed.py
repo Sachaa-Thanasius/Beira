@@ -34,7 +34,10 @@ class StoryEmbed(discord.Embed):
 
         # Reminder that these fields are optional, if creating an embed for a story without any page-related information.
         self.title = current_page[0] if current_page else "Nothing to See Here"
+
         if bookmark and max_pages:
             self.set_footer(text=f"Page {bookmark} of {max_pages}")
+
         if current_page:
-            self.add_field(name=f"{current_page[1]}", value=current_page[2])
+            chapter_name, quote = current_page[1], current_page[2]
+            self.add_field(name=chapter_name, value=quote)

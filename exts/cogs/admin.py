@@ -119,8 +119,9 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
     ])
     async def sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object] = None,
                    spec: Optional[app_commands.Choice[str]] = None) -> None:
-        """Syncs the command tree in a way based on input. Originally made by Umbra. A sync performed with parameter
-        `spec` is mutually exclusive with that of parameter `guilds`.
+        """Syncs the command tree in a way based on input.
+
+        Originally made by Umbra. The `spec` and `guilds` parameters are mutually exclusive.
 
         Parameters
         ----------

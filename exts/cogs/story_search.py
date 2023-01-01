@@ -137,7 +137,7 @@ class BookSearchCog(commands.Cog):
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
                 story_embed.description = "No quotes found!"
-                story_embed.set_footer(text=f"Page 0 of 0 | Processing time: {processed_text:.3f}")
+                story_embed.set_footer(text=f"Page 0 of 0 | Processing time: {processed_text}")
                 await ctx.send(embed=story_embed)
 
             else:

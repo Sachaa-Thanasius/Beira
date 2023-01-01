@@ -1,6 +1,7 @@
 """
 snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
 """
+
 import logging
 import random
 from json import load
@@ -12,13 +13,15 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import Beira
-from exts.utils.sb_utils import collect_cooldown, transfer_cooldown
+from utils.bot_utils import is_owner_or_friend, MemberNoSelfTargetConverter, CannotTargetSelf
+from exts.utils.sb_utils import collect_cooldown, transfer_cooldown, steal_cooldown
 
 LOGGER = logging.getLogger(__name__)
 
 ODDS = 0.6                  # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10        # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100     # Maximum number of snowballs one can hold in their inventory, barring exceptions.
+SPECIAL_STOCK_CAP = 200     # Maximum number of snowballs for self and friends.
 
 
 class SnowballCog(commands.Cog):
@@ -34,21 +37,50 @@ class SnowballCog(commands.Cog):
     embed_data : :class:`dict`
         A dictionary with strings that embeds will use in this cog, depending on the state and functions. It's loaded in
         from a json file before the bot connects to the Discord Gateway.
-    ali : :class:`int`
-        The Discord user id of my bot buddy who gets some extra privileges, despite them using their bot to constantly
-        kill me.
     """
 
     def __init__(self, bot: Beira):
         self.bot = bot
         self.embed_data = {}
-        self.ali = 689522335119966258       # Friend privilege
 
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands before the bot connects to the Discord Gateway."""
 
         with open("data/snowball_embed_data.json", "r") as f:
             self.embed_data = load(f)
+
+    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        """Handles errors that occur within this cog. For example, when using prefix commands, this will tell users if
+        they are missing arguments. Other error cases will be added as needed.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context where the error happened.
+        error : :class:`Exception`
+            The error that happened.
+        """
+
+        embed = discord.Embed(color=0x5e9a40)
+
+        if isinstance(error, commands.MissingRequiredArgument):
+            embed.title = "Missing Parameter!"
+            embed.description = "This command needs a target."
+            ctx.command.reset_cooldown(ctx)
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+
+        elif isinstance(error, commands.CommandOnCooldown):
+            embed.title = "Command on Cooldown!"
+            embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+
+        elif isinstance(error, CannotTargetSelf):
+            embed.title = "No Targeting Yourself!"
+            embed.description = "Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the face."
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+
+        else:
+            LOGGER.exception("Snowball: Unknown Command Error.", exc_info=error)
 
     @commands.hybrid_command(aliases=["COLLECT", "Collect"])
     @commands.guild_only()
@@ -63,10 +95,14 @@ class SnowballCog(commands.Cog):
         """
 
         await self._update_record(ctx.author, stock=1)
-        record = await self.bot.db_pool.fetchrow("SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
-                                                 ctx.guild.id, ctx.author.id)
 
-        stock_limit = 200 if ((ctx.author.id in self.bot.owner_ids) or (ctx.author.id == self.ali)) else DEFAULT_STOCK_CAP
+        query = "SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
+
+        if await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.friend_group["aeroali"]):
+            stock_limit = SPECIAL_STOCK_CAP
+        else:
+            stock_limit = DEFAULT_STOCK_CAP
 
         embed = discord.Embed(color=0x5e62d3)
         if record["stock"] < stock_limit:
@@ -84,7 +120,7 @@ class SnowballCog(commands.Cog):
     @commands.hybrid_command(aliases=["THROW", "Throw"])
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: commands.Context, target: discord.Member) -> None:
+    async def throw(self, ctx: commands.Context, target: MemberNoSelfTargetConverter) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
@@ -95,26 +131,18 @@ class SnowballCog(commands.Cog):
             The user to hit with a snowball.
         """
 
-        ephemeral = False
         message = ""
         embed = discord.Embed(color=0x60ff60)
+        ephemeral = False
 
-        # Don't let users (other than the owner) throw snowballs at themselves.
-        if ctx.author == target and (ctx.author.id not in self.bot.owner_ids):
-            embed = discord.Embed(
-                color=0x60ff60,
-                description="Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the face."
-            )
-            await ctx.send(embed=embed, ephemeral=True)
-            return
-
-        record = await self.bot.db_pool.fetchrow(
-            "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
-            ctx.guild.id, ctx.author.id)
+        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
 
         # The user has to be in the database and have collected at least one snowball before they can throw one.
         if (record is not None) and (record["stock"] > 0):
             roll = random.random()
+
+            # Update the database records and prepare the response message and embed based on the outcome.
             if roll > ODDS:
                 await self._update_record(ctx.author, hits=1, stock=-1)
                 await self._update_record(target, kos=1)
@@ -142,7 +170,7 @@ class SnowballCog(commands.Cog):
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(target="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: commands.Context, target: discord.Member, amount: int) -> None:
+    async def transfer(self, ctx: commands.Context, target: MemberNoSelfTargetConverter, amount: int) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
@@ -156,27 +184,19 @@ class SnowballCog(commands.Cog):
             stock cap, or brings the giver's balance below zero, the transfer fails.
         """
 
-        # Don't let users (other than the owner) transfer snowballs to themselves.
-        if ctx.author == target and (ctx.author.id not in self.bot.owner_ids):
-            return
-
         if amount > 10:
-            failed_embed = discord.Embed(
-                color=0x69ff69,
-                description="10 snowballs at once is the bulk giving limit."
-            )
+            failed_embed = discord.Embed(color=0x69ff69, description="10 snowballs at once is the bulk giving limit.")
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        # If the transfer
+        if await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.friend_group["aeroali"]):
+            stock_cap = SPECIAL_STOCK_CAP
+        else:
+            stock_cap = DEFAULT_STOCK_CAP
 
-        giver_record = await self.bot.db_pool.fetchrow(
-            "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
-            ctx.guild.id, ctx.author.id)
-
-        receiver_record = await self.bot.db_pool.fetchrow(
-            "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2",
-            ctx.guild.id, target.id)
+        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        giver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
+        receiver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, target.id)
 
         # In case of failed transfer, send one of these messages.
         if (giver_record is not None) and (giver_record["stock"] - amount < 0):
@@ -188,11 +208,11 @@ class SnowballCog(commands.Cog):
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        elif (receiver_record is not None) and (receiver_record["stock"] + amount > DEFAULT_STOCK_CAP):
+        elif (receiver_record is not None) and (receiver_record["stock"] + amount > stock_cap):
             failed_embed = discord.Embed(
                 color=0x69ff69,
                 description=f"Your friend has enough snowballs; this transfer would push them past the stock cap of "
-                            f"{DEFAULT_STOCK_CAP}. If you think about it, with that many in hand, do they need yours too?"
+                            f"{stock_cap}. If you think about it, with that many in hand, do they need yours too?"
             )
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
@@ -208,6 +228,62 @@ class SnowballCog(commands.Cog):
         message = f"{ctx.author.mention}, {target.mention}"
 
         await ctx.send(content=message, embed=success_embed, ephemeral=False)
+
+    @commands.hybrid_command(aliases=["STEAL", "Steal"])
+    @commands.guild_only()
+    @is_owner_or_friend()       # -- TEST DECORATOR
+    @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
+    @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
+    async def steal(self, ctx: commands.Context, victim: MemberNoSelfTargetConverter, amount: int) -> None:
+        """Steal snowballs from another server member, though no more than 10 at a time.
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context.
+        victim : Optional[:class:`discord.User`]
+            The user to steal snowballs from.
+        amount : :class:`int`
+            The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
+            stock cap, or brings the giver's balance below zero, the steal fails.
+        """
+
+        def_embed = discord.Embed(color=0x69ff69)
+
+        if amount > 10:
+            def_embed.description = "10 snowballs at once is the bulk stealing limit."
+            await ctx.send(embed=def_embed, ephemeral=True)
+            return
+
+        stock_cap = SPECIAL_STOCK_CAP
+        if not (await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.friend_group["aeroali"])):
+            stock_cap = DEFAULT_STOCK_CAP
+
+        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        thief_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
+        victim_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, victim.id)
+
+        # In case of failed steal, send one of these messages.
+        if (victim_record is not None) and (victim_record["stock"] - amount < 0):
+            def_embed.description = "They don't have that much to steal. Wait for them to collect a few more, or " \
+                                    "pilfer a smaller number."
+            await ctx.send(embed=def_embed, ephemeral=True)
+            return
+
+        elif (thief_record is not None) and (thief_record["stock"] + amount > stock_cap):
+            def_embed.description = f"You enough snowballs; this transfer would push you past the stock cap of " \
+                                    f"{stock_cap}. Use some of your balls before you decide to rob some hapless soul."
+            await ctx.send(embed=def_embed, ephemeral=True)
+            return
+
+        # Update the giver and receiver's records.
+        await self._update_record(ctx.author, stock=amount)
+        await self._update_record(victim, stock=-amount)
+
+        def_embed.description = f"Thievery successful! You've stolen {amount} snowballs from {victim.mention}!"
+        message = f"{ctx.author.mention}, {victim.mention}"
+
+        await ctx.send(content=message, embed=def_embed, ephemeral=False)
 
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
@@ -273,7 +349,8 @@ class SnowballCog(commands.Cog):
         record = await self.bot.db_pool.fetchrow(query, actual_target.id)
 
         if record is not None:
-            title, color = f"**Global Player Statistics for {actual_target}**", 0x2f3171
+            title, color = f"**Global Player Statistics for {actual_target}**", 0x2f3136
+            # 0x2f3171
             thumb_url = actual_target.display_avatar.url
             embed_headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
 
@@ -391,26 +468,6 @@ class SnowballCog(commands.Cog):
                         value=self.embed_data["code"]["note"].format(self.embed_data["code"]["url"]), inline=False)
 
         await ctx.send(embed=embed, ephemeral=True)
-
-    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        """Handles errors that occur within this cog. For example, when using prefix commands, this will tell users if
-        they are missing arguments. Other error cases will be added as needed.
-
-        Parameters
-        ----------
-        ctx : :class:`commands.Context`
-            The invocation context where the error happened.
-        error : :class:`Exception`
-            The error that happened.
-        """
-
-        embed = discord.Embed(color=0x5e9a40)
-
-        if isinstance(error, commands.MissingRequiredArgument):
-            embed.title = "Missing Parameter"
-            embed.description = "This command needs a target."
-            ctx.command.reset_cooldown(ctx)
-            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
     async def _update_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
                              stock: int = 0) -> None:
