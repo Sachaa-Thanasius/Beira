@@ -1,5 +1,5 @@
 """
-config.py: Imports configuration information (e.g. api keys and tokens, default prefixes, etc).
+config.py: Imports configuration information, such as api keys and tokens, default prefixes, etc.
 """
 import logging
 import json

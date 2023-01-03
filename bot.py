@@ -7,6 +7,7 @@ from os import listdir
 from os.path import abspath, dirname
 from typing import List
 
+import aiohttp
 import asyncpg
 import discord
 from discord.ext import commands
@@ -46,6 +47,7 @@ class Beira(commands.Bot):
     def __init__(self,
                  *args,
                  db_pool: asyncpg.Pool,
+                 web_session: aiohttp.ClientSession,
                  initial_extensions: List[str],
                  testing_guild_ids: List[int],
                  test_mode: bool = False,
@@ -53,6 +55,7 @@ class Beira(commands.Bot):
 
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
+        self.web_session = web_session
         self.initial_extensions = initial_extensions
         self.testing_guild_ids = testing_guild_ids
         self.test_mode = test_mode
@@ -66,8 +69,11 @@ class Beira(commands.Bot):
 
         if len(self.emojis_stock) == 0:
             self._get_emojis()
+
+        if len(self.friend_group) == 0:
             self._load_friends_dict()
-            await self.is_owner(self.user)                  # Trying to preload bot.owner_id
+
+        await self.is_owner(self.user)                  # Trying to preload bot.owner_id
 
         await self.change_presence(activity=discord.Game(name="/collect"))
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
@@ -136,18 +142,26 @@ async def main() -> None:
     """Starts an instance of the bot."""
 
     # Connect to the PostgreSQL database.
-    async with asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30) as pool:
+    async with asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30) as pool, aiohttp.ClientSession() as session:
 
         # Set the starting parameters.
         def_prefix = CONFIG["discord"]["default_prefix"]
         default_intents = discord.Intents.all()
         testing_guilds = CONFIG["discord"]["guilds"]["dev"]
         testing = False
-        init_exts = ["exts.cogs.snowball", "exts.cogs.admin", "exts.cogs.help", "exts.cogs.story_search"]
+        init_exts = [
+            "exts.cogs.admin",
+            "exts.cogs.dunk",
+            "exts.cogs.help",
+            "exts.cogs.snowball",
+            "exts.cogs.starkid",
+            "exts.cogs.story_search"
+        ]
 
         async with Beira(command_prefix=def_prefix,
                          intents=default_intents,
                          db_pool=pool,
+                         web_session=session,
                          initial_extensions=init_exts,
                          testing_guild_ids=testing_guilds,
                          test_mode=testing,

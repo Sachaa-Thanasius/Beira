@@ -32,7 +32,6 @@ def is_owner_or_friend():
     original = commands.is_owner().predicate
 
     async def extended_check(ctx: commands.Context) -> bool:
-        LOGGER.info("Entered owner-or-friend detection check.")
 
         if not ((ctx.author.id in ctx.bot.friend_group.values()) or await original(ctx)):
             raise NotOwnerOrFriend("You do not own this bot, nor are you a friend of the owner.")
@@ -47,8 +46,7 @@ class CannotTargetSelf(commands.BadArgument):
     This inherits from :exc:`BadArgument`.
     """
 
-    def __init__(self) -> None:
-        super().__init__("You cannot target yourself with this argument.")
+    pass
 
 
 class UserNoSelfTargetConverter(commands.UserConverter):
@@ -76,6 +74,6 @@ class MemberNoSelfTargetConverter(commands.MemberConverter):
         result = await super().convert(ctx, str(argument))
 
         if ctx.author == result:
-            raise CannotTargetSelf
+            raise CannotTargetSelf("You cannot target yourself with this argument.")
 
         return result
