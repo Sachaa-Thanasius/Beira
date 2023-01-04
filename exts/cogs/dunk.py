@@ -5,15 +5,15 @@ dunk.py: This houses commands for dunking on people.
 import logging
 import subprocess
 import time
+import datetime
 from pathlib import Path
 from io import BytesIO
-import datetime
 from typing import Optional
 
-from PIL import Image
 import discord
 from discord.ext import commands
 import openai_async
+from PIL import Image
 
 from bot import Beira
 import config
@@ -26,40 +26,36 @@ FFMPEG_PATH = Path("C:/ffmpeg/bin/ffmpeg.exe")
 class DunkingCog(commands.Cog):
     """A cog with commands for 'dunking' on certain individuals, starting with Athena."""
 
+    api_key: str
+
     def __init__(self, bot: Beira):
 
         self.bot = bot
         self.api_key = CONFIG["openai"]["api_key"]
+        self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/")
 
     @commands.hybrid_command(name="pigeonlord")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def athena(self, ctx: commands.Context, target: Optional[discord.User], *, prompt: Optional[str] = "an anxious, dumb, insane, crazy-looking cartoon pigeon") -> None:
-        """Turn Athena into the pigeon she is at heart, or reveal another's heart with your own prompt.
+    async def athena(self, ctx: commands.Context) -> None:
+        """Turn Athena (or someone else) into the pigeon they are at heart.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
-        target : :class:`discord.User`
-            The person whose avatar will be used as a base for "pigeon"-ing.
-        prompt : Optional[:class:`str`]
-            The text that the AI will use. It defaults to "an anxious, dumb, insane, crazy-looking cartoon pigeon".
         """
 
         command_start_time = time.perf_counter()
 
-        target = target if target else self.bot.get_user(self.bot.friend_group["Athena Hope"])
+        target = self.bot.get_user(self.bot.friend_group["Athena Hope"])
         project_path = Path(__file__).resolve().parents[2]
 
         dt_now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
 
         async with ctx.typing():
 
-            before_dest_path = project_path.joinpath("data/dunk/default_images/owl_Athena.png")
-            # await self._get_image(target.display_avatar.url, before_dest_path)
+            before_dest_path = project_path.joinpath("data/dunk/athena_hope/default_images/owl_Athena.png")
             await target.display_avatar.replace(size=512, format="png").save(before_dest_path)
-
-            # before_file = discord.File(actual_before, filename="owl_Athena.png")
 
             # ----
             start_time = time.perf_counter()
@@ -68,7 +64,7 @@ class DunkingCog(commands.Cog):
                 api_key=self.api_key,
                 timeout=8,
                 payload={
-                    "prompt": prompt,
+                    "prompt": "an anxious, dumb, insane, crazy-looking cartoon pigeon",
                     "n": 1,
                     "size": "512x512"
                 },
@@ -78,10 +74,10 @@ class DunkingCog(commands.Cog):
             LOGGER.info(f"OpenAI image response time: {end_time - start_time:.8f}s")
 
             # ----
-            after_dest_path = project_path.joinpath(f"data/dunk/generated_images/pigeon_Athena_{dt_now}.png")
+            after_dest_path = project_path.joinpath(f"data/dunk/athena_hope/generated_images/pigeon_Athena_{dt_now}.png")
             await self._get_image(openai_response.json()["data"][0]["url"], after_dest_path)
 
-            result_path = project_path.joinpath(f"data/dunk/generated_morphs/result_Athena_{dt_now}.mp4")
+            result_path = project_path.joinpath(f"data/dunk/athena_hope/generated_morphs/result_Athena_{dt_now}.mp4")
             gif_path = await self._morph_images(before_dest_path, after_dest_path, result_path)
             gif_file = discord.File(gif_path, filename=f"result_Athena_{dt_now}.gif")
 
@@ -93,7 +89,83 @@ class DunkingCog(commands.Cog):
 
             embed.set_footer(text=f"Total Time Taken: {command_end_time - command_start_time:.3f}s")
 
-            await ctx.send("Testing transformation", embed=embed, file=gif_file)
+            await ctx.send(embed=embed, file=gif_file)
+
+    @commands.hybrid_command(name="morph")
+    @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
+    async def morph_gen(self, ctx: commands.Context, target: discord.User, *, prompt: str) -> None:
+        """
+
+        Parameters
+        ----------
+        ctx : :class:`discord.ext.commands.Context`
+            The invocation context.
+        target : :class:`discord.User`
+            The person whose avatar will be morphed.
+        prompt : Optional[:class:`str`]
+            The text that the AI will use.
+        """
+
+        user_path = self.data_path.joinpath("general_morph")
+
+        async with ctx.typing():
+            embed, gif_file = await self._morph_user(target, prompt, user_path)
+
+            await ctx.send(embed=embed, file=gif_file)
+
+    async def _morph_user(self, target: discord.User, prompt: str, user_path: Path) -> (discord.Embed, discord.File):
+        """Create a morph gif with a user's avatar and a prompt-based AI image.
+
+        Parameters
+        ----------
+        target : :class:`discord.User`
+            The person whose avatar will be morphed.
+        prompt : Optional[:class:`str`]
+            The text that the AI will use.
+        """
+
+        command_start_time = time.perf_counter()
+
+        project_path = Path(__file__).resolve().parents[2]
+
+        dt_now = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+
+        before_dest_path = project_path.joinpath(f"data/dunk/general_morph/default_images/default_{dt_now}.png")    # --------------------
+        await target.display_avatar.replace(size=512, format="png").save(before_dest_path)
+
+        # ----
+        start_time = time.perf_counter()
+
+        openai_response = await openai_async.generate_img(
+            api_key=self.api_key,
+            timeout=8,
+            payload={
+                "prompt": prompt,
+                "n": 1,
+                "size": "512x512"
+            },
+        )
+
+        end_time = time.perf_counter()
+        LOGGER.info(f"OpenAI image response time: {end_time - start_time:.8f}s")
+
+        # ----
+        after_dest_path = project_path.joinpath(f"data/dunk/general_morph/generated_images/gen_img_{dt_now}.png")   # --------------------
+        await self._get_image(openai_response.json()["data"][0]["url"], after_dest_path)
+
+        result_path = project_path.joinpath(f"data/dunk/general_morph/generated_morphs/result_animation_{dt_now}.mp4")  # --------------------
+        gif_path = await self._morph_images(before_dest_path, after_dest_path, result_path)
+        gif_file = discord.File(gif_path, filename=f"{result_path.stem}.gif")
+
+        embed = discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="————————")  # --------------------
+        embed.set_image(url=f"attachment://{gif_path.name}")
+
+        command_end_time = time.perf_counter()
+        LOGGER.info(f"Total command time: {command_end_time - command_start_time:.8f}s")
+
+        embed.set_footer(text=f"Total Time Taken: {command_end_time - command_start_time:.3f}s")
+
+        return embed, gif_file
 
     async def _get_image(self, url: str, dest_path: Path) -> None:
 
