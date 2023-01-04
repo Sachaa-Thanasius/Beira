@@ -120,7 +120,7 @@ class SnowballCog(commands.Cog):
     @commands.hybrid_command(aliases=["THROW", "Throw"])
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: commands.Context, target: MemberNoSelfTargetConverter) -> None:
+    async def throw(self, ctx: commands.Context, target: discord.Member) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
@@ -130,6 +130,9 @@ class SnowballCog(commands.Cog):
         target : Optional[:class:`discord.User`]
             The user to hit with a snowball.
         """
+
+        if ctx.author == target:
+            raise CannotTargetSelf
 
         message = ""
         embed = discord.Embed(color=0x60ff60)
@@ -171,7 +174,7 @@ class SnowballCog(commands.Cog):
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(target="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: commands.Context, target: MemberNoSelfTargetConverter, amount: int) -> None:
+    async def transfer(self, ctx: commands.Context, target: discord.Member, amount: int) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
@@ -184,6 +187,9 @@ class SnowballCog(commands.Cog):
             The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, the transfer fails.
         """
+
+        if ctx.author == target:
+            raise CannotTargetSelf
 
         if amount > 10:
             failed_embed = discord.Embed(color=0x69ff69, description="10 snowballs at once is the bulk giving limit.")
@@ -235,7 +241,7 @@ class SnowballCog(commands.Cog):
     @is_owner_or_friend()       # -- TEST DECORATOR
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
-    async def steal(self, ctx: commands.Context, victim: MemberNoSelfTargetConverter, amount: int) -> None:
+    async def steal(self, ctx: commands.Context, victim: discord.Member, amount: int) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
@@ -248,6 +254,9 @@ class SnowballCog(commands.Cog):
             The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, the steal fails.
         """
+
+        if ctx.author == victim:
+            raise CannotTargetSelf
 
         def_embed = discord.Embed(color=0x69ff69)
 

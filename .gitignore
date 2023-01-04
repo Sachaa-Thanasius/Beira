@@ -2,3 +2,4 @@ config.json
 help-alpha.py
 *.log
 misc/
+data/dunk/
