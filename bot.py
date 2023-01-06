@@ -5,6 +5,7 @@ import logging
 import asyncio
 from os import listdir
 from os.path import abspath, dirname
+from pathlib import Path
 from typing import List
 
 import aiohttp
@@ -102,7 +103,9 @@ class Beira(commands.Bot):
                     LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
         else:
-            cogs_folder = f"{abspath(dirname(__file__))}/ext/cogs"
+            # test_cogs_folder = f"{Path(__file__).parent.absolute()}/exts/cogs"
+            #     for filename in test_cogs_folder.iterdir()
+            cogs_folder = f"{abspath(dirname(__file__))}/exts/cogs"
             for filename in listdir(cogs_folder):
                 if filename.endswith(".py"):
                     try:
@@ -151,7 +154,7 @@ async def main() -> None:
         testing = False
         init_exts = [
             "exts.cogs.admin",
-            "exts.cogs.dunk",
+            "exts.cogs.ai_generation",
             "exts.cogs.help",
             "exts.cogs.snowball",
             "exts.cogs.starkid",
