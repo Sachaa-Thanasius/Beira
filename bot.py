@@ -129,7 +129,8 @@ class Beira(commands.Bot):
             "aoc": self.get_emoji(770620658501025812),
             "cop": self.get_emoji(856969710952644609),
             "fof": self.get_emoji(856969711241396254),
-            "pop": self.get_emoji(856969710486814730)
+            "pop": self.get_emoji(856969710486814730),
+            "mr_jare": self.get_emoji(1061029880059400262)
         }
 
     # TODO: Set up custom prefixes for different servers.
@@ -155,6 +156,7 @@ async def main() -> None:
         init_exts = [
             "exts.cogs.admin",
             "exts.cogs.ai_generation",
+            "exts.cogs.fandom_wiki_search",
             "exts.cogs.help",
             "exts.cogs.snowball",
             "exts.cogs.starkid",

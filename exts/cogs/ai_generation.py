@@ -40,6 +40,21 @@ class AIGenerationCog(commands.Cog):
         self.api_key = CONFIG["openai"]["api_key"]
         self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/general_morph")
 
+    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+
+        embed = discord.Embed(color=0x5e9a40)
+
+        if isinstance(error, (ConnectionError, KeyError)):
+            LOGGER.warning("OpenAI Response error.", exc_info=error)
+
+            embed.title = "OpenAI Response Error"
+            embed.description = "It appears there's a connection issue with OpenAI's API. Please try again in a minute or two."
+            ctx.command.reset_cooldown(ctx)
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+
+        else:
+            LOGGER.exception("Unknown command error in AIGenerationCog.", exc_info=error)
+
     @commands.hybrid_command(name="pigeonify")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     async def morph_athena(self, ctx: commands.Context, target: Optional[discord.User]) -> None:
@@ -131,6 +146,8 @@ class AIGenerationCog(commands.Cog):
             embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: "
                                   f"{log_end_time - log_start_time:.3f}s")
 
+            LOGGER.info(f"Total creation time: {log_end_time - log_start_time:.5f}s")
+
             await ctx.send(embed=embed, file=ai_img_file)
 
     async def _morph_user(self, target: discord.User, prompt: str) -> BytesIO:
@@ -144,10 +161,9 @@ class AIGenerationCog(commands.Cog):
             The text that the AI will use.
         """
 
-        # Save the avatar to a temp file.
+        # Save the avatar to a bytes buffer.
         avatar_bytes_buffer = BytesIO()
         await target.display_avatar.replace(size=256, format="png", static_format="png").save(avatar_bytes_buffer)
-        # avatar_bytes_buffer = await self._save_image(target.display_avatar.url)
         with Image.open(avatar_bytes_buffer) as avatar_image:
             file_size = avatar_image.size
 
@@ -157,7 +173,7 @@ class AIGenerationCog(commands.Cog):
         log_openai_end_time = perf_counter()
         LOGGER.info(f"OpenAI image response time: {log_openai_end_time - log_openai_start_time:.5f}s")
 
-        # Save the AI image to a temp file.
+        # Save the AI image to a bytes buffer.
         ai_bytes_buffer = await self._save_image(ai_url)
 
         # Create the morphs in mp4 and gif form.
@@ -211,7 +227,14 @@ class AIGenerationCog(commands.Cog):
             payload={"prompt": prompt, "n": 1, "size": size_str}
         )
 
-        return openai_response.json()["data"][0]["url"]
+        if openai_response.is_error:
+            raise ConnectionError(f"OpenAI response: {openai_response.status_code}")
+        if "data" not in openai_response.json():
+            raise KeyError("OpenAI response has no data.")
+
+        url = openai_response.json()["data"][0]["url"]
+
+        return url
 
     async def _save_image(self, url: str) -> BytesIO:
 
