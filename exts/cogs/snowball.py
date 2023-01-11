@@ -5,7 +5,7 @@ snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball
 import logging
 import random
 from json import load
-from typing import List, Optional
+from typing import List, Annotated
 
 from asyncpg import Record
 import discord
@@ -22,6 +22,35 @@ ODDS = 0.6                  # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10        # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100     # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200     # Maximum number of snowballs for self and friends.
+
+
+class StatsEmbed(discord.Embed):
+    """A subclass of :class:`discord.Embed` that displays given statistics for a user.
+
+    Parameters
+    ----------
+    thumbnail_url : :class:`str`
+        The url that the embed will use to get the thumbnail image.
+    stat_headers : List[:class:`str`]
+        The headers representing each statistic that will be used as names for stat fields.
+    stat_header_emojis : List[:class:`discord.Emoji`]
+        The emojis representing each statistic that will adorn the names of stat fields.
+    record : :class:`asyncpg.Record`
+        The user's statistics fetched from a database, to be used as values in stat fields.
+    **kwargs
+        Keyword arguments for the normal initialization of a :class:`discord.Embed`.
+    """
+
+    def __init__(self, *, thumbnail_url: str, stat_headers: List[str], stat_header_emojis: List[discord.Emoji], record: Record, **kwargs):
+        super().__init__(**kwargs)
+        self.set_thumbnail(url=thumbnail_url)
+
+        if (len(stat_header_emojis) == 1) and (len(stat_header_emojis) < len(stat_headers)):
+            emoji = stat_header_emojis[0]
+            stat_header_emojis = [emoji for _ in range(len(stat_headers))]
+
+        for (stat_header_emoji, stat_header, value) in zip(stat_header_emojis, stat_headers, record):
+            self.add_field(name=stat_header, value=f"{stat_header_emoji} **|** {value}", inline=False)
 
 
 class SnowballCog(commands.Cog):
@@ -94,12 +123,12 @@ class SnowballCog(commands.Cog):
             The invocation context where the command was called.
         """
 
-        await self._update_record(ctx.author, stock=1)
+        await self.update_record(ctx.author, stock=1)
 
         query = "SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
 
-        if await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.friend_group["aeroali"]):
+        if await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.special_friends["aeroali"]):
             stock_limit = SPECIAL_STOCK_CAP
         else:
             stock_limit = DEFAULT_STOCK_CAP
@@ -120,19 +149,16 @@ class SnowballCog(commands.Cog):
     @commands.hybrid_command(aliases=["THROW", "Throw"])
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: commands.Context, target: discord.Member) -> None:
+    async def throw(self, ctx: commands.Context, target: Annotated[discord.Member, MemberNoSelfTargetConverter]) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
-        target : Optional[:class:`discord.User`]
+        target : :class:`discord.Member`
             The user to hit with a snowball.
         """
-
-        if ctx.author == target:
-            raise CannotTargetSelf
 
         message = ""
         embed = discord.Embed(color=0x60ff60)
@@ -147,15 +173,15 @@ class SnowballCog(commands.Cog):
 
             # Update the database records and prepare the response message and embed based on the outcome.
             if roll > ODDS:
-                await self._update_record(ctx.author, hits=1, stock=-1)
-                await self._update_record(target, kos=1)
+                await self.update_record(ctx.author, hits=1, stock=-1)
+                await self.update_record(target, kos=1)
 
                 embed.description = random.choice(self.embed_data["hits"]["notes"]).format(target.mention)
                 embed.set_image(url=random.choice(self.embed_data["hits"]["gifs"]))
                 message = f"{target.mention}"
 
             else:
-                await self._update_record(ctx.author, misses=1)
+                await self.update_record(ctx.author, misses=1)
 
                 misses_text = random.choice(self.embed_data["misses"]["notes"])
                 embed.colour = 0xffa600
@@ -174,29 +200,26 @@ class SnowballCog(commands.Cog):
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(target="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: commands.Context, target: discord.Member, amount: int) -> None:
+    async def transfer(self, ctx: commands.Context, target: Annotated[discord.Member, MemberNoSelfTargetConverter], amount: int) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
-        target : Optional[:class:`discord.User`]
+        target : :class:`discord.Member`
             The user to bestow snowballs upon.
         amount : :class:`int`
             The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, the transfer fails.
         """
 
-        if ctx.author == target:
-            raise CannotTargetSelf
-
         if amount > 10:
             failed_embed = discord.Embed(color=0x69ff69, description="10 snowballs at once is the bulk giving limit.")
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        if await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.friend_group["aeroali"]):
+        if await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.special_friends["aeroali"]):
             stock_cap = SPECIAL_STOCK_CAP
         else:
             stock_cap = DEFAULT_STOCK_CAP
@@ -225,8 +248,8 @@ class SnowballCog(commands.Cog):
             return
 
         # Update the giver and receiver's records.
-        await self._update_record(ctx.author, stock=-amount)
-        await self._update_record(target, stock=amount)
+        await self.update_record(ctx.author, stock=-amount)
+        await self.update_record(target, stock=amount)
 
         success_embed = discord.Embed(
             color=0x69ff69,
@@ -241,7 +264,7 @@ class SnowballCog(commands.Cog):
     @is_owner_or_friend()       # -- TEST DECORATOR
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
-    async def steal(self, ctx: commands.Context, victim: discord.Member, amount: int) -> None:
+    async def steal(self, ctx: commands.Context, victim: Annotated[discord.Member, MemberNoSelfTargetConverter], amount: int) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
@@ -255,9 +278,6 @@ class SnowballCog(commands.Cog):
             stock cap, or brings the giver's balance below zero, the steal fails.
         """
 
-        if ctx.author == victim:
-            raise CannotTargetSelf
-
         def_embed = discord.Embed(color=0x69ff69)
 
         if amount > 10:
@@ -266,7 +286,7 @@ class SnowballCog(commands.Cog):
             return
 
         stock_cap = SPECIAL_STOCK_CAP
-        if not (await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.friend_group["aeroali"])):
+        if not (await self.bot.is_owner(ctx.author) or (ctx.author.id == self.bot.special_friends["aeroali"])):
             stock_cap = DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
@@ -287,8 +307,8 @@ class SnowballCog(commands.Cog):
             return
 
         # Update the giver and receiver's records.
-        await self._update_record(ctx.author, stock=amount)
-        await self._update_record(victim, stock=-amount)
+        await self.update_record(ctx.author, stock=amount)
+        await self.update_record(victim, stock=-amount)
 
         def_embed.description = f"Thievery successful! You've stolen {amount} snowballs from {victim.mention}!"
         message = f"{ctx.author.mention}, {victim.mention}"
@@ -298,14 +318,14 @@ class SnowballCog(commands.Cog):
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
     @app_commands.describe(target="Look up a particular Snowball Sparrer's stats.")
-    async def stats(self, ctx: commands.Context, target: Optional[discord.User]) -> None:
+    async def stats(self, ctx: commands.Context, target: discord.User | None = None) -> None:
         """See who's the best at shooting snow spheres.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
-        target : Optional[:class:`discord.User`]
+        target : :class:`discord.User`, optional
             The user whose stats are to be displayed. If none, defaults to the caller. Their stats are specifically from
             all their interactions within the guild in context.
         """
@@ -331,7 +351,10 @@ class SnowballCog(commands.Cog):
             thumb_url = actual_target.display_avatar.url
             embed_headers = ["Rank", "Direct Hits", "Total Misses", "KOs", "Total Snowballs Collected"]
 
-            embed = await self._make_stats_embed(color=color, title=title, thumbnail_url=thumb_url, headers=embed_headers, record=record)
+            # embed = await self._make_stats_embed(color=color, title=title, thumbnail_url=thumb_url, headers=embed_headers, record=record)
+            snowsgive_phi = self.bot.emojis_stock["snowsgive_phi"]
+            embed = StatsEmbed(thumbnail_url=thumb_url, stat_headers=embed_headers, stat_header_emojis=[snowsgive_phi],
+                               record=record, color=color, title=title)
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
@@ -341,14 +364,14 @@ class SnowballCog(commands.Cog):
 
     @stats.command(name="global")
     @app_commands.describe(target="Look up a a player's stats as a summation across all servers.")
-    async def stats_global(self, ctx: commands.Context, target: Optional[discord.User]) -> None:
+    async def stats_global(self, ctx: commands.Context, target: discord.User | None = None) -> None:
         """See who's the best across all Beira servers.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
-        target : Optional[:class:`discord.User`]
+        target : :class:`discord.User`, optional
             The user whose stats are to be displayed. If none, defaults to the caller. Their global stats are a
             summation of all their guild-specific stats.
         """
@@ -364,7 +387,9 @@ class SnowballCog(commands.Cog):
             thumb_url = actual_target.display_avatar.url
             embed_headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
 
-            embed = await self._make_stats_embed(color=color, title=title, thumbnail_url=thumb_url, headers=embed_headers, record=record)
+            snowsgive_phi = self.bot.emojis_stock["snowsgive_phi"]
+            embed = StatsEmbed(thumbnail_url=thumb_url, stat_headers=embed_headers, stat_header_emojis=[snowsgive_phi],
+                               record=record, color=color, title=title)
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
@@ -479,8 +504,8 @@ class SnowballCog(commands.Cog):
 
         await ctx.send(embed=embed, ephemeral=True)
 
-    async def _update_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
-                             stock: int = 0) -> None:
+    async def update_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
+                            stock: int = 0) -> None:
         """Upserts a user's snowball stats based on the given stat parameters."""
 
         stock_insert = stock
@@ -518,20 +543,6 @@ class SnowballCog(commands.Cog):
                     stock = snowball_stats.stock + $7
         """
         await self.bot.db_pool.execute(snowball_stats_upsert, member.id, member.guild.id, hits, misses, kos, stock_insert, stock)
-
-    async def _make_stats_embed(self, title: str, color: int, thumbnail_url: str, headers: List[str], record: Record) -> discord.Embed:
-        """Creates and formats an embed for a user's snowball stats."""
-
-        embed = discord.Embed(color=color, title=title)
-
-        embed.set_thumbnail(url=thumbnail_url)
-        snowsgive_phi = self.bot.emojis_stock["snowsgive_phi"]
-        header_emojis = [snowsgive_phi for _ in range(len(headers))]
-
-        for (header_emoji, header, value) in zip(header_emojis, headers, record):
-            embed.add_field(name=header, value=f"{header_emoji} **|** {value}", inline=False)
-
-        return embed
 
     async def _make_leaderboard_fields(self, embed: discord.Embed, records: List[Record]) -> None:
         """Edits a leaderboard embed by adding information about its members through fields.

@@ -2,6 +2,7 @@
     "discord": {
         "token": "",
         "default_prefix": "$",
+        "friend_ids": [],
         "guilds": {
             "dev": [],
             "prod": []
@@ -9,5 +10,8 @@
     },
     "db": {
         "postgres_url": ""
+    },
+    "openai": {
+        "api_key": ""
     }
 }

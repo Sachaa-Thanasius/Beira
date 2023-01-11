@@ -17,13 +17,10 @@ LOGGER = logging.getLogger(__name__)
 class PageNumEntryModal(discord.ui.Modal):
     """A discord modal that allows users to enter a page number to jump to in the view that references this."""
 
-    input_page_num = discord.ui.TextInput(label="Page Number",
-                                          custom_id="page_entry_modal:input_page_num",
-                                          placeholder="Enter digits here...",
-                                          required=True)
+    input_page_num = discord.ui.TextInput(label="Page", placeholder="Enter digits here...", required=True, min_length=1)
 
     def __init__(self, page_limit: int):
-        super().__init__(title="Quote Page Jump", timeout=60.0, custom_id="page_entry_modal")
+        super().__init__(title="Quote Page Jump", custom_id="page_entry_modal")
         self.page_limit = page_limit
 
     async def on_submit(self, interaction: discord.Interaction, /) -> None:

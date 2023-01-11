@@ -3,7 +3,7 @@ help.py: A slight adjustment for using embeds to the minimal help commands, set 
 """
 
 import logging
-from typing import Optional, List
+from typing import List
 
 import discord
 from discord.ext import commands
@@ -44,7 +44,7 @@ class LittleHelpCog(commands.Cog):
         self.bot.help_command = self._old_help_command
 
     @app_commands.command()
-    async def help(self, interaction: discord.Interaction, command: Optional[str]):
+    async def help(self, interaction: discord.Interaction, command: str | None = None):
         """Accesses the help commands through the slash system."""
 
         ctx = await self.bot.get_context(interaction, cls=commands.Context)

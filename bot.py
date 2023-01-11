@@ -3,10 +3,8 @@
 
 import logging
 import asyncio
-from os import listdir
-from os.path import abspath, dirname
 from pathlib import Path
-from typing import List
+from typing import List, Dict
 
 import aiohttp
 import asyncpg
@@ -49,8 +47,8 @@ class Beira(commands.Bot):
                  *args,
                  db_pool: asyncpg.Pool,
                  web_session: aiohttp.ClientSession,
-                 initial_extensions: List[str],
-                 testing_guild_ids: List[int],
+                 initial_extensions: List[str] = None,
+                 testing_guild_ids: List[int] = None,
                  test_mode: bool = False,
                  **kwargs):
 
@@ -61,17 +59,17 @@ class Beira(commands.Bot):
         self.testing_guild_ids = testing_guild_ids
         self.test_mode = test_mode
 
-        # Things to load before connecting to the Gateway
-        self.emojis_stock = {}
-        self.friend_group = {}
+        # Things to load right after connecting to the Gateway.
+        self.emojis_stock: Dict[str, discord.Emoji] = {}
+        self.special_friends: Dict[str, int] = {}
 
     async def on_ready(self) -> None:
         """Sets the rich presence state for the bot and loads reference emojis."""
 
         if len(self.emojis_stock) == 0:
-            self._get_emojis()
+            self._load_emoji_stock()
 
-        if len(self.friend_group) == 0:
+        if len(self.special_friends) == 0:
             self._load_friends_dict()
 
         await self.is_owner(self.user)                  # Trying to preload bot.owner_id
@@ -103,18 +101,16 @@ class Beira(commands.Bot):
                     LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
         else:
-            # test_cogs_folder = f"{Path(__file__).parent.absolute()}/exts/cogs"
-            #     for filename in test_cogs_folder.iterdir()
-            cogs_folder = f"{abspath(dirname(__file__))}/exts/cogs"
-            for filename in listdir(cogs_folder):
-                if filename.endswith(".py"):
+            test_cogs_folder = Path(__file__).parent.joinpath("exts/cogs")
+            for filepath in test_cogs_folder.iterdir():
+                if filepath.name.endswith(".py"):
                     try:
-                        await self.load_extension(f"ext.cogs.{filename[:-3]}")
-                        LOGGER.info(f"Loaded extension: {filename[:-3]}")
+                        await self.load_extension(f"exts.cogs.{filepath.stem}")
+                        LOGGER.info(f"Loaded extension: {filepath.stem}")
                     except discord.ext.commands.ExtensionError as err:
-                        LOGGER.exception(f"Failed to load extension: {filename[:-3]}\n\n{err}")
+                        LOGGER.exception(f"Failed to load extension: {filepath.stem}\n\n{err}")
 
-    def _get_emojis(self) -> None:
+    def _load_emoji_stock(self) -> None:
         """Sets a dict of emojis for quick reference. Most of the keys used here are shorthand for the actual names."""
 
         self.emojis_stock = {
@@ -139,13 +135,41 @@ class Beira(commands.Bot):
     def _load_friends_dict(self):
         friends_ids = CONFIG["discord"]["friend_ids"]
         for user_id in friends_ids:
-            self.friend_group[self.get_user(user_id).name] = user_id
+            self.special_friends[self.get_user(user_id).name] = user_id
+
+    async def is_special_friend(self, user: discord.abc.User, /):
+        """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
+        this bot's owner.
+
+        If a :attr:`special_friends` dict is not set, it is fetched automatically
+        through the use of :meth:`~._load_friends_dict`.
+
+        Parameters
+        -----------
+        user: :class:`discord.abc.User`
+            The user to check for.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the user is a special friend of the owner.
+        """
+
+        if len(self.special_friends) > 0:
+            return user.id in self.special_friends.values()
+
+        else:
+            self._load_friends_dict()
+            if len(self.special_friends) > 0:
+                return user.id in self.special_friends.values()
+            else:
+                return False
 
 
 async def main() -> None:
     """Starts an instance of the bot."""
 
-    # Connect to the PostgreSQL database.
+    # Connect to the PostgreSQL database and asynchronous web session.
     async with asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30) as pool, aiohttp.ClientSession() as session:
 
         # Set the starting parameters.
@@ -158,6 +182,7 @@ async def main() -> None:
             "exts.cogs.ai_generation",
             "exts.cogs.fandom_wiki_search",
             "exts.cogs.help",
+            "exts.cogs.pin_archive",
             "exts.cogs.snowball",
             "exts.cogs.starkid",
             "exts.cogs.story_search"

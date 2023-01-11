@@ -4,7 +4,7 @@ admin.py: A cog that implements commands for reloading and syncing extensions an
 import logging
 from os import listdir
 from os.path import abspath, dirname
-from typing import Optional, List
+from typing import List
 
 import discord
 from discord import app_commands
@@ -118,7 +118,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         app_commands.Choice(name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", value="+")
     ])
     async def sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object] = None,
-                   spec: Optional[app_commands.Choice[str]] = None) -> None:
+                   spec: app_commands.Choice[str] | None = None) -> None:
         """Syncs the command tree in a way based on input.
 
         Originally made by Umbra. The `spec` and `guilds` parameters are mutually exclusive.
@@ -130,7 +130,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         guilds : Greedy[:class:`discord.Object`]
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
             :class:`discord.Object`s.
-        spec : Optional[Choice[:class:`str`]]
+        spec : Choice[:class:`str`], optional
             The type of sync to perform if no guilds are entered.
 
         Notes
@@ -138,13 +138,13 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         Here is some elaboration on what the command would do with different arguments. Irrelevant with slash
         activation, but replace '!' with whatever your prefix is for prefix command activation:
 
-            "!sync" : Sync globally.
-            "!sync ~" : Sync with current guild.
-            "!sync *" : Copy all global app commands to current guild and sync.
-            "!sync ^" : Clear all commands from the current guild target and sync, thereby removing guild commands.
-            "!sync -" : Clear all global commands and sync, thereby removing all global commands.
-            "!sync +" : Clear all commands from all guilds and sync, thereby removing all guild commands.
-            "!sync <id_1> <id_2> ..." : Sync with those guilds of id_1, id_2, etc.
+            "$sync" : Sync globally.
+            "$sync ~" : Sync with current guild.
+            "$sync *" : Copy all global app commands to current guild and sync.
+            "$sync ^" : Clear all commands from the current guild target and sync, thereby removing guild commands.
+            "$sync -" : (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
+            "$sync +" : (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
+            "$sync <id_1> <id_2> ..." : Sync with those guilds of id_1, id_2, etc.
         """
 
         if not guilds:

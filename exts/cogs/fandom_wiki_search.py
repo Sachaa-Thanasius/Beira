@@ -4,7 +4,7 @@ first.
 """
 
 import logging
-from typing import List, Optional
+from typing import List
 
 import discord
 from discord import app_commands
@@ -22,8 +22,8 @@ all_categories = {}
 class AoCWikiEmbed(discord.Embed):
     """Represents a discord embed that is set up for representing Ashes of Chaos wiki pages."""
 
-    def __init__(self, *, title: str, url: str, description: Optional[str] = None, author_icon_url: Optional[str] = None,
-                 footer_icon_url: Optional[str] = None):
+    def __init__(self, *, title: str, url: str, description: str | None = None, author_icon_url: str | None = None,
+                 footer_icon_url: str | None = None):
         super().__init__(color=0x8a934b, title=title, url=url)
         if description:
             self.description = description
@@ -64,7 +64,7 @@ async def aoc_magic_autocomplete(interaction: discord.Interaction, current: str)
     return [Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
 
 
-class FandomWikiSearch(commands.Cog):
+class FandomWikiSearchCog(commands.Cog):
     """A cog for searching a fandom's Fandom wiki page.
 
     This can only handle characters from the ACI100 Ashes of Chaos wiki right now.
@@ -108,7 +108,7 @@ class FandomWikiSearch(commands.Cog):
                     for link in content.find_all("a"):
                         all_categories[category_link[0]][link["title"]] = link["href"]
 
-    @commands.hybrid_group(fallback="get")
+    @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
     @app_commands.autocomplete(search_term=aoc_all_autocomplete)
     async def wiki_aoc(self, ctx: commands.Context, *, search_term: str) -> None:
@@ -123,74 +123,6 @@ class FandomWikiSearch(commands.Cog):
         """
 
         embed = await self._search_aoc_wiki("All", search_term)
-        await ctx.send(embed=embed)
-
-    @wiki_aoc.command(name="characters")
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    @app_commands.autocomplete(character_name=aoc_char_autocomplete)
-    async def wiki_aoc_characters(self, ctx: commands.Context, *, character_name: str) -> None:
-        """Search the AoC Wiki for different character pages.
-
-        Parameters
-        ----------
-        ctx : :class:`discord.ext.commands.Context`
-            The invocation context.
-        character_name : :class:`str`
-            The name of the character.
-        """
-
-        embed = await self._search_aoc_wiki("Characters", character_name)
-        await ctx.send(embed=embed)
-
-    @wiki_aoc.command(name="locations")
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    @app_commands.autocomplete(location_name=aoc_loc_autocomplete)
-    async def wiki_aoc_locations(self, ctx: commands.Context, *, location_name: str) -> None:
-        """Search the AoC Wiki for different location pages.
-
-        Parameters
-        ----------
-        ctx : :class:`discord.ext.commands.Context`
-            The invocation context.
-        location_name : :class:`str`
-            The name of the location.
-        """
-
-        embed = await self._search_aoc_wiki("Locations", location_name)
-        await ctx.send(embed=embed)
-
-    @wiki_aoc.command(name="society")
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    @app_commands.autocomplete(society_term=aoc_society_autocomplete)
-    async def wiki_aoc_society(self, ctx: commands.Context, *, society_term: str) -> None:
-        """Search the AoC Wiki for different society-related pages.
-
-        Parameters
-        ----------
-        ctx : :class:`discord.ext.commands.Context`
-            The invocation context.
-        society_term : :class:`str`
-            The term related to society in AoC.
-        """
-
-        embed = await self._search_aoc_wiki("Society", society_term)
-        await ctx.send(embed=embed)
-
-    @wiki_aoc.command(name="magic")
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    @app_commands.autocomplete(magic_term=aoc_magic_autocomplete)
-    async def wiki_aoc_magic(self, ctx: commands.Context, *, magic_term: str) -> None:
-        """Search the AoC Wiki for different magic-related pages.
-
-        Parameters
-        ----------
-        ctx : :class:`discord.ext.commands.Context`
-            The invocation context.
-        magic_term : :class:`str`
-            The term related to magic in AoC.
-        """
-
-        embed = await self._search_aoc_wiki("Magic", magic_term)
         await ctx.send(embed=embed)
 
     async def _search_aoc_wiki(self, category: str, wiki_query: str) -> discord.Embed:
@@ -312,4 +244,4 @@ class FandomWikiSearch(commands.Cog):
 async def setup(bot: Beira):
     """Connects cog to bot."""
 
-    await bot.add_cog(FandomWikiSearch(bot))
+    await bot.add_cog(FandomWikiSearchCog(bot))

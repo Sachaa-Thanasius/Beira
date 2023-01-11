@@ -29,15 +29,14 @@ def is_owner_or_friend():
     from :exc:`.CheckFailure`.
     """
 
-    original = commands.is_owner().predicate
+    async def predicate(ctx: commands.Context) -> bool:
 
-    async def extended_check(ctx: commands.Context) -> bool:
-
-        if not ((ctx.author.id in ctx.bot.friend_group.values()) or await original(ctx)):
+        ctx.bot.is_special_friend()
+        if not await ctx.bot.is_owner(ctx.author) and not await ctx.bot.is_special_friend():
             raise NotOwnerOrFriend("You do not own this bot, nor are you a friend of the owner.")
         return True
 
-    return commands.check(extended_check)
+    return commands.check(predicate)
 
 
 class CannotTargetSelf(commands.BadArgument):
@@ -59,7 +58,7 @@ class UserNoSelfTargetConverter(commands.UserConverter):
         result = await super().convert(ctx, str(argument))
 
         if ctx.author == result:
-            raise CannotTargetSelf
+            raise CannotTargetSelf("You cannot target yourself with this argument.")
 
         return result
 

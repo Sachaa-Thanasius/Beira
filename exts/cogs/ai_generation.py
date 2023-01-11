@@ -11,19 +11,17 @@ from time import perf_counter
 from contextlib import contextmanager
 from pathlib import Path
 from io import BytesIO
-from typing import Optional, Tuple
+from typing import Tuple
 
 import discord
 from discord.ext import commands
 import openai_async
 from PIL import Image
 
-from bot import Beira
-import config
+from bot import Beira, CONFIG
 
-CONFIG = config.config()
 LOGGER = logging.getLogger(__name__)
-FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")
+FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to FFmpeg on your machine.
 
 
 class AIGenerationCog(commands.Cog):
@@ -53,36 +51,41 @@ class AIGenerationCog(commands.Cog):
             await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
         else:
+            embed.title = f"Error with \"{ctx.command}\""
+            embed.description = "You've triggered an error with this command. Please try again in a minute or two."
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+
             LOGGER.exception("Unknown command error in AIGenerationCog.", exc_info=error)
 
     @commands.hybrid_command(name="pigeonify")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def morph_athena(self, ctx: commands.Context, target: Optional[discord.User]) -> None:
+    async def morph_athena(self, ctx: commands.Context, target: discord.User | None = None) -> None:
         """Turn Athena (or someone else) into the pigeon she is at heart.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
-        target : :class:`discord.User`
+        target : :class:`discord.User`, optional
             The user whose avatar will be pigeonified. Defaults to Athena.
         """
 
         async with ctx.typing():
-            target = target or self.bot.get_user(self.bot.friend_group["Athena Hope"])
+            target = target or self.bot.get_user(self.bot.special_friends["Athena Hope"])
             prompt = "an anxious, dumb, insane, crazy-looking cartoon pigeon"
 
             log_start_time = perf_counter()
             result_gif = await self._morph_user(target, prompt)
             log_end_time = perf_counter()
 
+            morph_time = log_end_time - log_start_time
+
             gif_file = discord.File(result_gif, filename=f"pigeonlord.gif")
             embed = discord.Embed(color=0x5d6e7f, title=f"{target.display_name}'s True Form", description="***Behold!***")
             embed.set_image(url=f"attachment://pigeonlord.gif")
-            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: "
-                                  f"{log_end_time - log_start_time:.3f}s")
+            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
 
-            LOGGER.info(f"Total Generation Time: {log_end_time - log_start_time:.5f}s")
+            LOGGER.info(f"Total Generation Time: {morph_time:.5f}s")
 
             await ctx.send(embed=embed, file=gif_file)
 
@@ -106,13 +109,14 @@ class AIGenerationCog(commands.Cog):
             result_gif = await self._morph_user(target, prompt)
             log_end_time = perf_counter()
 
+            morph_time = log_end_time - log_start_time
+
             gif_file = discord.File(result_gif, filename="morph.gif")
             embed = discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
             embed.set_image(url="attachment://morph.gif")
-            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: "
-                                  f"{log_end_time - log_start_time:.3f}s")
+            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
 
-            LOGGER.info(f"Total morph time: {log_end_time - log_start_time:.5f}s")
+            LOGGER.info(f"Total morph time: {morph_time:.5f}s")
 
             await ctx.send(embed=embed, file=gif_file)
 
@@ -140,13 +144,14 @@ class AIGenerationCog(commands.Cog):
 
             log_end_time = perf_counter()
 
+            creation_time = log_end_time - log_start_time
+
             ai_img_file = discord.File(ai_bytes_buffer, filename="ai_image.png")
             embed = discord.Embed(color=0x5d6e7f, title=f"AI-Generated Image", description="—+—+—+—+—+—+—")
             embed.set_image(url="attachment://ai_image.png")
-            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: "
-                                  f"{log_end_time - log_start_time:.3f}s")
+            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
 
-            LOGGER.info(f"Total creation time: {log_end_time - log_start_time:.5f}s")
+            LOGGER.info(f"Total creation time: {creation_time:.5f}s")
 
             await ctx.send(embed=embed, file=ai_img_file)
 
@@ -157,7 +162,7 @@ class AIGenerationCog(commands.Cog):
         ----------
         target : :class:`discord.User`
             The person whose avatar will be morphed.
-        prompt : Optional[:class:`str`]
+        prompt : :class:`str`
             The text that the AI will use.
         """
 
@@ -168,10 +173,7 @@ class AIGenerationCog(commands.Cog):
             file_size = avatar_image.size
 
         # Generate the AI image and retrieve its url.
-        log_openai_start_time = perf_counter()
         ai_url = await self._generate_ai_image(self.api_key, prompt, file_size)
-        log_openai_end_time = perf_counter()
-        LOGGER.info(f"OpenAI image response time: {log_openai_end_time - log_openai_start_time:.5f}s")
 
         # Save the AI image to a bytes buffer.
         ai_bytes_buffer = await self._save_image(ai_url)

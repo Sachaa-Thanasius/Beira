@@ -3,7 +3,7 @@ story_embed.py: This class provides embeds for BookSearchCog's paginated quote v
 """
 
 import logging
-from typing import Optional, Tuple, Dict
+from typing import Tuple, Dict
 
 import discord
 
@@ -23,9 +23,9 @@ class StoryEmbed(discord.Embed):
     def __init__(self,
                  *,
                  story_data: Dict,
-                 current_page: Optional[Tuple] = None,
-                 bookmark: Optional[int] = None,
-                 max_pages: Optional[int] = None,
+                 current_page: Tuple | None = None,
+                 bookmark: int | None = None,
+                 max_pages: int | None = None,
                  **kwargs):
 
         super().__init__(**kwargs)
@@ -33,7 +33,7 @@ class StoryEmbed(discord.Embed):
         self.set_author(name=story_data["story_full_name"], url=story_data["story_link"], icon_url=record_icon_url)
 
         # Reminder that these fields are optional, if creating an embed for a story without any page-related information.
-        self.title = current_page[0] if current_page else "Nothing to See Here"
+        self.title = current_page[0] if current_page else "—+—+—+—+—+—+—"
 
         if bookmark and max_pages:
             self.set_footer(text=f"Page {bookmark} of {max_pages}")
