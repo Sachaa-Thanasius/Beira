@@ -1,5 +1,6 @@
 config.json
 help-alpha.py
 *.log
+__pycache__
 misc/
 data/dunk/

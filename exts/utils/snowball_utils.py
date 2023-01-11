@@ -1,5 +1,5 @@
 """
-sb_utils.py: Utility functions for snowball commands.
+snowball_utils.py: Utility functions for snowball commands.
 """
 
 import logging

@@ -4,6 +4,10 @@
     <content url="file://$MODULE_DIR$">
       <excludeFolder url="file://$MODULE_DIR$/venv" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/dataSources" />
+      <excludeFolder url="file://$MODULE_DIR$/data/dunk" />
+      <excludeFolder url="file://$MODULE_DIR$/data/dunk/athena_hope" />
+      <excludeFolder url="file://$MODULE_DIR$/data/dunk/general_morph" />
+      <excludeFolder url="file://$MODULE_DIR$/misc" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />

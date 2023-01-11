@@ -7,14 +7,13 @@ import logging
 from typing import Literal
 
 import discord
-from discord import TextChannel, VoiceChannel, Thread
 from discord.ext import commands
 
 from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
-GuildMessageableChannel = TextChannel | VoiceChannel | Thread
+GuildMessageableChannel = discord.TextChannel | discord.VoiceChannel | discord.Thread
 
 
 class PinArchiveCog(commands.Cog, command_attrs=dict(hidden=True)):

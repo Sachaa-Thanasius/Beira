@@ -50,6 +50,11 @@ class AIGenerationCog(commands.Cog):
             ctx.command.reset_cooldown(ctx)
             await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
+        if isinstance(error, commands.CommandOnCooldown):
+            embed.title = "Command on Cooldown!"
+            embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
+            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+
         else:
             embed.title = f"Error with \"{ctx.command}\""
             embed.description = "You've triggered an error with this command. Please try again in a minute or two."

@@ -13,8 +13,10 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import Beira
-from utils.bot_utils import is_owner_or_friend, MemberNoSelfTargetConverter, CannotTargetSelf
-from exts.utils.sb_utils import collect_cooldown, transfer_cooldown, steal_cooldown
+from utils.converters import MemberNoSelfTargetConverter, CannotTargetSelf
+from utils.checks import is_owner_or_friend
+from exts.utils.snowball_utils import collect_cooldown, transfer_cooldown, steal_cooldown
+from utils.embeds import StatsEmbed
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,35 +24,6 @@ ODDS = 0.6                  # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10        # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100     # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200     # Maximum number of snowballs for self and friends.
-
-
-class StatsEmbed(discord.Embed):
-    """A subclass of :class:`discord.Embed` that displays given statistics for a user.
-
-    Parameters
-    ----------
-    thumbnail_url : :class:`str`
-        The url that the embed will use to get the thumbnail image.
-    stat_headers : List[:class:`str`]
-        The headers representing each statistic that will be used as names for stat fields.
-    stat_header_emojis : List[:class:`discord.Emoji`]
-        The emojis representing each statistic that will adorn the names of stat fields.
-    record : :class:`asyncpg.Record`
-        The user's statistics fetched from a database, to be used as values in stat fields.
-    **kwargs
-        Keyword arguments for the normal initialization of a :class:`discord.Embed`.
-    """
-
-    def __init__(self, *, thumbnail_url: str, stat_headers: List[str], stat_header_emojis: List[discord.Emoji], record: Record, **kwargs):
-        super().__init__(**kwargs)
-        self.set_thumbnail(url=thumbnail_url)
-
-        if (len(stat_header_emojis) == 1) and (len(stat_header_emojis) < len(stat_headers)):
-            emoji = stat_header_emojis[0]
-            stat_header_emojis = [emoji for _ in range(len(stat_headers))]
-
-        for (stat_header_emoji, stat_header, value) in zip(stat_header_emojis, stat_headers, record):
-            self.add_field(name=stat_header, value=f"{stat_header_emoji} **|** {value}", inline=False)
 
 
 class SnowballCog(commands.Cog):
@@ -261,7 +234,7 @@ class SnowballCog(commands.Cog):
 
     @commands.hybrid_command(aliases=["STEAL", "Steal"])
     @commands.guild_only()
-    @is_owner_or_friend()       # -- TEST DECORATOR
+    @is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
     async def steal(self, ctx: commands.Context, victim: Annotated[discord.Member, MemberNoSelfTargetConverter], amount: int) -> None:
@@ -450,7 +423,7 @@ class SnowballCog(commands.Cog):
             title="**Global Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"
         )
-        embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/987158778900258866/c28128b586d49f2f6d3f536b06f2f408.webp?size=160")
+        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if global_ldbd is not None:
             await self._make_leaderboard_fields(embed, global_ldbd)
@@ -477,7 +450,7 @@ class SnowballCog(commands.Cog):
             title="**Guild-Level Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"
         )
-        embed.set_thumbnail(url="https://cdn.discordapp.com/avatars/987158778900258866/c28128b586d49f2f6d3f536b06f2f408.webp?size=160")
+        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if guilds_only_ldbd is not None:
             await self._make_leaderboard_fields(embed, guilds_only_ldbd)

@@ -16,7 +16,7 @@ from discord.ext import commands
 
 from bot import Beira
 from exts.utils.paginated_embed_view import PaginatedEmbedView
-from exts.utils.story_embed import StoryEmbed
+from utils.embeds import StoryEmbed
 
 LOGGER = logging.getLogger(__name__)
 

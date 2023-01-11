@@ -9,7 +9,7 @@ from typing import List, Tuple
 
 import discord
 
-from exts.utils.story_embed import StoryEmbed
+from utils.story_embed import StoryEmbed
 
 LOGGER = logging.getLogger(__name__)
 
@@ -20,7 +20,7 @@ class PageNumEntryModal(discord.ui.Modal):
     input_page_num = discord.ui.TextInput(label="Page", placeholder="Enter digits here...", required=True, min_length=1)
 
     def __init__(self, page_limit: int):
-        super().__init__(title="Quote Page Jump", custom_id="page_entry_modal")
+        super().__init__(title="Page Jump", custom_id="page_entry_modal")
         self.page_limit = page_limit
 
     async def on_submit(self, interaction: discord.Interaction, /) -> None:
@@ -56,12 +56,12 @@ class PaginatedEmbedView(discord.ui.View):
         self.max_num_pages = len(all_text_lines)
         self.current_page = ()
         self.bookmark = 1
-        self.page_cache: list[discord.Embed | None] = [None for _ in range(len(all_text_lines))]
+        self.page_cache: List[discord.Embed | None] = [None for _ in range(len(all_text_lines))]
 
         self.story_data = story_data
 
         # No point having forward buttons active if there is only one page.
-        if len(self.all_text_lines) == 1:
+        if self.max_num_pages == 1:
             self._disable_forward_buttons(True)
         else:
             enter_page_button = discord.utils.get(self.children, custom_id="results_scroll_view:enter")
@@ -82,13 +82,14 @@ class PaginatedEmbedView(discord.ui.View):
             item.disabled = True
 
         self.stop()
+        self.page_cache.clear()
 
         await self.latest_interaction.edit_original_response(view=self)
         LOGGER.info("View timed out.")
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True,
                        custom_id="results_scroll_view:first")
-    async def first_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_first_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Skips to the first page of the view embed."""
 
         self.bookmark = 1
@@ -103,7 +104,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, disabled=True, custom_id="results_scroll_view:prev")
-    async def previous_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_previous_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Switches to the previous page of the view embed."""
 
         previous_bookmark = self.bookmark
@@ -124,14 +125,12 @@ class PaginatedEmbedView(discord.ui.View):
     async def enter_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Opens a modal that allows a user to enter their own page number to flip to."""
 
-        # while True:
-
         modal = PageNumEntryModal(self.max_num_pages)
         await interaction.response.send_modal(modal)
         modal_result = await modal.wait()
 
         # The modal timed out.
-        if modal_result:
+        if modal_result or self.is_finished():
             return
 
         self.bookmark = int(modal.input_page_num.value)
@@ -150,7 +149,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.edit_original_response(embed=edited_embed, view=self)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="results_scroll_view:next")
-    async def next_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_next_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Switches to the next page of the view embed."""
 
         previous_bookmark = self.bookmark
@@ -168,7 +167,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
     @discord.ui.button(label="≫", style=discord.ButtonStyle.blurple, custom_id="results_scroll_view:last")
-    async def last_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_last_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Skips to the last page of the view embed."""
 
         self.bookmark = self.max_num_pages
