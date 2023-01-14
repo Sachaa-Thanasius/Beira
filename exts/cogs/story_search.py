@@ -1,6 +1,7 @@
 """
 story_search.py: This cog is meant to provide functionality for searching the text of some books.
 """
+
 import logging
 import random
 import re
@@ -15,8 +16,8 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import Beira
-from exts.utils.paginated_embed_view import PaginatedEmbedView
 from utils.embeds import StoryEmbed
+from exts.utils.paginated_embed_view import PaginatedEmbedView
 
 LOGGER = logging.getLogger(__name__)
 
@@ -37,14 +38,14 @@ class BookSearchCog(commands.Cog):
 
     story_records = {}
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
     async def cog_load(self) -> None:
-        """Load the story metadata and text to avoid reading from files or the database during runtime."""
+        """Load whatever is necessary to avoid reading from files or querying the database during runtime."""
 
+        # Load story metadata from DB.
         query = "SELECT * FROM story_information"
-
         temp_records = await self.bot.db_pool.fetch(query)
 
         for temp_rec in temp_records:
@@ -52,53 +53,63 @@ class BookSearchCog(commands.Cog):
             self.story_records[temp_rec["story_acronym"]] = dict_temp_rec
             self.story_records[temp_rec["story_acronym"]]["template_embed"] = StoryEmbed(story_data=dict_temp_rec)
 
-        re_chap_title = re.compile(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)|(^\*\*Interlude \w+)")
-        re_coll_title = re.compile(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)")
-
+        # Load story text from markdown files.
         project_path = Path(__file__).resolve().parents[2]
         for file in project_path.glob("data/story_text/**/*.md"):
             if "text" in file.name:
-                with file.open("r", encoding="utf-8") as f:
+                await self.load_story_text(file)
 
-                    indexing_start_time = perf_counter()
+    @classmethod
+    async def load_story_text(cls, filepath: Path):
+        """Load the story metadata and text."""
 
-                    stem = str(file.stem)[:-5]
-                    self.story_records[stem]["chapter_index"] = temp_chap_index = []
-                    self.story_records[stem]["collection_index"] = temp_coll_index = []
-                    self.story_records[stem]["text"] = temp_text = []
+        # Compile all necessary regex patterns.
+        # -- ACI100 story text
+        re_chap_title = re.compile(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)|(^\*\*Interlude \w+)")
+        re_coll_title = re.compile(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)")
+        # -- ACVR text
+        re_chap_heading = re.compile(r"(^# \w+)")
+        re_volume_heading = re.compile(r"(^A Cadmean Victory Volume \w+)")
 
-                    if "acvr" in file.name:
-                        re_chap_heading = re.compile(r"(^# \w+)")
-                        re_volume_heading = re.compile(r"(^A Cadmean Victory Volume \w+)")
+        # Start file copying and indexing.
+        with filepath.open("r", encoding="utf-8") as f:
 
-                        for index, line in enumerate(f):
-                            temp_text.append(line)
+            indexing_start_time = perf_counter()
 
-                            if re.search(re_chap_heading, line):
-                                if "*A Quest for Europa*" in line:
-                                    temp_chap_index[0] += " A Quest for Europa"
-                                else:
-                                    temp_chap_index.append(index)
+            # Instantiate index lists, which act as a table of contents of sorts.
+            stem = str(filepath.stem)[:-5]
+            cls.story_records[stem]["chapter_index"] = temp_chap_index = []
+            cls.story_records[stem]["collection_index"] = temp_coll_index = []
+            cls.story_records[stem]["text"] = temp_text = []
 
-                            elif re.search(re_volume_heading, line):
-                                if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
-                                    temp_coll_index.append(index)
+            for index, line in enumerate(f):
+                temp_text.append(line)
 
-                    else:
-                        for index, line in enumerate(f):
-                            temp_text.append(line)
+                # Switch to a different set of regex patterns when searching ACVR.
+                if "acvr" in filepath.name:
 
-                            if re.search(re_chap_title, line):
-                                temp_chap_index.append(index)
+                    # Prologue: A Quest for Europa is split among two lines and needs special parsing logic.
+                    if re.search(re_chap_heading, line):
+                        if "*A Quest for Europa*" in line:
+                            temp_chap_index[0] += " A Quest for Europa"
+                        else:
+                            temp_chap_index.append(index)
 
-                            elif re.search(re_coll_title, line):
-                                if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
-                                    temp_coll_index.append(index)
+                    elif re.search(re_volume_heading, line):
+                        if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
+                            temp_coll_index.append(index)
 
-                    indexing_end_time = perf_counter()
-                    LOGGER.info(f"{stem} indexing time: {indexing_end_time - indexing_start_time:.5f}")
+                else:
+                    if re.search(re_chap_title, line):
+                        temp_chap_index.append(index)
 
-            LOGGER.info(f"Loaded file: {file.stem}")
+                    elif re.search(re_coll_title, line):
+                        if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
+                            temp_coll_index.append(index)
+
+            indexing_end_time = perf_counter()
+            LOGGER.info(f"{stem} indexing time: {indexing_end_time - indexing_start_time:.5f}")
+        LOGGER.info(f"Loaded file: {filepath.stem}")
 
     @commands.hybrid_command()
     async def random_text(self, ctx: commands.Context) -> None:
@@ -109,11 +120,14 @@ class BookSearchCog(commands.Cog):
         ctx : :class:`discord.ext.commands.Context`
             The invocation context where the command was called.
         """
+        # Randomly choose an ACI100 story.
         story = random.choice([key for key in self.story_records if key != "acvr"])
 
+        # Randomly choose two paragraphs from the story.
         b_range = randint(2, len(self.story_records[story]["text"]) - 3)
         b_sample = self.story_records[story]["text"][b_range:(b_range + 2)]
 
+        # Randomly choose the
         quote_year = self._binary_search_text(story, self.story_records[story]["collection_index"], (b_range + 2))
         quote_chapter = self._binary_search_text(story, self.story_records[story]["chapter_index"], (b_range + 2))
 
@@ -130,7 +144,7 @@ class BookSearchCog(commands.Cog):
         app_commands.Choice(name="Perversion of Purity", value="pop"),
     ])
     async def search_text(self, ctx: commands.Context, story: str, query: str) -> None:
-        """Search the book text for a word or phrase.
+        """Search the text of an ACI100 story for a word or phrase.
 
         Parameters
         ----------
@@ -169,7 +183,7 @@ class BookSearchCog(commands.Cog):
 
     @commands.hybrid_command()
     async def search_cadmean(self, ctx: commands.Context, query: str) -> None:
-        """Search A Cadmean Victory by MJ Bradley for a word or phrase.
+        """Search *A Cadmean Victory* by MJ Bradley for a word or phrase.
 
         Parameters
         ----------
@@ -206,49 +220,64 @@ class BookSearchCog(commands.Cog):
 
     @classmethod
     def _process_text(cls, story: str, all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
-        """Collect all lines from story text that contain the given terms."""
+        """Collects all lines from story text that contain the given terms."""
 
         results = []
 
+        # Iterate through all text in the story.
         for index, line in enumerate(all_text):
 
+            # Determine if searching based on exact words/phrases, or keywords.
             if exact:
                 terms_presence = terms.lower() in line.lower()
             else:
-                terms_presence = any([term.lower() in line.lower() for term in terms])
+                terms_presence = any([term.lower() in line.lower() for term in terms.split()])
 
             if terms_presence:
+                # Connect the paragraph with the terms to the one following it.
                 quote = "".join(all_text[index:index + 3])
+
+                # Underline the terms.
                 quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
+
+                # Fit the paragraphs in the space of a Discord embed field.
                 if len(quote) > 1024:
                     quote = quote[0:1020] + "..."
 
+                # Get the "collection" and "chapter" text lines using binary search.
                 quote_collection = cls._binary_search_text(story, cls.story_records[story]["collection_index"], index)
                 quote_chapter = cls._binary_search_text(story, cls.story_records[story]["chapter_index"], index)
 
+                # Take special care for ACVR.
                 if story == "acvr":
                     acvr_title_with_space = "A Cadmean Victory "
                     quote_collection = quote_collection[len(acvr_title_with_space):]
 
+                # Aggregate the quotes.
                 results.append((quote_collection, quote_chapter, quote))
 
         return results
 
     @classmethod
-    def _binary_search_text(cls, story: str, index_list: List[int], index: int) -> str:
-        """Find the element in a list of elements closest to but less than the given element."""
+    def _binary_search_text(cls, story: str, list_of_indices: List[int], index: int) -> str:
+        """Finds the element in a list of elements closest to but less than the given element."""
 
-        if len(index_list) == 0:
+        if len(list_of_indices) == 0:
             return "—————"
 
-        i_of_index = bisect_left(index_list, index)
-        actual_index = index_list[i_of_index - 1] if (i_of_index is not None) else -1
+        # Get the list index of the element that's closest to and less than the given index value.
+        i_of_index = bisect_left(list_of_indices, index)
+
+        # Get the element from the list based on the calculated list index.
+        actual_index = list_of_indices[i_of_index - 1] if (i_of_index is not None) else -1
+
+        # Use that element as an index in the story text list to get that quote, whether it's a chapter, volume, etc.
         value_from_index = cls.story_records[story]["text"][actual_index] if actual_index != -1 else "—————"
 
         return value_from_index
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connect bot to cog."""
 
     await bot.add_cog(BookSearchCog(bot))

@@ -1,0 +1,18 @@
+{
+    "Harry Potter and the Ashes of Chaos": {
+        "base_url": "https://ashes-of-chaos.fandom.com",
+        "pages_directory": ["/wiki/Special:AllPages", "/wiki/Special:AllPages?from=The+Purity+War"]
+    },
+    "Harry Potter and the Perversion of Purity": {
+        "base_url": "https://perversion-of-purity.fandom.com",
+        "pages_directory": ["/wiki/Special:AllPages"]
+    },
+    "Harry Potter and the Conjoining of Paragons": {
+        "base_url": "https://conjoining-of-paragons.fandom.com",
+        "pages_directory": ["/wiki/Special:AllPages"]
+    },
+    "Ace Iverson and the Fabric of Fate": {
+        "base_url": "https://fabric-of-fate.fandom.com",
+        "pages_directory": ["/wiki/Special:AllPages"]
+    }
+}

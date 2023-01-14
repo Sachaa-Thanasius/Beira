@@ -1,17 +1,16 @@
 """
-ai_generation.py: This houses commands for dunking on people.
+ai_generation.py: A cog with commands for doing fun AI things with OpenAI's API, like generating images and morphs.
 """
 
 import logging
 import subprocess
-
 import tempfile as tf
-import shutil
+from shutil import rmtree
 from time import perf_counter
 from contextlib import contextmanager
 from pathlib import Path
 from io import BytesIO
-from typing import Tuple
+from typing import Tuple, ClassVar
 
 import discord
 from discord.ext import commands
@@ -21,7 +20,16 @@ from PIL import Image
 from bot import Beira, CONFIG
 
 LOGGER = logging.getLogger(__name__)
-FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to FFmpeg on your machine.
+FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to FFmpeg on your machine if need be.
+
+
+class DownloadButtonView(discord.ui.View):
+    """A small view that adds download buttons to a message based on the given labels and download urls."""
+
+    def __init__(self, *button_links: Tuple[str, str]) -> None:
+        super().__init__(timeout=None)
+        for link in button_links:
+            self.add_item(discord.ui.Button(style=discord.ButtonStyle.blurple, label=link[0], url=link[1]))
 
 
 class AIGenerationCog(commands.Cog):
@@ -30,15 +38,15 @@ class AIGenerationCog(commands.Cog):
     Note: This is all Athena's fault.
     """
 
-    api_key: str
+    api_key: ClassVar[str] = CONFIG["openai"]["api_key"]
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: Beira) -> None:
 
         self.bot = bot
-        self.api_key = CONFIG["openai"]["api_key"]
         self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/general_morph")
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        """Handles any errors within this cog."""
 
         embed = discord.Embed(color=0x5e9a40)
 
@@ -48,19 +56,17 @@ class AIGenerationCog(commands.Cog):
             embed.title = "OpenAI Response Error"
             embed.description = "It appears there's a connection issue with OpenAI's API. Please try again in a minute or two."
             ctx.command.reset_cooldown(ctx)
-            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
-        if isinstance(error, commands.CommandOnCooldown):
+        elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
-            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
         else:
             embed.title = f"Error with \"{ctx.command}\""
             embed.description = "You've triggered an error with this command. Please try again in a minute or two."
-            await ctx.send(embed=embed, ephemeral=True, delete_after=10)
-
             LOGGER.exception("Unknown command error in AIGenerationCog.", exc_info=error)
+
+        await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
     @commands.hybrid_command(name="pigeonify")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
@@ -80,11 +86,12 @@ class AIGenerationCog(commands.Cog):
             prompt = "an anxious, dumb, insane, crazy-looking cartoon pigeon"
 
             log_start_time = perf_counter()
-            result_gif = await self._morph_user(target, prompt)
+            ai_img_url, result_gif = await self.morph_user(target, prompt)
             log_end_time = perf_counter()
 
             morph_time = log_end_time - log_start_time
 
+            # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename=f"pigeonlord.gif")
             embed = discord.Embed(color=0x5d6e7f, title=f"{target.display_name}'s True Form", description="***Behold!***")
             embed.set_image(url=f"attachment://pigeonlord.gif")
@@ -92,7 +99,12 @@ class AIGenerationCog(commands.Cog):
 
             LOGGER.info(f"Total Generation Time: {morph_time:.5f}s")
 
-            await ctx.send(embed=embed, file=gif_file)
+            sent_message = await ctx.send(embed=embed, file=gif_file)
+
+            # Create two download buttons.
+            buttons_view = DownloadButtonView(("Download Morph", sent_message.embeds[0].image.url),
+                                              ("Download Final Image", ai_img_url))
+            await sent_message.edit(view=buttons_view)
 
     @commands.hybrid_command(name="morph")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
@@ -111,11 +123,12 @@ class AIGenerationCog(commands.Cog):
 
         async with ctx.typing():
             log_start_time = perf_counter()
-            result_gif = await self._morph_user(target, prompt)
+            ai_img_url, result_gif = await self.morph_user(target, prompt)
             log_end_time = perf_counter()
 
             morph_time = log_end_time - log_start_time
 
+            # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename="morph.gif")
             embed = discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
             embed.set_image(url="attachment://morph.gif")
@@ -123,7 +136,12 @@ class AIGenerationCog(commands.Cog):
 
             LOGGER.info(f"Total morph time: {morph_time:.5f}s")
 
-            await ctx.send(embed=embed, file=gif_file)
+            sent_message = await ctx.send(embed=embed, file=gif_file)
+
+            # Create two download buttons.
+            buttons_view = DownloadButtonView(("Download Morph", sent_message.embeds[0].image.url),
+                                              ("Download Final Image", ai_img_url))
+            await sent_message.edit(view=buttons_view)
 
     @commands.hybrid_command(name="generate")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
@@ -142,15 +160,15 @@ class AIGenerationCog(commands.Cog):
             log_start_time = perf_counter()
 
             # Generate the AI image and retrieve its url.
-            ai_url = await self._generate_ai_image(self.api_key, prompt, (512, 512))
+            ai_url = await self.generate_ai_image(self.api_key, prompt, (512, 512))
 
             # Save the AI image to a temp file.
-            ai_bytes_buffer = await self._save_image(ai_url)
+            ai_bytes_buffer = await self.save_image_from_url(ai_url)
 
             log_end_time = perf_counter()
-
             creation_time = log_end_time - log_start_time
 
+            # Create and send an embed that holds the generated image.
             ai_img_file = discord.File(ai_bytes_buffer, filename="ai_image.png")
             embed = discord.Embed(color=0x5d6e7f, title=f"AI-Generated Image", description="—+—+—+—+—+—+—")
             embed.set_image(url="attachment://ai_image.png")
@@ -158,9 +176,12 @@ class AIGenerationCog(commands.Cog):
 
             LOGGER.info(f"Total creation time: {creation_time:.5f}s")
 
-            await ctx.send(embed=embed, file=ai_img_file)
+            sent_message = await ctx.send(embed=embed, file=ai_img_file)
 
-    async def _morph_user(self, target: discord.User, prompt: str) -> BytesIO:
+            # Create a download button.
+            await sent_message.edit(view=DownloadButtonView(("Download Image", sent_message.embeds[0].image.url)))
+
+    async def morph_user(self, target: discord.User, prompt: str) -> (str, BytesIO):
         """Does the morph process.
 
         Parameters
@@ -178,18 +199,18 @@ class AIGenerationCog(commands.Cog):
             file_size = avatar_image.size
 
         # Generate the AI image and retrieve its url.
-        ai_url = await self._generate_ai_image(self.api_key, prompt, file_size)
+        ai_url = await self.generate_ai_image(self.api_key, prompt, file_size)
 
         # Save the AI image to a bytes buffer.
-        ai_bytes_buffer = await self._save_image(ai_url)
+        ai_bytes_buffer = await self.save_image_from_url(ai_url)
 
         # Create the morphs in mp4 and gif form.
-        gif_bytes_buffer = await self._generate_morph(avatar_bytes_buffer, ai_bytes_buffer)
+        gif_bytes_buffer = await self.generate_morph(avatar_bytes_buffer, ai_bytes_buffer)
 
-        return gif_bytes_buffer
+        return ai_url, gif_bytes_buffer
 
     @staticmethod
-    async def _generate_morph(pre_morph_buffer: BytesIO, post_morph_buffer: BytesIO) -> BytesIO:
+    async def generate_morph(pre_morph_buffer: BytesIO, post_morph_buffer: BytesIO) -> BytesIO:
 
         with AIGenerationCog.temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
 
@@ -224,7 +245,7 @@ class AIGenerationCog(commands.Cog):
         return gif_buffer
 
     @staticmethod
-    async def _generate_ai_image(api_key: str, prompt: str, size: Tuple[int, int] = (256, 256)) -> str:
+    async def generate_ai_image(api_key: str, prompt: str, size: Tuple[int, int] = (256, 256)) -> str:
         """Makes a call to OpenAI's API to generate an image based on given inputs."""
 
         size_str = f"{size[0]}x{size[1]}"
@@ -234,6 +255,7 @@ class AIGenerationCog(commands.Cog):
             payload={"prompt": prompt, "n": 1, "size": size_str}
         )
 
+        # Catch any errors based on the API response.
         if openai_response.is_error:
             raise ConnectionError(f"OpenAI response: {openai_response.status_code}")
         if "data" not in openai_response.json():
@@ -243,7 +265,7 @@ class AIGenerationCog(commands.Cog):
 
         return url
 
-    async def _save_image(self, url: str) -> BytesIO:
+    async def save_image_from_url(self, url: str) -> BytesIO:
 
         async with self.bot.web_session.get(url) as resp:
             image_bytes = await resp.read()
@@ -277,10 +299,10 @@ class AIGenerationCog(commands.Cog):
         yield temp_paths
 
         # Clean up.
-        shutil.rmtree(temp_dir)
+        rmtree(temp_dir)
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(AIGenerationCog(bot))

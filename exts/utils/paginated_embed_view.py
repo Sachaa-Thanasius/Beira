@@ -9,7 +9,7 @@ from typing import List, Tuple
 
 import discord
 
-from utils.story_embed import StoryEmbed
+from utils.embeds import StoryEmbed
 
 LOGGER = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class PageNumEntryModal(discord.ui.Modal):
 
     input_page_num = discord.ui.TextInput(label="Page", placeholder="Enter digits here...", required=True, min_length=1)
 
-    def __init__(self, page_limit: int):
+    def __init__(self, page_limit: int) -> None:
         super().__init__(title="Page Jump", custom_id="page_entry_modal")
         self.page_limit = page_limit
 
@@ -47,7 +47,7 @@ class PageNumEntryModal(discord.ui.Modal):
 class PaginatedEmbedView(discord.ui.View):
     """A view for paginated embeds, allowing users to flip between different embeds using buttons."""
 
-    def __init__(self, interaction: discord.Interaction, all_text_lines: List[Tuple | None], story_data: dict):
+    def __init__(self, interaction: discord.Interaction, all_text_lines: List[Tuple | None], story_data: dict) -> None:
         super().__init__(timeout=60.0)
         self.latest_interaction = interaction
         self.all_text_lines = all_text_lines

@@ -19,46 +19,46 @@ GuildMessageableChannel = discord.TextChannel | discord.VoiceChannel | discord.T
 class PinArchiveCog(commands.Cog, command_attrs=dict(hidden=True)):
     """A cog that allows all pins in a guild to overflow into one text channel. In development."""
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: Beira) -> None:
         self.bot = bot
         self.mode = "latest"
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        """Set up bot owner check as universal within the cog."""
+
+        original = commands.is_owner().predicate
+        return await original(ctx)
+
     @commands.Cog.listener()
-    @commands.is_owner()
     async def on_guild_channel_pins_update(self, channel: discord.abc.GuildChannel | discord.Thread, last_pin: datetime.datetime | None = None):
         LOGGER.info(f"on_guild_channel_pins_update(): {channel.guild}, {channel}, {last_pin}")
 
     # Commands
-    @commands.hybrid_command()
-    @commands.is_owner()
+    @commands.command()
     async def set_archive_channel(self, ctx: commands.Context, channel: GuildMessageableChannel) -> None:
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
-    @commands.hybrid_command()
-    @commands.is_owner()
+    @commands.command()
     async def move_archive_channel(self, ctx: commands.Context, channel: GuildMessageableChannel) -> None:
         LOGGER.info(f"move_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
-    @commands.hybrid_command()
-    @commands.is_owner()
+    @commands.command()
     async def get_pins(self, ctx: commands.Context, channel: GuildMessageableChannel) -> None:
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
         all_pins = await channel.pins()
         print(all_pins)
 
-    @commands.hybrid_command()
-    @commands.is_owner()
+    @commands.command()
     async def set_mode(self, ctx: commands.Context, mode: Literal["latest", "oldest"]) -> None:
         self.mode = mode
         LOGGER.info(f"set_mode(): {ctx.author}, {mode}")
 
-    @commands.hybrid_command()
-    @commands.is_owner()
+    @commands.command()
     async def activate(self, ctx: commands.Context) -> None:
         LOGGER.info(f"activate(): {ctx.author}, {ctx.guild}")
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(PinArchiveCog(bot))

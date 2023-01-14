@@ -4,64 +4,34 @@ first.
 """
 
 import logging
-from typing import List
+from typing import List, Dict
 
-import discord
-from discord import app_commands
-from discord.app_commands import Choice
-from discord.ext import commands
 from bs4 import BeautifulSoup
 import urllib.parse
+from json import load
+import discord
+from discord import app_commands
+from discord.ext import commands
 
 from bot import Beira
+from utils.embeds import discord_embed_factory
 
 LOGGER = logging.getLogger(__name__)
-all_categories = {}
+
+# Holds directions to all wiki pages for the autocomplete to use.
+all_pages = {}
+try:
+    with open("data/fandom_wiki_search_data.json", "r") as f:
+        all_pages = load(f)
+except FileNotFoundError as err:
+    LOGGER.exception("JSON File wasn't found", exc_info=err)
 
 
-class AoCWikiEmbed(discord.Embed):
-    """Represents a discord embed that is set up for representing Ashes of Chaos wiki pages."""
+async def wiki_pages_autocomplete(interaction: discord.Interaction, current: str) -> List[app_commands.Choice[str]]:
+    """Autocomplete callback for the names of different AoC wiki pages."""
 
-    def __init__(self, *, title: str, url: str, description: str | None = None, author_icon_url: str | None = None,
-                 footer_icon_url: str | None = None):
-        super().__init__(color=0x8a934b, title=title, url=url)
-        if description:
-            self.description = description
-        aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
-
-        self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
-        self.set_footer(text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
-                        icon_url=footer_icon_url)
-
-
-async def aoc_all_autocomplete(interaction: discord.Interaction, current: str) -> List[Choice[str]]:
-
-    entries_list = list(all_categories["All"].keys())
-    return [Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
-
-
-async def aoc_char_autocomplete(interaction: discord.Interaction, current: str) -> List[Choice[str]]:
-
-    entries_list = list(all_categories["Characters"].keys())
-    return [Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
-
-
-async def aoc_loc_autocomplete(interaction: discord.Interaction, current: str) -> List[Choice[str]]:
-
-    entries_list = list(all_categories["Locations"].keys())
-    return [Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
-
-
-async def aoc_society_autocomplete(interaction: discord.Interaction, current: str) -> List[Choice[str]]:
-
-    entries_list = list(all_categories["Society"].keys())
-    return [Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
-
-
-async def aoc_magic_autocomplete(interaction: discord.Interaction, current: str) -> List[Choice[str]]:
-
-    entries_list = list(all_categories["Magic"].keys())
-    return [Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
+    entries_list = all_pages[interaction.namespace.wiki]["all_pages"].keys()
+    return [app_commands.Choice(name=name, value=name) for name in entries_list if current.lower() in name.lower()][:25]
 
 
 class FandomWikiSearchCog(commands.Cog):
@@ -73,114 +43,143 @@ class FandomWikiSearchCog(commands.Cog):
     ----------
     bot : :class:`bot.Beira`
         The main Discord bot this cog is a part of.
-
-    Attributes
-    ----------
-    aoc_wiki_url : :class:`str`
-        The default base url, for the wiki of Harry Potter and the Ashes of Chaos, a fanfiction by ACI100.
     """
 
-    def __init__(self, bot: Beira):
-
+    def __init__(self, bot: Beira) -> None:
         self.bot = bot
         self.aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
 
-    async def cog_load(self) -> None:
-        """Load a dictionary of webpages before connecting to the Websocket."""
-        all_category_links = [
-            ("All", f"{self.aoc_wiki_url}/wiki/Special:AllPages"),
-            ("Characters", f"{self.aoc_wiki_url}/wiki/Category:Characters"),
-            ("Locations", f"{self.aoc_wiki_url}/wiki/Category:Locations"),
-            ("Society", f"{self.aoc_wiki_url}/wiki/Category:Society"),
-            ("Magic", f"{self.aoc_wiki_url}/wiki/Category:Magic")
-        ]
-        for category_link in all_category_links:
-            all_categories[category_link[0]] = {}
-            async with self.bot.web_session.get(category_link[1]) as response:
-                text = await response.text()
-                soup = BeautifulSoup(text, "html.parser")
-                if category_link[0] != "All":
-                    content = soup.find("div", class_="page-content")
-                    for link in content.find_all("a", class_="category-page__member-link"):
-                        all_categories[category_link[0]][link["title"]] = link["href"]
-                else:
+    async def load_all_wiki_pages(self):
+        """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
+
+        LOGGER.info("Reloading the wiki page directions.")
+
+        # Walk through all wiki pages linked on the directory page(s).
+        for wiki_data in all_pages.values():
+            wiki_data["all_pages"] = {}
+            for url in wiki_data["pages_directory"]:
+                directory_url = f"{wiki_data['base_url']}{url}"
+
+                async with self.bot.web_session.get(directory_url) as response:
+                    text = await response.text()
+                    soup = BeautifulSoup(text, "html.parser")
                     content = soup.find("div", class_="mw-allpages-body")
-                    for link in content.find_all("a"):
-                        all_categories[category_link[0]][link["title"]] = link["href"]
+                    if content is not None:
+                        for link in content.find_all("a"):
+                            wiki_data["all_pages"][link["title"]] = link["href"]
+                    else:
+                        continue
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    @app_commands.autocomplete(search_term=aoc_all_autocomplete)
-    async def wiki_aoc(self, ctx: commands.Context, *, search_term: str) -> None:
-        """Search the entire AoC Wiki. General purpose.
+    @app_commands.choices(wiki=[app_commands.Choice(name=key, value=key) for key in all_pages])
+    @app_commands.autocomplete(search_term=wiki_pages_autocomplete)
+    async def wiki(self, ctx: commands.Context, *, wiki: str | None = "Harry Potter and the Ashes of Chaos", search_term: str) -> None:
+        """Search a selection of pre-indexed Fandom wikis. General purpose.
 
         Parameters
         ----------
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
+        wiki : :class:`str`
+            The name of the wiki that's being searched.
         search_term : :class:`str`
             The term or phrase being searched for in the wiki.
         """
 
-        embed = await self._search_aoc_wiki("All", search_term)
+        embed = await self.search_wiki(wiki, search_term)
         await ctx.send(embed=embed)
 
-    async def _search_aoc_wiki(self, category: str, wiki_query: str) -> discord.Embed:
-        """Search the AoC Wiki for different pages.
+    async def search_wiki(self, wiki_name: str, wiki_query: str) -> discord.Embed:
+        """Search a Fandom wiki for different pages.
 
         Parameters
         ----------
-        category : :class:`str`
-            The wiki category to search within.
+        wiki_name : :class:`str`
+            The wiki to search within.
         wiki_query : :class:`str`
             The text input to search with.
         """
 
-        # Get the emojis that will be used in the result embed.
-        aoc_emoji = self.bot.emojis_stock["aoc"]
-        mr_jare_emoji = self.bot.emojis_stock["mr_jare"]
+        # Check if the wiki name is valid.
+        get_wiki_name: Dict = all_pages.get(wiki_name)
 
-        # Get the web page for the given input.
-        try:
-            wiki_page_url_ending = all_categories[category][wiki_query]
-        except KeyError:
-            entries_list = list(all_categories[category].keys())
+        if get_wiki_name is None:
+            entries_list = all_pages.keys()
+            possible_results = [name for name in entries_list if wiki_name.lower() in name.lower()][:25]
+
+            if len(possible_results) == 0:
+                failed_embed = discord.Embed(
+                    title=f"Wiki Unavailable",
+                    description="Error: Wiki Does Not Exist Or Is Not Indexed. Please try a different wiki name."
+                )
+                return failed_embed
+
+            else:
+                wiki_name = possible_results[0]
+                get_wiki_name = all_pages.get(wiki_name)
+
+        # --------------------------------
+        # Check if the wiki has any pages.
+        get_wiki_pages: Dict = get_wiki_name.get("all_pages")
+
+        if get_wiki_pages is None:
+            failed_embed = discord.Embed(
+                title=f"Wiki Unavailable",
+                description="Error: No Pages on Record for This Wiki. It is unavailable at this time."
+            )
+            return failed_embed
+
+        # --------------------------------
+        # Check if the wiki has the requested query as a page.
+        final_embed_type = "AoCWiki" if wiki_name == "Harry Potter and the Ashes of Chaos" else None
+        final_embed = discord_embed_factory(final_embed_type)
+
+        get_specific_wiki_page: str = get_wiki_pages.get(wiki_query)
+
+        if get_specific_wiki_page is None:
+            entries_list = all_pages[wiki_name]["all_pages"].keys()
             possible_results = [name for name in entries_list if wiki_query.lower() in name.lower()][:25]
 
             if len(possible_results) == 0:
                 encoded_wiki_query = urllib.parse.quote(wiki_query)
-                failed_embed = AoCWikiEmbed(title=f"No results found for '{wiki_query}'",
-                                            url=f"{self.aoc_wiki_url}/wiki/Special:Search?query={encoded_wiki_query}",
-                                            description="Sorry, we couldn't find anything with this search term(s).",
-                                            author_icon_url=aoc_emoji.url,
-                                            footer_icon_url=mr_jare_emoji.url)
-                return failed_embed
 
-            wiki_page_url_ending = all_categories[category][possible_results[0]]
-            wiki_query = possible_results[0]
+                final_embed.title = f"No pages found for '{wiki_query}'. Click here for search results."
+                final_embed.description = "Sorry, we couldn't find anything with this search term(s)."
+                final_embed.url = f"{all_pages[wiki_name]['base_url']}/wiki/Special:Search?query={encoded_wiki_query}"
 
-        wiki_page_link = f"{self.aoc_wiki_url}{wiki_page_url_ending}"
+                return final_embed
 
-        embed = AoCWikiEmbed(title=wiki_query, url=wiki_page_link, author_icon_url=aoc_emoji.url, footer_icon_url=mr_jare_emoji.url)
+            else:
+                wiki_query = possible_results[0]
+                get_specific_wiki_page = get_wiki_pages.get(wiki_query)
 
+        wiki_page_link = f"{all_pages[wiki_name]['base_url']}{get_specific_wiki_page}"
+
+        # --------------------------------
+        # Add the primary embed parameters.
+        final_embed.title = wiki_query
+        final_embed.url = wiki_page_link
+
+        # --------------------------------
         # Fetch information from the character webpage to populate the rest of the embed.
         summary, thumbnail = await self._process_fandom_page(wiki_page_link)
 
         if summary:
             if len(summary) > 4096:
                 summary = summary[:4093] + "..."
-            embed.description = summary
+            final_embed.description = summary
 
         if thumbnail:
-            embed.set_thumbnail(url=thumbnail)
+            final_embed.set_thumbnail(url=thumbnail)
 
-        return embed
+        return final_embed
 
     async def _process_fandom_page(self, url: str) -> (str, str):
         """Extract the summary and image from a Fandom page."""
 
         async with self.bot.web_session.get(url) as response:
-            char_summary, char_image = None, None
+            char_summary, char_thumbnail = None, None
 
             # Extract the main content.
             text = await response.text()
@@ -190,17 +189,17 @@ class FandomWikiSearchCog(commands.Cog):
             # Extract the image.
             image = content.find("a", class_="image image-thumbnail")
             if image:
-                char_image = image["href"]
+                char_thumbnail = image["href"]
 
             content = self._clean_fandom_page(content)
-
             char_summary = content.text
 
             # Return the remaining text.
-            return char_summary, char_image
+            return char_summary, char_thumbnail
 
     @staticmethod
     def _clean_fandom_page(soup: BeautifulSoup) -> BeautifulSoup:
+        """Attempt to remove everything from a Fandom wiki page that isn't the first few lins."""
 
         summary_end_index = 0
 
@@ -241,7 +240,7 @@ class FandomWikiSearchCog(commands.Cog):
         return soup
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(FandomWikiSearchCog(bot))

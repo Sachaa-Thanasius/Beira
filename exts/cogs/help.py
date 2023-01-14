@@ -15,9 +15,9 @@ LOGGER = logging.getLogger(__name__)
 
 
 class LittleHelpCommand(commands.MinimalHelpCommand):
-    """A very small customization of MinimalHelpCommand with embeds as message bodies and generous cooldowns."""
+    """A very small customization of :class:`commands.MinimalHelpCommand` with embeds as message bodies and generous cooldowns."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(command_attrs=dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user))))
 
     async def send_pages(self):
@@ -32,7 +32,7 @@ class LittleHelpCommand(commands.MinimalHelpCommand):
 class LittleHelpCog(commands.Cog):
     """A cog that allows more dynamic usage of my custom help command class, LittleHelpCommand."""
 
-    def __init__(self, bot: commands.Bot):
+    def __init__(self, bot: commands.Bot) -> None:
         self.bot = bot
         self._old_help_command = self.bot.help_command
         self.bot.help_command = LittleHelpCommand()
@@ -77,7 +77,7 @@ class LittleHelpCog(commands.Cog):
                ][:25]
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(LittleHelpCog(bot))

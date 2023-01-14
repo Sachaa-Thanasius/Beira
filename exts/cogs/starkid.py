@@ -15,11 +15,11 @@ LOGGER = logging.getLogger(__name__)
 class StarKidCog(commands.Cog):
     """A cog for StarKid-related commands and functionality."""
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
     @commands.hybrid_command()
-    async def nightmare_of_black(self, ctx: commands.Context):
+    async def nightmare_of_black(self, ctx: commands.Context) -> None:
         """Bring forth a morphed, warped image of the Lords of Black to prostrate and pray before."""
 
         embed = discord.Embed(
@@ -32,7 +32,7 @@ class StarKidCog(commands.Cog):
         await ctx.send(embed=embed)
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(StarKidCog(bot))

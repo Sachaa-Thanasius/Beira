@@ -103,7 +103,7 @@ class Beira(commands.Bot):
         else:
             test_cogs_folder = Path(__file__).parent.joinpath("exts/cogs")
             for filepath in test_cogs_folder.iterdir():
-                if filepath.name.endswith(".py"):
+                if filepath.suffix == ".py":
                     try:
                         await self.load_extension(f"exts.cogs.{filepath.stem}")
                         LOGGER.info(f"Loaded extension: {filepath.stem}")
@@ -137,7 +137,7 @@ class Beira(commands.Bot):
         for user_id in friends_ids:
             self.special_friends[self.get_user(user_id).name] = user_id
 
-    async def is_special_friend(self, user: discord.abc.User, /):
+    def is_special_friend(self, user: discord.abc.User, /):
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
         this bot's owner.
 
@@ -165,6 +165,33 @@ class Beira(commands.Bot):
             else:
                 return False
 
+    def is_ali(self, user: discord.abc.User, /):
+        """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali.
+
+        If a :attr:`special_friends` dict is not set, it is fetched automatically
+        through the use of :meth:`~._load_friends_dict`.
+
+        Parameters
+        -----------
+        user: :class:`discord.abc.User`
+            The user to check for.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the user is Ali.
+        """
+
+        if len(self.special_friends) > 0:
+            return user.id == self.special_friends["aeroali"]
+
+        else:
+            self._load_friends_dict()
+            if len(self.special_friends) > 0:
+                return user.id == self.special_friends["aeroali"]
+            else:
+                return False
+
 
 async def main() -> None:
     """Starts an instance of the bot."""
@@ -182,6 +209,7 @@ async def main() -> None:
             "exts.cogs.ai_generation",
             "exts.cogs.fandom_wiki_search",
             "exts.cogs.help",
+            "exts.cogs.patreon_check",
             "exts.cogs.pin_archive",
             "exts.cogs.snowball",
             "exts.cogs.starkid",

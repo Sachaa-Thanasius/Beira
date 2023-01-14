@@ -1,11 +1,11 @@
 """
 admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
 """
+
 import logging
-from os import listdir
-from os.path import abspath, dirname
 from typing import List
 
+from pathlib import Path
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -14,25 +14,30 @@ from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
-# List for cogs that you don't want to be reloaded.
-IGNORE_EXTENSIONS = []
+# List for cogs that you don't want to be reloaded, using dot.style notation (e.g. "exts.cogs.snowball").
+IGNORE_EXTENSIONS = ["exts.cogs.slash_text"]
 
-# Find all extensions using the file path.
-_ALL_EXTENSIONS = []
-cogs_folder = f"{abspath(dirname(__file__))}"
-for filename in listdir(cogs_folder):
-    if filename.endswith(".py"):
-        _ALL_EXTENSIONS.append((f"{filename[:-3]}", f"exts.cogs.{filename[:-3]}"))
+# Find all extensions using the file path, excluding those in IGNORE_EXTENSIONS.
+ALL_EXTENSIONS = []
+cogs_folder = Path(__file__).parent
+for filepath in cogs_folder.iterdir():
+    if filepath.suffix == ".py":
+        ALL_EXTENSIONS.append((f"{filepath.stem}", f"exts.cogs.{filepath.stem}"))
 
 
 class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
     """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        """Set up bot owner check as universal within the cog."""
+
+        original = commands.is_owner().predicate
+        return await original(ctx)
+
     @commands.command()
-    @commands.is_owner()
     async def walk(self, ctx: commands.Context) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
@@ -67,8 +72,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
     @commands.hybrid_command()
-    @commands.is_owner()
-    @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in _ALL_EXTENSIONS])
+    @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in ALL_EXTENSIONS])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def reload(self, ctx: commands.Context, extension: str) -> None:
         """Reloads an extension/cog.
@@ -105,7 +109,6 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
 
     @commands.hybrid_command()
     @commands.guild_only()
-    @commands.is_owner()
     @app_commands.describe(
         guilds="Mutex. with spec: The IDs of the guilds you'd like to sync to.",
         spec="Mutex. with guilds: No input —— global sync."
@@ -136,15 +139,21 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         Notes
         -----
         Here is some elaboration on what the command would do with different arguments. Irrelevant with slash
-        activation, but replace '!' with whatever your prefix is for prefix command activation:
+        activation, but replace '$' with whatever your prefix is for prefix command activation:
 
-            "$sync" : Sync globally.
-            "$sync ~" : Sync with current guild.
-            "$sync *" : Copy all global app commands to current guild and sync.
-            "$sync ^" : Clear all commands from the current guild target and sync, thereby removing guild commands.
-            "$sync -" : (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
-            "$sync +" : (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
-            "$sync <id_1> <id_2> ..." : Sync with those guilds of id_1, id_2, etc.
+            `$sync` : Sync globally.
+
+            `$sync ~` : Sync with current guild.
+
+            `$sync *` : Copy all global app commands to current guild and sync.
+
+            `$sync ^` : Clear all commands from the current guild target and sync, thereby removing guild commands.
+
+            `$sync -` : (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
+
+            `$sync +` : (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
+
+            `$sync <id_1> <id_2> ...` : Sync with those guilds of id_1, id_2, etc.
         """
 
         if not guilds:
@@ -186,7 +195,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.", ephemeral=True)
 
 
-async def setup(bot: Beira):
+async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(AdminCog(bot))

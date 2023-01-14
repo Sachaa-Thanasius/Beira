@@ -1,26 +1,22 @@
 """
 converters.py: Custom converters used by the bot.
 """
+
 import logging
 
 import discord
 from discord.ext import commands
 
+from utils.errors import CannotTargetSelf
+
 LOGGER = logging.getLogger(__name__)
-
-
-class CannotTargetSelf(commands.BadArgument):
-    """Exception raised when the member provided as a target was also the command invoker.
-
-    This inherits from :exc:`BadArgument`.
-    """
-    pass
 
 
 class UserNoSelfTargetConverter(commands.UserConverter):
     """Converts to a :class:`discord.User` if they don't match the invocation author.
 
-    This check raises a special exception, :exc:`.CannotSelfTarget` that is derived from :exc:`.BadArgument`.
+    This check raises a special exception, :exc:`CannotSelfTarget` that is derived from
+    :exc:`commands.BadArgument`.
     """
 
     async def convert(self, ctx: commands.Context, argument: str) -> discord.User:
@@ -35,7 +31,7 @@ class UserNoSelfTargetConverter(commands.UserConverter):
 class MemberNoSelfTargetConverter(commands.MemberConverter):
     """Converts to a :class:`discord.Member` if they don't match the invocation author.
 
-    This check raises a special exception, :exc:`.CannotSelfTarget` that is derived from :exc:`.BadArgument`.
+    This check raises a special exception, :exc:`.CannotSelfTarget` that is derived from :exc:`commands.BadArgument`.
     """
 
     async def convert(self, ctx: commands.Context, argument: str) -> discord.Member:
