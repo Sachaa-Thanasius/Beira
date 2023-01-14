@@ -2,21 +2,25 @@
 snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
 """
 
+from __future__ import annotations
+
 import logging
 import random
 from json import load
-from typing import List, Annotated
+from typing import List, Annotated, TYPE_CHECKING
 
-from asyncpg import Record
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import Beira
 from utils.converters import MemberNoSelfTargetConverter, CannotTargetSelf
 from utils.checks import is_owner_or_friend
 from utils.embeds import StatsEmbed
-from exts.utils.snowball_utils import collect_cooldown, transfer_cooldown, steal_cooldown
+from utils.snowball_utils import collect_cooldown, transfer_cooldown, steal_cooldown
+
+if TYPE_CHECKING:
+    from asyncpg import Record
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 

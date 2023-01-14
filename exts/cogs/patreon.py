@@ -1,15 +1,18 @@
 """
-patreon_check.py: A cog for checking which Discord members are currently patrons of ACI100.
+patreon.py: A cog for checking which Discord members are currently patrons of ACI100.
 """
+
+from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, List, Dict
+from typing import Any, List, Dict, TYPE_CHECKING
 
 import discord
 from discord.ext import commands, tasks
 
-from bot import Beira, CONFIG
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
@@ -26,11 +29,12 @@ class PatreonMember:
 class PatreonCheckCog(commands.Cog):
     """A cog for checking which Discord members are currently patrons of ACI100."""
 
-    access_token: str = CONFIG["patreon"]["creator_access_token"]
+    access_token: str
     patrons_on_discord: Dict[str, List[discord.Member]]
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.access_token = self.bot.config["patreon"]["creator_access_token"]
 
     async def cog_load(self) -> None:
         """Start patreon-related background tasks."""
@@ -55,7 +59,7 @@ class PatreonCheckCog(commands.Cog):
 
         LOGGER.info("Checking for new patrons, old patrons, and updated patrons!")
 
-        aci100_id = CONFIG["patreon"]["patreon_guild_id"]
+        aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
         patreon_guild = self.bot.get_guild(aci100_id)
 
         patron_roles = filter(lambda x: "patrons" in x.name.lower(), patreon_guild.roles)
@@ -204,4 +208,3 @@ resp_example = {
         }
     }
 }
-

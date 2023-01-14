@@ -4,3 +4,4 @@ help-alpha.py
 __pycache__
 misc/
 data/dunk/
+*.pyc

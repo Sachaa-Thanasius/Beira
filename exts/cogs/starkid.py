@@ -2,12 +2,16 @@
 starkid.py: A cog for StarKid-related commands and functionality.
 """
 
+from __future__ import annotations
+
 import logging
+from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 
-from bot import Beira
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 

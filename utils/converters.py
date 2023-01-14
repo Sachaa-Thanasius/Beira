@@ -31,7 +31,7 @@ class UserNoSelfTargetConverter(commands.UserConverter):
 class MemberNoSelfTargetConverter(commands.MemberConverter):
     """Converts to a :class:`discord.Member` if they don't match the invocation author.
 
-    This check raises a special exception, :exc:`.CannotSelfTarget` that is derived from :exc:`commands.BadArgument`.
+    This check raises a special exception, :exc:`CannotSelfTarget` that is derived from :exc:`commands.BadArgument`.
     """
 
     async def convert(self, ctx: commands.Context, argument: str) -> discord.Member:

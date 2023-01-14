@@ -2,22 +2,25 @@
 ai_generation.py: A cog with commands for doing fun AI things with OpenAI's API, like generating images and morphs.
 """
 
+from __future__ import annotations
+
 import logging
 import subprocess
 import tempfile as tf
+from contextlib import contextmanager
+from io import BytesIO
+from pathlib import Path
 from shutil import rmtree
 from time import perf_counter
-from contextlib import contextmanager
-from pathlib import Path
-from io import BytesIO
-from typing import Tuple, ClassVar
+from typing import Tuple, TYPE_CHECKING
 
-import discord
-from discord.ext import commands
 import openai_async
 from PIL import Image
+import discord
+from discord.ext import commands
 
-from bot import Beira, CONFIG
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to FFmpeg on your machine if need be.
@@ -38,11 +41,12 @@ class AIGenerationCog(commands.Cog):
     Note: This is all Athena's fault.
     """
 
-    api_key: ClassVar[str] = CONFIG["openai"]["api_key"]
+    api_key: str
 
     def __init__(self, bot: Beira) -> None:
 
         self.bot = bot
+        self.api_key = self.bot.config["openai"]["api_key"]
         self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/general_morph")
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:

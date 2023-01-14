@@ -3,7 +3,8 @@ embeds.py: This class provides embeds for user-specific statistics separated int
 """
 
 import logging
-from typing import Dict, Tuple, Sequence, Any
+from collections.abc import Sequence
+from typing import Dict, Tuple, Any
 
 from discord import Embed, Emoji
 
@@ -19,12 +20,12 @@ class StatsEmbed(Embed):
         The url that the embed will use to get the thumbnail image.
     stat_headers : Sequence[:class:`str`]
         The headers representing each statistic that will be used as names for stat fields.
-    stat_value_emojis : Sequence[:class:`discord.Emoji`]
+    stat_value_emojis : Sequence[:class:`Emoji`]
         The emojis representing each statistic that will adorn the values of stat fields.
-    record : Sequence[:class:`typing.Any`]
+    record : Sequence[:class:`Any`]
         The user's statistics fetched from a database, to be used as values in stat fields.
     **kwargs
-        Keyword arguments for the normal initialization of a :class:`discord.Embed`.
+        Keyword arguments for the normal initialization of an :class:`Embed`.
 
     See Also
     --------
@@ -55,23 +56,23 @@ class StatsEmbed(Embed):
                 self.add_field(name=header, value=f"{emoji} **|** {value}", inline=False)
 
 
-class StoryEmbed(Embed):
-    """A subclass of :class:`discord.Embed` customized to create an embed 'page' for a story, given actual data about
+class StoryQuoteEmbed(Embed):
+    """A subclass of :class:`Embed` customized to create an embed 'page' for a story, given actual data about
     the story.
 
     Parameters
     ----------
-    story_data : :class:`dict`
+    story_data : :class:`dict`, optional
     current_page : :class:`tuple`, optional
     bookmark : :class:`int`, optional
     max_pages : :class:`int`, optional
     **kwargs
-        Keyword arguments for the normal initialization of a :class:`discord.Embed`.
+        Keyword arguments for the normal initialization of an :class:`Embed`.
 
     See Also
     --------
     :class:`exts.utils.paginated_embed_view.PaginatedEmbedView`
-    :class:`exts.cogs.story_search.BookSearchCog`
+    :class:`exts.cogs.story_search.StorySearchCog`
     """
 
     def __init__(self,
@@ -99,7 +100,21 @@ class StoryEmbed(Embed):
 
 
 class AoCWikiEmbed(Embed):
-    """Represents a discord embed that is set up for representing Ashes of Chaos wiki pages."""
+    """A subclass of :class:`Embed` that is set up for representing Ashes of Chaos wiki pages.
+
+    Parameters
+    ----------
+    author_icon_url : :class:`str`, optional
+        The image url for the embed's author icon. Defaults to the AoC emoji url.
+    footer_icon_url : :class:`str`, optional
+        The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
+    **kwargs
+        Keyword arguments for the normal initialization of an :class:`Embed`.
+
+    See Also
+    --------
+    :class:`exts.cogs.fandom_wiki_search.FandomWikiSearchCog`
+    """
 
     def __init__(self,
                  author_icon_url: str | None = None,
@@ -127,7 +142,7 @@ def discord_embed_factory(name: str = "default") -> Embed:
     """Factory method for instantiating a Discord embed or its subclasses."""
     embed_types = {
         "AoCWiki": AoCWikiEmbed,
-        "Story": StoryEmbed,
+        "Story": StoryQuoteEmbed,
         "Stats": StatsEmbed,
         "default": Embed
     }

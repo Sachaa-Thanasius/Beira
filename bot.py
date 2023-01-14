@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 """bot.py: The main bot initializer and starter."""
 
+from __future__ import annotations
+
 import logging
 import asyncio
 from pathlib import Path
@@ -12,21 +14,21 @@ import discord
 from discord.ext import commands
 
 import config
-from utils.log import SetupLogging
+from utils.custom_logging import SetupLogging
 
 CONFIG = config.config()
 LOGGER = logging.getLogger("bot.Beira")
 
 
 class Beira(commands.Bot):
-    """A Discord bot for API experimentation.
+    """A personal Discord bot for API experimentation.
 
     Parameters
     ----------
     *args
         Variable length argument list, primarily for :class:`discord.ext.commands.Bot`.
     db_pool : :class:`asyncpg.Pool`
-        A connection pool to connect to a PostgreSQL database.
+        A connection pool for a PostgreSQL database.
     initial_extensions : List[:class:`str`]
         A list of extension names that the bot will initially load.
     testing_guild_ids : List[:class:`int`]
@@ -192,6 +194,10 @@ class Beira(commands.Bot):
             else:
                 return False
 
+    @property
+    def config(self) -> Dict:
+        return CONFIG
+
 
 async def main() -> None:
     """Starts an instance of the bot."""
@@ -207,9 +213,9 @@ async def main() -> None:
         init_exts = [
             "exts.cogs.admin",
             "exts.cogs.ai_generation",
-            "exts.cogs.fandom_wiki_search",
+            "exts.cogs.fandom_wiki",
             "exts.cogs.help",
-            "exts.cogs.patreon_check",
+            "exts.cogs.patreon",
             "exts.cogs.pin_archive",
             "exts.cogs.snowball",
             "exts.cogs.starkid",

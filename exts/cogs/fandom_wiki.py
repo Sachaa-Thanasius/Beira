@@ -1,10 +1,12 @@
 """
-fandom_wiki_search.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
+fandom_wiki.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
 first.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import List, Dict
+from typing import List, Dict, TYPE_CHECKING
 
 from bs4 import BeautifulSoup
 import urllib.parse
@@ -13,8 +15,10 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import Beira
 from utils.embeds import discord_embed_factory
+
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
@@ -47,7 +51,6 @@ class FandomWikiSearchCog(commands.Cog):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
 
     async def load_all_wiki_pages(self):
         """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""

@@ -2,15 +2,18 @@
 admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import List
+from typing import List, TYPE_CHECKING
 
 from pathlib import Path
 import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import Beira
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
@@ -90,19 +93,20 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
             embed = discord.Embed(color=0xcccccc,
                                   description="Nothing has happened yet.")
 
-            if extension not in list(self.bot.extensions.keys()):
-                embed.description = f"Never initially loaded this extension: {extension}"
-            elif extension[5:] in IGNORE_EXTENSIONS:
+            if extension[5:] in IGNORE_EXTENSIONS:
                 embed.description = f"Currently exempt from reloads: {extension}"
 
             else:
+                if extension not in list(self.bot.extensions.keys()):
+                    embed.description = f"Never initially loaded this extension: {extension}"
+
                 try:
                     await self.bot.reload_extension(extension)
                 except commands.ExtensionError as err:
-                    embed.description = f"Couldn't reload extension: {extension}"
+                    embed.description += f"\nCouldn't reload extension: {extension}"
                     LOGGER.error(f"Couldn't reload extension: {extension}", exc_info=err)
                 else:
-                    embed.description = f"Reloaded extension: {extension}"
+                    embed.description += f"\nReloaded extension: {extension}"
                     LOGGER.info(f"Reloaded extension: {extension}")
 
             await ctx.send(embed=embed, ephemeral=True)

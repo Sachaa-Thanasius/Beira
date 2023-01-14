@@ -2,6 +2,8 @@
 story_search.py: This cog is meant to provide functionality for searching the text of some books.
 """
 
+from __future__ import annotations
+
 import logging
 import random
 import re
@@ -10,19 +12,21 @@ from copy import deepcopy
 from random import randint
 from time import perf_counter
 from bisect import bisect_left
-from typing import List, Tuple
+from typing import List, Tuple, Dict, TYPE_CHECKING, ClassVar
 
 from discord import app_commands
 from discord.ext import commands
 
-from bot import Beira
-from utils.embeds import StoryEmbed
-from exts.utils.paginated_embed_view import PaginatedEmbedView
+from utils.embeds import StoryQuoteEmbed
+from utils.paginated_embed_view import PaginatedEmbedView
+
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 
 
-class BookSearchCog(commands.Cog):
+class StorySearchCog(commands.Cog):
     """A cog with commands for people to search the text of some ACI100 books while in Discord.
 
     Parameters
@@ -36,7 +40,7 @@ class BookSearchCog(commands.Cog):
         The dictionary holding the metadata and text for all stories being scanned.
     """
 
-    story_records = {}
+    story_records: ClassVar[Dict[str, Dict]] = {}
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
@@ -51,7 +55,7 @@ class BookSearchCog(commands.Cog):
         for temp_rec in temp_records:
             dict_temp_rec = dict(temp_rec)
             self.story_records[temp_rec["story_acronym"]] = dict_temp_rec
-            self.story_records[temp_rec["story_acronym"]]["template_embed"] = StoryEmbed(story_data=dict_temp_rec)
+            self.story_records[temp_rec["story_acronym"]]["template_embed"] = StoryQuoteEmbed(story_data=dict_temp_rec)
 
         # Load story text from markdown files.
         project_path = Path(__file__).resolve().parents[2]
@@ -82,11 +86,10 @@ class BookSearchCog(commands.Cog):
             cls.story_records[stem]["collection_index"] = temp_coll_index = []
             cls.story_records[stem]["text"] = temp_text = []
 
-            for index, line in enumerate(f):
-                temp_text.append(line)
-
-                # Switch to a different set of regex patterns when searching ACVR.
-                if "acvr" in filepath.name:
+            # Switch to a different set of regex patterns when searching ACVR.
+            if "acvr" in filepath.name:
+                for index, line in enumerate(f):
+                    temp_text.append(line)
 
                     # Prologue: A Quest for Europa is split among two lines and needs special parsing logic.
                     if re.search(re_chap_heading, line):
@@ -96,20 +99,23 @@ class BookSearchCog(commands.Cog):
                             temp_chap_index.append(index)
 
                     elif re.search(re_volume_heading, line):
-                        if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
+                        if (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]):
                             temp_coll_index.append(index)
 
-                else:
+            else:
+                for index, line in enumerate(f):
+                    temp_text.append(line)
+
                     if re.search(re_chap_title, line):
                         temp_chap_index.append(index)
 
                     elif re.search(re_coll_title, line):
-                        if (len(temp_coll_index) == 0) or (line not in temp_text[temp_coll_index[-1]]):
+                        if (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]):
                             temp_coll_index.append(index)
 
             indexing_end_time = perf_counter()
-            LOGGER.info(f"{stem} indexing time: {indexing_end_time - indexing_start_time:.5f}")
-        LOGGER.info(f"Loaded file: {filepath.stem}")
+            indexing_time = indexing_end_time - indexing_start_time
+        LOGGER.info(f"Loaded file: {filepath.stem} | Indexing time: {indexing_time:.5f}")
 
     @commands.hybrid_command()
     async def random_text(self, ctx: commands.Context) -> None:
@@ -131,7 +137,7 @@ class BookSearchCog(commands.Cog):
         quote_year = self._binary_search_text(story, self.story_records[story]["collection_index"], (b_range + 2))
         quote_chapter = self._binary_search_text(story, self.story_records[story]["chapter_index"], (b_range + 2))
 
-        embed = StoryEmbed(color=0xdb05db, story_data=self.story_records[story], current_page=(quote_year, quote_chapter, "".join(b_sample)))
+        embed = StoryQuoteEmbed(color=0xdb05db, story_data=self.story_records[story], current_page=(quote_year, quote_chapter, "".join(b_sample)))
         embed.set_footer(text="Randomly chosen quote from an ACI100 story")
 
         await ctx.send(embed=embed)
@@ -166,7 +172,7 @@ class BookSearchCog(commands.Cog):
             processing_time = end_time - start_time
             LOGGER.info(f"_process_text() time: {processing_time:.8f}")
 
-            story_embed: StoryEmbed = deepcopy(self.story_records[story]["template_embed"])
+            story_embed: StoryQuoteEmbed = deepcopy(self.story_records[story]["template_embed"])
 
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
@@ -203,7 +209,7 @@ class BookSearchCog(commands.Cog):
             processing_time = end_time - start_time
             LOGGER.info(f"_process_text() time: {processing_time:.8f}")
 
-            story_embed: StoryEmbed = deepcopy(self.story_records["acvr"]["template_embed"])
+            story_embed: StoryQuoteEmbed = deepcopy(self.story_records["acvr"]["template_embed"])
 
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
@@ -235,7 +241,7 @@ class BookSearchCog(commands.Cog):
 
             if terms_presence:
                 # Connect the paragraph with the terms to the one following it.
-                quote = "".join(all_text[index:index + 3])
+                quote = "\n".join(all_text[index:index + 3])
 
                 # Underline the terms.
                 quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
@@ -268,10 +274,10 @@ class BookSearchCog(commands.Cog):
         # Get the list index of the element that's closest to and less than the given index value.
         i_of_index = bisect_left(list_of_indices, index)
 
-        # Get the element from the list based on the calculated list index.
+        # Get the element from the list based on the previously calculated list index.
         actual_index = list_of_indices[i_of_index - 1] if (i_of_index is not None) else -1
 
-        # Use that element as an index in the story text list to get that quote, whether it's a chapter, volume, etc.
+        # Use that element as an index in the story text list to get a quote, whether it's a chapter, volume, etc.
         value_from_index = cls.story_records[story]["text"][actual_index] if actual_index != -1 else "—————"
 
         return value_from_index
@@ -280,4 +286,4 @@ class BookSearchCog(commands.Cog):
 async def setup(bot: Beira) -> None:
     """Connect bot to cog."""
 
-    await bot.add_cog(BookSearchCog(bot))
+    await bot.add_cog(StorySearchCog(bot))

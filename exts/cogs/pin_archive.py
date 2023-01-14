@@ -2,14 +2,17 @@
 pin_archive.py: A cog that allows pins to overflow into a text channel.
 """
 
+from __future__ import annotations
+
 import datetime
 import logging
-from typing import Literal
+from typing import Literal, TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 
-from bot import Beira
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 

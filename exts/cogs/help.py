@@ -2,14 +2,17 @@
 help.py: A slight adjustment for using embeds to the minimal help commands, set through a cog.
 """
 
+from __future__ import annotations
+
 import logging
-from typing import List
+from typing import List, TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 from discord import app_commands
 
-from bot import Beira
+if TYPE_CHECKING:
+    from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
 

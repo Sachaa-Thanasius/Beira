@@ -1,10 +1,10 @@
 """
-log.py: Based on the work of Umbra, this is Beira's logging system.
+custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
 """
 
 import logging
 from logging.handlers import RotatingFileHandler
-from typing import Any, Self
+from typing import Any
 
 from pathlib import Path
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour
@@ -54,7 +54,7 @@ class SetupLogging:
         self.logging_path.mkdir(exist_ok=True)
         self.stream: bool = stream
 
-    def __enter__(self) -> Self:
+    def __enter__(self):
         """Set and customize loggers."""
 
         logging.getLogger("discord").setLevel(logging.INFO)

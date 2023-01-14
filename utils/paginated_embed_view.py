@@ -9,7 +9,7 @@ from typing import List, Tuple
 
 import discord
 
-from utils.embeds import StoryEmbed
+from utils.embeds import StoryQuoteEmbed
 
 LOGGER = logging.getLogger(__name__)
 
@@ -200,11 +200,11 @@ class PaginatedEmbedView(discord.ui.View):
 
         self.current_page = self.all_text_lines[self.bookmark - 1]
 
-        edited_embed = StoryEmbed(story_data=self.story_data,
-                                  current_page=self.current_page,
-                                  bookmark=self.bookmark,
-                                  max_pages=self.max_num_pages,
-                                  color=0x149cdf)
+        edited_embed = StoryQuoteEmbed(story_data=self.story_data,
+                                       current_page=self.current_page,
+                                       bookmark=self.bookmark,
+                                       max_pages=self.max_num_pages,
+                                       color=0x149cdf)
 
         self.page_cache[self.bookmark - 1] = edited_embed
 
