@@ -12,7 +12,7 @@ from io import BytesIO
 from pathlib import Path
 from shutil import rmtree
 from time import perf_counter
-from typing import Tuple, TYPE_CHECKING
+from typing import ClassVar, TYPE_CHECKING
 
 import openai_async
 from PIL import Image
@@ -29,7 +29,7 @@ FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to FFmpeg on
 class DownloadButtonView(discord.ui.View):
     """A small view that adds download buttons to a message based on the given labels and download urls."""
 
-    def __init__(self, *button_links: Tuple[str, str]) -> None:
+    def __init__(self, *button_links: tuple[str, str]) -> None:
         super().__init__(timeout=None)
         for link in button_links:
             self.add_item(discord.ui.Button(style=discord.ButtonStyle.blurple, label=link[0], url=link[1]))
@@ -41,12 +41,10 @@ class AIGenerationCog(commands.Cog):
     Note: This is all Athena's fault.
     """
 
-    api_key: str
+    api_key: ClassVar[str]
 
     def __init__(self, bot: Beira) -> None:
-
         self.bot = bot
-        self.api_key = self.bot.config["openai"]["api_key"]
         self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/general_morph")
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
@@ -135,6 +133,7 @@ class AIGenerationCog(commands.Cog):
             # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename="morph.gif")
             embed = discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
+            embed.description += f"\nprompt: {prompt}"
             embed.set_image(url="attachment://morph.gif")
             embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
 
@@ -164,7 +163,7 @@ class AIGenerationCog(commands.Cog):
             log_start_time = perf_counter()
 
             # Generate the AI image and retrieve its url.
-            ai_url = await self.generate_ai_image(self.api_key, prompt, (512, 512))
+            ai_url = await self.generate_ai_image(prompt, (512, 512))
 
             # Save the AI image to a temp file.
             ai_bytes_buffer = await self.save_image_from_url(ai_url)
@@ -175,6 +174,7 @@ class AIGenerationCog(commands.Cog):
             # Create and send an embed that holds the generated image.
             ai_img_file = discord.File(ai_bytes_buffer, filename="ai_image.png")
             embed = discord.Embed(color=0x5d6e7f, title=f"AI-Generated Image", description="—+—+—+—+—+—+—")
+            embed.description += f"\nprompt: {prompt}"
             embed.set_image(url="attachment://ai_image.png")
             embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
 
@@ -203,7 +203,7 @@ class AIGenerationCog(commands.Cog):
             file_size = avatar_image.size
 
         # Generate the AI image and retrieve its url.
-        ai_url = await self.generate_ai_image(self.api_key, prompt, file_size)
+        ai_url = await self.generate_ai_image(prompt, file_size)
 
         # Save the AI image to a bytes buffer.
         ai_bytes_buffer = await self.save_image_from_url(ai_url)
@@ -248,13 +248,13 @@ class AIGenerationCog(commands.Cog):
 
         return gif_buffer
 
-    @staticmethod
-    async def generate_ai_image(api_key: str, prompt: str, size: Tuple[int, int] = (256, 256)) -> str:
+    @classmethod
+    async def generate_ai_image(cls, prompt: str, size: tuple[int, int] = (256, 256)) -> str:
         """Makes a call to OpenAI's API to generate an image based on given inputs."""
 
         size_str = f"{size[0]}x{size[1]}"
         openai_response = await openai_async.generate_img(
-            api_key=api_key,
+            api_key=cls.api_key,
             timeout=10,
             payload={"prompt": prompt, "n": 1, "size": size_str}
         )
@@ -309,4 +309,5 @@ class AIGenerationCog(commands.Cog):
 async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
+    AIGenerationCog.api_key = bot.config["openai"]["api_key"]
     await bot.add_cog(AIGenerationCog(bot))

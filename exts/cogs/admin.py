@@ -5,7 +5,7 @@ admin.py: A cog that implements commands for reloading and syncing extensions an
 from __future__ import annotations
 
 import logging
-from typing import List, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
 from pathlib import Path
 import discord
@@ -53,7 +53,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         guilds_to_check = self.bot.guilds
         all_embeds = []
 
-        def create_walk_embed(title: str, cmds: List[app_commands.AppCommand]) -> None:
+        def create_walk_embed(title: str, cmds: list[app_commands.AppCommand]) -> None:
             """Creates an embed for global and guild command areas and adds it to a collection of embeds."""
 
             descr = ""
@@ -91,7 +91,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
 
         if extension:
             embed = discord.Embed(color=0xcccccc,
-                                  description="Nothing has happened yet.")
+                                  description="")
 
             if extension[5:] in IGNORE_EXTENSIONS:
                 embed.description = f"Currently exempt from reloads: {extension}"

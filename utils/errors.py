@@ -2,6 +2,8 @@
 errors.py: Custom errors used by the bot.
 """
 
+from __future__ import annotations
+
 import logging
 
 from discord.ext import commands

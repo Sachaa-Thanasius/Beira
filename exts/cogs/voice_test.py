@@ -24,22 +24,22 @@ class VoiceCog(commands.Cog):
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
-    @commands.hybrid_command()
+    @commands.command()
     async def play(self, ctx: commands.Context, *, query: str) -> None:
         """ Play a file from either the local filesystem or from a streaming service (hopefully)."""
         pass
 
-    @commands.hybrid_command()
+    @commands.command()
     async def play_aci(self, ctx: commands.Context) -> None:
         """ Play a random track from an ACI100-related playlist."""
         pass
 
-    @commands.hybrid_command()
+    @commands.command()
     async def play_starkid(self, ctx: commands.Context) -> None:
         """ Play a random track from a StarKid mega-playlist."""
         pass
 
-    @commands.hybrid_command()
+    @commands.command()
     @commands.cooldown(1, 10, commands.BucketType.user)
     async def music(self, ctx: commands.Context):
         voice_client: discord.VoiceClient = ctx.voice_client            # Some sort of type mismatch? Should work.
@@ -54,10 +54,23 @@ class VoiceCog(commands.Cog):
         source = FFmpegPCMAudio(str(Path('mp4s').joinpath(audio)))
         voice_client.play(source)
 
+    @commands.command()
+    async def join(self, ctx: commands.Context) -> None:
+        """Joins a voice channel."""
+
+        channel = ctx.author.voice.channel
+        await channel.connect()
+
+    @commands.command()
+    async def stop(self, ctx: commands.Context) -> None:
+        """Joins a voice channel."""
+
+        await ctx.voice_client.disconnect(force=False)
+
     @play.before_invoke
     @music.before_invoke
     async def ensure_voice(self, ctx: commands.Context):
-        voice_client: discord.VoiceClient = ctx.voice_client            # Some sort of type mismatch? Should work.
+        voice_client: discord.VoiceClient = ctx.voice_client  # Some sort of type mismatch? Should work.
         if voice_client is None:
             if ctx.author.voice:
                 await ctx.author.voice.channel.connect()
@@ -66,19 +79,6 @@ class VoiceCog(commands.Cog):
                 raise commands.CommandError("Author not connected to a voice channel.")
         elif voice_client.is_playing():
             await voice_client.move_to(ctx.author.voice.channel)
-
-    @commands.hybrid_command()
-    async def join(self, ctx: commands.Context) -> None:
-        """Joins a voice channel."""
-
-        channel = ctx.author.voice.channel
-        await channel.connect()
-
-    @commands.hybrid_command()
-    async def stop(self, ctx: commands.Context) -> None:
-        """Joins a voice channel."""
-
-        await ctx.voice_client.disconnect(force=False)
 
 
 async def setup(bot: Beira) -> None:

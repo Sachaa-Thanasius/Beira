@@ -7,7 +7,7 @@ from __future__ import annotations
 import logging
 import random
 from json import load
-from typing import List, Annotated, TYPE_CHECKING
+from typing import Annotated, TYPE_CHECKING
 
 import discord
 from discord import app_commands
@@ -527,7 +527,7 @@ class SnowballCog(commands.Cog):
         """
         await self.bot.db_pool.execute(snowball_stats_upsert, member.id, member.guild.id, hits, misses, kos, stock_insert, stock)
 
-    async def _make_leaderboard_fields(self, embed: discord.Embed, records: List[Record]) -> None:
+    async def _make_leaderboard_fields(self, embed: discord.Embed, records: list[Record]) -> None:
         """Edits a leaderboard embed by adding information about its members through fields.
 
         This can handle ranks of either guilds or users, but not a mix of both.

@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-GuildMessageableChannel = discord.TextChannel | discord.VoiceChannel | discord.Thread
+MessageableGuildChannel = discord.TextChannel | discord.VoiceChannel | discord.Thread
 
 
 class PinArchiveCog(commands.Cog, command_attrs=dict(hidden=True)):
@@ -38,15 +38,15 @@ class PinArchiveCog(commands.Cog, command_attrs=dict(hidden=True)):
 
     # Commands
     @commands.command()
-    async def set_archive_channel(self, ctx: commands.Context, channel: GuildMessageableChannel) -> None:
+    async def set_archive_channel(self, ctx: commands.Context, channel: MessageableGuildChannel) -> None:
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def move_archive_channel(self, ctx: commands.Context, channel: GuildMessageableChannel) -> None:
+    async def move_archive_channel(self, ctx: commands.Context, channel: MessageableGuildChannel) -> None:
         LOGGER.info(f"move_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def get_pins(self, ctx: commands.Context, channel: GuildMessageableChannel) -> None:
+    async def get_pins(self, ctx: commands.Context, channel: MessageableGuildChannel) -> None:
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
         all_pins = await channel.pins()
         print(all_pins)

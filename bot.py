@@ -6,7 +6,6 @@ from __future__ import annotations
 import logging
 import asyncio
 from pathlib import Path
-from typing import List, Dict
 
 import aiohttp
 import asyncpg
@@ -29,9 +28,9 @@ class Beira(commands.Bot):
         Variable length argument list, primarily for :class:`discord.ext.commands.Bot`.
     db_pool : :class:`asyncpg.Pool`
         A connection pool for a PostgreSQL database.
-    initial_extensions : List[:class:`str`]
+    initial_extensions : list[:class:`str`]
         A list of extension names that the bot will initially load.
-    testing_guild_ids : List[:class:`int`]
+    testing_guild_ids : list[:class:`int`]
         A list of guild ids for guilds that are used for developing the bot and testing it.
     test_mode : bool
         True if the bot is in testing mode, otherwise False. This causes commands to sync with testing guilds on
@@ -49,8 +48,8 @@ class Beira(commands.Bot):
                  *args,
                  db_pool: asyncpg.Pool,
                  web_session: aiohttp.ClientSession,
-                 initial_extensions: List[str] = None,
-                 testing_guild_ids: List[int] = None,
+                 initial_extensions: list[str] = None,
+                 testing_guild_ids: list[int] = None,
                  test_mode: bool = False,
                  **kwargs):
 
@@ -62,8 +61,8 @@ class Beira(commands.Bot):
         self.test_mode = test_mode
 
         # Things to load right after connecting to the Gateway.
-        self.emojis_stock: Dict[str, discord.Emoji] = {}
-        self.special_friends: Dict[str, int] = {}
+        self.emojis_stock: dict[str, discord.Emoji] = {}
+        self.special_friends: dict[str, int] = {}
 
     async def on_ready(self) -> None:
         """Sets the rich presence state for the bot and loads reference emojis."""
@@ -195,7 +194,8 @@ class Beira(commands.Bot):
                 return False
 
     @property
-    def config(self) -> Dict:
+    def config(self) -> dict:
+        """All configuration information from the config.json file."""
         return CONFIG
 
 
@@ -215,6 +215,7 @@ async def main() -> None:
             "exts.cogs.ai_generation",
             "exts.cogs.fandom_wiki",
             "exts.cogs.help",
+            "exts.cogs.lol",
             "exts.cogs.patreon",
             "exts.cogs.pin_archive",
             "exts.cogs.snowball",

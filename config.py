@@ -1,6 +1,9 @@
 """
 config.py: Imports configuration information, such as api keys and tokens, default prefixes, etc.
 """
+
+from __future__ import annotations
+
 import logging
 import json
 
@@ -8,9 +11,12 @@ LOGGER = logging.getLogger(__name__)
 
 
 def config() -> dict:
-    """
-    Load data from a config file.
-    :return: dict with config data
+    """ Load data from a config file.
+
+    Returns
+    -------
+    :class:`dict`
+        A variable containing the config data.
     """
     try:
         with open('config.json', 'r') as f:

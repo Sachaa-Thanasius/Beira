@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
-from typing import Any, List, Dict, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING
 
 import discord
 from discord.ext import commands, tasks
@@ -30,7 +30,7 @@ class PatreonCheckCog(commands.Cog):
     """A cog for checking which Discord members are currently patrons of ACI100."""
 
     access_token: str
-    patrons_on_discord: Dict[str, List[discord.Member]]
+    patrons_on_discord: dict[str, list[discord.Member]]
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot

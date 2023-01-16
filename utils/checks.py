@@ -2,6 +2,8 @@
 checks.py: Custom checks used by the bot.
 """
 
+from __future__ import annotations
+
 import logging
 
 from discord.ext import commands
@@ -23,8 +25,7 @@ def is_owner_or_friend():
 
     async def predicate(ctx: commands.Context) -> bool:
 
-        ctx.bot.is_special_friend()
-        if not await ctx.bot.is_owner(ctx.author) and not await ctx.bot.is_special_friend():
+        if not await ctx.bot.is_owner(ctx.author) and not await ctx.bot.is_special_friend(ctx.author):
             raise NotOwnerOrFriend("You do not own this bot, nor are you a friend of the owner.")
         return True
 

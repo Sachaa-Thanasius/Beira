@@ -3,9 +3,10 @@ paginated_embed_view.py: A collection of views that together create a view that 
 easy navigation.
 """
 
+from __future__ import annotations
+
 import logging
 import asyncio
-from typing import List, Tuple
 
 import discord
 
@@ -47,16 +48,18 @@ class PageNumEntryModal(discord.ui.Modal):
 class PaginatedEmbedView(discord.ui.View):
     """A view for paginated embeds, allowing users to flip between different embeds using buttons."""
 
-    def __init__(self, interaction: discord.Interaction, all_text_lines: List[Tuple | None], story_data: dict) -> None:
+    def __init__(self, interaction: discord.Interaction, all_text_lines: list[tuple | None], story_data: dict) -> None:
         super().__init__(timeout=60.0)
+
         self.latest_interaction = interaction
-        self.all_text_lines = all_text_lines
+        self.user = interaction.user
 
         # Page-related instance variables.
+        self.all_text_lines = all_text_lines
         self.max_num_pages = len(all_text_lines)
         self.current_page = ()
         self.bookmark = 1
-        self.page_cache: List[discord.Embed | None] = [None for _ in range(len(all_text_lines))]
+        self.page_cache: list[discord.Embed | None] = [None for _ in range(len(all_text_lines))]
 
         self.story_data = story_data
 
@@ -70,10 +73,12 @@ class PaginatedEmbedView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         """Keeps up to date on the latest interaction to maintain the ability to interact with the view outside of items."""
 
-        check_result = await super().interaction_check(interaction)
-        self.latest_interaction = interaction
-
-        return check_result
+        if self.user != interaction.user:
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=10)
+            return False
+        else:
+            self.latest_interaction = interaction
+            return True
 
     async def on_timeout(self) -> None:
         """Removes all buttons when the view times out."""
@@ -92,14 +97,18 @@ class PaginatedEmbedView(discord.ui.View):
     async def turn_to_first_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Skips to the first page of the view embed."""
 
+        previous_bookmark = self.bookmark
         self.bookmark = 1
         edited_embed = await self._make_embed()
 
         # It isn't possible to move to a previous page while on the first one.
+        self.disable_buttons(previous_bookmark)
+        '''
         if self.bookmark == 1:
             self._disable_backward_buttons(True)
 
         self._disable_forward_buttons(False)
+        '''
 
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
@@ -111,6 +120,9 @@ class PaginatedEmbedView(discord.ui.View):
         self.bookmark -= 1
         edited_embed = await self._make_embed()
 
+        self.disable_buttons(previous_bookmark)
+
+        '''
         # It isn't possible to move to a previous page while on the first one.
         if self.bookmark == 1:
             self._disable_backward_buttons(True)
@@ -118,12 +130,15 @@ class PaginatedEmbedView(discord.ui.View):
         # Ensure the forward buttons are enabled if moving backwards from the last page.
         if previous_bookmark == self.max_num_pages:
             self._disable_forward_buttons(False)
+        '''
 
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
     @discord.ui.button(label="Skip to ...", style=discord.ButtonStyle.green, disabled=True, custom_id="results_scroll_view:enter")
     async def enter_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
         """Opens a modal that allows a user to enter their own page number to flip to."""
+
+        previous_bookmark = self.bookmark
 
         modal = PageNumEntryModal(self.max_num_pages)
         await interaction.response.send_modal(modal)
@@ -134,9 +149,17 @@ class PaginatedEmbedView(discord.ui.View):
             return
 
         self.bookmark = int(modal.input_page_num.value)
+
+        # The page wasn't changed.
+        if previous_bookmark == self.bookmark:
+            return
+
         edited_embed = await self._make_embed()
 
-        # If the view has shifted to the first page, disable the previous and first page buttons.
+        # If the view has shifted to a page extreme, disable the buttons towards the opposite extreme.
+        self.disable_buttons(previous_bookmark)
+
+        '''
         disable_choices = (False, False)
         if self.bookmark == 1:
             disable_choices = (True, False)
@@ -145,6 +168,7 @@ class PaginatedEmbedView(discord.ui.View):
 
         self._disable_backward_buttons(disable_choices[0])
         self._disable_forward_buttons(disable_choices[1])
+        '''
 
         await interaction.edit_original_response(embed=edited_embed, view=self)
 
@@ -156,13 +180,17 @@ class PaginatedEmbedView(discord.ui.View):
         self.bookmark += 1
         edited_embed = await self._make_embed()
 
-        # if the view has shifted to the last page, disable the next and last page buttons.
+        self.disable_buttons(previous_bookmark)
+
+        '''
+        # If the view has shifted to the last page, disable the next and last page buttons.
         if self.bookmark == self.max_num_pages:
             self._disable_forward_buttons(True)
 
         # If this isn't the first page, re-enable the first and previous page buttons.
         if previous_bookmark == 1:
             self._disable_backward_buttons(False)
+        '''
 
         await interaction.response.edit_message(embed=edited_embed, view=self)
 
@@ -209,6 +237,23 @@ class PaginatedEmbedView(discord.ui.View):
         self.page_cache[self.bookmark - 1] = edited_embed
 
         return edited_embed
+
+    def disable_buttons(self, old_bookmark: int) -> None:
+        """Enable and disable buttons based on page position and movement."""
+
+        # Disable buttons based on the page extremes.
+        if self.bookmark == 1:
+            self._disable_backward_buttons(True)
+
+        elif self.bookmark == self.max_num_pages:
+            self._disable_forward_buttons(True)
+
+        # Disable buttons based on movement relative to the page extremes.
+        if old_bookmark == 1 and self.bookmark != 1:
+            self._disable_backward_buttons(False)
+
+        elif old_bookmark == self.max_num_pages and self.bookmark != self.max_num_pages:
+            self._disable_forward_buttons(False)
 
     def _disable_forward_buttons(self, state: bool) -> None:
         """Disables the buttons for advancing through the pages."""

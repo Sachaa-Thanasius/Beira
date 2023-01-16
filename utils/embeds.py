@@ -2,9 +2,11 @@
 embeds.py: This class provides embeds for user-specific statistics separated into fields.
 """
 
+from __future__ import annotations
+
 import logging
 from collections.abc import Sequence
-from typing import Dict, Tuple, Any
+from typing import Any
 
 from discord import Embed, Emoji
 
@@ -36,7 +38,7 @@ class StatsEmbed(Embed):
                  *,
                  thumbnail_url: str | None = None,
                  stat_headers: Sequence[str] | None = None,
-                 stat_value_emojis: Sequence[Emoji] | None = None,
+                 stat_value_emojis: Sequence[Emoji | str] | None = None,
                  record: Sequence[Any] | None = None,
                  **kwargs) -> None:
 
@@ -47,13 +49,31 @@ class StatsEmbed(Embed):
 
         # Make sure the emoji list is complete.
         if stat_headers and record:
-            len_stats, len_emojis = len(stat_headers), len(stat_value_emojis)
-            if len_emojis < len_stats:
+            len_stats = len(stat_headers)
+            len_emojis = 0 if not stat_value_emojis else len(stat_value_emojis)
+
+            if 0 < len_emojis < len_stats:
                 stat_value_emojis = [stat_value_emojis[i % len_emojis] for i in range(len_stats)]
+            elif len_emojis == 0:
+                stat_value_emojis = ["" for _ in range(len_stats)]
 
             # Add the fields.
             for (emoji, header, value) in zip(stat_value_emojis, stat_headers, record):
                 self.add_field(name=header, value=f"{emoji} **|** {value}", inline=False)
+
+    def create_stat_fields(self,
+                           stat_headers: Sequence[str],
+                           stat_value_emojis: Sequence[Emoji],
+                           record: Sequence[Any]) -> None:
+        """Creates the stat fields after instantiation."""
+
+        len_stats, len_emojis = len(stat_headers), len(stat_value_emojis)
+        if len_emojis < len_stats:
+            stat_value_emojis = [stat_value_emojis[i % len_emojis] for i in range(len_stats)]
+
+        # Add the fields.
+        for (emoji, header, value) in zip(stat_value_emojis, stat_headers, record):
+            self.add_field(name=header, value=f"{emoji} **|** {value}", inline=False)
 
 
 class StoryQuoteEmbed(Embed):
@@ -77,8 +97,8 @@ class StoryQuoteEmbed(Embed):
 
     def __init__(self,
                  *,
-                 story_data: Dict | None = None,
-                 current_page: Tuple | None = None,
+                 story_data: dict | None = None,
+                 current_page: tuple | None = None,
                  bookmark: int | None = None,
                  max_pages: int | None = None,
                  **kwargs) -> None:

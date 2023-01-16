@@ -12,7 +12,7 @@ from copy import deepcopy
 from random import randint
 from time import perf_counter
 from bisect import bisect_left
-from typing import List, Tuple, Dict, TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, ClassVar
 
 from discord import app_commands
 from discord.ext import commands
@@ -40,7 +40,7 @@ class StorySearchCog(commands.Cog):
         The dictionary holding the metadata and text for all stories being scanned.
     """
 
-    story_records: ClassVar[Dict[str, Dict]] = {}
+    story_records: ClassVar[dict[str, dict]] = {}
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
@@ -225,7 +225,7 @@ class StorySearchCog(commands.Cog):
                     interaction=ctx.interaction, all_text_lines=processed_text, story_data=self.story_records["acvr"]))
 
     @classmethod
-    def _process_text(cls, story: str, all_text: List[str], terms: str, exact: bool = True) -> List[Tuple | None]:
+    def _process_text(cls, story: str, all_text: list[str], terms: str, exact: bool = True) -> list[tuple | None]:
         """Collects all lines from story text that contain the given terms."""
 
         results = []
@@ -265,7 +265,7 @@ class StorySearchCog(commands.Cog):
         return results
 
     @classmethod
-    def _binary_search_text(cls, story: str, list_of_indices: List[int], index: int) -> str:
+    def _binary_search_text(cls, story: str, list_of_indices: list[int], index: int) -> str:
         """Finds the element in a list of elements closest to but less than the given element."""
 
         if len(list_of_indices) == 0:
