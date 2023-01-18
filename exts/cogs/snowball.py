@@ -428,7 +428,7 @@ class SnowballCog(commands.Cog):
         query = "SELECT * FROM global_rank_view LIMIT $1;"
         global_ldbd = await self.bot.db_pool.fetch(query, LEADERBOARD_MAX)
 
-        embed = discord.Embed(
+        embed = StatsEmbed(
             color=0x2f3136,
             title="**Global Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"
@@ -455,7 +455,7 @@ class SnowballCog(commands.Cog):
         query = "SELECT * FROM guilds_only_rank_view LIMIT $1;"
         guilds_only_ldbd = await self.bot.db_pool.fetch(query, LEADERBOARD_MAX)
 
-        embed = discord.Embed(
+        embed = StatsEmbed(
             color=0x2f3136,
             title="**Guild-Level Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"

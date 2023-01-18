@@ -49,7 +49,10 @@ def field_range_tracking(func: Callable) -> Callable:
 
 
 class Embed(Embed):
-    def __init__(self):
+    def __init__(self, **kwargs):
+        thing = None
+        super().__init__(timestamp=thing, **kwargs)
+
 
 class PaginatedEmbed(Embed):
     """A subclass of :class:`Embed` customized to create an embed 'page'.

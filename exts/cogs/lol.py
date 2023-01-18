@@ -7,10 +7,12 @@ from __future__ import annotations
 import asyncio
 import logging
 import urllib.parse
+from functools import partial
 from typing import TYPE_CHECKING
 
+from selenium import webdriver
+from selenium.webdriver.common.by import By
 from bs4 import BeautifulSoup
-import discord
 from discord.ext import commands
 
 from utils.embeds import StatsEmbed
@@ -34,7 +36,8 @@ class LoLCog(commands.Cog):
             "BobbaExpress",
             "SleepyLunatic",
             "Law of Shurima",
-            "HowaryByyi"
+            "HowaryByyi",
+            "ogyrfr"
         ]
         self.req_site = "https://www.op.gg/summoners/na/"
         self.req_headers = {
@@ -140,6 +143,22 @@ class LoLCog(commands.Cog):
         await asyncio.sleep(0.25)
 
         return summoner_name, winrate, rank
+
+    def selenium_update(self, url: str) -> None:
+        # Create the webdriver object. Here the chromedriver is present in the driver folder of the root directory.
+        driver = webdriver.Chrome(r"./driver/chromedriver")
+
+        driver.get(url)
+
+        driver.maximize_window()
+        asyncio.sleep(10)
+
+        button = driver.find_element(by=By.LINK_TEXT, value="Update")
+        button.click()
+
+    async def rie_selenium_update(self, url: str) -> None:
+        selenium_func = partial(self.selenium_update, url=url)
+        await self.bot.loop.run_in_executor(None, selenium_func)
 
 
 async def setup(bot: Beira):
