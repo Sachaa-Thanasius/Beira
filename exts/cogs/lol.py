@@ -95,8 +95,7 @@ class LoLCog(commands.Cog):
             tasks.append(asyncio.get_event_loop().create_task(self.check_winrate(name)))
         results = await asyncio.gather(*tasks)
 
-        leaderboard = list(
-            filter(lambda x: x != ("None", "None", "None"), results))
+        leaderboard = list(filter(lambda x: x != ("None", "None", "None"), results))
         leaderboard.sort(key=lambda x: x[2])
 
         # Construct the embed for the leaderboard.
