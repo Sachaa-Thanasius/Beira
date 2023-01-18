@@ -20,7 +20,10 @@ MessageableGuildChannel = discord.TextChannel | discord.VoiceChannel | discord.T
 
 
 class PinArchiveCog(commands.Cog, command_attrs=dict(hidden=True)):
-    """A cog that allows all pins in a guild to overflow into one text channel. In development."""
+    """A cog that allows all pins in a guild to overflow into one text channel.
+
+    In development, currently a stub.
+    """
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot

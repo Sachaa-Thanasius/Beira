@@ -18,7 +18,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.embeds import StoryQuoteEmbed
-from utils.paginated_embed_view import PaginatedEmbedView
+from utils.paginated_views import StoryQuoteView
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -71,8 +71,9 @@ class StorySearchCog(commands.Cog):
         # -- ACI100 story text
         re_chap_title = re.compile(r"(^\*\*Chapter \w{0,5}:)|(^\*\*Prologue.*)|(^\*\*Interlude \w+)")
         re_coll_title = re.compile(r"(^\*\*Year \d{0,5}:)|(^\*\*Book \d{0,5}:)|(^\*\*Season \w{0,5}:)")
+
         # -- ACVR text
-        re_chap_heading = re.compile(r"(^# \w+)")
+        re_acvr_chap_title = re.compile(r"(^# \w+)")
         re_volume_heading = re.compile(r"(^A Cadmean Victory Volume \w+)")
 
         # Start file copying and indexing.
@@ -82,17 +83,16 @@ class StorySearchCog(commands.Cog):
 
             # Instantiate index lists, which act as a table of contents of sorts.
             stem = str(filepath.stem)[:-5]
+            cls.story_records[stem]["text"] = temp_text = [line for line in f if line.strip() != ""]
             cls.story_records[stem]["chapter_index"] = temp_chap_index = []
             cls.story_records[stem]["collection_index"] = temp_coll_index = []
-            cls.story_records[stem]["text"] = temp_text = []
 
             # Switch to a different set of regex patterns when searching ACVR.
             if "acvr" in filepath.name:
-                for index, line in enumerate(f):
-                    temp_text.append(line)
+                for index, line in enumerate(temp_text):
 
                     # Prologue: A Quest for Europa is split among two lines and needs special parsing logic.
-                    if re.search(re_chap_heading, line):
+                    if re.search(re_acvr_chap_title, line):
                         if "*A Quest for Europa*" in line:
                             temp_chap_index[0] += " A Quest for Europa"
                         else:
@@ -103,8 +103,7 @@ class StorySearchCog(commands.Cog):
                             temp_coll_index.append(index)
 
             else:
-                for index, line in enumerate(f):
-                    temp_text.append(line)
+                for index, line in enumerate(temp_text):
 
                     if re.search(re_chap_title, line):
                         temp_chap_index.append(index)
@@ -115,6 +114,7 @@ class StorySearchCog(commands.Cog):
 
             indexing_end_time = perf_counter()
             indexing_time = indexing_end_time - indexing_start_time
+            
         LOGGER.info(f"Loaded file: {filepath.stem} | Indexing time: {indexing_time:.5f}")
 
     @commands.hybrid_command()
@@ -137,7 +137,7 @@ class StorySearchCog(commands.Cog):
         quote_year = self._binary_search_text(story, self.story_records[story]["collection_index"], (b_range + 2))
         quote_chapter = self._binary_search_text(story, self.story_records[story]["chapter_index"], (b_range + 2))
 
-        embed = StoryQuoteEmbed(color=0xdb05db, story_data=self.story_records[story], current_page=(quote_year, quote_chapter, "".join(b_sample)))
+        embed = StoryQuoteEmbed(color=0xdb05db, story_data=self.story_records[story], page_content=(quote_year, quote_chapter, "".join(b_sample)))
         embed.set_footer(text="Randomly chosen quote from an ACI100 story")
 
         await ctx.send(embed=embed)
@@ -150,7 +150,7 @@ class StorySearchCog(commands.Cog):
         app_commands.Choice(name="Perversion of Purity", value="pop"),
     ])
     async def search_text(self, ctx: commands.Context, story: str, query: str) -> None:
-        """Search the text of an ACI100 story for a word or phrase.
+        """Search the works of ACI100 for a word or phrase.
 
         Parameters
         ----------
@@ -177,19 +177,23 @@ class StorySearchCog(commands.Cog):
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
                 story_embed.description = "No quotes found!"
-                story_embed.set_footer(text=f"Page 0 of 0 | Processing time: {processed_text}")
+                story_embed.set_page_footer(0, 0)
                 await ctx.send(embed=story_embed)
 
             else:
-                story_embed.title = f"{processed_text[0][0]}"
-                story_embed.set_footer(text=f"Page 1 of {len(processed_text)}")
-                story_embed.add_field(name=f"{processed_text[0][1]}", value=processed_text[0][2])
-                await ctx.send(embed=story_embed, view=PaginatedEmbedView(
-                    interaction=ctx.interaction, all_text_lines=processed_text, story_data=self.story_records[story]))
+                story_embed.set_page_content(processed_text[0]).set_page_footer(1, len(processed_text))
+                await ctx.send(
+                    embed=story_embed,
+                    view=StoryQuoteView(
+                        interaction=ctx.interaction,
+                        all_pages_content=processed_text,
+                        story_data=self.story_records[story]
+                    )
+                )
 
     @commands.hybrid_command()
     async def search_cadmean(self, ctx: commands.Context, query: str) -> None:
-        """Search *A Cadmean Victory* by MJ Bradley for a word or phrase.
+        """Search *A Cadmean Victory Remastered* by MJ Bradley for a word or phrase.
 
         Parameters
         ----------
@@ -214,15 +218,19 @@ class StorySearchCog(commands.Cog):
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
                 story_embed.description = "No quotes found!"
-                story_embed.set_footer(text=f"Page 0 of 0 | Processing time: {processed_text}")
+                story_embed.set_page_footer(0, 0)
                 await ctx.send(embed=story_embed)
 
             else:
-                story_embed.title = f"{processed_text[0][0]}"
-                story_embed.set_footer(text=f"Page 1 of {len(processed_text)}")
-                story_embed.add_field(name=f"{processed_text[0][1]}", value=processed_text[0][2])
-                await ctx.send(embed=story_embed, view=PaginatedEmbedView(
-                    interaction=ctx.interaction, all_text_lines=processed_text, story_data=self.story_records["acvr"]))
+                story_embed.set_page_content(processed_text[0]).set_page_footer(1, len(processed_text))
+                await ctx.send(
+                    embed=story_embed,
+                    view=StoryQuoteView(
+                        interaction=ctx.interaction,
+                        all_pages_content=processed_text,
+                        story_data=self.story_records["acvr"]
+                    )
+                )
 
     @classmethod
     def _process_text(cls, story: str, all_text: list[str], terms: str, exact: bool = True) -> list[tuple | None]:
@@ -258,6 +266,7 @@ class StorySearchCog(commands.Cog):
                 if story == "acvr":
                     acvr_title_with_space = "A Cadmean Victory "
                     quote_collection = quote_collection[len(acvr_title_with_space):]
+                    quote_chapter = quote_chapter[2:]
 
                 # Aggregate the quotes.
                 results.append((quote_collection, quote_chapter, quote))
@@ -275,7 +284,7 @@ class StorySearchCog(commands.Cog):
         i_of_index = bisect_left(list_of_indices, index)
 
         # Get the element from the list based on the previously calculated list index.
-        actual_index = list_of_indices[i_of_index - 1] if (i_of_index is not None) else -1
+        actual_index = list_of_indices[max(i_of_index - 1, 0)] if (i_of_index is not None) else -1
 
         # Use that element as an index in the story text list to get a quote, whether it's a chapter, volume, etc.
         value_from_index = cls.story_records[story]["text"][actual_index] if actual_index != -1 else "—————"

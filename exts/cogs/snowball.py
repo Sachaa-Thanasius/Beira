@@ -331,13 +331,13 @@ class SnowballCog(commands.Cog):
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
-            title, color = f"**Player Statistics for {actual_target}**", 0x2f3136
-            thumb_url = actual_target.display_avatar.url
+            title = f"**Player Statistics for {actual_target}**"
             headers = ["Rank", "Direct Hits", "Total Misses", "KOs", "Total Snowballs Collected"]
             emojis = [self.bot.emojis_stock["snowsgive_phi"]]
 
-            embed = StatsEmbed(thumbnail_url=thumb_url, stat_headers=headers, stat_value_emojis=emojis, record=record,
-                               color=color, title=title)
+            embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
+            embed.set_thumbnail(url=actual_target.display_avatar.url)
+
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
@@ -366,13 +366,13 @@ class SnowballCog(commands.Cog):
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
-            title, color = f"**Global Player Statistics for {actual_target}**", 0x2f3136    # Formerly 0x2f3171
-            thumb_url = actual_target.display_avatar.url
+            title = f"**Global Player Statistics for {actual_target}**"    # Formerly 0x2f3171
             headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
             emojis = [self.bot.emojis_stock["snowsgive_phi"]]
 
-            embed = StatsEmbed(thumbnail_url=thumb_url, stat_headers=headers, stat_value_emojis=emojis, record=record,
-                               color=color, title=title)
+            embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
+            embed.set_thumbnail(url=actual_target.display_avatar.url)
+
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
@@ -401,7 +401,7 @@ class SnowballCog(commands.Cog):
          """
         guild_ldbd = await self.bot.db_pool.fetch(query, ctx.guild.id, LEADERBOARD_MAX)
 
-        embed = discord.Embed(
+        embed = StatsEmbed(
             color=0x2f3136,
             title=f"**Snowball Champions in {ctx.guild.name}**",
             description="(Hits / Misses / KOs)\n——————————————"
@@ -467,8 +467,6 @@ class SnowballCog(commands.Cog):
         else:
             embed.description += "\n***There was an issue connecting to the database. Please try again in a few minutes.***"
 
-        await ctx.send(embed=embed, ephemeral=True)
-
     @commands.hybrid_command()
     async def sources(self, ctx: commands.Context) -> None:
         """Gives links and credit to the Snowsgiving 2021 Help Center article and to reference code.
@@ -527,7 +525,7 @@ class SnowballCog(commands.Cog):
         """
         await self.bot.db_pool.execute(snowball_stats_upsert, member.id, member.guild.id, hits, misses, kos, stock_insert, stock)
 
-    async def _make_leaderboard_fields(self, embed: discord.Embed, records: list[Record]) -> None:
+    async def _make_leaderboard_fields(self, embed: StatsEmbed, records: list[Record]) -> None:
         """Edits a leaderboard embed by adding information about its members through fields.
 
         This can handle ranks of either guilds or users, but not a mix of both.
@@ -542,12 +540,15 @@ class SnowballCog(commands.Cog):
         ldbd_places_emojis = ("\N{GLOWING STAR}", "\N{WHITE MEDIUM STAR}", orange_star, blue_star, pink_star,
                               orange_star, blue_star, pink_star, orange_star, blue_star)
 
-        for rank, row in enumerate(records):
-            # Determine what type of label the "rank" of the members is.
-            entity = self.bot.get_guild(row["guild_id"]) if "guild_id" in row else self.bot.get_user(row["user_id"])
-            entity_stats = f"({row['hits']}/{row['misses']}/{row['kos']})"
+        snow_data = [(await self._get_entity_from_record(row), row['hits'], row['misses'], row['kos']) for row in records]
+        embed.add_leaderboard_fields(ldbd_content=snow_data, ldbd_emojis=ldbd_places_emojis, value_format="({}/{}/{})")
 
-            embed.add_field(name=f"{ldbd_places_emojis[rank]} {rank + 1}** | {entity}**", value=entity_stats, inline=False)
+    async def _get_entity_from_record(self, record: Record) -> discord.Guild | discord.User | None:
+        if "guild_id" in record:
+            entity = self.bot.get_guild(record["guild_id"])
+        else:
+            entity = self.bot.get_user(record["user_id"])
+        return entity
 
 
 async def setup(bot: Beira) -> None:

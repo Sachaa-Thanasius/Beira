@@ -27,7 +27,10 @@ class PatreonMember:
 
 
 class PatreonCheckCog(commands.Cog):
-    """A cog for checking which Discord members are currently patrons of ACI100."""
+    """A cog for checking which Discord members are currently patrons of ACI100.
+
+    In development.
+    """
 
     access_token: str
     patrons_on_discord: dict[str, list[discord.Member]]

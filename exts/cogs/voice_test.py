@@ -21,6 +21,10 @@ LOGGER = logging.getLogger(__name__)
 
 
 class VoiceCog(commands.Cog):
+    """ A cog for testing voice-related parts of the discord.py library.
+
+    In development, currently a stub.
+    """
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
