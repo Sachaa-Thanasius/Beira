@@ -69,8 +69,7 @@ class LoLCog(commands.Cog):
             embed = StatsEmbed(color=0x193d2c, title=title,
                                description="This player either doesn't exist or isn't ranked!")
         else:
-            embed = StatsEmbed(stat_headers=stat_headers,
-                               record=stats, color=0x193d2c, title=title)
+            embed = StatsEmbed(stat_names=stat_headers, stat_values=stats, color=0x193d2c, title=title)
 
         await ctx.send(embed=embed)
 
@@ -93,9 +92,7 @@ class LoLCog(commands.Cog):
         # Get the information for every user.
         tasks = []
         for name in summoner_name_list:
-            tasks.append(asyncio.get_event_loop().create_task(
-                self.check_winrate(name)))
-            await asyncio.sleep(0.25)
+            tasks.append(asyncio.get_event_loop().create_task(self.check_winrate(name)))
         results = await asyncio.gather(*tasks)
 
         leaderboard = list(
@@ -103,19 +100,16 @@ class LoLCog(commands.Cog):
         leaderboard.sort(key=lambda x: x[2])
 
         # Construct the embed for the leaderboard.
-        embed = discord.Embed(
+        embed = StatsEmbed(
             color=0x193d2c,
-            title="**League of Legends Leaderboard**",
+            title="League of Legends Leaderboard",
             description="If players are missing, they either don't exist or aren't ranked.\n"
-                        "(Name \|| Winrate \|| Rank)\n——————————————"
+                        "(Winrate \|| Rank)\n"
+                        "―――――――――――"
         )
 
         if leaderboard:
-            for rank, row in enumerate(leaderboard):
-                entity_stats = f"({row[1]} \|| {row[2]})"
-                embed.add_field(
-                    name=f":medal: **{rank + 1} | {row[0]}**", value=entity_stats, inline=False)
-
+            embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format="({} \|| {})")
         await ctx.send(embed=embed)
 
     async def check_winrate(self, summoner_name: str) -> tuple[str, str, str]:
@@ -143,12 +137,14 @@ class LoLCog(commands.Cog):
 
             # Parse the summoner information.
             soup = BeautifulSoup(text, "html.parser")
-            winrate = soup.find("div", class_="ratio").text
-            rank = soup.find("div", class_="tier").text
+            winrate = soup.find("div", class_="ratio").text.removeprefix('Win Rate ')
+            rank = soup.find("div", class_="tier").text.capitalize()
 
         except AttributeError:
             # Thrown if the summoner has no games in ranked or no data at all.
             summoner_name, winrate, rank = "None", "None", "None"
+
+        await asyncio.sleep(0.25)
 
         return summoner_name, winrate, rank
 
