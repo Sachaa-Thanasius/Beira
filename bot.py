@@ -213,6 +213,7 @@ async def main() -> None:
         init_exts = [
             "exts.cogs.admin",
             "exts.cogs.ai_generation",
+            "exts.cogs.custom_notifications",
             "exts.cogs.fandom_wiki",
             "exts.cogs.help",
             "exts.cogs.lol",

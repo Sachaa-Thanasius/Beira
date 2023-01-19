@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import logging
 from collections.abc import Sequence
+import datetime
 from typing import Any, Callable, TYPE_CHECKING
 
 from typing_extensions import Self
@@ -50,8 +51,8 @@ def field_range_tracking(func: Callable) -> Callable:
 
 class Embed(Embed):
     def __init__(self, **kwargs):
-        thing = None
-        super().__init__(timestamp=thing, **kwargs)
+        timestamp = datetime.datetime.now()
+        super().__init__(timestamp=timestamp, **kwargs)
 
 
 class PaginatedEmbed(Embed):

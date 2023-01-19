@@ -8,7 +8,9 @@ import asyncio
 import logging
 import urllib.parse
 from functools import partial
+from pathlib import Path
 from typing import TYPE_CHECKING
+
 
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -21,6 +23,8 @@ if TYPE_CHECKING:
     from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
+
+GECKODRIVER_PATH = Path(__file__).parents[2].joinpath("drivers/geckodriver.exe")
 
 
 class LoLCog(commands.Cog):
@@ -74,19 +78,22 @@ class LoLCog(commands.Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    async def lol_leaderboard(self, ctx: commands.Context, *, summoner_name_list: str | None = None) -> None:
+    async def lol_leaderboard(self, ctx: commands.Context, *, summoner_names: str | None = None) -> None:
         """Get the League of Legends ranked stats for a group of summoners and display them.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        summoner_name_list : list[:class:`str`]
-            The list of summoner names to create a leaderboard from. Separate these by spaces.
+        summoner_names : list[:class:`str`]
+            A string of summoner names to create a leaderboard from. Separate these by spaces.
         """
 
         # Get a default list of summoners if nothing was input.
-        summoner_name_list = summoner_name_list.split() if summoner_name_list else self.default_summoners_list
+        if summoner_names is not None:
+            summoner_name_list = summoner_names.split().extend(self.default_summoners_list)
+        else:
+            summoner_name_list = self.default_summoners_list
 
         # Get the information for every user.
         tasks = []
@@ -105,9 +112,9 @@ class LoLCog(commands.Cog):
                         "(Winrate \|| Rank)\n"
                         "―――――――――――"
         )
-
         if leaderboard:
             embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format="({} \|| {})")
+
         await ctx.send(embed=embed)
 
     async def check_winrate(self, summoner_name: str) -> tuple[str, str, str]:
@@ -144,21 +151,24 @@ class LoLCog(commands.Cog):
 
         return summoner_name, winrate, rank
 
-    def selenium_update(self, url: str) -> None:
+    async def rie_selenium_update(self, url: str) -> None:
+        selenium_func = partial(self.selenium_update, url=url)
+        await self.bot.loop.run_in_executor(None, selenium_func)
+
+    @staticmethod
+    def selenium_update(url: str) -> None:
         # Create the webdriver object. Here the chromedriver is present in the driver folder of the root directory.
-        driver = webdriver.Chrome(r"./driver/chromedriver")
+        driver = webdriver.Firefox(str(GECKODRIVER_PATH))
 
         driver.get(url)
 
         driver.maximize_window()
-        asyncio.sleep(10)
+        asyncio.sleep(5)
 
         button = driver.find_element(by=By.LINK_TEXT, value="Update")
+        print(button)
         button.click()
-
-    async def rie_selenium_update(self, url: str) -> None:
-        selenium_func = partial(self.selenium_update, url=url)
-        await self.bot.loop.run_in_executor(None, selenium_func)
+        asyncio.sleep(5)
 
 
 async def setup(bot: Beira):
