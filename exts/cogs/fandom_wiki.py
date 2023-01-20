@@ -50,7 +50,7 @@ class FandomWikiSearchCog(commands.Cog):
 
         # Load the file with the wiki information and directories.
         try:
-            with open("data/fandom_wiki_search_data.json", "r") as f:
+            with open("data/fandom_wiki_data.json", "r") as f:
                 self.all_wikis = load(f)
                 LOGGER.info(f"Loaded file: {f.name}")
         except FileNotFoundError as err:

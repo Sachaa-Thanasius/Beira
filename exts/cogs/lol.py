@@ -7,14 +7,17 @@ from __future__ import annotations
 import asyncio
 import logging
 import urllib.parse
-from functools import partial
 from pathlib import Path
 from typing import TYPE_CHECKING
 
-
+import selenium.webdriver
 from selenium import webdriver
+from selenium.webdriver.firefox import service
+from selenium.webdriver.firefox.webdriver import WebDriver
 from selenium.webdriver.common.by import By
+from selenium.common.exceptions import NoSuchElementException
 from bs4 import BeautifulSoup
+import discord
 from discord.ext import commands
 
 from utils.embeds import StatsEmbed
@@ -24,7 +27,42 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-GECKODRIVER_PATH = Path(__file__).parents[2].joinpath("drivers/geckodriver.exe")
+GECKODRIVER_PATH = Path(__file__).parents[2].joinpath("drivers/geckodriver")
+GECKODRIVER_LOGS_PATH = Path(__file__).parents[2].joinpath("drivers/geckodriver/geckodriver.log")
+
+
+class UpdateOPGGView(discord.ui.View):
+    """A small view that adds an update button for OP.GG stats."""
+
+    def __init__(self, bot: Beira, summoner_name_list: list[str]) -> None:
+        super().__init__(timeout=180)
+        self.bot = bot
+        self.summoner_name_list = summoner_name_list
+
+    @discord.ui.button(label="Update", style=discord.ButtonStyle.blurple)
+    async def update(self, interaction: discord.Interaction, button: discord.ui.button) -> None:
+        """Update the information in the given leaderboard."""
+
+        await interaction.response.defer()
+
+        if interaction.user.id == self.bot.owner_id:
+
+            req_site = "https://www.op.gg/summoners/na/"
+            cog = self.bot.get_cog("LoLCog")
+
+            if cog and isinstance(cog, LoLCog):
+                # C:\Users\Tushaar\PycharmProjects\beira\drivers\geckodriver.exe
+                # Update every member's OP.GG page.
+                tasks = []
+                for name in self.summoner_name_list:
+                    adjusted_name = urllib.parse.quote(name)
+                    url = req_site + adjusted_name
+                    tasks.append(asyncio.get_event_loop().create_task(cog.rie_selenium_update(url)))
+                await asyncio.gather(*tasks)
+
+                # Recreate and resend the leaderboard.
+                updated_embed: StatsEmbed = await cog.create_lol_leaderboard(self.summoner_name_list)
+                await interaction.edit_original_response(embed=updated_embed, view=self)
 
 
 class LoLCog(commands.Cog):
@@ -91,9 +129,20 @@ class LoLCog(commands.Cog):
 
         # Get a default list of summoners if nothing was input.
         if summoner_names is not None:
-            summoner_name_list = summoner_names.split().extend(self.default_summoners_list)
+            summoner_name_list = summoner_names.split()
+            summoner_name_list.extend(self.default_summoners_list)
+            summoner_name_list = list(set(summoner_name_list))
         else:
             summoner_name_list = self.default_summoners_list
+
+        # Get the information for every user and construct the leaderboard embed.
+        embed: StatsEmbed = await self.create_lol_leaderboard(summoner_name_list)
+
+        view = UpdateOPGGView(self.bot, summoner_name_list)
+
+        await ctx.send(embed=embed, view=view)
+
+    async def create_lol_leaderboard(self, summoner_name_list: list[str]) -> StatsEmbed:
 
         # Get the information for every user.
         tasks = []
@@ -102,7 +151,7 @@ class LoLCog(commands.Cog):
         results = await asyncio.gather(*tasks)
 
         leaderboard = list(filter(lambda x: x != ("None", "None", "None"), results))
-        leaderboard.sort(key=lambda x: x[2])
+        leaderboard.sort(key=lambda x: x[1])
 
         # Construct the embed for the leaderboard.
         embed = StatsEmbed(
@@ -115,7 +164,7 @@ class LoLCog(commands.Cog):
         if leaderboard:
             embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format="({} \|| {})")
 
-        await ctx.send(embed=embed)
+        return embed
 
     async def check_winrate(self, summoner_name: str) -> tuple[str, str, str]:
         """Queries the OP.GG website for a summoner's winrate and rank.
@@ -151,24 +200,50 @@ class LoLCog(commands.Cog):
 
         return summoner_name, winrate, rank
 
-    async def rie_selenium_update(self, url: str) -> None:
-        selenium_func = partial(self.selenium_update, url=url)
-        await self.bot.loop.run_in_executor(None, selenium_func)
+    async def update_leaderboard_selenium(self, urls: list[str]) -> None:
+        """Runs a selenium task in a separate thread to prevent blocking issues."""
+
+        # Create the webdriver object in headless mode.
+        firefox_service = service.Service(
+            executable_path=str(GECKODRIVER_PATH),
+            service_args=["--headless"],
+            log_path=str(GECKODRIVER_LOGS_PATH)
+        )
+        driver = webdriver.Firefox(service=firefox_service)
+        driver.implicitly_wait(30)
+
+        # firefox_options = Options()
+        # firefox_options.add_argument("--headless")
+        # driver = webdriver.Firefox(str(GECKODRIVER_PATH), options=firefox_options)
+
+        for url in urls:
+            await self.bot.loop.run_in_executor(None, self.selenium_update, url, driver)
+
+        driver.quit()
 
     @staticmethod
-    def selenium_update(url: str) -> None:
-        # Create the webdriver object. Here the chromedriver is present in the driver folder of the root directory.
-        driver = webdriver.Firefox(str(GECKODRIVER_PATH))
+    def selenium_update(url: str, driver: WebDriver) -> None:
+        """Clicks the "Update" button on a OP.GG page.
+
+        Use :meth:`loop.run_in_executor()` to run in an async setting.
+        """
 
         driver.get(url)
 
-        driver.maximize_window()
-        asyncio.sleep(5)
+        # Try to find the button.
+        try:
+            button = driver.find_element(by=By.CLASS_NAME, value="eapd0am1")
+        except NoSuchElementException:
+            logging.exception("Couldn't find the update button.")
+            driver.close()
+            return
+        if button is None:
+            driver.close()
+            return
 
-        button = driver.find_element(by=By.LINK_TEXT, value="Update")
-        print(button)
         button.click()
-        asyncio.sleep(5)
+
+        driver.close()
 
 
 async def setup(bot: Beira):

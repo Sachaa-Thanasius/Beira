@@ -540,7 +540,10 @@ class SnowballCog(commands.Cog):
         ldbd_places_emojis = ("\N{GLOWING STAR}", "\N{WHITE MEDIUM STAR}", orange_star, blue_star, pink_star,
                               orange_star, blue_star, pink_star, orange_star, blue_star)
 
+        # Assemble each entry's data.
         snow_data = [(await self._get_entity_from_record(row), row['hits'], row['misses'], row['kos']) for row in records]
+
+        # Create the leaderboard.
         embed.add_leaderboard_fields(ldbd_content=snow_data, ldbd_emojis=ldbd_places_emojis, value_format="({}/{}/{})")
 
     async def _get_entity_from_record(self, record: Record) -> discord.Guild | discord.User | None:

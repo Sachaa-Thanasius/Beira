@@ -50,6 +50,11 @@ def field_range_tracking(func: Callable) -> Callable:
 
 
 class Embed(Embed):
+    """Represents a Discord embed, with a preset timestamp attribute.
+
+    Inherits from :class:`discord.Embed`.
+    """
+
     def __init__(self, **kwargs):
         timestamp = datetime.datetime.now()
         super().__init__(timestamp=timestamp, **kwargs)
@@ -73,9 +78,6 @@ class PaginatedEmbed(Embed):
     --------
     :class:`utils.paginated_views.PaginatedEmbedView`
     """
-
-    current_page: int
-    max_pages: int
 
     def __init__(
             self,
@@ -211,6 +213,7 @@ class StatsEmbed(Embed):
     See Also
     --------
     :class:`exts.cogs.snowball.SnowballCog`
+    :class:`exts.cogs.lol.LoLCog`
     """
 
     _stat_fields_indexes: list[int, int] = [0, 0]
@@ -416,11 +419,11 @@ def discord_embed_factory(name: str = "default") -> Embed:
     """Factory method for instantiating a Discord embed or its subclasses."""
 
     embed_types = {
+        "default": Embed,
         "Paginated": PaginatedEmbed,
         "Story": StoryQuoteEmbed,
         "Stats": StatsEmbed,
-        "AoCWiki": AoCWikiEmbed,
-        "default": Embed
+        "AoCWiki": AoCWikiEmbed
     }
 
     return embed_types[name]()
