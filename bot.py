@@ -64,6 +64,11 @@ class Beira(commands.Bot):
         self.emojis_stock: dict[str, discord.Emoji] = {}
         self.special_friends: dict[str, int] = {}
 
+    @property
+    def config(self) -> dict:
+        """All configuration information from the config.json file."""
+        return CONFIG
+
     async def on_ready(self) -> None:
         """Sets the rich presence state for the bot and loads reference emojis."""
 
@@ -192,11 +197,6 @@ class Beira(commands.Bot):
                 return user.id == self.special_friends["aeroali"]
             else:
                 return False
-
-    @property
-    def config(self) -> dict:
-        """All configuration information from the config.json file."""
-        return CONFIG
 
 
 async def main() -> None:

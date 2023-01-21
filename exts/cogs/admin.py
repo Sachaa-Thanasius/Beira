@@ -183,7 +183,8 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
                 synced = await ctx.bot.tree.sync()
 
             await ctx.send(
-                f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}", ephemeral=True
+                f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}",
+                ephemeral=True
             )
             return
 

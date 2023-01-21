@@ -6,23 +6,31 @@ easy navigation.
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Any
 
 import discord
-
-from utils.embeds import StoryQuoteEmbed
+from discord.ui import Modal, TextInput, View
 
 LOGGER = logging.getLogger(__name__)
 
 
-class PageNumEntryModal(discord.ui.Modal):
+class PageNumEntryModal(Modal):
     """A discord modal that allows users to enter a page number to jump to in the view that references this.
 
+    Parameters
+    ----------
+    page_limit : :class:`int`
+        The maximum integer value of pages that can be entered.
 
+    Attributes
+    ----------
+    input_page_num : :class:`TextInput`
+        A UI text input element to allow users to enter a page number.
+    page_limit : :class:`int`
+        The maximum integer value of pages that can be entered.
     """
 
-    input_page_num = discord.ui.TextInput(label="Page", placeholder="Enter digits here...", required=True, min_length=1)
+    input_page_num = TextInput(label="Page", placeholder="Enter digits here...", required=True, min_length=1)
 
     def __init__(self, page_limit: int) -> None:
         super().__init__(title="Page Jump", custom_id="page_entry_modal")
@@ -49,7 +57,7 @@ class PageNumEntryModal(discord.ui.Modal):
             LOGGER.exception("Unknown Modal error.", exc_info=error)
 
 
-class PaginatedEmbedView(discord.ui.View):
+class PaginatedEmbedView(View):
     """A view that handles paginated embeds and page buttons.
 
     Parameters
@@ -57,7 +65,7 @@ class PaginatedEmbedView(discord.ui.View):
     interaction : :class:`discord.Interaction`
         The interaction triggered this view.
     all_pages_content : list[Any]
-        The text content for every page.
+        The text content for every possible page.
 
     Attributes
     ----------
@@ -66,7 +74,7 @@ class PaginatedEmbedView(discord.ui.View):
     initial_user : :class:`discord.User | :class:`discord.Member`
         The user that triggered this view. No one else can use it.
     per_page : :class:`int`
-        The number of l
+        The number of entries to be displayed per page.
     total_page_count : :class:`int`
         The total number of pages.
     pages : list[Any | None]
@@ -126,7 +134,7 @@ class PaginatedEmbedView(discord.ui.View):
         LOGGER.info("View timed out.")
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:first")
-    async def turn_to_first_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_first_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Skips to the first page of the view."""
 
         self.former_page = self.current_page
@@ -138,7 +146,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=embed_page, view=self)
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:prev")
-    async def turn_to_previous_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_previous_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the previous page of the view."""
 
         self.former_page = self.current_page
@@ -150,7 +158,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=embed_page, view=self)
 
     @discord.ui.button(label="Turn to ...", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
-    async def enter_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def enter_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Sends a modal that a user to enter their own page number into."""
 
         self.former_page = self.current_page
@@ -175,7 +183,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.edit_original_response(embed=embed_page, view=self)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="page_view:next")
-    async def turn_to_next_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_next_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the next page of the view."""
 
         self.former_page = self.current_page
@@ -187,7 +195,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=embed_page, view=self)
 
     @discord.ui.button(label="≫", style=discord.ButtonStyle.blurple, custom_id="page_view:last")
-    async def turn_to_last_page(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_last_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Skips to the last page of the view."""
 
         self.former_page = self.current_page
@@ -199,7 +207,7 @@ class PaginatedEmbedView(discord.ui.View):
         await interaction.response.edit_message(embed=embed_page, view=self)
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red, custom_id="page_view:quit")
-    async def quit_view(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def quit_view(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Removes all buttons and ends the view."""
 
         self.clear_items()
@@ -266,55 +274,3 @@ class PaginatedEmbedView(discord.ui.View):
         enter_page_button = discord.utils.get(self.children, custom_id="page_view:enter")
         if enter_page_button.disabled != state:
             enter_page_button.disabled = state
-
-
-class StoryQuoteView(PaginatedEmbedView):
-    """A view that handles paginated embeds, specifically for quotes from a story.
-
-    Inherits from :class:`PaginatedEmbedView`.
-
-    Parameters
-    ----------
-    story_data : dict
-        The story's data and metadata, including full name, author name, and image representation.
-    **kwargs
-        Keyword arguments for :class:`PaginatedEmbedView`. Refer to that class for all possible arguments.
-
-    Attributes
-    ----------
-    story_data : dict
-        The story's data and metadata, including full name, author name, and image representation.
-
-    See Also
-    --------
-    :class:`StorySearchCog`.
-    """
-
-    def __init__(self, *, story_data: dict, **kwargs) -> None:
-        super().__init__(**kwargs)
-        self.story_data = story_data
-
-    async def format_page(self) -> discord.Embed:
-        """Makes, or retrieves from the cache, the quote embed 'page' that the user will see.
-
-        Assumes a per_page value of 1.
-        """
-
-        if self.page_cache[self.current_page - 1] is not None:
-            return deepcopy(self.page_cache[self.current_page - 1])
-
-        else:
-            # per_page value of 1 means parsing a list of length 1.
-            self.current_page_content = self.pages[self.current_page - 1][0]
-
-            story_embed_page = StoryQuoteEmbed(
-                story_data=self.story_data,
-                page_content=self.current_page_content,
-                current_page=self.current_page,
-                max_pages=self.total_page_count,
-                color=0x149cdf
-            )
-
-            self.page_cache[self.current_page - 1] = story_embed_page
-
-            return story_embed_page

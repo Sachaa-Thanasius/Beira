@@ -405,8 +405,7 @@ class SnowballCog(commands.Cog):
             color=0x2f3136,
             title=f"**Snowball Champions in {ctx.guild.name}**",
             description="(Hits / Misses / KOs)\n——————————————"
-        )
-        embed.set_thumbnail(url=ctx.guild.icon.url)
+        ).set_thumbnail(url=ctx.guild.icon.url)
 
         if guild_ldbd is not None:
             await self._make_leaderboard_fields(embed, guild_ldbd)
@@ -432,8 +431,7 @@ class SnowballCog(commands.Cog):
             color=0x2f3136,
             title="**Global Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"
-        )
-        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
+        ).set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if global_ldbd is not None:
             await self._make_leaderboard_fields(embed, global_ldbd)
@@ -459,13 +457,14 @@ class SnowballCog(commands.Cog):
             color=0x2f3136,
             title="**Guild-Level Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————"
-        )
-        embed.set_thumbnail(url=self.bot.user.display_avatar.url)
+        ).set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if guilds_only_ldbd is not None:
             await self._make_leaderboard_fields(embed, guilds_only_ldbd)
         else:
             embed.description += "\n***There was an issue connecting to the database. Please try again in a few minutes.***"
+
+        await ctx.send(embed=embed, ephemeral=False)
 
     @commands.hybrid_command()
     async def sources(self, ctx: commands.Context) -> None:
@@ -476,12 +475,12 @@ class SnowballCog(commands.Cog):
         ctx : :class:`discord.ext.commands.Context`
             The invocation context.
         """
+        code_value = self.embed_data["inspo"]["note"].format(self.embed_data["inspo"]["url"])
+        inspo_value = self.embed_data["code"]["note"].format(self.embed_data["code"]["url"])
 
         embed = discord.Embed(color=0xdd8b42, title="**Sources of Inspiration and Code**")
-        embed.add_field(name="Inspiration",
-                        value=self.embed_data["inspo"]["note"].format(self.embed_data["inspo"]["url"]), inline=False)
-        embed.add_field(name="Code",
-                        value=self.embed_data["code"]["note"].format(self.embed_data["code"]["url"]), inline=False)
+        embed.add_field(name="Inspiration", value=code_value, inline=False)
+        embed.add_field(name="Code", value=inspo_value, inline=False)
 
         await ctx.send(embed=embed, ephemeral=True)
 

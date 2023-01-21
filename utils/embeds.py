@@ -142,60 +142,6 @@ class PaginatedEmbed(Embed):
         return self
 
 
-class StoryQuoteEmbed(PaginatedEmbed):
-    """A subclass of :class:`PaginatedEmbed` customized to create an embed 'page' for a story, given actual data about
-    the story.
-
-    Parameters
-    ----------
-    story_data : :class:`dict`, optional
-        The information about the story to be put in the author field, including the story title, author, and link.
-    **kwargs
-        Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`.
-
-    See Also
-    --------
-    :class:`utils.paginated_views.PaginatedEmbedView`
-    :class:`exts.cogs.story_search.StorySearchCog`
-    """
-
-    def __init__(
-            self,
-            *,
-            story_data: dict | None = _MISSING,
-            **kwargs
-    ) -> None:
-
-        super().__init__(**kwargs)
-
-        if story_data is not _MISSING:
-            self.set_page_author(story_data)
-
-    def set_page_content(self, page_content: tuple | None = None) -> Self:
-        return super().set_page_content(page_content)
-
-    def set_page_footer(self, current_page: int | None = None, max_pages: int | None = None) -> Self:
-        return super().set_page_footer(current_page, max_pages)
-
-    def set_page_author(self, story_data: dict | None = None) -> Self:
-        """Sets the author for this embed page.
-
-        This function returns the class instance to allow for fluent-style chaining.
-        """
-
-        if story_data is None:
-            self.remove_author()
-
-        else:
-            self.set_author(
-                name=story_data["story_full_name"],
-                url=story_data["story_link"],
-                icon_url=EMOJI_URL.format(str(story_data["emoji_id"]))
-            )
-
-        return self
-
-
 class StatsEmbed(Embed):
     """A subclass of :class:`Embed` that displays given statistics for a user.
 
@@ -375,55 +321,13 @@ class StatsEmbed(Embed):
         return emojis
 
 
-class AoCWikiEmbed(Embed):
-    """A subclass of :class:`Embed` that is set up for representing Ashes of Chaos wiki pages.
-
-    Parameters
-    ----------
-    author_icon_url : :class:`str`, optional
-        The image url for the embed's author icon. Defaults to the AoC emoji url.
-    footer_icon_url : :class:`str`, optional
-        The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
-    **kwargs
-        Keyword arguments for the normal initialization of an :class:`Embed`.
-
-    See Also
-    --------
-    :class:`exts.cogs.fandom_wiki_search.FandomWikiSearchCog`
-    """
-
-    def __init__(
-            self,
-            author_icon_url: str | None = None,
-            footer_icon_url: str | None = None,
-            **kwargs
-    ) -> None:
-        super().__init__(**kwargs)
-
-        aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
-
-        if not author_icon_url:
-            author_icon_id = 770620658501025812                 # aoc emoji
-            author_icon_url = EMOJI_URL.format(author_icon_id)
-
-        if not footer_icon_url:
-            footer_icon_id = 1061029880059400262                # mr. jare emoji
-            footer_icon_url = EMOJI_URL.format(footer_icon_id)
-
-        self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
-        self.set_footer(text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
-                        icon_url=footer_icon_url)
-
-
 def discord_embed_factory(name: str = "default") -> Embed:
     """Factory method for instantiating a Discord embed or its subclasses."""
 
     embed_types = {
         "default": Embed,
         "Paginated": PaginatedEmbed,
-        "Story": StoryQuoteEmbed,
-        "Stats": StatsEmbed,
-        "AoCWiki": AoCWikiEmbed
+        "Stats": StatsEmbed
     }
 
     return embed_types[name]()

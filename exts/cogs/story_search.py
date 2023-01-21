@@ -13,17 +13,112 @@ from random import randint
 from time import perf_counter
 from bisect import bisect_left
 from typing import TYPE_CHECKING, ClassVar
+from typing_extensions import Self
 
+import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.embeds import StoryQuoteEmbed
-from utils.paginated_views import StoryQuoteView
+from utils.embeds import PaginatedEmbed, EMOJI_URL
+from utils.paginated_views import PaginatedEmbedView
 
 if TYPE_CHECKING:
     from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
+
+_MISSING = object()     # sentinel value
+
+
+class StoryQuoteEmbed(PaginatedEmbed):
+    """A subclass of :class:`PaginatedEmbed` customized to create an embed 'page' for a story, given actual data about
+    the story.
+
+    Parameters
+    ----------
+    story_data : dict, optional
+        The information about the story to be put in the author field, including the story title, author, and link.
+    **kwargs
+        Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`. Refer to that class for all
+        possible arguments.
+    """
+
+    def __init__(self, *, story_data: dict | None = _MISSING, **kwargs) -> None:
+        super().__init__(**kwargs)
+
+        if story_data is not _MISSING:
+            self.set_page_author(story_data)
+
+    def set_page_content(self, page_content: tuple | None = None) -> Self:
+        return super().set_page_content(page_content)
+
+    def set_page_footer(self, current_page: int | None = None, max_pages: int | None = None) -> Self:
+        return super().set_page_footer(current_page, max_pages)
+
+    def set_page_author(self, story_data: dict | None = None) -> Self:
+        """Sets the author for this embed page.
+
+        This function returns the class instance to allow for fluent-style chaining.
+        """
+
+        if story_data is None:
+            self.remove_author()
+
+        else:
+            self.set_author(
+                name=story_data["story_full_name"],
+                url=story_data["story_link"],
+                icon_url=EMOJI_URL.format(str(story_data["emoji_id"]))
+            )
+
+        return self
+
+
+class StoryQuoteView(PaginatedEmbedView):
+    """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for quotes from a story.
+
+    Parameters
+    ----------
+    story_data : dict
+        The story's data and metadata, including full name, author name, and image representation.
+    **kwargs
+        Keyword arguments the normal initialization of an :class:`PaginatedEmbedView`. Refer to that class for all
+        possible arguments.
+
+    Attributes
+    ----------
+    story_data : dict
+        The story's data and metadata, including full name, author name, and image representation.
+    """
+
+    def __init__(self, *, story_data: dict, **kwargs) -> None:
+        super().__init__(**kwargs)
+        self.story_data = story_data
+
+    async def format_page(self) -> discord.Embed:
+        """Makes, or retrieves from the cache, the quote embed 'page' that the user will see.
+
+        Assumes a per_page value of 1.
+        """
+
+        if self.page_cache[self.current_page - 1] is not None:
+            return deepcopy(self.page_cache[self.current_page - 1])
+
+        else:
+            # per_page value of 1 means parsing a list of length 1.
+            self.current_page_content = self.pages[self.current_page - 1][0]
+
+            story_embed_page = StoryQuoteEmbed(
+                story_data=self.story_data,
+                page_content=self.current_page_content,
+                current_page=self.current_page,
+                max_pages=self.total_page_count,
+                color=0x149cdf
+            )
+
+            self.page_cache[self.current_page - 1] = story_embed_page
+
+            return story_embed_page
 
 
 class StorySearchCog(commands.Cog):

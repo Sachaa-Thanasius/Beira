@@ -33,8 +33,6 @@ CREATE TABLE IF NOT EXISTS story_information (
     emoji_id        BIGINT
 );
 
--- TODO: Add view for user guild-level ranks to this schema outline
-
 CREATE VIEW global_rank_view AS
 SELECT user_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
        DENSE_RANK() over (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, user_id DESC) AS rank
@@ -54,12 +52,19 @@ CREATE TABLE IF NOT EXISTS commands (
     channel_id      BIGINT,
     user_id         BIGINT                      REFERENCES users(id)    ON DELETE CASCADE,
     datetime        TIMESTAMP WITH TIME ZONE,
+    prefix          TEXT,
     command         TEXT,
     app_command     BOOLEAN                     NOT NULL                DEFAULT FALSE,
-    failed          BOOLEAN
+    failed          BOOLEAN,
+    args            JSONB                       DEFAULT '{}'::JSONB
 );
 
-
+CREATE INDEX IF NOT EXISTS commands_guild_id_idx ON commands(guild_id);
+CREATE INDEX IF NOT EXISTS commands_user_id_idx ON commands(user_id);
+CREATE INDEX IF NOT EXISTS commands_datetime_idx ON commands(datetime);
+CREATE INDEX IF NOT EXISTS commands_command_idx ON commands(command);
+CREATE INDEX IF NOT EXISTS commands_app_command_idx ON commands(app_command);
+CREATE INDEX IF NOT EXISTS commands_failed_idx ON commands(failed);
 
 INSERT INTO story_information
 VALUES

@@ -11,6 +11,8 @@ import discord
 from discord.ext import commands
 from discord import app_commands
 
+from utils.embeds import Embed
+
 if TYPE_CHECKING:
     from bot import Beira
 
@@ -28,7 +30,7 @@ class LittleHelpCommand(commands.MinimalHelpCommand):
 
         destination = self.get_destination()
         for page in self.paginator.pages:
-            embed = discord.Embed(description=page)
+            embed = Embed(description=page)
             await destination.send(embed=embed)
 
 

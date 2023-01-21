@@ -11,9 +11,10 @@ from datetime import datetime
 from urllib.parse import urljoin, quote
 from typing import Any, Literal, Pattern, TYPE_CHECKING
 
-import aiohttp
+from aiohttp import BasicAuth
 import discord
 from discord.ext import commands
+import AO3
 
 from utils.embeds import Embed
 
@@ -30,7 +31,7 @@ class FFMetadataCog(commands.Cog):
 
     def __init__(self, bot: Beira):
         self.bot = bot
-        self.atlas_auth = aiohttp.BasicAuth(
+        self.atlas_auth = BasicAuth(
             login=bot.config["atlas_fanfic"]["user"],
             password=bot.config["atlas_fanfic"]["pass"]
         )
@@ -63,28 +64,30 @@ class FFMetadataCog(commands.Cog):
 
                     await message.reply(embed=ffn_embed)
 
-    async def get_ffn_data(self, path_params: str, query_params: str) -> dict[str, Any] | list[dict[str, Any]]:
-        """Get FFN story metadata from the Atlas API (not mine)."""
-
-        async with self.bot.web_session.get(
-                url=urljoin(ATLAS_BASE_URL, f"ffn/{path_params}{query_params}"),
-                auth=self.atlas_auth
-        ) as resp:
-            data = await resp.json()
-            return data
-
-    async def get_ao3_data(self, path_params: str, query_params: str):
-        """Get Ao3 metadata from somewhere (not mine)."""
-        pass
-
     @commands.command()
     async def ao3(self, ctx: commands.Context, *, name: str) -> None:
-        """Search Archive of Our Own for a fic with a certain title."""
+        """Search Archive of Our Own for a fic with a certain title.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        name : :class:`str`
+            The search string for the story title.
+        """
         pass
 
     @commands.command()
     async def ffn(self, ctx: commands.Context, *, name: str) -> None:
-        """Search FanFiction.Net for a fic with a certain title."""
+        """Search FanFiction.Net for a fic with a certain title.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        name : :class:`str`
+            The search string for the story title.
+        """
 
         async with ctx.typing():
             results = await self.get_ffn_data("meta/", f"?title_ilike={quote(name)}&limit=1")
@@ -96,7 +99,15 @@ class FFMetadataCog(commands.Cog):
 
     @commands.command()
     async def allow(self, ctx: commands.Context, channels: Literal["all", "this"] | None = "this") -> None:
-        """Set the bot to trigger in this channel."""
+        """Set the bot to trigger in this channel.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        channels
+            Whether the current channel or all guild channels should be affected.
+        """
 
         # Populate the ids of channels to allow.
         if channels == "this":
@@ -114,7 +125,15 @@ class FFMetadataCog(commands.Cog):
 
     @commands.command()
     async def disallow(self, ctx: commands.Context, channels: Literal["all", "this"] | None = "this") -> None:
-        """Set the bot to not trigger in this channel."""
+        """Set the bot to not trigger in this channel.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        channels
+            Whether the current channel or all guild channels should be affected.
+        """
 
         # Populate the ids of channels to disallow.
         if channels == "this":
@@ -130,6 +149,33 @@ class FFMetadataCog(commands.Cog):
             self.allowed_channels[ctx.guild.id] = set()
 
         await ctx.send("Channel(s) disallowed.")
+
+    async def get_ao3_data(self, path_params: str, query_params: str):
+        """Get Ao3 metadata from somewhere (not mine)."""
+        pass
+
+    async def get_ffn_data(self, path_params: str, query_params: str) -> dict[str, Any] | list[dict[str, Any]]:
+        """Get FFN story metadata from the Atlas API (not mine).
+
+        Parameters
+        ----------
+        path_params:
+            The path parameters for the API endpoint.
+        query_params
+            The query parameters for the API endpoint.
+
+        Returns
+        -------
+        data : Dict[:class:`str`, Any] | List[Dict[:class`str`, Any]]
+            Either one result or a list of results.
+        """
+
+        async with self.bot.web_session.get(
+                url=urljoin(ATLAS_BASE_URL, f"ffn/{path_params}{query_params}"),
+                auth=self.atlas_auth
+        ) as resp:
+            data = await resp.json()
+            return data
 
     @staticmethod
     def create_ffn_embed(story_data: dict[str, Any]) -> Embed:

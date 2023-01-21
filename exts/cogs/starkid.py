@@ -30,8 +30,7 @@ class StarKidCog(commands.Cog):
             color=0x000000,
             title="All hail the Lords of Black!",
             description="***Gaze upon their holy image and despair.***"
-        )
-        embed.set_image(url="https://cdn.discordapp.com/attachments/1029952409381912667/1059568705681502359/8w68kAT.gif")
+        ).set_image(url="https://cdn.discordapp.com/attachments/1029952409381912667/1059568705681502359/8w68kAT.gif")
 
         await ctx.send(embed=embed)
 
