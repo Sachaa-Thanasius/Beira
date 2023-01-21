@@ -50,9 +50,9 @@ class UpdateOPGGView(discord.ui.View):
             cog = self.bot.get_cog("LoLCog")
 
             if cog and isinstance(cog, LoLCog):
-
                 # Update every member's OP.GG page.
-                await cog.update_op_gg_profiles([urljoin(cog.req_site, quote(name)) for name in self.summoner_name_list])
+                await cog.update_op_gg_profiles(
+                    [urljoin(cog.req_site, quote(name)) for name in self.summoner_name_list])
 
                 # Recreate and resend the leaderboard.
                 updated_embed: StatsEmbed = await cog.create_lol_leaderboard(self.summoner_name_list)
@@ -223,14 +223,13 @@ class LoLCog(commands.Cog):
 
         Parameters
         ----------
-        urls: List[:class:`str`]
+        urls: list[:class:`str`]
             The op.gg profile urls to interact with during this webdriver session.
         """
 
         # Create the webdriver.
         service = services.Geckodriver(binary=str(GECKODRIVER), log_file=open(GECKODRIVER_LOGS, mode='a'))
-        browser = browsers.Firefox()
-        # firefoxOptions={'args': ['-headless']}
+        browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
         async with get_session(service, browser) as session:
             for url in urls:
