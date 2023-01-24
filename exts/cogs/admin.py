@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 # List for cogs that you don't want to be reloaded, using dot.style notation (e.g. "exts.cogs.snowball").
-IGNORE_EXTENSIONS = ["exts.cogs.slash_text"]
+IGNORE_EXTENSIONS = []
 
 # Find all extensions using the file path, excluding those in IGNORE_EXTENSIONS.
 ALL_EXTENSIONS = []
@@ -88,28 +88,28 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
+        async with ctx.typing():
+            if extension:
+                embed = discord.Embed(color=0xcccccc,
+                                      description="")
 
-        if extension:
-            embed = discord.Embed(color=0xcccccc,
-                                  description="")
+                if extension[5:] in IGNORE_EXTENSIONS:
+                    embed.description = f"Currently exempt from reloads: {extension}"
 
-            if extension[5:] in IGNORE_EXTENSIONS:
-                embed.description = f"Currently exempt from reloads: {extension}"
-
-            else:
-                if extension not in list(self.bot.extensions.keys()):
-                    embed.description = f"Never initially loaded this extension: {extension}"
-
-                try:
-                    await self.bot.reload_extension(extension)
-                except commands.ExtensionError as err:
-                    embed.description += f"\nCouldn't reload extension: {extension}"
-                    LOGGER.error(f"Couldn't reload extension: {extension}", exc_info=err)
                 else:
-                    embed.description += f"\nReloaded extension: {extension}"
-                    LOGGER.info(f"Reloaded extension: {extension}")
+                    if extension not in list(self.bot.extensions.keys()):
+                        embed.description = f"Never initially loaded this extension: {extension}"
 
-            await ctx.send(embed=embed, ephemeral=True)
+                    try:
+                        await self.bot.reload_extension(extension)
+                    except commands.ExtensionError as err:
+                        embed.description += f"\nCouldn't reload extension: {extension}"
+                        LOGGER.error(f"Couldn't reload extension: {extension}", exc_info=err)
+                    else:
+                        embed.description += f"\nReloaded extension: {extension}"
+                        LOGGER.info(f"Reloaded extension: {extension}")
+
+                await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
     @commands.guild_only()

@@ -101,7 +101,7 @@ class PaginatedEmbedView(View):
 
         self.pages = [all_pages_content[i: (i + per_page)] for i in range(0, len(all_pages_content), per_page)]
         self.page_cache: list[Any] = [None for _ in self.pages]
-        interaction.guild.query_members()
+
         self.current_page = 1
         self.former_page = 1
         self.current_page_content = ()
@@ -235,6 +235,7 @@ class PaginatedEmbedView(View):
 
         else:
             self._disable_enter_page_button(False)
+            self.enter_page.label = f"{self.current_page} / {self.total_page_count}"
 
         # Disable buttons based on the page extremes.
         if self.current_page == 1:
@@ -249,6 +250,7 @@ class PaginatedEmbedView(View):
 
         elif self.former_page == self.total_page_count and self.current_page != self.total_page_count:
             self._disable_forward_page_buttons(False)
+
 
     def _disable_forward_page_buttons(self, state: bool) -> None:
         """Disables the buttons for advancing through the pages."""

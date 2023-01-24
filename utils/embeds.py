@@ -49,10 +49,10 @@ def field_range_tracking(func: Callable) -> Callable:
     return decorator
 
 
-class Embed(Embed):
+class DTEmbed(Embed):
     """Represents a Discord embed, with a preset timestamp attribute.
 
-    Inherits from :class:`discord.Embed`.
+    Inherits from :class:`Embed`.
     """
 
     def __init__(self, **kwargs):
@@ -60,8 +60,8 @@ class Embed(Embed):
         super().__init__(timestamp=timestamp, **kwargs)
 
 
-class PaginatedEmbed(Embed):
-    """A subclass of :class:`Embed` customized to create an embed 'page'.
+class PaginatedEmbed(DTEmbed):
+    """A subclass of :class:`DTEmbed` customized to create an embed 'page'.
 
     Parameters
     ----------
@@ -72,7 +72,7 @@ class PaginatedEmbed(Embed):
     max_pages : :class:`int`, optional
         The total number of pages possible.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`Embed`.
+        Keyword arguments for the normal initialization of an :class:`DTEmbed`.
 
     See Also
     --------
@@ -142,8 +142,8 @@ class PaginatedEmbed(Embed):
         return self
 
 
-class StatsEmbed(Embed):
-    """A subclass of :class:`Embed` that displays given statistics for a user.
+class StatsEmbed(DTEmbed):
+    """A subclass of :class:`DTEmbed` that displays given statistics for a user.
 
     Parameters
     ----------
@@ -154,7 +154,7 @@ class StatsEmbed(Embed):
     stat_values : Sequence[Any], optional
         The user's statistics fetched from a database, to be used as values in stat fields.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`Embed`.
+        Keyword arguments for the normal initialization of an :class:`DTEmbed`.
 
     See Also
     --------
@@ -321,11 +321,11 @@ class StatsEmbed(Embed):
         return emojis
 
 
-def discord_embed_factory(name: str = "default") -> Embed:
+def discord_embed_factory(name: str = "default") -> DTEmbed:
     """Factory method for instantiating a Discord embed or its subclasses."""
 
     embed_types = {
-        "default": Embed,
+        "default": DTEmbed,
         "Paginated": PaginatedEmbed,
         "Stats": StatsEmbed
     }

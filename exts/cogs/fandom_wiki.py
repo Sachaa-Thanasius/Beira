@@ -15,7 +15,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.embeds import EMOJI_URL, Embed
+from utils.embeds import EMOJI_URL, DTEmbed
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -25,8 +25,8 @@ LOGGER = logging.getLogger(__name__)
 all_wiki_names = []
 
 
-class AoCWikiEmbed(Embed):
-    """A subclass of :class:`Embed` that is set up for representing Ashes of Chaos wiki pages.
+class AoCWikiEmbed(DTEmbed):
+    """A subclass of :class:`DTEmbed` that is set up for representing Ashes of Chaos wiki pages.
 
     Parameters
     ----------
@@ -35,7 +35,7 @@ class AoCWikiEmbed(Embed):
     footer_icon_url : :class:`str`, optional
         The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`Embed`.
+        Keyword arguments for the normal initialization of an :class:`DTEmbed`.
 
     See Also
     --------
@@ -187,7 +187,7 @@ class FandomWikiSearchCog(commands.Cog):
 
         # --------------------------------
         # Check if the wiki has the requested query as a page.
-        final_embed_type = AoCWikiEmbed if wiki_name == "Harry Potter and the Ashes of Chaos" else Embed
+        final_embed_type = AoCWikiEmbed if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed
         final_embed = final_embed_type()
 
         get_specific_wiki_page: str = get_wiki_pages.get(wiki_query)
