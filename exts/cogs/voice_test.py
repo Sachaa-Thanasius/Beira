@@ -20,7 +20,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class VoiceCog(commands.Cog):
+class VoiceCog(commands.Cog, name="Music", command_attrs=dict(hidden=True)):
     """ A cog for testing voice-related parts of the discord.py library.
 
     In development, currently a stub.

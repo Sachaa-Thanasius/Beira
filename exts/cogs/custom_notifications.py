@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class CustomNotificationsCog(commands.Cog):
+class CustomNotificationsCog(commands.Cog, name="ACI Role Notifications"):
     """A cog for sending custom notifications based on events."""
 
     def __init__(self, bot: Beira):

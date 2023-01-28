@@ -15,7 +15,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class BasicCommandsCog(commands.Cog):
+class BasicCommandsCog(commands.Cog, name="Basic Commands"):
     """A cog with some basic commands, originally used for testing slash and hybrid command functionality.
 
     Parameters

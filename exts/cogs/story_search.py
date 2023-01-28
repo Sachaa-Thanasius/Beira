@@ -138,7 +138,7 @@ class StoryQuoteView(PaginatedEmbedView):
             return story_embed_page
 
 
-class StorySearchCog(commands.Cog):
+class StorySearchCog(commands.Cog, name="Quote Search"):
     """A cog with commands for people to search the text of some ACI100 books while in Discord.
 
     Parameters

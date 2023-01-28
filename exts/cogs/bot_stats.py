@@ -5,8 +5,9 @@ bot_stats.py: A cog for tracking different bot metrics.
 from __future__ import annotations
 
 import logging
-from typing import TypedDict, TYPE_CHECKING
+from typing import TYPE_CHECKING
 
+from attrs import define, field
 from discord.ext import commands
 
 if TYPE_CHECKING:
@@ -15,7 +16,8 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class CommandDatabaseRecord(TypedDict):
+@define
+class CommandDatabaseRecord:
     guild_id: int
     channel_id: int
     user_id: int
@@ -27,7 +29,7 @@ class CommandDatabaseRecord(TypedDict):
     args: dict
 
 
-class BotStatsCog(commands.Cog):
+class BotStatsCog(commands.Cog, name="Bot Stats"):
     """A cog for tracking different bot metrics."""
 
     def __init__(self, bot: Beira) -> None:

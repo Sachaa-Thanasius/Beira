@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class StarKidCog(commands.Cog):
+class StarKidCog(commands.Cog, name="StarKid"):
     """A cog for StarKid-related commands and functionality."""
 
     def __init__(self, bot: Beira) -> None:

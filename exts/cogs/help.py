@@ -34,7 +34,7 @@ class LittleHelpCommand(commands.MinimalHelpCommand):
             await destination.send(embed=embed)
 
 
-class LittleHelpCog(commands.Cog):
+class LittleHelpCog(commands.Cog, name="Help"):
     """A cog that allows more dynamic usage of my custom help command class, :class:`LittleHelpCommand`."""
 
     def __init__(self, bot: Beira) -> None:

@@ -65,7 +65,7 @@ class AoCWikiEmbed(DTEmbed):
                         icon_url=footer_icon_url)
 
 
-class FandomWikiSearchCog(commands.Cog):
+class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     """A cog for searching a fandom's Fandom wiki page.
 
     This can only handle characters from the ACI100 Ashes of Chaos wiki right now.

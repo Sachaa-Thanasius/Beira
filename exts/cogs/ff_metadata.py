@@ -30,7 +30,7 @@ AO3_ICON_URL = "https://static.tvtropes.org/pmwiki/pub/images/logo_61.png"
 FFN_ICON_URL = "https://pbs.twimg.com/profile_images/843841615122784256/WXbuqyjo_400x400.jpg"
 
 
-class FFMetadataCog(commands.Cog):
+class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     """A cog with triggers for retrieving story metadata."""
 
     def __init__(self, bot: Beira):

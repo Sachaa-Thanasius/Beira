@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class ChessCog(commands.Cog):
+class ChessCog(commands.Cog, name="Chess"):
     """A cog implementing a chess game in Discord."""
 
     def __init__(self, bot: Beira):
@@ -26,8 +26,7 @@ class ChessCog(commands.Cog):
         # 3rd letter: Tile color (b = black tile, w= white tile)
 
     async def play_chess(self, challenged: discord.Member | discord.User) -> None:
-
-        chessboard_str = {}
+        pass
 
 
 async def setup(bot: Beira):

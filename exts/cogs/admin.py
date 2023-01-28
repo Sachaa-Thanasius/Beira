@@ -30,7 +30,7 @@ for filepath in cogs_folder.iterdir():
         ALL_EXTENSIONS.append((f"{filepath.stem}", f"exts.cogs.{filepath.stem}"))
 
 
-class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
+class AdminCog(commands.Cog, name="Administration", command_attrs=dict(hidden=True)):
     """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
 
     def __init__(self, bot: Beira) -> None:

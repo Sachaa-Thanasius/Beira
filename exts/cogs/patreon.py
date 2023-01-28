@@ -26,7 +26,7 @@ class PatreonMember:
     current_tiers: list[Any]
 
 
-class PatreonCheckCog(commands.Cog):
+class PatreonCheckCog(commands.Cog, name="Patreon"):
     """A cog for checking which Discord members are currently patrons of ACI100.
 
     In development.

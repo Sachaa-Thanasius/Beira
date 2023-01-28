@@ -35,7 +35,7 @@ class DownloadButtonView(discord.ui.View):
             self.add_item(discord.ui.Button(style=discord.ButtonStyle.blurple, label=link[0], url=link[1]))
 
 
-class AIGenerationCog(commands.Cog):
+class AIGenerationCog(commands.Cog, name="AI Generation"):
     """A cog with commands for doing fun AI things with OpenAI's API, like generating images and morphs.
 
     Note: This is all Athena's fault.

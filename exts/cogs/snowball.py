@@ -32,7 +32,7 @@ SPECIAL_STOCK_CAP = 200     # Maximum number of snowballs for self and friends.
 TRANSFER_CAP = 10           # Maximum number of snowballs that can be gifted or stolen.
 
 
-class SnowballCog(commands.Cog):
+class SnowballCog(commands.Cog, name="Snowball"):
     """A cog that implements all snowball fight-related commands and database manipulation.
 
     Parameters

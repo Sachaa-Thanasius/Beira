@@ -65,7 +65,7 @@ class UpdateOPGGView(discord.ui.View):
                 await interaction.edit_original_response(embed=updated_embed, view=self)
 
 
-class LoLCog(commands.Cog):
+class LoLCog(commands.Cog, name="League of Legends"):
     """A cog for checking user win rates and ranks in League of Legends.
 
     Credit to Ralph for the main code; I'm just testing it out to see how it would work in Discord.
