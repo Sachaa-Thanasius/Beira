@@ -124,7 +124,7 @@ class FandomWikiSearchCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         wiki : :class:`str`
             The name of the wiki that's being searched.

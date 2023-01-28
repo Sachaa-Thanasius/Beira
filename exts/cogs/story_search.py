@@ -15,6 +15,8 @@ from bisect import bisect_left
 from typing import TYPE_CHECKING, ClassVar
 from typing_extensions import Self
 
+from attrs import define, field
+from cattrs import Converter
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -28,6 +30,21 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 _MISSING = object()     # sentinel value
+
+
+@define
+class StoryInfo:
+    """A class to hold all the information about each story."""
+
+    story_acronym: str
+    story_full_name: str
+    author_name: str
+    story_link: str
+    emoji_id: int
+    template_embed: StoryQuoteEmbed = None
+    text: list[str] = field(factory=list)
+    chapter_index: list[int] = field(factory=list)
+    collection_index: list[int] = field(factory=list)
 
 
 class StoryQuoteEmbed(PaginatedEmbed):
@@ -131,14 +148,15 @@ class StorySearchCog(commands.Cog):
 
     Attributes
     ----------
-    story_records : :class:`dict`
+    story_records : dict
         The dictionary holding the metadata and text for all stories being scanned.
     """
 
-    story_records: ClassVar[dict[str, dict]] = {}
+    story_records: ClassVar[dict[str, StoryInfo]] = {}
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.converter = Converter()
 
     async def cog_load(self) -> None:
         """Load whatever is necessary to avoid reading from files or querying the database during runtime."""
@@ -146,11 +164,11 @@ class StorySearchCog(commands.Cog):
         # Load story metadata from DB.
         query = "SELECT * FROM story_information"
         temp_records = await self.bot.db_pool.fetch(query)
+        self.story_records.update(self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo]))
 
-        for temp_rec in temp_records:
-            dict_temp_rec = dict(temp_rec)
-            self.story_records[temp_rec["story_acronym"]] = dict_temp_rec
-            self.story_records[temp_rec["story_acronym"]]["template_embed"] = StoryQuoteEmbed(story_data=dict_temp_rec)
+        for acronym, record in self.story_records.items():
+            temp_rec = self.converter.unstructure(record)
+            self.story_records[acronym].template_embed = StoryQuoteEmbed(story_data=temp_rec)
 
         # Load story text from markdown files.
         project_path = Path(__file__).resolve().parents[2]
@@ -178,11 +196,12 @@ class StorySearchCog(commands.Cog):
 
             # Instantiate index lists, which act as a table of contents of sorts.
             stem = str(filepath.stem)[:-5]
-            cls.story_records[stem]["text"] = temp_text = [line for line in f if line.strip() != ""]
-            cls.story_records[stem]["chapter_index"] = temp_chap_index = []
-            cls.story_records[stem]["collection_index"] = temp_coll_index = []
+            temp_text = cls.story_records[stem].text = [line for line in f if line.strip() != ""]
+            temp_chap_index = cls.story_records[stem].chapter_index
+            temp_coll_index = cls.story_records[stem].collection_index
 
-            # Switch to a different set of regex patterns when searching ACVR.
+            # Create the "table of contents" for the story.
+            # -- Switch to a different set of regex patterns when searching ACVR.
             if "acvr" in filepath.name:
                 for index, line in enumerate(temp_text):
 
@@ -194,6 +213,7 @@ class StorySearchCog(commands.Cog):
                             temp_chap_index.append(index)
 
                     elif re.search(re_volume_heading, line):
+                        # Add to the index if it's empty or if the newest possible entry is unique.
                         if (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]):
                             temp_coll_index.append(index)
 
@@ -218,22 +238,27 @@ class StorySearchCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context where the command was called.
         """
+
         # Randomly choose an ACI100 story.
         story = random.choice([key for key in self.story_records if key != "acvr"])
 
         # Randomly choose two paragraphs from the story.
-        b_range = randint(2, len(self.story_records[story]["text"]) - 3)
-        b_sample = self.story_records[story]["text"][b_range:(b_range + 2)]
+        b_range = randint(2, len(self.story_records[story].text) - 3)
+        b_sample = self.story_records[story].text[b_range: (b_range + 2)]
 
-        # Randomly choose the
-        quote_year = self._binary_search_text(story, self.story_records[story]["collection_index"], (b_range + 2))
-        quote_chapter = self._binary_search_text(story, self.story_records[story]["chapter_index"], (b_range + 2))
+        # Get the chapter and collection of the quote.
+        quote_year = self._binary_search_text(story, self.story_records[story].collection_index, (b_range + 2))
+        quote_chapter = self._binary_search_text(story, self.story_records[story].chapter_index, (b_range + 2))
 
-        embed = StoryQuoteEmbed(color=0xdb05db, story_data=self.story_records[story], page_content=(quote_year, quote_chapter, "".join(b_sample)))
-        embed.set_footer(text="Randomly chosen quote from an ACI100 story")
+        # Bundle the quote in an embed.
+        embed = StoryQuoteEmbed(
+            color=0xdb05db,
+            story_data=self.converter.unstructure(self.story_records[story]),
+            page_content=(quote_year, quote_chapter, "".join(b_sample))
+        ).set_footer(text="Randomly chosen quote from an ACI100 story.")
 
         await ctx.send(embed=embed)
 
@@ -249,7 +274,7 @@ class StorySearchCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         story : :class:`str`
             The acronym or abbreviation of a story's title. Currently, there are only four choices.
@@ -258,16 +283,13 @@ class StorySearchCog(commands.Cog):
         """
 
         async with ctx.typing():
-            story_text = self.story_records[story]["text"]
-
             start_time = perf_counter()
-            processed_text = self._process_text(story, story_text, query)
+            processed_text = self._process_text(story, query)
             end_time = perf_counter()
 
-            processing_time = end_time - start_time
-            LOGGER.info(f"_process_text() time: {processing_time:.8f}")
+            LOGGER.info(f"_process_text() time: {end_time - start_time:.8f}")
 
-            story_embed: StoryQuoteEmbed = deepcopy(self.story_records[story]["template_embed"])
+            story_embed: StoryQuoteEmbed = deepcopy(self.story_records[story].template_embed)
 
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
@@ -281,8 +303,9 @@ class StorySearchCog(commands.Cog):
                     embed=story_embed,
                     view=StoryQuoteView(
                         interaction=ctx.interaction,
+                        view_owner=ctx.author,
                         all_pages_content=processed_text,
-                        story_data=self.story_records[story]
+                        story_data=self.converter.unstructure(self.story_records[story])
                     )
                 )
 
@@ -292,23 +315,20 @@ class StorySearchCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         query : :class:`str`
             The string to search for in the story.
         """
 
         async with ctx.typing():
-            story_text = self.story_records["acvr"]["text"]
-
             start_time = perf_counter()
-            processed_text = self._process_text("acvr", story_text, query)
+            processed_text = self._process_text("acvr", query)
             end_time = perf_counter()
 
-            processing_time = end_time - start_time
-            LOGGER.info(f"_process_text() time: {processing_time:.8f}")
+            LOGGER.info(f"_process_text() time: {end_time - start_time:.8f}")
 
-            story_embed: StoryQuoteEmbed = deepcopy(self.story_records["acvr"]["template_embed"])
+            story_embed: StoryQuoteEmbed = deepcopy(self.story_records["acvr"].template_embed)
 
             if len(processed_text) == 0:
                 story_embed.title = "N/A"
@@ -322,15 +342,17 @@ class StorySearchCog(commands.Cog):
                     embed=story_embed,
                     view=StoryQuoteView(
                         interaction=ctx.interaction,
+                        view_owner=ctx.author,
                         all_pages_content=processed_text,
-                        story_data=self.story_records["acvr"]
+                        story_data=self.converter.unstructure(self.story_records["acvr"])
                     )
                 )
 
     @classmethod
-    def _process_text(cls, story: str, all_text: list[str], terms: str, exact: bool = True) -> list[tuple | None]:
+    def _process_text(cls, story: str, terms: str, exact: bool = True) -> list[tuple]:
         """Collects all lines from story text that contain the given terms."""
 
+        all_text = cls.story_records[story].text
         results = []
 
         # Iterate through all text in the story.
@@ -354,8 +376,8 @@ class StorySearchCog(commands.Cog):
                     quote = quote[0:1020] + "..."
 
                 # Get the "collection" and "chapter" text lines using binary search.
-                quote_collection = cls._binary_search_text(story, cls.story_records[story]["collection_index"], index)
-                quote_chapter = cls._binary_search_text(story, cls.story_records[story]["chapter_index"], index)
+                quote_collection = cls._binary_search_text(story, cls.story_records[story].collection_index, index)
+                quote_chapter = cls._binary_search_text(story, cls.story_records[story].chapter_index, index)
 
                 # Take special care for ACVR.
                 if story == "acvr":
@@ -382,7 +404,7 @@ class StorySearchCog(commands.Cog):
         actual_index = list_of_indices[max(i_of_index - 1, 0)] if (i_of_index is not None) else -1
 
         # Use that element as an index in the story text list to get a quote, whether it's a chapter, volume, etc.
-        value_from_index = cls.story_records[story]["text"][actual_index] if actual_index != -1 else "—————"
+        value_from_index = cls.story_records[story].text[actual_index] if actual_index != -1 else "—————"
 
         return value_from_index
 

@@ -29,6 +29,7 @@ ODDS = 0.6                  # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10        # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100     # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200     # Maximum number of snowballs for self and friends.
+TRANSFER_CAP = 10           # Maximum number of snowballs that can be gifted or stolen.
 
 
 class SnowballCog(commands.Cog):
@@ -92,7 +93,7 @@ class SnowballCog(commands.Cog):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
-    @commands.hybrid_command(aliases=["COLLECT", "Collect"])
+    @commands.hybrid_command()
     @commands.guild_only()
     @commands.dynamic_cooldown(collect_cooldown, commands.cooldowns.BucketType.user)
     async def collect(self, ctx: commands.Context) -> None:
@@ -100,7 +101,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context where the command was called.
         """
 
@@ -109,7 +110,7 @@ class SnowballCog(commands.Cog):
         query = "SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
 
-        if await self.bot.is_owner(ctx.author) or self.bot.is_ali(ctx.author):
+        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
             stock_limit = SPECIAL_STOCK_CAP
         else:
             stock_limit = DEFAULT_STOCK_CAP
@@ -127,7 +128,7 @@ class SnowballCog(commands.Cog):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
 
-    @commands.hybrid_command(aliases=["THROW", "Throw"])
+    @commands.hybrid_command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
     async def throw(self, ctx: commands.Context, target: Annotated[discord.Member, MemberNoSelfTargetConverter]) -> None:
@@ -135,7 +136,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         target : :class:`discord.Member`
             The user to hit with a snowball.
@@ -177,7 +178,7 @@ class SnowballCog(commands.Cog):
 
         await ctx.send(content=message, embed=embed, ephemeral=ephemeral)
 
-    @commands.hybrid_command(aliases=["TRANSFER", "Transfer"])
+    @commands.hybrid_command()
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(receiver="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
@@ -186,7 +187,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         receiver : :class:`discord.Member`
             The user to bestow snowballs upon.
@@ -196,12 +197,12 @@ class SnowballCog(commands.Cog):
         """
 
         # Set a limit on how many snowballs can be transferred at a time.
-        if amount > 10:
+        if amount > TRANSFER_CAP:
             failed_embed = discord.Embed(color=0x69ff69, description="10 snowballs at once is the bulk giving limit.")
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        if await self.bot.is_owner(ctx.author) or self.bot.is_ali(ctx.author):
+        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
             stock_cap = SPECIAL_STOCK_CAP
         else:
             stock_cap = DEFAULT_STOCK_CAP
@@ -241,7 +242,7 @@ class SnowballCog(commands.Cog):
         message = f"{ctx.author.mention}, {receiver.mention}"
         await ctx.send(content=message, embed=success_embed, ephemeral=False)
 
-    @commands.hybrid_command(aliases=["STEAL", "Steal"])
+    @commands.hybrid_command()
     @commands.guild_only()
     @is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
@@ -251,7 +252,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         victim : Optional[:class:`discord.User`]
             The user to steal snowballs from.
@@ -263,12 +264,12 @@ class SnowballCog(commands.Cog):
         def_embed = discord.Embed(color=0x69ff69)
 
         # Set a limit on how many snowballs can be stolen at a time.
-        if amount > 10:
+        if amount > TRANSFER_CAP:
             def_embed.description = "10 snowballs at once is the bulk stealing limit."
             await ctx.send(embed=def_embed, ephemeral=True)
             return
 
-        if await self.bot.is_owner(ctx.author) or self.bot.is_ali(ctx.author):
+        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
             stock_cap = SPECIAL_STOCK_CAP
         else:
             stock_cap = DEFAULT_STOCK_CAP
@@ -302,19 +303,17 @@ class SnowballCog(commands.Cog):
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
     @app_commands.describe(target="Look up a particular Snowball Sparrer's stats.")
-    async def stats(self, ctx: commands.Context, target: discord.User | None = None) -> None:
+    async def stats(self, ctx: commands.Context, target: discord.User = commands.Author) -> None:
         """See who's the best at shooting snow spheres.
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
-        target : :class:`discord.User`, optional
+        target : :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their stats are specifically from
             all their interactions within the guild in context.
         """
-
-        actual_target = ctx.author if target is None else target
 
         query = """
             SELECT guild_rank, hits, misses, kos, stock
@@ -327,67 +326,65 @@ class SnowballCog(commands.Cog):
             ) as t
             WHERE user_id = $2;
         """
-        record: Record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, actual_target.id)
+        record: Record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
-            title = f"**Player Statistics for {actual_target}**"
+            title = f"**Player Statistics for {target}**"
             headers = ["Rank", "Direct Hits", "Total Misses", "KOs", "Total Snowballs Collected"]
             emojis = [self.bot.emojis_stock["snowsgive_phi"]]
 
             embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
-            embed.set_thumbnail(url=actual_target.display_avatar.url)
+            embed.set_thumbnail(url=target.display_avatar.url)
 
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
-            person = "You don't" if actual_target.id == ctx.author.id else "That player doesn't"
+            person = "You don't" if target.id == ctx.author.id else "That player doesn't"
             await ctx.send(f"{person} have any stats yet. *Maybe you could change that.* "
                            f"{self.bot.emojis_stock['snowball1']}{self.bot.emojis_stock['snowball2']}", ephemeral=True)
 
     @stats.command(name="global")
     @app_commands.describe(target="Look up a a player's stats as a summation across all servers.")
-    async def stats_global(self, ctx: commands.Context, target: discord.User | None = None) -> None:
+    async def stats_global(self, ctx: commands.Context, target: discord.User = commands.Author) -> None:
         """See who's the best across all Beira servers.
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
-        target : :class:`discord.User`, optional
+        target : :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their global stats are a
             summation of all their guild-specific stats.
         """
 
-        actual_target = ctx.author if target is None else target
-
         query = "SELECT rank, hits, misses, kos, stock FROM global_rank_view WHERE user_id = $1;"
-        record: Record = await self.bot.db_pool.fetchrow(query, actual_target.id)
+        record: Record = await self.bot.db_pool.fetchrow(query, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
-            title = f"**Global Player Statistics for {actual_target}**"    # Formerly 0x2f3171
+            title = f"**Global Player Statistics for {target}**"    # Formerly 0x2f3171
             headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
             emojis = [self.bot.emojis_stock["snowsgive_phi"]]
 
             embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
-            embed.set_thumbnail(url=actual_target.display_avatar.url)
+            embed.set_thumbnail(url=target.display_avatar.url)
 
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
-            person = "You don't" if actual_target.id == ctx.author.id else "That player doesn't"
+            person = "You don't" if target.id == ctx.author.id else "That player doesn't"
             await ctx.send(f"{person} have any stats yet. *Maybe you could change that.* "
                            f"{self.bot.emojis_stock['snowball1']}{self.bot.emojis_stock['snowball2']}", ephemeral=True)
 
-    @commands.hybrid_group(fallback='get')
+    @commands.hybrid_group(fallback="get")
     @commands.guild_only()
     async def leaderboard(self, ctx: commands.Context) -> None:
         """See who's dominating the Snowball Bot leaderboard in your server.
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         """
 
@@ -420,7 +417,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         """
 
@@ -446,7 +443,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         """
 
@@ -472,7 +469,7 @@ class SnowballCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         """
         code_value = self.embed_data["inspo"]["note"].format(self.embed_data["inspo"]["url"])

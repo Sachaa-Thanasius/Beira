@@ -23,7 +23,16 @@ class CannotTargetSelf(commands.BadArgument):
 class NotOwnerOrFriend(commands.CheckFailure):
     """Exception raised when the message author is not the owner of the bot or on the special friends list.
 
-    This inherits from :exc:`CheckFailure`
+    This inherits from :exc:`CheckFailure`.
+    """
+
+    pass
+
+
+class NotGuildOwner(commands.CheckFailure):
+    """Exception raised when the message author is not the owner of the guild in the current context.
+
+    This inherits from :exc:`CheckFailure`.
     """
 
     pass

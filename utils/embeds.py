@@ -18,9 +18,8 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-_MISSING = object()     # sentinel value
-
 EMOJI_URL = "https://cdn.discordapp.com/emojis/{0}.webp?size=128&quality=lossless"
+_MISSING = object()     # sentinel value
 
 
 def field_range_tracking(func: Callable) -> Callable:
@@ -60,8 +59,8 @@ class DTEmbed(Embed):
         super().__init__(timestamp=timestamp, **kwargs)
 
 
-class PaginatedEmbed(DTEmbed):
-    """A subclass of :class:`DTEmbed` customized to create an embed 'page'.
+class PaginatedEmbed(Embed):
+    """A subclass of :class:`Embed` customized to create an embed 'page'.
 
     Parameters
     ----------
@@ -72,7 +71,7 @@ class PaginatedEmbed(DTEmbed):
     max_pages : :class:`int`, optional
         The total number of pages possible.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`DTEmbed`.
+        Keyword arguments for the normal initialization of an :class:`Embed`.
 
     See Also
     --------
@@ -137,7 +136,7 @@ class PaginatedEmbed(DTEmbed):
         if max_pages is None:
             current_page = 0
 
-        self.set_footer(text=f"Page {current_page} of {max_pages}")
+        self.set_footer(text=f"Page {current_page}/{max_pages}")
 
         return self
 

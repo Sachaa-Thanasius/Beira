@@ -40,7 +40,6 @@ class CustomNotificationsCog(commands.Cog):
         """Notifies me if members of a server earn a Tatsu leveled role above "The Ears"."""
 
         main_guild = self.bot.get_guild(self.main_guild_id)
-
         leveled_roles = self.update_info["leveled_role_ids"]
         mod_role = self.update_info["mod_role_id"]
 

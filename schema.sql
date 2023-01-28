@@ -9,7 +9,8 @@ CREATE TRIGGER minimize_users_updates BEFORE UPDATE ON users FOR EACH ROW EXECUT
 CREATE TABLE IF NOT EXISTS guilds (
     id          BIGINT  PRIMARY KEY,
     guild_name  TEXT,
-    icon_url    TEXT
+    icon_url    TEXT,
+    prefixes    TEXT[]  DEFAULT '{$}'::TEXT[]
 );
 
 CREATE TRIGGER minimize_guilds_updates BEFORE UPDATE ON guilds FOR EACH ROW EXECUTE FUNCTION suppress_redundant_updates_trigger();

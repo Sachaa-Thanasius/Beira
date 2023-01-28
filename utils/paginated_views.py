@@ -89,11 +89,11 @@ class PaginatedEmbedView(View):
         The content on the current page.
     """
 
-    def __init__(self, *, interaction: discord.Interaction, all_pages_content: list[Any], per_page: int = 1) -> None:
+    def __init__(self, *, interaction: discord.Interaction, view_owner: discord.abc.User, all_pages_content: list[Any], per_page: int = 1) -> None:
         super().__init__(timeout=60.0)
 
         self.latest_interaction = interaction
-        self.initial_user = interaction.user
+        self.initial_user = view_owner
 
         # Page-related instance variables.
         self.per_page = per_page
@@ -132,6 +132,45 @@ class PaginatedEmbedView(View):
 
         await self.latest_interaction.edit_original_response(view=self)
         LOGGER.info("View timed out.")
+
+    async def format_page(self) -> discord.Embed:
+        """Makes, or retrieves from the cache, the embed 'page' that the user will see."""
+
+        raise NotImplementedError("Page formatting must be set up in a subclass.")
+
+    def update_page_buttons(self) -> None:
+        """Enable and disable page-turning buttons based on page count, position, and movement."""
+
+        # Disable buttons based on the total number of pages.
+
+        if self.total_page_count == 1:
+            self.turn_to_previous_page.disabled = True
+            self.turn_to_first_page.disabled = True
+            self.turn_to_next_page.disabled = True
+            self.turn_to_last_page.disabled = True
+            self.enter_page.disabled = True
+            return
+
+        else:
+            self.enter_page.disabled = False
+
+        # Disable buttons based on the page extremes.
+        if self.current_page == 1:
+            self.turn_to_previous_page.disabled = True
+            self.turn_to_first_page.disabled = True
+
+        elif self.current_page == self.total_page_count:
+            self.turn_to_next_page.disabled = True
+            self.turn_to_last_page.disabled = True
+
+        # Disable buttons based on movement relative to the page extremes.
+        if self.former_page == 1 and self.current_page != 1:
+            self.turn_to_previous_page.disabled = False
+            self.turn_to_first_page.disabled = False
+
+        elif self.former_page == self.total_page_count and self.current_page != self.total_page_count:
+            self.turn_to_next_page.disabled = False
+            self.turn_to_last_page.disabled = False
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:first")
     async def turn_to_first_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -217,62 +256,3 @@ class PaginatedEmbedView(View):
         await interaction.edit_original_response(view=self)
         LOGGER.info("Quit view.")
 
-    async def format_page(self) -> discord.Embed:
-        """Makes, or retrieves from the cache, the embed 'page' that the user will see."""
-
-        raise NotImplementedError("Page formatting must be set up in a subclass.")
-
-    def update_page_buttons(self) -> None:
-        """Enable and disable page-turning buttons based on page count, position, and movement."""
-
-        # Disable buttons based on the total number of pages.
-
-        if self.total_page_count == 1:
-            self._disable_backward_page_buttons(True)
-            self._disable_forward_page_buttons(True)
-            self._disable_enter_page_button(True)
-            return
-
-        else:
-            self._disable_enter_page_button(False)
-            self.enter_page.label = f"{self.current_page} / {self.total_page_count}"
-
-        # Disable buttons based on the page extremes.
-        if self.current_page == 1:
-            self._disable_backward_page_buttons(True)
-
-        elif self.current_page == self.total_page_count:
-            self._disable_forward_page_buttons(True)
-
-        # Disable buttons based on movement relative to the page extremes.
-        if self.former_page == 1 and self.current_page != 1:
-            self._disable_backward_page_buttons(False)
-
-        elif self.former_page == self.total_page_count and self.current_page != self.total_page_count:
-            self._disable_forward_page_buttons(False)
-
-
-    def _disable_forward_page_buttons(self, state: bool) -> None:
-        """Disables the buttons for advancing through the pages."""
-
-        next_button = discord.utils.get(self.children, custom_id="page_view:next")
-        last_button = discord.utils.get(self.children, custom_id="page_view:last")
-        if (next_button.disabled != state) or (last_button != state):
-            next_button.disabled = state
-            last_button.disabled = state
-
-    def _disable_backward_page_buttons(self, state: bool) -> None:
-        """Disables the buttons for retreating through the pages."""
-
-        first_button = discord.utils.get(self.children, custom_id="page_view:first")
-        prev_button = discord.utils.get(self.children, custom_id="page_view:prev")
-        if (first_button.disabled != state) or (prev_button != state):
-            first_button.disabled = state
-            prev_button.disabled = state
-
-    def _disable_enter_page_button(self, state: bool) -> None:
-        """Disables the button for turning to a specific pages."""
-
-        enter_page_button = discord.utils.get(self.children, custom_id="page_view:enter")
-        if enter_page_button.disabled != state:
-            enter_page_button.disabled = state

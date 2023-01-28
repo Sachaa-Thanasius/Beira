@@ -77,7 +77,7 @@ class AIGenerationCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         target : :class:`discord.User`, optional
             The user whose avatar will be pigeonified. Defaults to Athena.
@@ -115,7 +115,7 @@ class AIGenerationCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         target : :class:`discord.User`
             The user whose avatar will be morphed.
@@ -153,7 +153,7 @@ class AIGenerationCog(commands.Cog):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         prompt : :class:`str`
             The text that the AI will use.

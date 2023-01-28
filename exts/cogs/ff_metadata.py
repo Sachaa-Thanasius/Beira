@@ -10,8 +10,7 @@ import re
 import datetime
 from datetime import datetime
 from io import BytesIO
-from urllib.parse import urljoin
-from typing import Any, Literal, Pattern, TYPE_CHECKING
+from typing import Literal, Pattern, TYPE_CHECKING
 
 import AO3
 from aiohttp import BasicAuth
@@ -23,11 +22,10 @@ from fanfic_wrappers.atlas_wrapper import AtlasClient
 
 if TYPE_CHECKING:
     from bot import Beira
-    from fanfic_wrappers.atlas_wrapper import AtlasFFNMetadata
+    from fanfic_wrappers.ff_metadata_classes import FFNMetadata
 
 LOGGER = logging.getLogger(__name__)
 
-ATLAS_BASE_URL = "https://atlas.fanfic.dev/v0/"
 AO3_ICON_URL = "https://static.tvtropes.org/pmwiki/pub/images/logo_61.png"
 FFN_ICON_URL = "https://pbs.twimg.com/profile_images/843841615122784256/WXbuqyjo_400x400.jpg"
 
@@ -68,17 +66,18 @@ class FFMetadataCog(commands.Cog):
         """
 
         # Listen to the allowed guilds.
-        if self.allowed_channels.get(message.guild.id):
+        if message.guild:
+            if self.allowed_channels.get(message.guild.id):
 
-            # Listen to the allowed channels.
-            if message.channel.id in self.allowed_channels.get(message.guild.id, set()):
+                # Listen to the allowed channels.
+                if message.channel.id in self.allowed_channels.get(message.guild.id, set()):
 
-                # Make sure the message has a valid FFN or Ao3 link.
-                if fic_id := self.atlas_client.extract_fic_id(message.content):
-                    story_data = await self.atlas_client.get_ffn_story_metadata(fic_id)
-                    ffn_embed = await self.create_ffn_embed(story_data)
+                    # Make sure the message has a valid FFN or Ao3 link.
+                    if fic_id := self.atlas_client.extract_fic_id(message.content):
+                        story_data = await self.atlas_client.get_story_metadata(fic_id)
+                        ffn_embed = await self.create_ffn_embed(story_data)
 
-                    await message.reply(embed=ffn_embed)
+                        await message.reply(embed=ffn_embed)
 
     @commands.command()
     async def allow(self, ctx: commands.Context, channels: Literal["all", "this"] | None = "this") -> None:
@@ -187,10 +186,10 @@ class FFMetadataCog(commands.Cog):
 
         async with ctx.typing():
             if fic_id := self.atlas_client.extract_fic_id(name_or_url):
-                story_data = await self.atlas_client.get_ffn_story_metadata(fic_id)
+                story_data = await self.atlas_client.get_story_metadata(fic_id)
                 ffn_embed = await self.create_ffn_embed(story_data)
             else:
-                results = await self.atlas_client.get_ffn_bulk_metadata(title_ilike=name_or_url, limit=1)
+                results = await self.atlas_client.get_bulk_metadata(title_ilike=name_or_url, limit=1)
                 story_data = results[0]
                 ffn_embed = await self.create_ffn_embed(story_data)
 
@@ -272,18 +271,18 @@ class FFMetadataCog(commands.Cog):
         return ao3_embed, thumbnail_file
 
     @staticmethod
-    async def create_ffn_embed(story: AtlasFFNMetadata) -> DTEmbed:
+    async def create_ffn_embed(story: FFNMetadata) -> DTEmbed:
         """Create an embed that holds all the relevant metadata for a FanFiction.Net story."""
 
         updated = datetime.fromisoformat(story.updated[:-1]).strftime('%B %d, %Y')
 
         ffn_embed = DTEmbed(
             title=story.title,
-            url=urljoin("https://www.fanfiction.net/s/", str(story.id)),
+            url=story.get_story_url(),
             description=story.description
         ).set_author(
             name=story.author_name,
-            url=urljoin("https://www.fanfiction.net/u/", str(story.author_id)),
+            url=story.get_author_url(),
             icon_url=FFN_ICON_URL
         ).add_field(
             name="\N{SCROLL} Last Updated",

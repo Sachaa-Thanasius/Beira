@@ -1,5 +1,7 @@
 #!/usr/bin/env python
-"""bot.py: The main bot initializer and starter."""
+"""
+bot.py: The main bot initializer and starter.
+"""
 
 from __future__ import annotations
 
@@ -28,15 +30,17 @@ class Beira(commands.Bot):
         Variable length argument list, primarily for :class:`discord.ext.commands.Bot`.
     db_pool : :class:`asyncpg.Pool`
         A connection pool for a PostgreSQL database.
-    initial_extensions : list[:class:`str`]
+    web_session : :class:`aiohttp.ClientSession`
+        An HTTP session for making async HTTP requests.
+    initial_extensions : list[:class:`str`], optional
         A list of extension names that the bot will initially load.
-    testing_guild_ids : list[:class:`int`]
+    testing_guild_ids : list[:class:`int`], optional
         A list of guild ids for guilds that are used for developing the bot and testing it.
-    test_mode : bool
+    test_mode : :class:`bool`, default=False
         True if the bot is in testing mode, otherwise False. This causes commands to sync with testing guilds on
         startup.
     **kwargs
-        Arbitrary keyword arguments, primarily for :class:`discord.ext.commands.Bot`.
+        Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.
 
     Attributes
     ----------
@@ -59,6 +63,10 @@ class Beira(commands.Bot):
         self.initial_extensions = initial_extensions
         self.testing_guild_ids = testing_guild_ids
         self.test_mode = test_mode
+        self._config = CONFIG
+
+        # Things to load before connecting to the Gateway.
+        self.prefixes: dict[int, list[str]] = {}
 
         # Things to load right after connecting to the Gateway.
         self.emojis_stock: dict[str, discord.Emoji] = {}
@@ -66,11 +74,11 @@ class Beira(commands.Bot):
 
     @property
     def config(self) -> dict:
-        """All configuration information from the config.json file."""
-        return CONFIG
+        """dict: All configuration information from the config.json file."""
+        return self._config
 
     async def on_ready(self) -> None:
-        """Sets the rich presence state for the bot and loads reference emojis."""
+        """Loads several reference variables and dicts if they haven't been loaded already."""
 
         if len(self.emojis_stock) == 0:
             self._load_emoji_stock()
@@ -78,14 +86,13 @@ class Beira(commands.Bot):
         if len(self.special_friends) == 0:
             self._load_friends_dict()
 
-        await self.is_owner(self.user)                  # Trying to preload bot.owner_id
+        if not self.owner_id:
+            await self.is_owner(self.user)
 
-        await self.change_presence(activity=discord.Game(name="/collect"))
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
 
     async def setup_hook(self) -> None:
-        """Sets up database, extensions, etc. before the bot connects to the Websocket."""
-
+        await self._load_guild_prefixes()
         await self._load_extensions()
 
         # If there is a need to isolate commands in development, they will only sync with development guilds.
@@ -95,10 +102,30 @@ class Beira(commands.Bot):
                 self.tree.copy_global_to(guild=guild)
                 await self.tree.sync(guild=guild)
 
+    async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
+        if not self.prefixes:
+            await self._load_guild_prefixes()
+
+        if message.guild:
+            return self.prefixes.get(message.guild.id)
+        else:
+            return "$"
+
+    async def _load_guild_prefixes(self) -> None:
+        """Load all prefixes from the bot database."""
+
+        query = """SELECT id, prefixes FROM guilds"""
+        db_prefixes = await self.db_pool.fetch(query)
+        self.prefixes = {entry["id"]: entry["prefixes"] for entry in db_prefixes}
+
     async def _load_extensions(self) -> None:
-        """Loads extensions/cogs. If a list of initial ones isn't provided, all extensions are loaded by default."""
+        """Loads extensions/cogs.
+
+        If a list of initial ones isn't provided, all extensions are loaded by default.
+        """
 
         if self.initial_extensions:
+            # Attempt to load all specified extensions.
             for extension in self.initial_extensions:
                 try:
                     await self.load_extension(extension)
@@ -107,6 +134,7 @@ class Beira(commands.Bot):
                     LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
         else:
+            # Attempt to load all extensions visible to the bot.
             test_cogs_folder = Path(__file__).parent.joinpath("exts/cogs")
             for filepath in test_cogs_folder.iterdir():
                 if filepath.suffix == ".py":
@@ -117,7 +145,10 @@ class Beira(commands.Bot):
                         LOGGER.exception(f"Failed to load extension: {filepath.stem}\n\n{err}")
 
     def _load_emoji_stock(self) -> None:
-        """Sets a dict of emojis for quick reference. Most of the keys used here are shorthand for the actual names."""
+        """Sets a dict of emojis for quick reference.
+
+        Most of the keys used here are shorthand for the actual names.
+        """
 
         self.emojis_stock = {
             "blue_star": self.get_emoji(917859752057376779),
@@ -135,10 +166,7 @@ class Beira(commands.Bot):
             "mr_jare": self.get_emoji(1061029880059400262)
         }
 
-    # TODO: Set up custom prefixes for different servers.
-    # async def get_prefix(self, message: Message, /) -> Union[List[str], str]:
-
-    def _load_friends_dict(self):
+    def _load_friends_dict(self) -> None:
         friends_ids = CONFIG["discord"]["friend_ids"]
         for user_id in friends_ids:
             self.special_friends[self.get_user(user_id).name] = user_id
@@ -171,7 +199,7 @@ class Beira(commands.Bot):
             else:
                 return False
 
-    def is_ali(self, user: discord.abc.User, /):
+    def is_ali(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali.
 
         If a :attr:`special_friends` dict is not set, it is fetched automatically
@@ -206,7 +234,7 @@ async def main() -> None:
     async with asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30) as pool, aiohttp.ClientSession() as session:
 
         # Set the starting parameters.
-        def_prefix = CONFIG["discord"]["default_prefix"]
+        default_prefix = CONFIG["discord"]["default_prefix"]
         default_intents = discord.Intents.all()
         testing_guilds = CONFIG["discord"]["guilds"]["dev"]
         testing = False
@@ -214,7 +242,7 @@ async def main() -> None:
             "exts.cogs.admin",
             "exts.cogs.ai_generation",
             "exts.cogs.custom_notifications",
-            # "exts.cogs.fandom_wiki",
+            "exts.cogs.fandom_wiki",
             "exts.cogs.ff_metadata",
             "exts.cogs.help",
             "exts.cogs.lol",
@@ -225,14 +253,15 @@ async def main() -> None:
             "exts.cogs.story_search"
         ]
 
-        async with Beira(command_prefix=def_prefix,
-                         intents=default_intents,
-                         db_pool=pool,
-                         web_session=session,
-                         initial_extensions=init_exts,
-                         testing_guild_ids=testing_guilds,
-                         test_mode=testing,
-                         ) as bot:
+        async with Beira(
+                command_prefix=default_prefix,
+                intents=default_intents,
+                db_pool=pool,
+                web_session=session,
+                initial_extensions=init_exts,
+                testing_guild_ids=testing_guilds,
+                test_mode=testing
+        ) as bot:
 
             with SetupLogging():                                # Custom logging class
                 await bot.start(CONFIG["discord"]["token"])

@@ -1,20 +1,18 @@
 """
-atlas_wrapper.py: A small wrapper for iris's Atlas FanFiction.Net API.
+atlas_wrapper.py: A small asynchronous wrapper for iris's Atlas FanFiction.Net (or FFN) API.
 """
 
 from __future__ import annotations
 
-import asyncio
 import logging
 import re
 from datetime import datetime
-from pprint import pprint
 from urllib.parse import urljoin
 
 from aiohttp import BasicAuth, ClientSession
-import cattrs
+from cattrs import Converter
 
-from ffmetadata import FFNMetadata
+from fanfic_wrappers.ff_metadata_classes import FFNMetadata
 
 LOGGER = logging.getLogger(__name__)
 
@@ -22,7 +20,7 @@ ATLAS_BASE_URL = "https://atlas.fanfic.dev/v0/"
 
 
 class AtlasClient:
-    """A small wrapper for iris's Atlas FanFiction.Net (or FFN) API.
+    """A small async wrapper for iris's Atlas FanFiction.Net (or FFN) API.
 
     Parameters
     ----------
@@ -36,7 +34,10 @@ class AtlasClient:
         self._auth = auth
         self._session: ClientSession = session
 
-        self.converter = cattrs.Converter()
+        self.converter = Converter()
+        self.register_converter_hooks()
+
+    def register_converter_hooks(self):
         self.converter.register_structure_hook(datetime, lambda dt, _: datetime.fromisoformat(dt[:(-1 if "Z" in dt else 0)]))
         self.converter.register_unstructure_hook(datetime, lambda dt, _: datetime.isoformat(dt[:(-1 if "Z" in dt else 0)]))
 
@@ -65,12 +66,7 @@ class AtlasClient:
             The JSON data from the API's response.
         """
 
-        async with self._session.get(
-                url=urljoin(ATLAS_BASE_URL, endpoint),
-                auth=self._auth,
-                params=params,
-        ) as response:
-
+        async with self._session.get(url=urljoin(ATLAS_BASE_URL, endpoint), auth=self._auth, params=params) as response:
             data = await response.json()
             return data
 
@@ -79,25 +75,26 @@ class AtlasClient:
 
         Returns
         -------
-            A dict containing the `update_id`.
+        :class:`int`
+            The update id.
         """
 
         update_id = await self._get("update_id")
         return update_id
 
-    async def get_max_ffn_story_id(self) -> int:
-        """Gets the maximum known FanFiction.Net story `id`.
+    async def get_max_story_id(self) -> int:
+        """Gets the maximum known FFN story `id`.
 
         Returns
         -------
-        dict
-            A dict containing the `id`.
+        :class:`int`
+            The story id.
         """
 
         ffn_story_id = await self._get("ffn/id")
         return ffn_story_id
 
-    async def get_ffn_bulk_metadata(
+    async def get_bulk_metadata(
             self,
             min_update_id: int = None,
             min_fic_id: int = None,
@@ -107,14 +104,14 @@ class AtlasClient:
             author_id: int = None,
             limit: int = None
     ) -> list[FFNMetadata]:
-        """Gets a block of FanFiction.Net story metadata.
+        """Gets a block of FFN story metadata.
 
         Parameters
         ----------
         min_update_id : :class:`int`, optional
             The minimum `update_id` used to filter results.
         min_fic_id : :class:`int`, optional
-            The minimum FanFiction.Net fic `id` used to filter results.
+            The minimum FFN fic `id` used to filter results.
         title_ilike : :class:`str`, optional
             A sql `ilike` query applied to `title` to filter results. Percent and underscore operators allowed.
         description_ilike : :class:`str`, optional
@@ -162,7 +159,7 @@ class AtlasClient:
 
         return metadata_list
 
-    async def get_ffn_story_metadata(self, ffn_id: int) -> FFNMetadata:
+    async def get_story_metadata(self, ffn_id: int) -> FFNMetadata:
         """Gets a specific FFN fic's metadata.
 
         Parameters
@@ -190,29 +187,3 @@ class AtlasClient:
         fic_id = int(result.group(3)) if (result := re.search(re_ffn_url, text)) else None
 
         return fic_id
-
-
-async def main():
-    ffn_test_url = "https://www.fanfiction.net/s/13912800/"
-
-    async with ClientSession() as session:
-        # Create the client.
-        client = AtlasClient(
-            auth=BasicAuth(login="atlas_AlxesDb7hZ", password="GgBdeJjvo4EhO2kA8W29"),
-            session=session
-        )
-
-        # Get metadata.
-        ffn_metadata = await client.get_ffn_story_metadata(client.extract_fic_id(ffn_test_url))
-        pprint(ffn_metadata)
-        await asyncio.sleep(1)
-
-        # Get metadata in bulk.
-        ffn_bulk_metadata = await client.get_ffn_bulk_metadata(title_ilike="%Ashes of Chaos", limit=5)
-        pprint(ffn_bulk_metadata)
-        await asyncio.sleep(1)
-
-    await asyncio.sleep(1)
-
-if __name__ == "__main__":
-    asyncio.run(main())

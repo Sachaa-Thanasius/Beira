@@ -12,6 +12,8 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
+from utils.checks import is_guild_owner
+
 if TYPE_CHECKING:
     from bot import Beira
 
@@ -34,19 +36,14 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
-    async def cog_check(self, ctx: commands.Context) -> bool:
-        """Set up bot owner check as universal within the cog."""
-
-        original = commands.is_owner().predicate
-        return await original(ctx)
-
     @commands.command()
+    @commands.is_owner()
     async def walk(self, ctx: commands.Context) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context where the command was called.
         """
 
@@ -75,6 +72,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
     @commands.hybrid_command()
+    @commands.is_owner()
     @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in ALL_EXTENSIONS])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def reload(self, ctx: commands.Context, extension: str) -> None:
@@ -82,7 +80,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         extension : Choice[:class:`str`]
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
@@ -112,6 +110,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
+    @commands.is_owner()
     @commands.guild_only()
     @app_commands.describe(
         guilds="Mutex. with spec: The IDs of the guilds you'd like to sync to.",
@@ -132,7 +131,7 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
 
         Parameters
         ----------
-        ctx : :class:`discord.ext.commands.Context`
+        ctx : :class:`commands.Context`
             The invocation context.
         guilds : Greedy[:class:`discord.Object`]
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
@@ -198,6 +197,77 @@ class AdminCog(commands.Cog, command_attrs=dict(hidden=True)):
                 ret += 1
 
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.", ephemeral=True)
+
+    @commands.group(hidden=False)
+    @commands.guild_only()
+    async def prefixes(self, ctx: commands.Context) -> None:
+        """View the prefixes set for this bot in this location."""
+
+        async with ctx.typing():
+            local_prefixes = await self.bot.get_prefix(ctx.message)
+            await ctx.send(f"Prefixes:\n{', '.join(local_prefixes)}")
+
+    @prefixes.command(name="add")
+    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), is_guild_owner())
+    @commands.cooldown(1, 30, commands.cooldowns.BucketType.user)
+    async def prefixes_add(self, ctx: commands.Context, *, new_prefix: str) -> None:
+        """Set a prefix that you'd like this bot to respond to.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        new_prefix : :class:`str`
+            The prefix to be added.
+        """
+
+        local_prefixes = await self.bot.get_prefix(ctx.message)
+
+        if new_prefix in local_prefixes:
+            await ctx.send("You already registered this prefix.")
+
+        else:
+            updated_prefixes = local_prefixes.copy()
+            updated_prefixes.append(new_prefix)
+
+            # Update the database and cache.
+            update_query = """UPDATE guilds SET prefixes = ARRAY[$1] WHERE id = $2 RETURNING prefixes;"""
+            results = await self.bot.db_pool.fetchrow(update_query, ", ".join(updated_prefixes), ctx.guild.id)
+            self.bot.prefixes[ctx.guild.id] = results["prefixes"]
+
+            await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
+
+    @prefixes.command(name="remove")
+    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), is_guild_owner())
+    @commands.cooldown(1, 30, commands.cooldowns.BucketType.user)
+    async def prefixes_remove(self, ctx: commands.Context, *, old_prefix: str) -> None:
+        """Remove a prefix that you'd like this bot to no longer respond to.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        old_prefix : :class:`str`
+            The prefix to be removed.
+        """
+
+        local_prefixes = await self.bot.get_prefix(ctx.message)
+
+        if old_prefix not in local_prefixes:
+            await ctx.send("This prefix either was never registered in this guild or has already been unregistered.")
+
+        else:
+            updated_prefixes = local_prefixes.copy()
+            updated_prefixes.remove(old_prefix)
+
+            # Update the database and cache.
+            update_query = "UPDATE guilds SET prefixes = ARRAY[$1] WHERE id = $2 RETURNING prefixes;"
+            results = await self.bot.db_pool.fetchrow(update_query, ", ".join(updated_prefixes), ctx.guild.id)
+            self.bot.prefixes[ctx.guild.id] = results["prefixes"]
+
+            await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
 
 
 async def setup(bot: Beira) -> None:
