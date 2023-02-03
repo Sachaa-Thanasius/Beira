@@ -17,6 +17,7 @@ from utils.converters import MemberNoSelfTargetConverter, CannotTargetSelf
 from utils.checks import is_owner_or_friend
 from utils.embeds import StatsEmbed
 from utils.snowball_utils import collect_cooldown, transfer_cooldown, steal_cooldown
+from utils.db_funcs import upsert_users, upsert_guilds
 
 if TYPE_CHECKING:
     from asyncpg import Record
@@ -182,18 +183,23 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(receiver="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: commands.Context, receiver: Annotated[discord.Member, MemberNoSelfTargetConverter], amount: int) -> None:
+    async def transfer(
+            self,
+            ctx: commands.Context,
+            amount: int,
+            receiver: discord.Member = commands.parameter(converter=MemberNoSelfTargetConverter)
+    ) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        receiver : :class:`discord.Member`
-            The user to bestow snowballs upon.
         amount : :class:`int`
             The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, the transfer fails.
+        receiver : :class:`discord.Member`
+            The user to bestow snowballs upon.
         """
 
         # Set a limit on how many snowballs can be transferred at a time.
@@ -247,18 +253,23 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
-    async def steal(self, ctx: commands.Context, victim: Annotated[discord.Member, MemberNoSelfTargetConverter], amount: int) -> None:
+    async def steal(
+            self,
+            ctx: commands.Context,
+            amount: int,
+            victim: discord.Member = commands.parameter(converter=MemberNoSelfTargetConverter)
+    ) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        victim : Optional[:class:`discord.User`]
-            The user to steal snowballs from.
         amount : :class:`int`
             The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, the steal fails.
+        victim : :class:`discord.Member`
+            The user to steal snowballs from.
         """
 
         def_embed = discord.Embed(color=0x69ff69)
@@ -487,25 +498,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         stock_insert = stock
 
-        user_upsert = """
-            INSERT INTO users (id, member_name, avatar_url)
-            VALUES ($1, $2, $3)
-            ON CONFLICT(id)
-            DO UPDATE
-                SET member_name = EXCLUDED.member_name,
-                    avatar_url = EXCLUDED.avatar_url;
-        """
-        await self.bot.db_pool.execute(user_upsert, member.id, str(member), member.default_avatar.url)
-
-        guild_upsert = """
-            INSERT INTO guilds (id, guild_name, icon_url)
-            VALUES ($1, $2, $3)
-            ON CONFLICT (id)
-            DO UPDATE
-                SET guild_name = EXCLUDED.guild_name,
-                    icon_url = EXCLUDED.icon_url;
-        """
-        await self.bot.db_pool.execute(guild_upsert, member.guild.id, member.guild.name, member.guild.icon.url)
+        await upsert_users(self.bot.db_pool, member)
+        await upsert_guilds(self.bot.db_pool, member.guild)
 
         # Save any snowball stock decrement for the update portion of the upsert.
         stock_insert = max(stock_insert, 0)

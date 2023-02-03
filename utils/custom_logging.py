@@ -4,13 +4,16 @@ custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
 
 from __future__ import annotations
 
+import functools
 import logging
+from collections.abc import Callable
+from time import perf_counter
 from logging.handlers import RotatingFileHandler
 from typing import Any
 from typing_extensions import Self
 
 from pathlib import Path
-from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour
+from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour, maybe_coroutine
 
 
 class RemoveNoise(logging.Filter):
@@ -28,14 +31,14 @@ class RemoveNoise(logging.Filter):
         return True
 
 
-class SetupLogging:
+class CustomLogger:
     """Custom logging system.
 
     Copied from Umbra with minimal customization so far.
 
     Parameters
     ----------
-    stream : :class:`bool`
+    stream : :class:`bool`, default=True
         A boolean indicating whether the logs should be output to a stream.
 
     Attributes
@@ -56,6 +59,9 @@ class SetupLogging:
         self.logging_path = Path("./logs/")
         self.logging_path.mkdir(exist_ok=True)
         self.stream: bool = stream
+
+    async def __aenter__(self) -> Self:
+        return self.__enter__()
 
     def __enter__(self) -> Self:
         """Set and customize loggers."""
@@ -85,6 +91,9 @@ class SetupLogging:
 
         return self
 
+    async def __aexit__(self, *args: Any) -> None:
+        return self.__exit__(*args)
+
     def __exit__(self, *args: Any) -> None:
         """Close and remove all logging handlers."""
 
@@ -92,3 +101,18 @@ class SetupLogging:
         for hdlr in handlers:
             hdlr.close()
             self.log.removeHandler(hdlr)
+
+
+def benchmark(func: Callable[..., Any], logger: logging.Logger) -> Callable[..., Any]:
+    @functools.wraps(func)
+    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+        start_time = perf_counter()
+        value = await maybe_coroutine(func, *args, **kwargs)
+        end_time = perf_counter()
+
+        run_time = end_time - start_time
+        logger.info(f"Execution of {func.__name__} took {run_time:.5f}.")
+
+        return value
+
+    return wrapper

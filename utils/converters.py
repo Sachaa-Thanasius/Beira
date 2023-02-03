@@ -37,7 +37,7 @@ class MemberNoSelfTargetConverter(commands.MemberConverter):
     """
 
     async def convert(self, ctx: commands.Context, argument: str) -> discord.Member:
-        result = await super().convert(ctx, str(argument))
+        result = await super().convert(ctx, argument)
 
         if ctx.author == result:
             raise CannotTargetSelf("You cannot target yourself with this argument.")

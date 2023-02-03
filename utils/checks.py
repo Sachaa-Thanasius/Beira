@@ -59,7 +59,7 @@ def certain_channels_only():
     """
 
     async def predicate(ctx: commands.Context) -> bool:
-        admin_cog = ctx.bot.get_cog("AdminCog")
+        admin_cog = ctx.bot.get_cog("Administration")
 
         # Ensure the message was sent in a guild.
         if ctx.guild is not None:

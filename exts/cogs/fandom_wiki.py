@@ -9,7 +9,7 @@ import logging
 from typing import TYPE_CHECKING
 
 from bs4 import BeautifulSoup
-import urllib.parse
+from urllib.parse import quote, urljoin
 from json import load
 import discord
 from discord import app_commands
@@ -102,7 +102,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             all_wiki_names.append(wiki_name)
 
             for url in wiki_data["pages_directory"]:
-                directory_url = f"{wiki_data['base_url']}{url}"
+                directory_url = urljoin(wiki_data['base_url'], url)
 
                 async with self.bot.web_session.get(directory_url) as response:
                     text = await response.text()
@@ -115,6 +115,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                         continue
 
             LOGGER.info(f"Loaded wiki info: {wiki_name}")
+        LOGGER.info(f"All wiki names: {all_wiki_names}")
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
@@ -197,7 +198,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             possible_results = [name for name in entries_list if wiki_query.lower() in name.lower()][:25]
 
             if len(possible_results) == 0:
-                encoded_wiki_query = urllib.parse.quote(wiki_query)
+                encoded_wiki_query = quote(wiki_query)
 
                 final_embed.title = f"No pages found for '{wiki_query}'. Click here for search results."
                 final_embed.description = "Sorry, we couldn't find anything with this search term(s)."
@@ -209,7 +210,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 wiki_query = possible_results[0]
                 get_specific_wiki_page = get_wiki_pages.get(wiki_query)
 
-        wiki_page_link = f"{self.all_wikis[wiki_name]['base_url']}{get_specific_wiki_page}"
+        wiki_page_link = urljoin(self.all_wikis[wiki_name]['base_url'], get_specific_wiki_page)
 
         # --------------------------------
         # Add the primary embed parameters.

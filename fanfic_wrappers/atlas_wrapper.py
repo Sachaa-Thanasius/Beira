@@ -7,6 +7,7 @@ from __future__ import annotations
 import logging
 import re
 from datetime import datetime
+from typing import ClassVar
 from urllib.parse import urljoin
 
 from aiohttp import BasicAuth, ClientSession
@@ -16,10 +17,8 @@ from fanfic_wrappers.ff_metadata_classes import FFNMetadata
 
 LOGGER = logging.getLogger(__name__)
 
-ATLAS_BASE_URL = "https://atlas.fanfic.dev/v0/"
 
-
-class AtlasClient:
+class AtlasWrapper:
     """A small async wrapper for iris's Atlas FanFiction.Net (or FFN) API.
 
     Parameters
@@ -30,9 +29,12 @@ class AtlasClient:
         The HTTP session to make requests with.
     """
 
+    ATLAS_BASE_URL: ClassVar[str] = "https://atlas.fanfic.dev/v0/"
+
     def __init__(self, *, auth: BasicAuth, session: ClientSession) -> None:
         self._auth = auth
         self._session: ClientSession = session
+        self._headers = {"User-Agent": "Atlas API wrapper/@Thanos"}
 
         self.converter = Converter()
         self.register_converter_hooks()
@@ -66,7 +68,12 @@ class AtlasClient:
             The JSON data from the API's response.
         """
 
-        async with self._session.get(url=urljoin(ATLAS_BASE_URL, endpoint), auth=self._auth, params=params) as response:
+        async with self._session.get(
+                url=urljoin(self.ATLAS_BASE_URL, endpoint),
+                headers=self._headers,
+                params=params,
+                auth=self._auth
+        ) as response:
             data = await response.json()
             return data
 
@@ -96,13 +103,13 @@ class AtlasClient:
 
     async def get_bulk_metadata(
             self,
-            min_update_id: int = None,
-            min_fic_id: int = None,
-            title_ilike: str = None,
-            description_ilike: str = None,
-            raw_fandoms_ilike: str = None,
-            author_id: int = None,
-            limit: int = None
+            min_update_id: int | None = None,
+            min_fic_id: int | None = None,
+            title_ilike: str | None = None,
+            description_ilike: str | None = None,
+            raw_fandoms_ilike: str | None = None,
+            author_id: int | None = None,
+            limit: int | None = None
     ) -> list[FFNMetadata]:
         """Gets a block of FFN story metadata.
 
@@ -133,19 +140,14 @@ class AtlasClient:
 
         if min_update_id:
             query_params["min_update_id"] = min_update_id
-
         if min_fic_id:
             query_params["min_fic_id"] = min_fic_id
-
         if title_ilike:
             query_params["title_ilike"] = title_ilike
-
         if description_ilike:
             query_params["description_ilike"] = description_ilike
-
         if raw_fandoms_ilike:
             query_params["raw_fandoms_ilike"] = raw_fandoms_ilike
-
         if author_id:
             query_params["author_id"] = author_id
 
@@ -175,7 +177,6 @@ class AtlasClient:
 
         raw_metadata = await self._get(f"ffn/meta/{ffn_id}")
         metadata = self.converter.structure(raw_metadata, FFNMetadata)
-
         return metadata
 
     @staticmethod
@@ -183,7 +184,5 @@ class AtlasClient:
         """Extract the fic id from a valid FFN url in a string."""
 
         re_ffn_url = re.compile(r"(https://|http://|)(www\.|m\.|)fanfiction\.net/s/(\d+)")
-
         fic_id = int(result.group(3)) if (result := re.search(re_ffn_url, text)) else None
-
         return fic_id

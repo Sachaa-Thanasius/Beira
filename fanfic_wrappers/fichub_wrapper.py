@@ -1,6 +1,6 @@
 """
 fichub_wrapper.py: A small asynchronous wrapper for FicHub's fanfic API, specifically for the Archive of Our Own
-(or Ao3)responses.
+(or Ao3) responses.
 """
 
 from __future__ import annotations
@@ -8,6 +8,7 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from pprint import pprint
+from typing import ClassVar
 from urllib.parse import urljoin
 
 from aiohttp import ClientSession
@@ -17,10 +18,8 @@ from fanfic_wrappers.ff_metadata_classes import AO3Metadata, FicHubDownloadUrls
 
 LOGGER = logging.getLogger(__name__)
 
-FICHUB_BASE_URL = "https://fichub.net/api/v0/"
 
-
-class FicHubClient:
+class FicHubWrapper:
     """A small async wrapper for FicHub's fanfic API, specifically with functionality for Ao3 urls and results.
 
     Parameters
@@ -29,8 +28,11 @@ class FicHubClient:
         The HTTP session to make requests with.
     """
 
+    FICHUB_BASE_URL: ClassVar[str] = "https://fichub.net/api/v0/"
+
     def __init__(self, *, session: ClientSession):
         self._session: ClientSession = session
+        self._headers = {"User-Agent": "Atlas API wrapper/@Thanos"}
 
         self.dwnld_urls_conv = Converter()
         self.converter = Converter()
@@ -57,7 +59,11 @@ class FicHubClient:
             The JSON data from the API's response.
         """
 
-        async with self._session.get(url=urljoin(FICHUB_BASE_URL, endpoint), params=params) as response:
+        async with self._session.get(
+                url=urljoin(self.FICHUB_BASE_URL, endpoint),
+                headers=self._headers,
+                params=params
+        ) as response:
             data = await response.json()
             return data
 

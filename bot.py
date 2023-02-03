@@ -5,6 +5,7 @@ bot.py: The main bot initializer and starter.
 
 from __future__ import annotations
 
+import json
 import logging
 import asyncio
 from pathlib import Path
@@ -15,7 +16,7 @@ import discord
 from discord.ext import commands
 
 import config
-from utils.custom_logging import SetupLogging
+from utils.custom_logging import CustomLogger
 
 CONFIG = config.config()
 LOGGER = logging.getLogger("bot.Beira")
@@ -77,40 +78,6 @@ class Beira(commands.Bot):
         """dict: All configuration information from the config.json file."""
         return self._config
 
-    async def on_ready(self) -> None:
-        """Loads several reference variables and dicts if they haven't been loaded already."""
-
-        if len(self.emojis_stock) == 0:
-            self._load_emoji_stock()
-
-        if len(self.special_friends) == 0:
-            self._load_friends_dict()
-
-        if not self.owner_id:
-            await self.is_owner(self.user)
-
-        LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
-
-    async def setup_hook(self) -> None:
-        await self._load_guild_prefixes()
-        await self._load_extensions()
-
-        # If there is a need to isolate commands in development, they will only sync with development guilds.
-        if self.test_mode and self.testing_guild_ids:
-            for guild_id in self.testing_guild_ids:
-                guild = discord.Object(guild_id)
-                self.tree.copy_global_to(guild=guild)
-                await self.tree.sync(guild=guild)
-
-    async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
-        if not self.prefixes:
-            await self._load_guild_prefixes()
-
-        if message.guild:
-            return self.prefixes.get(message.guild.id)
-        else:
-            return "$"
-
     async def _load_guild_prefixes(self) -> None:
         """Load all prefixes from the bot database."""
 
@@ -170,6 +137,40 @@ class Beira(commands.Bot):
         friends_ids = CONFIG["discord"]["friend_ids"]
         for user_id in friends_ids:
             self.special_friends[self.get_user(user_id).name] = user_id
+
+    async def on_ready(self) -> None:
+        """Loads several reference variables and dicts if they haven't been loaded already."""
+
+        if len(self.emojis_stock) == 0:
+            self._load_emoji_stock()
+
+        if len(self.special_friends) == 0:
+            self._load_friends_dict()
+
+        if not self.owner_id:
+            await self.is_owner(self.user)
+
+        LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
+
+    async def setup_hook(self) -> None:
+        await self._load_guild_prefixes()
+        await self._load_extensions()
+
+        # If there is a need to isolate commands in development, they will only sync with development guilds.
+        if self.test_mode and self.testing_guild_ids:
+            for guild_id in self.testing_guild_ids:
+                guild = discord.Object(guild_id)
+                self.tree.copy_global_to(guild=guild)
+                await self.tree.sync(guild=guild)
+
+    async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
+        if not self.prefixes:
+            await self._load_guild_prefixes()
+
+        if message.guild:
+            return self.prefixes.get(message.guild.id)
+        else:
+            return "$"
 
     def is_special_friend(self, user: discord.abc.User, /):
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
@@ -231,7 +232,12 @@ async def main() -> None:
     """Starts an instance of the bot."""
 
     # Connect to the PostgreSQL database and asynchronous web session.
-    async with asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30) as pool, aiohttp.ClientSession() as session:
+    async def postgres_db_init(connection: asyncpg.Connection):
+        await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
+
+    async with aiohttp.ClientSession() as session, asyncpg.create_pool(
+            dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=postgres_db_init
+    ) as pool:
 
         # Set the starting parameters.
         default_prefix = CONFIG["discord"]["default_prefix"]
@@ -241,6 +247,7 @@ async def main() -> None:
         init_exts = [
             "exts.cogs.admin",
             "exts.cogs.ai_generation",
+            "exts.cogs.bot_stats",
             "exts.cogs.custom_notifications",
             "exts.cogs.fandom_wiki",
             "exts.cogs.ff_metadata",
@@ -263,7 +270,7 @@ async def main() -> None:
                 test_mode=testing
         ) as bot:
 
-            with SetupLogging():                                # Custom logging class
+            with CustomLogger():                                # Custom logging class
                 await bot.start(CONFIG["discord"]["token"])
 
 

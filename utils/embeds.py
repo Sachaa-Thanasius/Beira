@@ -12,6 +12,7 @@ from typing import Any, Callable, TYPE_CHECKING
 from typing_extensions import Self
 
 from discord import Embed
+from discord.utils import MISSING
 
 if TYPE_CHECKING:
     from discord import Emoji
@@ -19,7 +20,6 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 EMOJI_URL = "https://cdn.discordapp.com/emojis/{0}.webp?size=128&quality=lossless"
-_MISSING = object()     # sentinel value
 
 
 def field_range_tracking(func: Callable) -> Callable:
@@ -81,18 +81,18 @@ class PaginatedEmbed(Embed):
     def __init__(
             self,
             *,
-            page_content: tuple | None = _MISSING,
-            current_page: int | None = _MISSING,
-            max_pages: int | None = _MISSING,
+            page_content: tuple | None = MISSING,
+            current_page: int | None = MISSING,
+            max_pages: int | None = MISSING,
             **kwargs
     ) -> None:
 
         super().__init__(**kwargs)
 
-        if page_content is not _MISSING:
+        if page_content is not MISSING:
             self.set_page_content(page_content)
 
-        if (current_page is not _MISSING) and (max_pages is not _MISSING):
+        if (current_page is not MISSING) and (max_pages is not MISSING):
             self.set_page_footer(current_page, max_pages)
 
     def set_page_content(self, page_content: tuple | None = None) -> Self:

@@ -7,8 +7,6 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
-import datetime
-from datetime import datetime
 from io import BytesIO
 from typing import Literal, Pattern, TYPE_CHECKING
 
@@ -18,7 +16,7 @@ import discord
 from discord.ext import commands
 
 from utils.embeds import DTEmbed
-from fanfic_wrappers.atlas_wrapper import AtlasClient
+from fanfic_wrappers.atlas_wrapper import AtlasWrapper
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -35,11 +33,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     def __init__(self, bot: Beira):
         self.bot = bot
-        self.atlas_auth = BasicAuth(
-            login=bot.config["atlas_fanfic"]["user"],
-            password=bot.config["atlas_fanfic"]["pass"]
-        )
-        self.atlas_client = AtlasClient(
+        self.atlas_client = AtlasWrapper(
             auth=BasicAuth(
                 login=bot.config["atlas_fanfic"]["user"],
                 password=bot.config["atlas_fanfic"]["pass"]
@@ -81,7 +75,9 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     @commands.command()
     async def allow(self, ctx: commands.Context, channels: Literal["all", "this"] | None = "this") -> None:
-        """Set the bot to trigger in this channel.
+        """Set the bot to listen for Ao3/FFN links posted in this channel.
+
+        If allowed, the bot will respond automatically with an informational embed.
 
         Parameters
         ----------
@@ -107,7 +103,9 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     @commands.command()
     async def disallow(self, ctx: commands.Context, channels: Literal["all", "this"] | None = "this") -> None:
-        """Set the bot to not trigger in this channel.
+        """Set the bot to not listen for Ao3/FFN links posted in this channel.
+
+        If disallowed, the bot won't respond automatically with an informational embed.
 
         Parameters
         ----------
@@ -149,7 +147,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             profile_image = None
 
             if result := re.search(self.link_pattern["ao3_work"], name_or_url):
-                work_id = AO3.utils.workid_from_url(name_or_url)
+                work_id = result.group(3)
                 work = await self.bot.loop.run_in_executor(None, AO3.Work, work_id, self.ao3_session, True, False)
                 ao3_embed, profile_image = await self.create_ao3_work_embed(work)
 
@@ -187,12 +185,11 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         async with ctx.typing():
             if fic_id := self.atlas_client.extract_fic_id(name_or_url):
                 story_data = await self.atlas_client.get_story_metadata(fic_id)
-                ffn_embed = await self.create_ffn_embed(story_data)
             else:
                 results = await self.atlas_client.get_bulk_metadata(title_ilike=name_or_url, limit=1)
                 story_data = results[0]
-                ffn_embed = await self.create_ffn_embed(story_data)
 
+            ffn_embed = await self.create_ffn_embed(story_data)
             await ctx.reply(embed=ffn_embed)
 
     @staticmethod
@@ -220,7 +217,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             name="\N{SCROLL} Last Updated",
             value=f"{updated}"
         ).add_field(
-            name="\N{BOOK} Length",
+            name="\N{OPEN BOOK} Length",
             value=f"{work.words:,d} words in {work.nchapters} chapter(s)"
         ).add_field(
             name=f"\N{BOOKMARK} Rating: {work.rating}",
@@ -274,7 +271,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     async def create_ffn_embed(story: FFNMetadata) -> DTEmbed:
         """Create an embed that holds all the relevant metadata for a FanFiction.Net story."""
 
-        updated = datetime.fromisoformat(story.updated[:-1]).strftime('%B %d, %Y')
+        updated = story.updated.strftime('%B %d, %Y')
 
         ffn_embed = DTEmbed(
             title=story.title,
@@ -305,4 +302,6 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
 
 async def setup(bot: Beira):
+    """Connects cog to bot."""
+
     await bot.add_cog(FFMetadataCog(bot))

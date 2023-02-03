@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 from aiohttp import ClientSession
 
-from fanfic_wrappers.fichub_wrapper import FicHubClient
+from fanfic_wrappers.fichub_wrapper import FicHubWrapper
 
 AO3_TEST_URL = "https://archiveofourown.org/works/42297078/chapters/106207884"
 FFN_TEST_URL = "https://www.fanfiction.net/s/13912800/1/Magical-Marvel"
@@ -19,7 +19,7 @@ async def main():
     print("-----------------FicHub Testing-----------------")
 
     async with ClientSession() as session:
-        fichub = FicHubClient(session=session)
+        fichub = FicHubWrapper(session=session)
         print("Loaded FicHub Client.")
 
         # Get download URLs.

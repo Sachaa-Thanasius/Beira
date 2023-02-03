@@ -4,6 +4,8 @@ ai_generation.py: A cog with commands for doing fun AI things with OpenAI's API,
 
 from __future__ import annotations
 
+import asyncio
+import functools
 import logging
 import subprocess
 import tempfile as tf
@@ -19,10 +21,13 @@ from PIL import Image
 import discord
 from discord.ext import commands
 
+from utils.custom_logging import benchmark
+
 if TYPE_CHECKING:
     from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
+with_benchmark = functools.partial(benchmark, logger=LOGGER)
 FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to FFmpeg on your machine if need be.
 
 
@@ -240,6 +245,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             # Run the shell command to convert the morph mp4 into a gif.
             cmd2_list = [f'{FFMPEG}', '-i', f'{mp4_temp}', '-f', 'gif', f'{gif_temp}']
             subprocess.call(cmd2_list)
+            # await asyncio.create_subprocess_exec()
             LOGGER.info("GIF creation completed.")
 
             # Save the gif to a bytes stream.
@@ -269,6 +275,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         return url
 
+    @with_benchmark
     async def save_image_from_url(self, url: str) -> BytesIO:
 
         async with self.bot.web_session.get(url) as resp:

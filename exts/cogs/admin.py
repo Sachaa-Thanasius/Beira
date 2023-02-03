@@ -19,24 +19,21 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-# List for cogs that you don't want to be reloaded, using dot.style notation (e.g. "exts.cogs.snowball").
+# List for cogs that you don't want to be reloaded, using dot-style notation (e.g. "exts.cogs.snowball").
 IGNORE_EXTENSIONS = []
 
 # Find all extensions using the file path, excluding those in IGNORE_EXTENSIONS.
-ALL_EXTENSIONS = []
-cogs_folder = Path(__file__).parent
-for filepath in cogs_folder.iterdir():
-    if filepath.suffix == ".py":
-        ALL_EXTENSIONS.append((f"{filepath.stem}", f"exts.cogs.{filepath.stem}"))
+cogs_folder = Path(__file__).resolve().parent
+ALL_EXTENSIONS = [(f"{fp.stem}", f"exts.cogs.{fp.stem}") for fp in cogs_folder.iterdir() if fp.suffix == ".py"]
 
 
-class AdminCog(commands.Cog, name="Administration", command_attrs=dict(hidden=True)):
+class AdminCog(commands.Cog, name="Administration"):
     """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
-    @commands.command()
+    @commands.command(hidden=True)
     @commands.is_owner()
     async def walk(self, ctx: commands.Context) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
@@ -71,7 +68,7 @@ class AdminCog(commands.Cog, name="Administration", command_attrs=dict(hidden=Tr
 
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(hidden=True)
     @commands.is_owner()
     @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in ALL_EXTENSIONS])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
@@ -109,7 +106,7 @@ class AdminCog(commands.Cog, name="Administration", command_attrs=dict(hidden=Tr
 
                 await ctx.send(embed=embed, ephemeral=True)
 
-    @commands.hybrid_command()
+    @commands.hybrid_command(hidden=True)
     @commands.is_owner()
     @commands.guild_only()
     @app_commands.describe(
