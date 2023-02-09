@@ -5,13 +5,17 @@ help.py: A slight adjustment for using embeds to the minimal help commands, set 
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
+from collections.abc import Mapping
+from copy import deepcopy
+from typing import TYPE_CHECKING, Any
+from typing_extensions import Self
 
 import discord
 from discord.ext import commands
 from discord import app_commands
 
-from utils.embeds import DTEmbed
+from utils.embeds import DTEmbed, PaginatedEmbed
+from utils.paginated_views import PaginatedEmbedView
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -19,11 +23,191 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
+class HelpEmbed(PaginatedEmbed):
+    """A subclass of :class:`PaginatedEmbed` customized to create an embed 'page' for a help command."""
+
+    def __init__(self, **kwargs) -> None:
+        # Default color: 0x16a75d
+        input_color = kwargs.get("colour") if kwargs.get("colour") else kwargs.get("color")
+        colour = input_color if input_color else 0x16a75d
+        super().__init__(colour=colour, **kwargs)
+
+    def set_page_content(self, page_content: tuple | None = None) -> Self:
+        if page_content is None:
+            self.clear_fields()
+        else:
+            for (command_signature, command_doc) in page_content:
+                self.add_field(name=command_signature, value=command_doc, inline=False)
+
+        return self
+
+
+class HelpBotView(PaginatedEmbedView):
+    """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
+
+    This is for a call to `/help`.
+    """
+
+    def format_page(self) -> discord.Embed:
+        """Makes, or retrieves from the cache, the quote embed 'page' that the user will see.
+
+        Assumes a per_page value of 1.
+        """
+
+        embed_page = (
+            HelpEmbed(title="Help", description="**No Category**")
+            .add_field(name="N/A", value="No cogs or commands found.", inline=False)
+            .set_page_footer(0, 0)
+        )
+
+        if self.total_pages > 0:
+            if self.page_cache[self.current_page - 1] is None:
+                self.current_page_content = self.pages[self.current_page - 1][
+                    0]  # per_page value of 1 means parsing a list of length 1.
+
+                embed_page.description = f"**{self.current_page_content[0]}**"
+                embed_page.remove_field(0)
+                embed_page.set_page_content(self.current_page_content[1:])
+                embed_page.set_page_footer(self.current_page, self.total_pages)
+
+                self.page_cache[self.current_page - 1] = embed_page
+
+            else:
+                return deepcopy(self.page_cache[self.current_page - 1])
+
+        return embed_page
+
+
+class HelpCogView(PaginatedEmbedView):
+    """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
+
+    This is for a call to `/help <cog_name>`.
+    """
+
+    def __init__(self, cog_info: tuple, **kwargs):
+        super().__init__(**kwargs)
+        self.cog_info = cog_info
+
+    def format_page(self) -> discord.Embed:
+        """Makes, or retrieves from the cache, the quote embed 'page' that the user will see.
+
+        Assumes a per_page value of 1.
+        """
+
+        embed_page = (
+            HelpEmbed(color=0x16a75d, title=f"{self.cog_info[0]} Help", description=self.cog_info[1])
+            .add_field(name="N/A", value="No commands found.", inline=False)
+            .set_page_footer(0, 0)
+        )
+
+        if self.total_pages > 0:
+            if self.page_cache[self.current_page - 1] is None:
+                self.current_page_content = self.pages[self.current_page - 1][
+                    0]  # per_page value of 1 means parsing a list of length 1.
+
+                embed_page.remove_field(0)
+                embed_page.set_page_content(self.current_page_content)
+                embed_page.set_page_footer(self.current_page, self.total_pages)
+
+                self.page_cache[self.current_page - 1] = embed_page
+
+            else:
+                return deepcopy(self.page_cache[self.current_page - 1])
+
+        return embed_page
+
+
+class MyHelpCommand(commands.HelpCommand):
+    def __init__(self, **options: Any) -> None:
+        command_attrs = dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user)))
+        super().__init__(command_attrs=command_attrs, **options)
+
+    async def send_bot_help(self, mapping: Mapping[commands.Cog | None, list[commands.Command[Any, ..., Any]]], /) -> None:
+        pages_content = []
+        for cog, cmds in mapping.items():
+            filtered = await self.filter_commands(cmds, sort=True)
+            command_signatures = tuple((self.get_command_signature(c), c.help) for c in filtered)
+            if command_signatures:
+                cog_name = getattr(cog, "qualified_name", "No Category")
+                command_signatures = (cog_name,) + command_signatures
+                pages_content.append(command_signatures)
+
+        view = HelpBotView(author=self.context.author, all_pages_content=pages_content)
+
+        channel = self.get_destination()
+        await channel.send(embed=view.get_starting_embed(), view=view)
+
+    async def send_cog_help(self, cog: commands.Cog, /) -> None:
+        pages_content = []
+        page_size = 5
+
+        filtered = await self.filter_commands(cog.get_commands(), sort=True)
+        command_signatures = tuple((self.get_command_signature(c), c.help) for c in filtered)
+        if command_signatures:
+            if len(command_signatures) <= page_size:
+                pages_content.append(command_signatures)
+            else:
+                for i in range(0, len(command_signatures), page_size):
+                    pages_content.append(command_signatures[i: (i + page_size)])
+
+        cog_info = (getattr(cog, "qualified_name", "No Category"), getattr(cog, "description", "No Description"))
+        view = HelpCogView(cog_info=cog_info, author=self.context.author, all_pages_content=pages_content)
+
+        channel = self.get_destination()
+        await channel.send(embed=view.get_starting_embed(), view=view)
+
+    async def send_group_help(self, group: commands.Group[Any, ..., Any], /) -> None:
+        embed = HelpEmbed(title=f"Help: {self.get_command_signature(group)}")
+        embed.add_field(name="Description", value=group.help)
+        alias = group.aliases
+        if alias:
+            embed.add_field(name="Group Aliases", value=", ".join(alias), inline=False)
+
+        filtered = await self.filter_commands(group.walk_commands(), sort=True)
+        command_signatures = tuple((self.get_command_signature(c), c.help) for c in filtered)
+        if command_signatures:
+            embed.set_page_content(command_signatures)
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def send_command_help(self, command: commands.Command[Any, ..., Any], /) -> None:
+        embed = HelpEmbed(title=f"Help: {self.get_command_signature(command)}")
+        embed.add_field(name="Description", value=command.help)
+        alias = command.aliases
+        if alias:
+            embed.add_field(name="Aliases", value=", ".join(alias), inline=False)
+
+        channel = self.get_destination()
+        await channel.send(embed=embed)
+
+    async def command_not_found(self, string: str, /) -> str:
+        pass
+
+    async def subcommand_not_found(self, command: commands.Command[Any, ..., Any], string: str, /) -> str:
+        pass
+
+    async def send_error_message(self, error: str, /) -> None:
+        pass
+
+    async def prepare_help_command(self, ctx: commands.Context, command: str | None = None, /) -> None:
+        pass
+
+    def get_command_signature(self, command: commands.Command[Any, ..., Any], /) -> str:
+        """Returns a formatting string with the command signature.
+
+        Implementation is borrowed from :class:`commands.MinimalHelpCommand`.
+        """
+
+        return f'{self.context.clean_prefix}{command.qualified_name} {command.signature}'
+
+
 class LittleHelpCommand(commands.MinimalHelpCommand):
     """A very small customization of :class:`commands.MinimalHelpCommand` with embeds as message bodies and generous cooldowns."""
 
     def __init__(self) -> None:
-        super().__init__(command_attrs=dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user))))
+        command_attrs = dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user)))
+        super().__init__(command_attrs=command_attrs)
 
     async def send_pages(self) -> None:
         """A helper utility to send the page output from paginator to the destination. Modified to use embeds."""
@@ -54,12 +238,12 @@ class LittleHelpCog(commands.Cog, name="Help"):
 
         ctx = await self.bot.get_context(interaction, cls=commands.Context)
 
-        await interaction.response.defer(thinking=True)
-
         if command is not None:
             await ctx.send_help(command)
         else:
             await ctx.send_help()
+
+        await interaction.response.defer(thinking=False)
 
     @help.autocomplete("command")
     async def command_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:

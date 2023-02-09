@@ -18,7 +18,7 @@ from fanfic_wrappers.ff_metadata_classes import FFNMetadata
 LOGGER = logging.getLogger(__name__)
 
 
-class AtlasWrapper:
+class AtlasClient:
     """A small async wrapper for iris's Atlas FanFiction.Net (or FFN) API.
 
     Parameters

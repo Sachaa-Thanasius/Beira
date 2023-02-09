@@ -4,7 +4,6 @@ ai_generation.py: A cog with commands for doing fun AI things with OpenAI's API,
 
 from __future__ import annotations
 
-import asyncio
 import functools
 import logging
 import subprocess
@@ -255,6 +254,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         return gif_buffer
 
     @classmethod
+    @with_benchmark
     async def generate_ai_image(cls, prompt: str, size: tuple[int, int] = (256, 256)) -> str:
         """Makes a call to OpenAI's API to generate an image based on given inputs."""
 

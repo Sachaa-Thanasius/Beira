@@ -26,11 +26,11 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 # Constants
-ODDS = 0.6                  # Chance of hitting someone with a snowball.
-LEADERBOARD_MAX = 10        # Number of people shown on one leaderboard at a time.
-DEFAULT_STOCK_CAP = 100     # Maximum number of snowballs one can hold in their inventory, barring exceptions.
-SPECIAL_STOCK_CAP = 200     # Maximum number of snowballs for self and friends.
-TRANSFER_CAP = 10           # Maximum number of snowballs that can be gifted or stolen.
+ODDS = 0.6  # Chance of hitting someone with a snowball.
+LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
+DEFAULT_STOCK_CAP = 100  # Maximum number of snowballs one can hold in their inventory, barring exceptions.
+SPECIAL_STOCK_CAP = 200  # Maximum number of snowballs for self and friends.
+TRANSFER_CAP = 10  # Maximum number of snowballs that can be gifted or stolen.
 
 
 class SnowballCog(commands.Cog, name="Snowball"):
@@ -106,7 +106,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             The invocation context where the command was called.
         """
 
-        await self.update_record(ctx.author, stock=1)
+        await self.update_snowball_record(ctx.author, stock=1)
 
         query = "SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
@@ -132,7 +132,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.hybrid_command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: commands.Context, target: Annotated[discord.Member, MemberNoSelfTargetConverter]) -> None:
+    async def throw(self, ctx: commands.Context,
+                    target: Annotated[discord.Member, MemberNoSelfTargetConverter]) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
@@ -156,15 +157,15 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
             # Update the database records and prepare the response message and embed based on the outcome.
             if roll > ODDS:
-                await self.update_record(ctx.author, hits=1, stock=-1)
-                await self.update_record(target, kos=1)
+                await self.update_snowball_record(ctx.author, hits=1, stock=-1)
+                await self.update_snowball_record(target, kos=1)
 
                 embed.description = random.choice(self.embed_data["hits"]["notes"]).format(target.mention)
                 embed.set_image(url=random.choice(self.embed_data["hits"]["gifs"]))
                 message = f"{target.mention}"
 
             else:
-                await self.update_record(ctx.author, misses=1)
+                await self.update_snowball_record(ctx.author, misses=1)
 
                 misses_text = random.choice(self.embed_data["misses"]["notes"])
                 embed.colour = 0xffa600
@@ -182,7 +183,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.hybrid_command()
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
-    @app_commands.describe(receiver="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
+    @app_commands.describe(
+        receiver="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
     async def transfer(
             self,
             ctx: commands.Context,
@@ -208,10 +210,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
-            stock_cap = SPECIAL_STOCK_CAP
-        else:
-            stock_cap = DEFAULT_STOCK_CAP
+        stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         giver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
@@ -237,8 +236,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return
 
         # Update the giver and receiver's records.
-        await self.update_record(ctx.author, stock=-amount)
-        await self.update_record(receiver, stock=amount)
+        await self.update_snowball_record(ctx.author, stock=-amount)
+        await self.update_snowball_record(receiver, stock=amount)
 
         # Send notification message of successful transfer.
         success_embed = discord.Embed(
@@ -280,10 +279,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=def_embed, ephemeral=True)
             return
 
-        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
-            stock_cap = SPECIAL_STOCK_CAP
-        else:
-            stock_cap = DEFAULT_STOCK_CAP
+        stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         thief_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
@@ -303,8 +299,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return
 
         # Update the giver and receiver's records.
-        await self.update_record(ctx.author, stock=amount)
-        await self.update_record(victim, stock=-amount)
+        await self.update_snowball_record(ctx.author, stock=amount)
+        await self.update_snowball_record(victim, stock=-amount)
 
         # Send notification message of successful theft.
         def_embed.description = f"Thievery successful! You've stolen {amount} snowballs from {victim.mention}!"
@@ -374,7 +370,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
-            title = f"**Global Player Statistics for {target}**"    # Formerly 0x2f3171
+            title = f"**Global Player Statistics for {target}**"  # Formerly 0x2f3171
             headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
             emojis = [self.bot.emojis_stock["snowsgive_phi"]]
 
@@ -486,25 +482,27 @@ class SnowballCog(commands.Cog, name="Snowball"):
         code_value = self.embed_data["inspo"]["note"].format(self.embed_data["inspo"]["url"])
         inspo_value = self.embed_data["code"]["note"].format(self.embed_data["code"]["url"])
 
-        embed = discord.Embed(color=0xdd8b42, title="**Sources of Inspiration and Code**")
-        embed.add_field(name="Inspiration", value=code_value, inline=False)
-        embed.add_field(name="Code", value=inspo_value, inline=False)
-
+        embed = (
+            discord.Embed(color=0xdd8b42, title="**Sources of Inspiration and Code**")
+            .add_field(name="Inspiration", value=code_value, inline=False)
+            .add_field(name="Code", value=inspo_value, inline=False)
+        )
         await ctx.send(embed=embed, ephemeral=True)
 
-    async def update_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
-                            stock: int = 0) -> None:
+    async def update_snowball_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
+                                     stock: int = 0) -> None:
         """Upserts a user's snowball stats based on the given stat parameters."""
 
         stock_insert = stock
 
+        # Upsert the relevant users and guilds to the database before adding a snowball record..
         await upsert_users(self.bot.db_pool, member)
         await upsert_guilds(self.bot.db_pool, member.guild)
 
         # Save any snowball stock decrement for the update portion of the upsert.
         stock_insert = max(stock_insert, 0)
 
-        snowball_stats_upsert = """
+        snowball_upsert_query = """
             INSERT INTO snowball_stats (user_id, guild_id, hits, misses, kos, stock)
             VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (user_id, guild_id) DO UPDATE
@@ -513,7 +511,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
                     kos = snowball_stats.kos + EXCLUDED.kos,
                     stock = snowball_stats.stock + $7;
         """
-        await self.bot.db_pool.execute(snowball_stats_upsert, member.id, member.guild.id, hits, misses, kos, stock_insert, stock)
+        await self.bot.db_pool.execute(snowball_upsert_query, member.id, member.guild.id, hits, misses, kos,
+                                       stock_insert, stock)
 
     async def _make_leaderboard_fields(self, embed: StatsEmbed, records: list[Record]) -> None:
         """Edits a leaderboard embed by adding information about its members through fields.

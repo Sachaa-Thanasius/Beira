@@ -5,6 +5,7 @@ first.
 
 from __future__ import annotations
 
+import functools
 import logging
 from typing import TYPE_CHECKING
 
@@ -16,11 +17,13 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.embeds import EMOJI_URL, DTEmbed
+from utils.custom_logging import benchmark
 
 if TYPE_CHECKING:
     from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
+with_benchmark = functools.partial(benchmark, logger=LOGGER)
 
 all_wiki_names = []
 
@@ -51,14 +54,9 @@ class AoCWikiEmbed(DTEmbed):
         super().__init__(**kwargs)
 
         aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
-
-        if not author_icon_url:
-            author_icon_id = 770620658501025812                 # aoc emoji
-            author_icon_url = EMOJI_URL.format(author_icon_id)
-
-        if not footer_icon_url:
-            footer_icon_id = 1061029880059400262                # mr. jare emoji
-            footer_icon_url = EMOJI_URL.format(footer_icon_id)
+        aoc_id, jare_id = 770620658501025812, 1061029880059400262
+        author_icon_url = EMOJI_URL.format(aoc_id) if (author_icon_url is None) else author_icon_url
+        footer_icon_url = EMOJI_URL.format(jare_id) if (footer_icon_url is None) else footer_icon_url
 
         self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
         self.set_footer(text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
@@ -72,7 +70,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     Parameters
     ----------
-    bot : :class:`bot.Beira`
+    bot : :class:`Beira`
         The main Discord bot this cog is a part of.
     """
 
@@ -85,6 +83,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         await self.load_all_wiki_pages()
 
+    @with_benchmark
     async def load_all_wiki_pages(self):
         """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
 
@@ -120,7 +119,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
     @app_commands.choices(wiki=[app_commands.Choice(name=name, value=name) for name in all_wiki_names])
-    async def wiki(self, ctx: commands.Context, *, wiki: str, search_term: str) -> None:
+    async def wiki(self, ctx: commands.Context, wiki: str, search_term: str) -> None:
         """Search a selection of pre-indexed Fandom wikis. General purpose.
 
         Parameters
@@ -179,7 +178,8 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 get_wiki_name = self.all_wikis.get(wiki_name)
 
         # --------------------------------
-        # Check if the wiki has any pages.
+
+        # Check if the wiki has any recorded pages.
         get_wiki_pages: dict = get_wiki_name.get("all_pages")
 
         if get_wiki_pages is None:
@@ -187,9 +187,9 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             return failed_embed
 
         # --------------------------------
+
         # Check if the wiki has the requested query as a page.
-        final_embed_type = AoCWikiEmbed if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed
-        final_embed = final_embed_type()
+        final_embed = AoCWikiEmbed() if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed()
 
         get_specific_wiki_page: str = get_wiki_pages.get(wiki_query)
 
@@ -213,11 +213,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         wiki_page_link = urljoin(self.all_wikis[wiki_name]['base_url'], get_specific_wiki_page)
 
         # --------------------------------
+
         # Add the primary embed parameters.
         final_embed.title = wiki_query
         final_embed.url = wiki_page_link
 
-        # --------------------------------
         # Fetch information from the character webpage to populate the rest of the embed.
         summary, thumbnail = await self._process_fandom_page(wiki_page_link)
 

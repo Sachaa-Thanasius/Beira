@@ -26,34 +26,30 @@ class PageNumEntryModal(Modal):
     ----------
     input_page_num : :class:`TextInput`
         A UI text input element to allow users to enter a page number.
+    interaction : :class:`discord.Interaction`
+        The interaction of the user with the modal.
     page_limit : :class:`int`
         The maximum integer value of pages that can be entered.
     """
 
-    input_page_num = TextInput(label="Page", placeholder="Enter digits here...", required=True, min_length=1)
+    input_page_num = TextInput(label="Page", placeholder="Enter page number here...", required=True, min_length=1)
 
     def __init__(self, page_limit: int) -> None:
         super().__init__(title="Page Jump", custom_id="page_entry_modal")
+        self.interaction = None
         self.page_limit = page_limit
 
     async def on_submit(self, interaction: discord.Interaction, /) -> None:
-        """Performs operations on the modal input when it is submitted, including a check for validity as an integer."""
+        """Performs validation on the input and saves the interaction for a later response."""
 
-        LOGGER.info("Entered modal on_submit().")
         temp = int(self.input_page_num.value)
         if temp > self.page_limit or temp < 1:
             raise IndexError
-        await interaction.response.defer()
+        self.interaction = interaction
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, /) -> None:
-        """A callback for when :meth:`on_submit` fails with an error."""
-
-        LOGGER.error(f"Entered modal on_error(): {error}")
-        if isinstance(error, ValueError):
-            LOGGER.error("Value put in PageNumberEntryModal was not an integer.")
-        elif isinstance(error, IndexError):
-            LOGGER.error("Value put in PageNumberEntryModal was out of range.")
-        else:
+        LOGGER.error(f"Entered modal on_error().")
+        if not isinstance(error, (ValueError, IndexError)):
             LOGGER.exception("Unknown Modal error.", exc_info=error)
 
 
@@ -62,20 +58,22 @@ class PaginatedEmbedView(View):
 
     Parameters
     ----------
-    interaction : :class:`discord.Interaction`
-        The interaction triggered this view.
+    author : :class:`discord.User | :class:`discord.Member`
+        The user that triggered this view. No one else can use it.
     all_pages_content : list[Any]
         The text content for every possible page.
+    per_page : :class:`int`
+        The number of entries to be displayed per page.
 
     Attributes
     ----------
-    latest_interaction : :class:`discord.Interaction`
-        The interaction that most recently interacted with this view in a valid way.
-    initial_user : :class:`discord.User | :class:`discord.Member`
+    message : :class:`discord.Message`
+        The message to which the view is attached to, allowing interaction without a :class:`discord.Interaction`.
+    author : :class:`discord.User | :class:`discord.Member`
         The user that triggered this view. No one else can use it.
     per_page : :class:`int`
         The number of entries to be displayed per page.
-    total_page_count : :class:`int`
+    total_pages : :class:`int`
         The total number of pages.
     pages : list[Any | None]
         A list of content for pages, split according to how much content is wanted per page.
@@ -89,15 +87,15 @@ class PaginatedEmbedView(View):
         The content on the current page.
     """
 
-    def __init__(self, *, interaction: discord.Interaction, view_owner: discord.abc.User, all_pages_content: list[Any], per_page: int = 1) -> None:
+    def __init__(self, *, author: discord.User | discord.Member, all_pages_content: list[Any], per_page: int = 1) -> None:
         super().__init__(timeout=60.0)
 
-        self.latest_interaction = interaction
-        self.initial_user = view_owner
+        self.message = None
+        self.author = author
 
         # Page-related instance variables.
         self.per_page = per_page
-        self.total_page_count = len(all_pages_content)
+        self.total_pages = len(all_pages_content)
 
         self.pages = [all_pages_content[i: (i + per_page)] for i in range(0, len(all_pages_content), per_page)]
         self.page_cache: list[Any] = [None for _ in self.pages]
@@ -110,17 +108,13 @@ class PaginatedEmbedView(View):
         self.update_page_buttons()
 
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
-        """Keeps up to date on the latest interaction to maintain the ability to interact with the view outside of items.
+        """Ensures that the user interacting with the view was the one who instantiated it."""
 
-        Also ensures that the user interacting with the view was the one who instantiated it.
-        """
+        check = (self.author == interaction.user)
+        if not check:
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=30)
 
-        if self.initial_user != interaction.user:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=10)
-            return False
-        else:
-            self.latest_interaction = interaction
-            return True
+        return check
 
     async def on_timeout(self) -> None:
         """Disables all buttons when the view times out."""
@@ -130,11 +124,14 @@ class PaginatedEmbedView(View):
 
         self.stop()
 
-        await self.latest_interaction.edit_original_response(view=self)
-        LOGGER.info("View timed out.")
+        if self.message:
+            await self.message.edit(view=self)
 
-    async def format_page(self) -> discord.Embed:
-        """Makes, or retrieves from the cache, the embed 'page' that the user will see."""
+    def format_page(self) -> discord.Embed:
+        """Makes, or retrieves from the cache, the embed 'page' that the user will see.
+
+        Must be implemented in a subclass.
+        """
 
         raise NotImplementedError("Page formatting must be set up in a subclass.")
 
@@ -142,7 +139,7 @@ class PaginatedEmbedView(View):
         """Enables and disables page-turning buttons based on page count, position, and movement."""
 
         # Disable buttons based on the total number of pages.
-        if self.total_page_count == 1:
+        if self.total_pages <= 1:
             self.turn_to_previous_page.disabled = True
             self.turn_to_first_page.disabled = True
             self.turn_to_next_page.disabled = True
@@ -158,7 +155,7 @@ class PaginatedEmbedView(View):
             self.turn_to_previous_page.disabled = True
             self.turn_to_first_page.disabled = True
 
-        elif self.current_page == self.total_page_count:
+        elif self.current_page == self.total_pages:
             self.turn_to_next_page.disabled = True
             self.turn_to_last_page.disabled = True
 
@@ -167,39 +164,42 @@ class PaginatedEmbedView(View):
             self.turn_to_previous_page.disabled = False
             self.turn_to_first_page.disabled = False
 
-        elif self.former_page == self.total_page_count and self.current_page != self.total_page_count:
+        elif self.former_page == self.total_pages and self.current_page != self.total_pages:
             self.turn_to_next_page.disabled = False
             self.turn_to_last_page.disabled = False
 
-    async def update_page(self, new_page: int) -> discord.Embed:
-        """Update everything required for the newest page to be displayed, and return the embed representation."""
+    def get_starting_embed(self) -> discord.Embed:
+        self.former_page, self.current_page = 1, 1
+        embed_page = self.format_page()
+        return embed_page
+
+    async def update_page(self, interaction: discord.Interaction, new_page: int) -> None:
+        """Update and display the view for the given page."""
 
         self.former_page = self.current_page    # Update the page number.
         self.current_page = new_page
-        embed_page = await self.format_page()   # Update the page embed.
+        embed_page = self.format_page()   # Update the page embed.
         self.update_page_buttons()              # Update the page buttons.
-        return embed_page
+        await interaction.response.edit_message(embed=embed_page, view=self)
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:first")
     async def turn_to_first_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Skips to the first page of the view."""
 
-        embed_page = await self.update_page(1)
-        await interaction.response.edit_message(embed=embed_page, view=self)
+        await self.update_page(interaction, 1)
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:prev")
     async def turn_to_previous_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the previous page of the view."""
 
-        embed_page = await self.update_page(self.current_page - 1)
-        await interaction.response.edit_message(embed=embed_page, view=self)
+        await self.update_page(interaction, self.current_page - 1)
 
     @discord.ui.button(label="Turn to ...", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
     async def enter_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Sends a modal that a user to enter their own page number into."""
 
         # Get page number from a modal.
-        modal = PageNumEntryModal(self.total_page_count)
+        modal = PageNumEntryModal(self.total_pages)
         await interaction.response.send_modal(modal)
         modal_result = await modal.wait()
 
@@ -211,30 +211,25 @@ class PaginatedEmbedView(View):
         if self.current_page == temp_new_page:
             return
 
-        embed_page = await self.update_page(temp_new_page)
-        await interaction.edit_original_response(embed=embed_page, view=self)
+        await self.update_page(modal.interaction, temp_new_page)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="page_view:next")
     async def turn_to_next_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the next page of the view."""
 
-        embed_page = await self.update_page(self.current_page + 1)
-        await interaction.response.edit_message(embed=embed_page, view=self)
+        await self.update_page(interaction, self.current_page + 1)
 
     @discord.ui.button(label="≫", style=discord.ButtonStyle.blurple, custom_id="page_view:last")
     async def turn_to_last_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Skips to the last page of the view."""
 
-        embed_page = await self.update_page(self.total_page_count)
-        await interaction.response.edit_message(embed=embed_page, view=self)
+        await self.update_page(interaction, self.total_pages)
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red, custom_id="page_view:quit")
     async def quit_view(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Removes all buttons and ends the view."""
 
-        self.clear_items()
         self.stop()
-
-        await interaction.response.defer()
-        await interaction.edit_original_response(view=self)
-        LOGGER.info("Quit view.")
+        await interaction.response.edit_message(view=None)
+        # await interaction.response.defer()
+        # await interaction.edit_original_response(view=self)

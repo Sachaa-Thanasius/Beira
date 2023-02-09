@@ -56,8 +56,8 @@ class AO3Metadata:
     title: str
     description: str  # Has paragraph tags
     chapters: int
-    # created: str
-    published: datetime
+    created: datetime
+    # published:
     status: str
     source: str
     updated: datetime
@@ -71,6 +71,7 @@ class AO3Metadata:
     rating: list[str] = field(factory=list)
     relationship: list[str] = field(factory=list)
     warning: list[str] = field(factory=list)
+    err: str | None = None
 
 
 @define

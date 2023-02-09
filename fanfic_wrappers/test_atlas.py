@@ -7,7 +7,7 @@ from __future__ import annotations
 import asyncio
 from aiohttp import BasicAuth, ClientSession
 
-from fanfic_wrappers.atlas_wrapper import AtlasWrapper
+from fanfic_wrappers.atlas_wrapper import AtlasClient
 
 AO3_TEST_URL = "https://archiveofourown.org/works/42297078/chapters/106207884"
 FFN_TEST_URL = "https://www.fanfiction.net/s/13912800/1/Magical-Marvel"
@@ -20,7 +20,7 @@ async def main():
 
     async with ClientSession() as session:
         atlas_auth = BasicAuth(login="atlas_AlxesDb7hZ", password="GgBdeJjvo4EhO2kA8W29")
-        atlas = AtlasWrapper(auth=atlas_auth, session=session)
+        atlas = AtlasClient(auth=atlas_auth, session=session)
         print("Loaded Atlas Client.")
 
         atlas_max_update_id = await atlas.get_max_update_id()

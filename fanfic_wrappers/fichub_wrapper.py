@@ -19,7 +19,7 @@ from fanfic_wrappers.ff_metadata_classes import AO3Metadata, FicHubDownloadUrls
 LOGGER = logging.getLogger(__name__)
 
 
-class FicHubWrapper:
+class FicHubClient:
     """A small async wrapper for FicHub's fanfic API, specifically with functionality for Ao3 urls and results.
 
     Parameters

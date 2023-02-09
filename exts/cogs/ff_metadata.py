@@ -16,7 +16,7 @@ import discord
 from discord.ext import commands
 
 from utils.embeds import DTEmbed
-from fanfic_wrappers.atlas_wrapper import AtlasWrapper
+from fanfic_wrappers.atlas_wrapper import AtlasClient
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -33,7 +33,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     def __init__(self, bot: Beira):
         self.bot = bot
-        self.atlas_client = AtlasWrapper(
+        self.atlas_client = AtlasClient(
             auth=BasicAuth(
                 login=bot.config["atlas_fanfic"]["user"],
                 password=bot.config["atlas_fanfic"]["pass"]

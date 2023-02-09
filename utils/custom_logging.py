@@ -4,7 +4,9 @@ custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
 
 from __future__ import annotations
 
-import functools
+import asyncio
+from contextlib import contextmanager
+from functools import wraps
 import logging
 from collections.abc import Callable
 from time import perf_counter
@@ -104,15 +106,42 @@ class CustomLogger:
 
 
 def benchmark(func: Callable[..., Any], logger: logging.Logger) -> Callable[..., Any]:
-    @functools.wraps(func)
-    async def wrapper(*args: Any, **kwargs: Any) -> Any:
+    """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
+
+    Parameters
+    ----------
+    func : Callable[..., Any]
+        The function being benchmarked.
+    logger : :class:`logging.Logger`
+        The logger being used to display the benchmark.
+
+    Returns
+    -------
+    wrapper : Callable[..., Any]
+        A modified function decorated with a benchmark logging mechanism.
+    """
+
+    @contextmanager
+    def benchmark_logic():
+        """Context manager that actually measures the function execution time."""
+
         start_time = perf_counter()
-        value = await maybe_coroutine(func, *args, **kwargs)
+        yield
         end_time = perf_counter()
-
         run_time = end_time - start_time
-        logger.info(f"Execution of {func.__name__} took {run_time:.5f}.")
+        logger.info(f"Execution of {func.__name__} took {run_time:.5f}s.")
 
-        return value
+    # Pick the wrapper based on whether the given function is sync or async.
+    if asyncio.iscoroutinefunction(func):
+        @wraps(func)
+        async def wrapper(*args: Any, **kwargs: Any) -> Any:
+            with benchmark_logic():
+                return await func(*args, **kwargs)
+
+    else:
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> Any:
+            with benchmark_logic():
+                return func(*args, **kwargs)
 
     return wrapper

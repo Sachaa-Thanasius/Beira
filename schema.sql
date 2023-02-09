@@ -52,12 +52,11 @@ CREATE TABLE IF NOT EXISTS commands (
     guild_id        BIGINT                      REFERENCES guilds(id)   ON DELETE CASCADE,
     channel_id      BIGINT,
     user_id         BIGINT                      REFERENCES users(id)    ON DELETE CASCADE,
-    date_time        TIMESTAMP WITH TIME ZONE,
+    date_time       TIMESTAMP WITH TIME ZONE,
     prefix          TEXT,
     command         TEXT,
     app_command     BOOLEAN                     NOT NULL                DEFAULT FALSE,
-    failed          BOOLEAN,
-    command_args    JSONB                       DEFAULT '{}'::JSONB
+    failed          BOOLEAN
 );
 
 CREATE INDEX IF NOT EXISTS commands_guild_id_idx ON commands(guild_id);

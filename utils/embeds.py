@@ -9,6 +9,7 @@ from collections.abc import Sequence
 import datetime
 from typing import Any, Callable, TYPE_CHECKING
 
+import discord
 from typing_extensions import Self
 
 from discord import Embed
@@ -107,7 +108,7 @@ class PaginatedEmbed(Embed):
         """
 
         if page_content is None:
-            self.title = "N/A"
+            self.title = "Nothing found"
             if self.fields:
                 self.remove_field(0)
 
@@ -173,19 +174,23 @@ class StatsEmbed(DTEmbed):
             emoji_header_status: bool = False,
             **kwargs
     ) -> None:
-
-        # Annoying setup for default color. Adjust later.
-        colour = 0x2f3136
-        if (kwargs.get("color") is not None) or (kwargs.get("colour") is not None):
-            colour = kwargs.get("colour") if kwargs.get("colour") is not None else kwargs.get("color")
+        input_color = kwargs.get("colour") if kwargs.get("colour") else kwargs.get("color")
+        colour = input_color if input_color else 0x2f3136
         super().__init__(colour=colour, **kwargs)
 
         if stat_names or stat_emojis or stat_values:
-            self.add_stat_fields(stat_names, stat_emojis, stat_values, inline, emoji_header_status)
+            self.add_stat_fields(
+                stat_names=stat_names,
+                stat_emojis=stat_emojis,
+                stat_values=stat_values,
+                inline=inline,
+                emoji_header_status=emoji_header_status
+            )
 
     @field_range_tracking
     def add_stat_fields(
             self,
+            *,
             stat_names: Sequence[Any],
             stat_emojis: Sequence[Emoji | str],
             stat_values: Sequence[Any],
@@ -228,6 +233,7 @@ class StatsEmbed(DTEmbed):
     @field_range_tracking
     def add_leaderboard_fields(
             self,
+            *,
             ldbd_content: Sequence[Sequence[Any]],
             ldbd_emojis: Sequence[Emoji | str],
             name_format: str = "| {}",

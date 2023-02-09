@@ -6,14 +6,17 @@ from __future__ import annotations
 
 import json
 import logging
+from datetime import timedelta
 from time import perf_counter
-from typing import Any, TYPE_CHECKING
+from typing import Any, TYPE_CHECKING, Literal
 
 import discord
 from discord.ext import commands
+from discord.app_commands import Choice
 from discord.utils import utcnow
 
 from utils.db_funcs import upsert_users, upsert_guilds
+from utils.embeds import StatsEmbed
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -36,6 +39,26 @@ def is_jsonable(obj: Any) -> bool:
         return False
 
 
+class StatsRetrievalFlags(commands.FlagConverter):
+    """Flags for commands """
+    time_period: Literal["today", "last month", "last year", "all time"] = commands.flag(
+        default="all time",
+        description="Whether to stay local or look among all guilds. Defaults to 'all time'."
+    )
+    command: str = commands.flag(
+        default=None,
+        description="The command to look up. Optional."
+    )
+    guilds: bool = commands.flag(
+        default=False,
+        description="Whether to look at guilds or users."
+    )
+    universal: bool = commands.flag(
+        default=False,
+        description="Whether to look at users among all guilds. Defaults to False."
+    )
+
+
 class BotStatsCog(commands.Cog, name="Bot Stats"):
     """A cog for tracking different bot metrics."""
 
@@ -51,19 +74,10 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             The invocation context for the command.
         """
 
-        # Some preprocessing for the command arguments, depending on:
-        # - Whether the command was prefix- or app-based.
-        # - Whether it can be directly converted to a JSON string.
-        is_app_command = ctx.interaction is not None
-        command_args = {
-            "args": [(arg if is_jsonable(arg) else arg.__repr__()) for arg in ctx.args if not isinstance(arg, (commands.Cog, commands.Context))],
-            "kwargs": {name: (kwarg if is_jsonable(kwarg) else kwarg.__repr__()) for name, kwarg in ctx.kwargs.items()}
-        }
-
         # Make sure all possible involved users and guilds are in the database before using their ids as foreign keys.
         user_info, guild_info = [ctx.author], [ctx.guild]
 
-        for arg in (command_args["args"] + list(command_args["kwargs"].values())):
+        for arg in (ctx.args + list(ctx.kwargs.values())):
             if isinstance(arg, (discord.User, discord.Member)):
                 user_info.append(arg)
             elif isinstance(arg, discord.Guild):
@@ -82,14 +96,13 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             utcnow(),
             ctx.prefix,
             ctx.command.qualified_name,
-            is_app_command,
-            ctx.command_failed,
-            command_args
+            (ctx.interaction is not None),
+            ctx.command_failed
         )
 
         query = """
-            INSERT into commands (guild_id, channel_id, user_id, date_time, prefix, command, app_command, failed, command_args)
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9::JSONB)
+            INSERT into commands (guild_id, channel_id, user_id, date_time, prefix, command, app_command, failed)
+            VALUES($1, $2, $3, $4, $5, $6, $7, $8)
         """
         await self.bot.db_pool.execute(query, *cmd)
 
@@ -109,13 +122,21 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """
 
         if (
-            interaction.command is not None and
-            interaction.type is discord.InteractionType.application_command and
-            not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
+                interaction.command is not None and
+                interaction.type is discord.InteractionType.application_command and
+                not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
         ):
             ctx = await commands.Context.from_interaction(interaction)
             ctx.command_failed = interaction.command_failed
             await self.track_command_use(ctx)
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+        """Record prefix, hybrid, and application command usage, even if the result is an error."""
+
+        if not isinstance(error, commands.CommandNotFound):
+            await self.track_command_use(ctx)
+        await self.bot.on_command_error(ctx, error)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
@@ -123,8 +144,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         await upsert_guilds(self.bot.db_pool, guild)
 
-    @commands.hybrid_command()
-    async def ping(self, ctx: commands.Context) -> None:
+    @commands.hybrid_command(name="ping")
+    async def _ping(self, ctx: commands.Context) -> None:
         """Display the time necessary for the bot to communicate with Discord.
 
         Parameters
@@ -138,6 +159,116 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         end_time = perf_counter()
 
         await message.edit(content=f"Pong! {end_time - start_time:.3f}s")
+
+    @commands.hybrid_command(name="usage")
+    async def check_usage(
+            self,
+            ctx: commands.Context,
+            *, flags: StatsRetrievalFlags
+    ) -> None:
+        """Retrieve statistics about bot command usage.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        flags : :class:`StatsRetrievalFlags`
+            The inputs used to generate the stats query.
+        """
+
+        match flags.time_period:
+            case "today":
+                actual_time_pd = 1
+            case "last month":
+                actual_time_pd = 30
+            case "last year":
+                actual_time_pd = 365
+            case _:
+                actual_time_pd = 0
+
+        guild = None if flags.guilds else ctx.guild
+
+        records = await self.get_usage(actual_time_pd, flags.command, guild, flags.universal)
+        print(records)
+
+        ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
+        ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
+        embed = StatsEmbed(color=0x193d2c, title="Commands Leaderboard", description="―――――――――――")
+        if records:
+            embed.add_leaderboard_fields(ldbd_content=records, ldbd_emojis=ldbd_emojis)
+        else:
+            embed.description += "\nNo records found."
+
+        await ctx.reply(embed=embed)
+
+    async def get_usage(
+            self,
+            time_period: int = 0,
+            command: str | None = None,
+            guild: discord.Guild | None = None,
+            universal: bool = False
+    ):
+        """Queries the database for command usage."""
+
+        query_args = ()         # Holds the query args as objects.
+        where_params = []       # Holds the query params as formatted strings.
+
+        # Create the base queries.
+        if guild:
+            query = """
+                SELECT member_name, COUNT(*)
+                FROM commands cmds INNER JOIN users u on cmds.user_id = u.id
+                GROUP BY member_name
+                ORDER BY COUNT(*) DESC
+                LIMIT 10;
+            """
+
+            if universal:
+                query_args += (guild.id,)
+                where_params.append(f"guild_id = ${len(query_args)}")
+
+        else:
+            query = """
+                SELECT guild_name, COUNT(*)
+                FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.id
+                GROUP BY guild_name
+                ORDER BY COUNT(*) DESC
+                LIMIT 10;
+            """
+
+        where_index = query.find("GROUP BY") - 1
+
+        # Modify the queries further.
+        if time_period or command:
+            if time_period > 0:
+                query_args += (utcnow() - timedelta(days=time_period),)
+                where_params.append(f"date_time >= ${len(query_args)}")
+
+            if command:
+                query_args += (command,)
+                where_params.append(f"command = ${len(query_args)}")
+
+        # Reassemble the query if there was user input.
+        if len(query_args) > 0:
+            query = query[:where_index] + " WHERE " + " AND ".join(where_params) + query[where_index:]
+
+        return await self.bot.db_pool.fetch(query, *query_args)
+
+    @check_usage.autocomplete("command")
+    async def command_autocomplete(self, interaction: discord.Interaction, current: str) -> list[Choice[str]]:
+        """Autocompletes the help command."""
+
+        assert self.bot.help_command
+        ctx = await self.bot.get_context(interaction, cls=commands.Context)
+        help_command = self.bot.help_command.copy()
+        help_command.context = ctx
+
+        current = current.lower()
+        return [
+                   Choice(name=command.qualified_name, value=command.qualified_name)
+                   for command in await help_command.filter_commands(self.bot.walk_commands(), sort=True)
+                   if current in command.qualified_name
+               ][:25]
 
 
 async def setup(bot: Beira):

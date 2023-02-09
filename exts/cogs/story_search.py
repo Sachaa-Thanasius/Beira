@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import logging
 import re
+from functools import partial
 from pathlib import Path
 from copy import deepcopy
 from random import choice, randint
-from time import perf_counter
 from bisect import bisect_left
 from typing import TYPE_CHECKING, ClassVar
 from typing_extensions import Self
@@ -23,11 +23,13 @@ from discord.utils import MISSING
 
 from utils.embeds import PaginatedEmbed, EMOJI_URL
 from utils.paginated_views import PaginatedEmbedView
+from utils.custom_logging import benchmark
 
 if TYPE_CHECKING:
     from bot import Beira
 
 LOGGER = logging.getLogger(__name__)
+with_benchmark = partial(benchmark, logger=LOGGER)
 
 
 @define
@@ -54,8 +56,7 @@ class StoryQuoteEmbed(PaginatedEmbed):
     story_data : dict, optional
         The information about the story to be put in the author field, including the story title, author, and link.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`. Refer to that class for all
-        possible arguments.
+        Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`. See that class for more info.
     """
 
     def __init__(self, *, story_data: dict | None = MISSING, **kwargs) -> None:
@@ -63,12 +64,6 @@ class StoryQuoteEmbed(PaginatedEmbed):
 
         if story_data is not MISSING:
             self.set_page_author(story_data)
-
-    def set_page_content(self, page_content: tuple | None = None) -> Self:
-        return super().set_page_content(page_content)
-
-    def set_page_footer(self, current_page: int | None = None, max_pages: int | None = None) -> Self:
-        return super().set_page_footer(current_page, max_pages)
 
     def set_page_author(self, story_data: dict | None = None) -> Self:
         """Sets the author for this embed page.
@@ -97,8 +92,7 @@ class StoryQuoteView(PaginatedEmbedView):
     story_data : dict
         The story's data and metadata, including full name, author name, and image representation.
     **kwargs
-        Keyword arguments the normal initialization of an :class:`PaginatedEmbedView`. Refer to that class for all
-        possible arguments.
+        Keyword arguments the normal initialization of an :class:`PaginatedEmbedView`. See that class for more info.
 
     Attributes
     ----------
@@ -110,30 +104,27 @@ class StoryQuoteView(PaginatedEmbedView):
         super().__init__(**kwargs)
         self.story_data = story_data
 
-    async def format_page(self) -> discord.Embed:
+    def format_page(self) -> discord.Embed:
         """Makes, or retrieves from the cache, the quote embed 'page' that the user will see.
 
         Assumes a per_page value of 1.
         """
 
-        if self.page_cache[self.current_page - 1] is not None:
-            return deepcopy(self.page_cache[self.current_page - 1])
+        embed_page = StoryQuoteEmbed(story_data=self.story_data, color=0x149cdf)
+
+        if self.total_pages == 0:
+            embed_page.set_page_content(("No quotes found!", "N/A", "N/A")).set_page_footer(0, 0)
 
         else:
-            # per_page value of 1 means parsing a list of length 1.
-            self.current_page_content = self.pages[self.current_page - 1][0]
+            if self.page_cache[self.current_page - 1] is None:
+                self.current_page_content = self.pages[self.current_page - 1][0]    # per_page value of 1 means parsing a list of length 1.
+                embed_page.set_page_content(self.current_page_content).set_page_footer(self.current_page, self.total_pages)
+                self.page_cache[self.current_page - 1] = embed_page
 
-            story_embed_page = StoryQuoteEmbed(
-                story_data=self.story_data,
-                page_content=self.current_page_content,
-                current_page=self.current_page,
-                max_pages=self.total_page_count,
-                color=0x149cdf
-            )
+            else:
+                return deepcopy(self.page_cache[self.current_page - 1])
 
-            self.page_cache[self.current_page - 1] = story_embed_page
-
-            return story_embed_page
+        return embed_page
 
 
 class StorySearchCog(commands.Cog, name="Quote Search"):
@@ -164,10 +155,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         temp_records = await self.bot.db_pool.fetch(query)
         self.story_records.update(self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo]))
 
-        for acronym, record in self.story_records.items():
-            temp_rec = asdict(record)
-            self.story_records[acronym].template_embed = StoryQuoteEmbed(story_data=temp_rec)
-
         # Load story text from markdown files.
         project_path = Path(__file__).resolve().parents[2]
         for file in project_path.glob("data/story_text/**/*.md"):
@@ -175,6 +162,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                 await self.load_story_text(file)
 
     @classmethod
+    @with_benchmark
     async def load_story_text(cls, filepath: Path):
         """Load the story metadata and text."""
 
@@ -189,8 +177,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         # Start file copying and indexing.
         with filepath.open("r", encoding="utf-8") as f:
-
-            indexing_start_time = perf_counter()
 
             # Instantiate index lists, which act as a table of contents of sorts.
             stem = str(filepath.stem)[:-5]
@@ -217,136 +203,17 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
             else:
                 for index, line in enumerate(temp_text):
-
                     if re.search(re_chap_title, line):
                         temp_chap_index.append(index)
 
                     elif re.search(re_coll_title, line):
                         if (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]):
                             temp_coll_index.append(index)
-
-            indexing_end_time = perf_counter()
-            indexing_time = indexing_end_time - indexing_start_time
             
-        LOGGER.info(f"Loaded file: {filepath.stem} | Indexing time: {indexing_time:.5f}")
-
-    @commands.hybrid_command()
-    async def random_text(self, ctx: commands.Context) -> None:
-        """Display a random line from the story.
-
-        Parameters
-        ----------
-        ctx : :class:`commands.Context`
-            The invocation context where the command was called.
-        """
-
-        # Randomly choose an ACI100 story.
-        story = choice([key for key in self.story_records if key != "acvr"])
-
-        # Randomly choose two paragraphs from the story.
-        b_range = randint(2, len(self.story_records[story].text) - 3)
-        b_sample = self.story_records[story].text[b_range: (b_range + 2)]
-
-        # Get the chapter and collection of the quote.
-        quote_year = self._binary_search_text(story, self.story_records[story].collection_index, (b_range + 2))
-        quote_chapter = self._binary_search_text(story, self.story_records[story].chapter_index, (b_range + 2))
-
-        # Bundle the quote in an embed.
-        embed = StoryQuoteEmbed(
-            color=0xdb05db,
-            story_data=asdict(self.story_records[story]),
-            page_content=(quote_year, quote_chapter, "".join(b_sample))
-        ).set_footer(text="Randomly chosen quote from an ACI100 story.")
-
-        await ctx.send(embed=embed)
-
-    @commands.hybrid_command()
-    @app_commands.choices(story=[
-        app_commands.Choice(name="Ashes of Chaos", value="aoc"),
-        app_commands.Choice(name="Conjoining of Paragons", value="cop"),
-        app_commands.Choice(name="Fabric of Fate", value="fof"),
-        app_commands.Choice(name="Perversion of Purity", value="pop"),
-    ])
-    async def search_text(self, ctx: commands.Context, story: str, *, query: str) -> None:
-        """Search the works of ACI100 for a word or phrase.
-
-        Parameters
-        ----------
-        ctx : :class:`commands.Context`
-            The invocation context.
-        story : :class:`str`
-            The acronym or abbreviation of a story's title. Currently, there are only four choices.
-        query : :class:`str`
-            The string to search for in the story.
-        """
-
-        async with ctx.typing():
-            start_time = perf_counter()
-            processed_text = self.process_text(story, query)
-            end_time = perf_counter()
-
-            LOGGER.info(f"process_text() time: {end_time - start_time:.8f}")
-
-            story_embed: StoryQuoteEmbed = deepcopy(self.story_records[story].template_embed)
-
-            if len(processed_text) == 0:
-                story_embed.title = "N/A"
-                story_embed.description = "No quotes found!"
-                story_embed.set_page_footer(0, 0)
-                await ctx.send(embed=story_embed)
-
-            else:
-                story_embed.set_page_content(processed_text[0]).set_page_footer(1, len(processed_text))
-                await ctx.send(
-                    embed=story_embed,
-                    view=StoryQuoteView(
-                        interaction=ctx.interaction,
-                        view_owner=ctx.author,
-                        all_pages_content=processed_text,
-                        story_data=asdict(self.story_records[story])
-                    )
-                )
-
-    @commands.hybrid_command()
-    async def search_cadmean(self, ctx: commands.Context, *, query: str) -> None:
-        """Search *A Cadmean Victory Remastered* by MJ Bradley for a word or phrase.
-
-        Parameters
-        ----------
-        ctx : :class:`commands.Context`
-            The invocation context.
-        query : :class:`str`
-            The string to search for in the story.
-        """
-
-        async with ctx.typing():
-            start_time = perf_counter()
-            processed_text = self.process_text("acvr", query)
-            end_time = perf_counter()
-
-            LOGGER.info(f"process_text() time: {end_time - start_time:.8f}")
-
-            story_embed: StoryQuoteEmbed = deepcopy(self.story_records["acvr"].template_embed)
-
-            if len(processed_text) == 0:
-                story_embed.title = "N/A"
-                story_embed.description = "No quotes found!"
-                story_embed.set_page_footer(0, 0)
-                await ctx.send(embed=story_embed)
-
-            else:
-                story_embed.set_page_content(processed_text[0]).set_page_footer(1, len(processed_text))
-                await ctx.send(
-                    embed=story_embed,
-                    view=StoryQuoteView(
-                        interaction=ctx.interaction,
-                        view_owner=ctx.author,
-                        all_pages_content=processed_text,
-                        story_data=asdict(self.story_records["acvr"])
-                    )
-                )
+        LOGGER.info(f"Loaded file: {filepath.stem}")
 
     @classmethod
+    @with_benchmark
     def process_text(cls, story: str, terms: str, exact: bool = True) -> list[tuple]:
         """Collects all lines from story text that contain the given terms."""
 
@@ -403,6 +270,82 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         value_from_index = cls.story_records[story].text[actual_index] if actual_index != -1 else "—————"
 
         return value_from_index
+
+    @commands.hybrid_command()
+    async def random_text(self, ctx: commands.Context) -> None:
+        """Display a random line from the story.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context where the command was called.
+        """
+
+        # Randomly choose an ACI100 story.
+        story = choice([key for key in self.story_records if key != "acvr"])
+
+        # Randomly choose two paragraphs from the story.
+        b_range = randint(2, len(self.story_records[story].text) - 3)
+        b_sample = self.story_records[story].text[b_range: (b_range + 2)]
+
+        # Get the chapter and collection of the quote.
+        quote_year = self._binary_search_text(story, self.story_records[story].collection_index, (b_range + 2))
+        quote_chapter = self._binary_search_text(story, self.story_records[story].chapter_index, (b_range + 2))
+
+        # Bundle the quote in an embed.
+        embed = StoryQuoteEmbed(
+            color=0xdb05db,
+            story_data=asdict(self.story_records[story]),
+            page_content=(quote_year, quote_chapter, "".join(b_sample))
+        ).set_footer(text="Randomly chosen quote from an ACI100 story.")
+
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command()
+    @app_commands.choices(story=[
+        app_commands.Choice(name="Ashes of Chaos", value="aoc"),
+        app_commands.Choice(name="Conjoining of Paragons", value="cop"),
+        app_commands.Choice(name="Fabric of Fate", value="fof"),
+        app_commands.Choice(name="Perversion of Purity", value="pop"),
+    ])
+    async def search_text(self, ctx: commands.Context, story: str, *, query: str) -> None:
+        """Search the works of ACI100 for a word or phrase.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        story : :class:`str`
+            The acronym or abbreviation of a story's title. Currently, there are only four choices.
+        query : :class:`str`
+            The string to search for in the story.
+        """
+
+        async with ctx.typing():
+            processed_text = self.process_text(story, query)
+            story_data = asdict(self.story_records[story])
+            view = StoryQuoteView(author=ctx.author, all_pages_content=processed_text, story_data=story_data)
+            message = await ctx.send(embed=view.get_starting_embed(), view=view)
+            view.message = message
+
+    @commands.hybrid_command()
+    async def search_cadmean(self, ctx: commands.Context, *, query: str) -> None:
+        """Search *A Cadmean Victory Remastered* by MJ Bradley for a word or phrase.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        query : :class:`str`
+            The string to search for in the story.
+        """
+
+        async with ctx.typing():
+            processed_text = self.process_text("acvr", query)
+            story_data = asdict(self.story_records["acvr"])
+            view = StoryQuoteView(author=ctx.author, all_pages_content=processed_text, story_data=story_data)
+            message = await ctx.send(embed=view.get_starting_embed(), view=view)
+            view.message = message
 
 
 async def setup(bot: Beira) -> None:
