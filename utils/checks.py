@@ -12,7 +12,7 @@ from discord.app_commands.commands import Check
 from discord.ext import commands
 from discord.utils import maybe_coroutine
 
-from utils.errors import NotOwnerOrFriend, NotGuildOwner
+from utils.errors import NotOwnerOrFriend, NotAdmin
 
 LOGGER = logging.getLogger(__name__)
 
@@ -35,17 +35,17 @@ def is_owner_or_friend():
     return commands.check(predicate)
 
 
-def is_guild_owner():
-    """A :func:`.check` that checks if the person invoking this command is the
-    owner of the guild in the current context.
+def is_admin():
+    """A :func:`.check` that checks if the person invoking this command is an
+    administrator of the guild in the current context.
 
-    This check raises a special exception, :exc:`.NotGuildOwner` that is derived
+    This check raises a special exception, :exc:`NotAdmin` that is derived
     from :exc:`commands.CheckFailure`.
     """
 
     async def predicate(ctx: commands.Context) -> bool:
-        if not (ctx.guild is not None and ctx.guild.owner_id == ctx.author.id):
-            raise NotGuildOwner("Only the server owner can do this.")
+        if not (ctx.guild is not None and ctx.author.guild_permissions.administrator):
+            raise NotAdmin("Only someone with administrator permissions can do this.")
         return True
 
     return commands.check(predicate)

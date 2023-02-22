@@ -5,6 +5,7 @@ easy navigation.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from typing import Any
 
@@ -48,7 +49,6 @@ class PageNumEntryModal(Modal):
         self.interaction = interaction
 
     async def on_error(self, interaction: discord.Interaction, error: Exception, /) -> None:
-        LOGGER.error(f"Entered modal on_error().")
         if not isinstance(error, (ValueError, IndexError)):
             LOGGER.exception("Unknown Modal error.", exc_info=error)
 
@@ -105,12 +105,14 @@ class PaginatedEmbedView(View):
         self.current_page_content = ()
 
         # Have the right buttons activated on instantiation.
+        self.clear_items()
+        self._set_page_buttons()
         self.update_page_buttons()
 
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         """Ensures that the user interacting with the view was the one who instantiated it."""
 
-        check = (self.author == interaction.user)
+        check = (interaction.user is not None) and (self.author == interaction.user)
         if not check:
             await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=30)
 
@@ -119,13 +121,11 @@ class PaginatedEmbedView(View):
     async def on_timeout(self) -> None:
         """Disables all buttons when the view times out."""
 
-        for item in self.children:
-            item.disabled = True
-
-        self.stop()
-
+        self.clear_items()
         if self.message:
             await self.message.edit(view=self)
+
+        self.stop()
 
     def format_page(self) -> discord.Embed:
         """Makes, or retrieves from the cache, the embed 'page' that the user will see.
@@ -134,6 +134,22 @@ class PaginatedEmbedView(View):
         """
 
         raise NotImplementedError("Page formatting must be set up in a subclass.")
+
+    def _set_page_buttons(self) -> None:
+        """Only adds the necessary page buttons based on how many pages there are."""
+
+        if self.total_pages > 2:
+            self.add_item(self.turn_to_first_page)
+        if self.total_pages > 1:
+            self.add_item(self.turn_to_previous_page)
+        if self.total_pages > 2:
+            self.add_item(self.enter_page)
+        if self.total_pages > 1:
+            self.add_item(self.turn_to_next_page)
+        if self.total_pages > 2:
+            self.add_item(self.turn_to_last_page)
+
+        self.add_item(self.quit_view)
 
     def update_page_buttons(self) -> None:
         """Enables and disables page-turning buttons based on page count, position, and movement."""
@@ -178,7 +194,7 @@ class PaginatedEmbedView(View):
 
         self.former_page = self.current_page    # Update the page number.
         self.current_page = new_page
-        embed_page = self.format_page()   # Update the page embed.
+        embed_page = self.format_page()         # Update the page embed.
         self.update_page_buttons()              # Update the page buttons.
         await interaction.response.edit_message(embed=embed_page, view=self)
 
@@ -201,9 +217,9 @@ class PaginatedEmbedView(View):
         # Get page number from a modal.
         modal = PageNumEntryModal(self.total_pages)
         await interaction.response.send_modal(modal)
-        modal_result = await modal.wait()
+        modal_timed_out = await modal.wait()
 
-        if modal_result or self.is_finished():
+        if modal_timed_out or self.is_finished():
             return
 
         temp_new_page = int(modal.input_page_num.value)
@@ -227,9 +243,9 @@ class PaginatedEmbedView(View):
 
     @discord.ui.button(label="Quit", style=discord.ButtonStyle.red, custom_id="page_view:quit")
     async def quit_view(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        """Removes all buttons and ends the view."""
+        """Deletes the original message with the view after a slight delay."""
 
+        await interaction.response.defer()
+        await asyncio.sleep(0.5)
+        await interaction.delete_original_response()
         self.stop()
-        await interaction.response.edit_message(view=None)
-        # await interaction.response.defer()
-        # await interaction.edit_original_response(view=self)

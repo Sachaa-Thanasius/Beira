@@ -40,7 +40,7 @@ def is_jsonable(obj: Any) -> bool:
 
 
 class StatsRetrievalFlags(commands.FlagConverter):
-    """Flags for commands """
+    """Flags for bot stat commands."""
     time_period: Literal["today", "last month", "last year", "all time"] = commands.flag(
         default="all time",
         description="Whether to stay local or look among all guilds. Defaults to 'all time'."
@@ -64,6 +64,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.emoji = "📈"
 
     async def track_command_use(self, ctx: commands.Context) -> None:
         """Stores records of command uses in the database after some processing.
@@ -256,7 +257,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @check_usage.autocomplete("command")
     async def command_autocomplete(self, interaction: discord.Interaction, current: str) -> list[Choice[str]]:
-        """Autocompletes the help command."""
+        """Autocompletes with bot command names."""
 
         assert self.bot.help_command
         ctx = await self.bot.get_context(interaction, cls=commands.Context)

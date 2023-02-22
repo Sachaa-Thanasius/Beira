@@ -2,6 +2,8 @@ config.json
 help-alpha.py
 *.log
 __pycache__
+*/__pycache__
 misc/
 data/dunk/
+*.pyc
 *.pyc

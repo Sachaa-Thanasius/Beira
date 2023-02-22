@@ -145,6 +145,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.emoji = "📚"
         self.converter = Converter()
 
     async def cog_load(self) -> None:

@@ -29,8 +29,8 @@ class NotOwnerOrFriend(commands.CheckFailure):
     pass
 
 
-class NotGuildOwner(commands.CheckFailure):
-    """Exception raised when the message author is not the owner of the guild in the current context.
+class NotAdmin(commands.CheckFailure):
+    """Exception raised when the message author is not an administrator of the guild in the current context.
 
     This inherits from :exc:`CheckFailure`.
     """

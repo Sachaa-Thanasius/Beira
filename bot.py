@@ -249,6 +249,7 @@ async def main() -> None:
             "exts.cogs.ai_generation",
             "exts.cogs.bot_stats",
             "exts.cogs.custom_notifications",
+            "exts.cogs.emoji_ops",
             "exts.cogs.fandom_wiki",
             "exts.cogs.ff_metadata",
             "exts.cogs.help",

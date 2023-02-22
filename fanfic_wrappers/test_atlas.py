@@ -11,6 +11,7 @@ from fanfic_wrappers.atlas_wrapper import AtlasClient
 
 AO3_TEST_URL = "https://archiveofourown.org/works/42297078/chapters/106207884"
 FFN_TEST_URL = "https://www.fanfiction.net/s/13912800/1/Magical-Marvel"
+FFN_TEST_URL2 = "https://www.fanfiction.net/s/14182918/7/6"
 
 
 async def main():
@@ -37,6 +38,10 @@ async def main():
 
         atlas_ffn_spec_metadata = await atlas.get_story_metadata(atlas.extract_fic_id(FFN_TEST_URL))
         print(f"FFN Specific Metadata: {atlas_ffn_spec_metadata}")
+        await asyncio.sleep(1)
+
+        atlas_ffn_spec_metadata2 = await atlas.get_story_metadata(atlas.extract_fic_id(FFN_TEST_URL2))
+        print(f"FFN Specific Metadata 2: {atlas_ffn_spec_metadata2}")
         await asyncio.sleep(1)
 
     print("Exiting now...")

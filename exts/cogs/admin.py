@@ -12,7 +12,7 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from utils.checks import is_guild_owner
+from utils.checks import is_admin
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -32,6 +32,10 @@ class AdminCog(commands.Cog, name="Administration"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="endlessgears", animated=True, id=609046319155380231)
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -79,7 +83,7 @@ class AdminCog(commands.Cog, name="Administration"):
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        extension : Choice[:class:`str`]
+        extension : :class:`str`
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -109,10 +113,6 @@ class AdminCog(commands.Cog, name="Administration"):
     @commands.hybrid_command(hidden=True)
     @commands.is_owner()
     @commands.guild_only()
-    @app_commands.describe(
-        guilds="Mutex. with spec: The IDs of the guilds you'd like to sync to.",
-        spec="Mutex. with guilds: No input —— global sync."
-    )
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
@@ -134,7 +134,7 @@ class AdminCog(commands.Cog, name="Administration"):
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
             :class:`discord.Object`s.
         spec : Choice[:class:`str`], optional
-            The type of sync to perform if no guilds are entered.
+            The type of sync to perform if no guilds are entered. No input means global sync.
 
         Notes
         -----
@@ -195,6 +195,60 @@ class AdminCog(commands.Cog, name="Administration"):
 
         await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.", ephemeral=True)
 
+    @sync.error
+    async def sync_error(self, ctx: commands.Context, error: commands.CommandError):
+        """A local error handler for the :func:`emoji_steal` command.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context
+        error : :class:`commands.CommandError`
+            The error thrown by the command.
+
+
+        HTTPException – Syncing the commands failed.
+        CommandSyncFailure – Syncing the commands failed due to a user related error, typically because the command has invalid data. This is equivalent to an HTTP status code of 400.
+        Forbidden – The client does not have the ``applications.commands`` scope in the guild.
+        MissingApplicationID – The client does not have an application ID.
+        TranslationError – An error occurred while translating the commands.
+        """
+
+        embed = discord.Embed(title="/sync Error", description="Something went wrong with this command.")
+
+        # Extract the original error.
+        if isinstance(error, commands.HybridCommandError):
+            error = error.original
+            if isinstance(error, app_commands.CommandInvokeError):
+                error = error.original
+
+        if isinstance(error, commands.CommandInvokeError):
+            error = error.original
+
+        # Respond to the error.
+        if isinstance(error, app_commands.CommandSyncFailure):
+            embed.description = "Syncing the commands failed due to a user related error, typically because the " \
+                                "command has invalid data. This is equivalent to an HTTP status code of 400."
+            LOGGER.error("CommandSyncFailure", exc_info=error)
+
+        elif isinstance(error, discord.Forbidden):
+            embed.description = "You do not have the permissions to create emojis here."
+
+        elif isinstance(error, app_commands.MissingApplicationID):
+            embed.description = "The client does not have an application ID."
+
+        elif isinstance(error, app_commands.TranslationError):
+            embed.description = "An error occurred while translating the commands."
+
+        elif isinstance(error, discord.HTTPException):
+            embed.description = "Generic HTTP error: Syncing the commands failed."
+
+        else:
+            LOGGER.error("Unknown error in sync command", exc_info=error)
+            embed.description = "Other: Syncing the commands failed."
+
+        await ctx.reply(embed=embed)
+
     @commands.group(hidden=False)
     @commands.guild_only()
     async def prefixes(self, ctx: commands.Context) -> None:
@@ -206,7 +260,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @prefixes.command(name="add")
     @commands.guild_only()
-    @commands.check_any(commands.is_owner(), is_guild_owner())
+    @commands.check_any(commands.is_owner(), is_admin())
     @commands.cooldown(1, 30, commands.cooldowns.BucketType.user)
     async def prefixes_add(self, ctx: commands.Context, *, new_prefix: str) -> None:
         """Set a prefix that you'd like this bot to respond to.
@@ -237,7 +291,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @prefixes.command(name="remove")
     @commands.guild_only()
-    @commands.check_any(commands.is_owner(), is_guild_owner())
+    @commands.check_any(commands.is_owner(), is_admin())
     @commands.cooldown(1, 30, commands.cooldowns.BucketType.user)
     async def prefixes_remove(self, ctx: commands.Context, *, old_prefix: str) -> None:
         """Remove a prefix that you'd like this bot to no longer respond to.

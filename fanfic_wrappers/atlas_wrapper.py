@@ -4,6 +4,7 @@ atlas_wrapper.py: A small asynchronous wrapper for iris's Atlas FanFiction.Net (
 
 from __future__ import annotations
 
+import asyncio
 import logging
 import re
 from datetime import datetime
@@ -16,6 +17,12 @@ from cattrs import Converter
 from fanfic_wrappers.ff_metadata_classes import FFNMetadata
 
 LOGGER = logging.getLogger(__name__)
+
+
+class AtlasStoryNotFound(Exception):
+    """An exception raised when :class:`AtlasClient` doesn't find an FFN work."""
+
+    pass
 
 
 class AtlasClient:
@@ -35,6 +42,7 @@ class AtlasClient:
         self._auth = auth
         self._session: ClientSession = session
         self._headers = {"User-Agent": "Atlas API wrapper/@Thanos"}
+        self._semaphore = asyncio.Semaphore(value=5)
 
         self.converter = Converter()
         self.register_converter_hooks()
@@ -46,6 +54,7 @@ class AtlasClient:
     @property
     def auth(self) -> BasicAuth:
         """:class:`BasicAuth`: The authentication details needed to use the Atlas API."""
+
         return self._auth
 
     @auth.setter
@@ -54,6 +63,8 @@ class AtlasClient:
 
     async def _get(self, endpoint: str, params: dict | None = None) -> int | dict | list[dict]:
         """Gets FFN data from the Atlas API.
+
+        This restricts the number of simultaneous requests.
 
         Parameters
         ----------
@@ -68,14 +79,11 @@ class AtlasClient:
             The JSON data from the API's response.
         """
 
-        async with self._session.get(
-                url=urljoin(self.ATLAS_BASE_URL, endpoint),
-                headers=self._headers,
-                params=params,
-                auth=self._auth
-        ) as response:
-            data = await response.json()
-            return data
+        async with self._semaphore:
+            url = urljoin(self.ATLAS_BASE_URL, endpoint)
+            async with self._session.get(url=url, headers=self._headers, params=params, auth=self._auth) as response:
+                data = await response.json()
+                return data
 
     async def get_max_update_id(self) -> int:
         """Gets the maximum `update_id` currently in use.
@@ -175,13 +183,18 @@ class AtlasClient:
             The metadata of the queried fanfic.
         """
 
-        raw_metadata = await self._get(f"ffn/meta/{ffn_id}")
+        raw_metadata: dict = await self._get(f"ffn/meta/{ffn_id}")
+
+        message = raw_metadata.get("message")
+        if message and message == "not_found":
+            raise AtlasStoryNotFound("The story could not be found with the Atlas API.")
+
         metadata = self.converter.structure(raw_metadata, FFNMetadata)
         return metadata
 
     @staticmethod
     def extract_fic_id(text: str) -> int | None:
-        """Extract the fic id from a valid FFN url in a string."""
+        """Extract the fic id from the first valid FFN url in a string."""
 
         re_ffn_url = re.compile(r"(https://|http://|)(www\.|m\.|)fanfiction\.net/s/(\d+)")
         fic_id = int(result.group(3)) if (result := re.search(re_ffn_url, text)) else None

@@ -26,7 +26,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 # Constants
-ODDS = 0.6  # Chance of hitting someone with a snowball.
+ODDS = 0.67  # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100  # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200  # Maximum number of snowballs for self and friends.
@@ -34,7 +34,7 @@ TRANSFER_CAP = 10  # Maximum number of snowballs that can be gifted or stolen.
 
 
 class SnowballCog(commands.Cog, name="Snowball"):
-    """A cog that implements all snowball fight-related commands and database manipulation.
+    """A cog that implements all snowball fight-related commands, like Discord's 2021 Snowball bot game.
 
     Parameters
     ----------
@@ -50,6 +50,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.emoji = discord.PartialEmoji(name="Emoji_Snowflake", animated=True, id=919086724288774184)
         self.embed_data = {}
 
     async def cog_load(self) -> None:
@@ -59,8 +60,10 @@ class SnowballCog(commands.Cog, name="Snowball"):
             self.embed_data = load(f)
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
-        """Handles errors that occur within this cog. For example, when using prefix commands, this will tell users if
-        they are missing arguments. Other error cases will be added as needed.
+        """Handles errors that occur within this cog.
+
+        For example, when using prefix commands, this will tell users if they are missing arguments. Other error cases
+        will be added as needed.
 
         Parameters
         ----------
@@ -94,7 +97,44 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
-    @commands.hybrid_command()
+    @commands.hybrid_group()
+    async def snow(self, ctx: commands.Context):
+        """A group of all snowball-related commands.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        """
+        pass
+
+    @snow.command()
+    async def settings(self, ctx: commands.Context) -> None:
+        """Show what the settings are for the snowballs.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        """
+
+        embed = (
+            discord.Embed(
+                color=0x5e9a40,
+                title=f"{self.qualified_name} Settings",
+                description="Below are the unchangeable settings for the bot's snowball hit rate, stock maximum, and "
+                            "more. The ability to change these on a per-guild basis will be coming soon."
+            )
+            .add_field(name=f"Odds = {ODDS}", value="The odds of landing a snowball on someone.", inline=False)
+            .add_field(name=f"Leaderboard Max = {LEADERBOARD_MAX}", value="The number of people to show on the leaderboard.", inline=False)
+            .add_field(name=f"Default Stock Cap = {DEFAULT_STOCK_CAP}", value="The maximum number of snowballs the average member can hold at once.", inline=False)
+            .add_field(name=f"Special Stock Cap = {SPECIAL_STOCK_CAP}", value="The maximum number of snowballs special members can hold at once.", inline=False)
+            .add_field(name=f"Transfer Cap = {TRANSFER_CAP}", value="The maximum number of snowballs that can be gifted or stolen at once.", inline=False)
+        )
+
+        await ctx.send(embed=embed)
+
+    @snow.command()
     @commands.guild_only()
     @commands.dynamic_cooldown(collect_cooldown, commands.cooldowns.BucketType.user)
     async def collect(self, ctx: commands.Context) -> None:
@@ -129,7 +169,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
 
-    @commands.hybrid_command()
+    @snow.command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
     async def throw(self, ctx: commands.Context,
@@ -162,7 +202,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
                 embed.description = random.choice(self.embed_data["hits"]["notes"]).format(target.mention)
                 embed.set_image(url=random.choice(self.embed_data["hits"]["gifs"]))
-                message = f"{target.mention}"
+                message = target.mention
 
             else:
                 await self.update_snowball_record(ctx.author, misses=1)
@@ -180,7 +220,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         await ctx.send(content=message, embed=embed, ephemeral=ephemeral)
 
-    @commands.hybrid_command()
+    @snow.command()
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(
@@ -247,7 +287,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         message = f"{ctx.author.mention}, {receiver.mention}"
         await ctx.send(content=message, embed=success_embed, ephemeral=False)
 
-    @commands.hybrid_command()
+    @snow.command()
     @commands.guild_only()
     @is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
@@ -307,7 +347,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         message = f"{ctx.author.mention}, {victim.mention}"
         await ctx.send(content=message, embed=def_embed, ephemeral=False)
 
-    @commands.hybrid_group(fallback="get")
+    @snow.group(fallback="get")
     @commands.guild_only()
     @app_commands.describe(target="Look up a particular Snowball Sparrer's stats.")
     async def stats(self, ctx: commands.Context, target: discord.User = commands.Author) -> None:
@@ -384,7 +424,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(f"{person} have any stats yet. *Maybe you could change that.* "
                            f"{self.bot.emojis_stock['snowball1']}{self.bot.emojis_stock['snowball2']}", ephemeral=True)
 
-    @commands.hybrid_group(fallback="get")
+    @snow.group(fallback="get")
     @commands.guild_only()
     async def leaderboard(self, ctx: commands.Context) -> None:
         """See who's dominating the Snowball Bot leaderboard in your server.
@@ -470,7 +510,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         await ctx.send(embed=embed, ephemeral=False)
 
-    @commands.hybrid_command()
+    @snow.command()
     async def sources(self, ctx: commands.Context) -> None:
         """Gives links and credit to the Snowsgiving 2021 Help Center article and to reference code.
 

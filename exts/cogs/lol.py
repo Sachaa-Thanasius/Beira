@@ -73,6 +73,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.emoji = discord.PartialEmoji(name="ok", id=956993759248261160)
         self.default_summoners_list = [
             "Real Iron IV",
             "BobbaExpress",

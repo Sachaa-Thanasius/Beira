@@ -4,16 +4,16 @@ ai_generation.py: A cog with commands for doing fun AI things with OpenAI's API,
 
 from __future__ import annotations
 
+import asyncio
 import functools
 import logging
-import subprocess
 import tempfile as tf
 from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
 from shutil import rmtree
 from time import perf_counter
-from typing import ClassVar, TYPE_CHECKING
+from typing import ClassVar, TYPE_CHECKING, Literal
 
 import openai_async
 from PIL import Image
@@ -50,6 +50,10 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
         self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/general_morph")
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{ROBOT FACE}")
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
         """Handles any errors within this cog."""
@@ -99,11 +103,11 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename=f"pigeonlord.gif")
-            embed = discord.Embed(color=0x5d6e7f, title=f"{target.display_name}'s True Form", description="***Behold!***")
-            embed.set_image(url=f"attachment://pigeonlord.gif")
-            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
-
-            LOGGER.info(f"Total Generation Time: {morph_time:.5f}s")
+            embed = (
+                discord.Embed(color=0x5d6e7f, title=f"{target.display_name}'s True Form", description="***Behold!***")
+                       .set_image(url=f"attachment://pigeonlord.gif")
+                       .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
+            )
 
             sent_message = await ctx.send(embed=embed, file=gif_file)
 
@@ -136,10 +140,12 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename="morph.gif")
-            embed = discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
-            embed.description += f"\nprompt: {prompt}"
-            embed.set_image(url="attachment://morph.gif")
-            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
+            embed = (
+                discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
+                       .add_field(name="Prompt", value=prompt)
+                       .set_image(url="attachment://morph.gif")
+                       .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
+            )
 
             LOGGER.info(f"Total morph time: {morph_time:.5f}s")
 
@@ -152,42 +158,66 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     @commands.hybrid_command(name="generate")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def create_ai_image(self, ctx: commands.Context, *, prompt: str) -> None:
-        """Create and send an AI-generated image based on a given prompt.
+    async def create_ai_image(self, ctx: commands.Context, generation_type: Literal["text", "image"] = "image", *, prompt: str) -> None:
+        """Create and send AI-generated images or text based on a given prompt.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
+        generation_type : Literal["text", "image"], default="image"
+            What the AI is generating.
         prompt : :class:`str`
             The text that the AI will use.
         """
 
         async with ctx.typing():
-            log_start_time = perf_counter()
+            embed = discord.Embed(color=0x5d6e7f, title=f"AI-Generated", description="—+—+—+—+—+—+—")
 
-            # Generate the AI image and retrieve its url.
-            ai_url = await self.generate_ai_image(prompt, (512, 512))
+            if generation_type == "image":
+                log_start_time = perf_counter()
+                ai_url = await self.generate_ai_image(prompt, (512, 512))
+                ai_buffer = await self.save_image_from_url(ai_url)
+                log_end_time = perf_counter()
 
-            # Save the AI image to a temp file.
-            ai_bytes_buffer = await self.save_image_from_url(ai_url)
+                creation_time = log_end_time - log_start_time
 
-            log_end_time = perf_counter()
-            creation_time = log_end_time - log_start_time
+                # Send the generated text in an embed.
+                ai_img_file = discord.File(ai_buffer, filename="ai_image.png")
+                embed.title += " Image"
+                (
+                    embed.add_field(name="Prompt", value=prompt)
+                         .set_image(url="attachment://ai_image.png")
+                         .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
+                )
 
-            # Create and send an embed that holds the generated image.
-            ai_img_file = discord.File(ai_bytes_buffer, filename="ai_image.png")
-            embed = discord.Embed(color=0x5d6e7f, title=f"AI-Generated Image", description="—+—+—+—+—+—+—")
-            embed.description += f"\nprompt: {prompt}"
-            embed.set_image(url="attachment://ai_image.png")
-            embed.set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
+                sent_message = await ctx.send(embed=embed, file=ai_img_file)
 
-            LOGGER.info(f"Total creation time: {creation_time:.5f}s")
+                # Create a download button.
+                await sent_message.edit(view=DownloadButtonView(("Download Image", sent_message.embeds[0].image.url)))
 
-            sent_message = await ctx.send(embed=embed, file=ai_img_file)
+            elif generation_type == "text":
+                log_start_time = perf_counter()
+                ai_text = await self.generate_ai_completion(prompt)
+                log_end_time = perf_counter()
 
-            # Create a download button.
-            await sent_message.edit(view=DownloadButtonView(("Download Image", sent_message.embeds[0].image.url)))
+                creation_time = log_end_time - log_start_time
+
+                # Send the generated image in an embed.
+                embed.title += " Text"
+                (
+                    embed.add_field(name="Prompt", value=prompt)
+                         .add_field(name="Result", value=ai_text)
+                         .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
+                )
+
+                await ctx.send(embed=embed)
+
+            else:
+                embed.title += " Error"
+                embed.description += "\nPlease enter the type of output you want generated — `image` or `text` — before your prompt."
+
+                await ctx.send(embed=embed)
 
     async def morph_user(self, target: discord.User, prompt: str) -> (str, BytesIO):
         """Does the morph process.
@@ -201,21 +231,17 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """
 
         # Save the avatar to a bytes buffer.
-        avatar_bytes_buffer = BytesIO()
-        await target.display_avatar.replace(size=256, format="png", static_format="png").save(avatar_bytes_buffer)
-        with Image.open(avatar_bytes_buffer) as avatar_image:
+        avatar_buffer = BytesIO()
+        await target.display_avatar.replace(size=256, format="png", static_format="png").save(avatar_buffer)
+
+        with Image.open(avatar_buffer) as avatar_image:
             file_size = avatar_image.size
 
-        # Generate the AI image and retrieve its url.
         ai_url = await self.generate_ai_image(prompt, file_size)
+        ai_buffer = await self.save_image_from_url(ai_url)
+        gif_buffer = await self.generate_morph(avatar_buffer, ai_buffer)
 
-        # Save the AI image to a bytes buffer.
-        ai_bytes_buffer = await self.save_image_from_url(ai_url)
-
-        # Create the morphs in mp4 and gif form.
-        gif_bytes_buffer = await self.generate_morph(avatar_bytes_buffer, ai_bytes_buffer)
-
-        return ai_url, gif_bytes_buffer
+        return ai_url, gif_buffer
 
     @staticmethod
     async def generate_morph(pre_morph_buffer: BytesIO, post_morph_buffer: BytesIO) -> BytesIO:
@@ -238,13 +264,14 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 '-filter_complex', '[0][1]concat=n=2:v=1:a=0[v];[v]minterpolate=fps=24:scd=none,trim=3:7,setpts=PTS-STARTPTS',
                 '-pix_fmt', 'yuv420p', f'{mp4_temp}'
             ]
-            subprocess.call(cmd1_list)
+            process1 = await asyncio.create_subprocess_exec(*cmd1_list)
+            await process1.wait()
             LOGGER.info("MP4 creation completed")
 
             # Run the shell command to convert the morph mp4 into a gif.
             cmd2_list = [f'{FFMPEG}', '-i', f'{mp4_temp}', '-f', 'gif', f'{gif_temp}']
-            subprocess.call(cmd2_list)
-            # await asyncio.create_subprocess_exec()
+            process2 = await asyncio.create_subprocess_exec(*cmd2_list)
+            await process2.wait()
             LOGGER.info("GIF creation completed.")
 
             # Save the gif to a bytes stream.
@@ -256,7 +283,20 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     @classmethod
     @with_benchmark
     async def generate_ai_image(cls, prompt: str, size: tuple[int, int] = (256, 256)) -> str:
-        """Makes a call to OpenAI's API to generate an image based on given inputs."""
+        """Makes a call to OpenAI's API to generate an image based on given inputs.
+
+        Parameters
+        ----------
+        prompt : :class:`str`
+            The text OpenAI will use to generate the image.
+        size : tuple[:class:`int`, :class:`int`]
+            The dimensions of the resulting image.
+
+        Returns
+        -------
+        url : :class:`str`
+            The url of the generated image.
+        """
 
         size_str = f"{size[0]}x{size[1]}"
         openai_response = await openai_async.generate_img(
@@ -274,6 +314,38 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         url = openai_response.json()["data"][0]["url"]
 
         return url
+
+    @classmethod
+    @with_benchmark
+    async def generate_ai_completion(cls, prompt: str) -> str:
+        """Makes a call to OpenAI's API to generate text based on given input.
+
+        Parameters
+        ----------
+        prompt : :class:`str`
+            The text OpenAI will generatively complete.
+
+        Returns
+        -------
+        text : :class:`str`
+            The generated text completion.
+        """
+
+        openai_response = await openai_async.complete(
+            api_key=cls.api_key,
+            timeout=10,
+            payload={"model": "text-davinci-003", "prompt": prompt, "max_tokens": 150, "temperature": 0}
+        )
+
+        # Catch any errors based on the API response.
+        if openai_response.is_error:
+            raise ConnectionError(f"OpenAI response: {openai_response.status_code}")
+        if "choices" not in openai_response.json():
+            raise KeyError("OpenAI response has no data.")
+
+        text = openai_response.json()["choices"][0]["text"]
+
+        return text
 
     @with_benchmark
     async def save_image_from_url(self, url: str) -> BytesIO:

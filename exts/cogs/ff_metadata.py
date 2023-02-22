@@ -33,6 +33,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     def __init__(self, bot: Beira):
         self.bot = bot
+        self.emoji = "📊"
         self.atlas_client = AtlasClient(
             auth=BasicAuth(
                 login=bot.config["atlas_fanfic"]["user"],

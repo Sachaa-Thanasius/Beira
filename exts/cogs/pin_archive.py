@@ -27,7 +27,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.mode = "latest"
+        self.mode = "oldest"
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         """Set up bot owner check as universal within the cog."""
@@ -55,7 +55,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=
         print(all_pins)
 
     @commands.command()
-    async def set_mode(self, ctx: commands.Context, mode: Literal["latest", "oldest"]) -> None:
+    async def set_mode(self, ctx: commands.Context, mode: Literal["latest", "oldest"] = "oldest") -> None:
         self.mode = mode
         LOGGER.info(f"set_mode(): {ctx.author}, {mode}")
 

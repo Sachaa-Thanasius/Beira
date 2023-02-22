@@ -21,6 +21,7 @@ class StarKidCog(commands.Cog, name="StarKid"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.emoji = discord.PartialEmoji(name="StarKid", id=1074079754354954320)
 
     @commands.hybrid_command()
     async def nightmare_of_black(self, ctx: commands.Context) -> None:

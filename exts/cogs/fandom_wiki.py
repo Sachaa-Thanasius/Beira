@@ -76,6 +76,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
+        self.emoji = discord.PartialEmoji(name="fandom", id=1074075978084667465)
         self.all_wikis = {}
 
     async def cog_load(self) -> None:
