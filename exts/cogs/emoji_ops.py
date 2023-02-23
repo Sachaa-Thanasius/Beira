@@ -18,11 +18,15 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class EmojiOperationsCog(commands.GroupCog, name="Emoji", group_name="emoji"):
-    """A cog with commands for stealing emojis."""
+class EmojiOperationsCog(commands.Cog, name="Emoji"):
+    """A cog with commands for performing actions with emojis."""
 
     def __init__(self, bot: Beira):
         self.bot = bot
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{GRINNING FACE}")
 
     @staticmethod
     async def parse_str_as_emoji(ctx: commands.Context, entity: str) -> discord.Emoji | discord.PartialEmoji | None:
@@ -39,7 +43,19 @@ class EmojiOperationsCog(commands.GroupCog, name="Emoji", group_name="emoji"):
 
         return converted_emoji
 
-    @commands.hybrid_command("identify")
+    @commands.hybrid_group("emoji")
+    async def emoji_(self, ctx: commands.Context) -> None:
+        """A group of emoji-related commands, like identifying emojis and adding them to a server.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        """
+
+        pass
+
+    @emoji_.command("identify")
     async def emoji_identify(self, ctx: commands.Context, entity: str) -> None:
         """Identify a particular emoji and see information about it.
 
@@ -56,12 +72,11 @@ class EmojiOperationsCog(commands.GroupCog, name="Emoji", group_name="emoji"):
         actual_emoji = await self.parse_str_as_emoji(ctx, entity)
 
         if isinstance(actual_emoji, discord.PartialEmoji) and actual_emoji.is_unicode_emoji():
-            if actual_emoji.is_unicode_emoji():
-                (
-                    embed.add_field(name="Name", value=actual_emoji.name)
-                         .add_field(name="Type", value="Unicode")
-                         .add_field(name="Display", value=str(actual_emoji))
-                )
+            (
+                embed.add_field(name="Name", value=actual_emoji.name)
+                     .add_field(name="Type", value="Unicode")
+                     .add_field(name="Display", value=str(actual_emoji))
+            )
 
         elif (
             (isinstance(actual_emoji, discord.PartialEmoji) and actual_emoji.is_custom_emoji()) or
@@ -82,7 +97,9 @@ class EmojiOperationsCog(commands.GroupCog, name="Emoji", group_name="emoji"):
         else:
             embed.description = "Emoji not found. Please enter a valid emoji."
 
-    @commands.command("add")
+        await ctx.reply(embed=embed)
+
+    @emoji_.command("add")
     async def emoji_add(
             self,
             ctx: commands.Context,

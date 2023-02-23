@@ -145,8 +145,11 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.emoji = "📚"
         self.converter = Converter()
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{BOOKS}")
 
     async def cog_load(self) -> None:
         """Load whatever is necessary to avoid reading from files or querying the database during runtime."""

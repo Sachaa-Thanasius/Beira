@@ -39,32 +39,15 @@ def is_jsonable(obj: Any) -> bool:
         return False
 
 
-class StatsRetrievalFlags(commands.FlagConverter):
-    """Flags for bot stat commands."""
-    time_period: Literal["today", "last month", "last year", "all time"] = commands.flag(
-        default="all time",
-        description="Whether to stay local or look among all guilds. Defaults to 'all time'."
-    )
-    command: str = commands.flag(
-        default=None,
-        description="The command to look up. Optional."
-    )
-    guilds: bool = commands.flag(
-        default=False,
-        description="Whether to look at guilds or users."
-    )
-    universal: bool = commands.flag(
-        default=False,
-        description="Whether to look at users among all guilds. Defaults to False."
-    )
-
-
 class BotStatsCog(commands.Cog, name="Bot Stats"):
     """A cog for tracking different bot metrics."""
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.emoji = "📈"
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
     async def track_command_use(self, ctx: commands.Context) -> None:
         """Stores records of command uses in the database after some processing.
@@ -137,7 +120,6 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         if not isinstance(error, commands.CommandNotFound):
             await self.track_command_use(ctx)
-        await self.bot.on_command_error(ctx, error)
 
     @commands.Cog.listener()
     async def on_guild_join(self, guild: discord.Guild):
@@ -146,7 +128,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await upsert_guilds(self.bot.db_pool, guild)
 
     @commands.hybrid_command(name="ping")
-    async def _ping(self, ctx: commands.Context) -> None:
+    async def ping_(self, ctx: commands.Context) -> None:
         """Display the time necessary for the bot to communicate with Discord.
 
         Parameters
@@ -165,7 +147,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
     async def check_usage(
             self,
             ctx: commands.Context,
-            *, flags: StatsRetrievalFlags
+            *,
+            time_period: Literal["today", "last month", "last year", "all time"] = "all time",
+            command: str = None,
+            guilds: bool = False,
+            universal: bool = False
     ) -> None:
         """Retrieve statistics about bot command usage.
 
@@ -173,11 +159,17 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        flags : :class:`StatsRetrievalFlags`
-            The inputs used to generate the stats query.
+        time_period : Literal["today", "last month", "last year", "all time"], default="all time"
+            Whether to stay local or look among all guilds. Defaults to 'all time'.
+        command : :class:`str`, optional
+            The command to look up.
+        guilds : :class:`bool`, default=False
+            Whether to look at guilds or users. Defaults to False.
+        universal : :class:`bool`, default=False
+            Whether to look at users among all guilds. Defaults to False.
         """
 
-        match flags.time_period:
+        match time_period:
             case "today":
                 actual_time_pd = 1
             case "last month":
@@ -187,10 +179,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             case _:
                 actual_time_pd = 0
 
-        guild = None if flags.guilds else ctx.guild
+        guild = None if guilds else ctx.guild
 
-        records = await self.get_usage(actual_time_pd, flags.command, guild, flags.universal)
-        print(records)
+        records = await self.get_usage(actual_time_pd, command, guild, universal)
 
         ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
         ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])

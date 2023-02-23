@@ -29,6 +29,10 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=
         self.bot = bot
         self.mode = "oldest"
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{PUSHPIN}")
+
     async def cog_check(self, ctx: commands.Context) -> bool:
         """Set up bot owner check as universal within the cog."""
 

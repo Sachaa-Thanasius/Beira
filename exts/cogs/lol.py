@@ -73,7 +73,6 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.emoji = discord.PartialEmoji(name="ok", id=956993759248261160)
         self.default_summoners_list = [
             "Real Iron IV",
             "BobbaExpress",
@@ -89,6 +88,10 @@ class LoLCog(commands.Cog, name="League of Legends"):
                           'Chrome/39.0.2171.95 '
                           'Safari/537.36'
         }
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
     @commands.hybrid_command()
     async def lol_stats(self, ctx: commands.Context, summoner_name: str) -> None:

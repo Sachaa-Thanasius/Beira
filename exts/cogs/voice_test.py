@@ -28,6 +28,10 @@ class VoiceCog(commands.Cog, name="Music", command_attrs=dict(hidden=True)):
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{SPEAKER WITH ONE SOUND WAVE}")
+
     @commands.command()
     async def play(self, ctx: commands.Context, *, query: str) -> None:
         """ Play a file from either the local filesystem or from a streaming service (hopefully)."""

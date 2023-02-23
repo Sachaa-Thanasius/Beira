@@ -53,6 +53,10 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             "ao3_series": re.compile(r"(https://|http://|)(www\.|)archiveofourown\.org/series/(\d+)"),
         }
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{BAR CHART}")
+
     @commands.Cog.listener()
     async def on_message(self, message: discord.Message) -> None:
         """Send informational embeds about a story if the user sends a FanFiction.Net link.

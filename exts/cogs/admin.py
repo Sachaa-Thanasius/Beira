@@ -35,7 +35,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        return discord.PartialEmoji(name="endlessgears", animated=True, id=609046319155380231)
+        return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
 
     @commands.command(hidden=True)
     @commands.is_owner()
@@ -89,12 +89,10 @@ class AdminCog(commands.Cog, name="Administration"):
         """
         async with ctx.typing():
             if extension:
-                embed = discord.Embed(color=0xcccccc,
-                                      description="")
+                embed = discord.Embed(color=0xcccccc, description="")
 
                 if extension[5:] in IGNORE_EXTENSIONS:
                     embed.description = f"Currently exempt from reloads: {extension}"
-
                 else:
                     if extension not in list(self.bot.extensions.keys()):
                         embed.description = f"Never initially loaded this extension: {extension}"
@@ -120,8 +118,12 @@ class AdminCog(commands.Cog, name="Administration"):
         app_commands.Choice(name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.", value="-"),
         app_commands.Choice(name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", value="+")
     ])
-    async def sync(self, ctx: commands.Context, guilds: commands.Greedy[discord.Object] = None,
-                   spec: app_commands.Choice[str] | None = None) -> None:
+    async def sync(
+            self,
+            ctx: commands.Context,
+            guilds: commands.Greedy[discord.Object] = None,
+            spec: app_commands.Choice[str] | None = None
+    ) -> None:
         """Syncs the command tree in a way based on input.
 
         Originally made by Umbra. The `spec` and `guilds` parameters are mutually exclusive.
@@ -205,13 +207,6 @@ class AdminCog(commands.Cog, name="Administration"):
             The invocation context
         error : :class:`commands.CommandError`
             The error thrown by the command.
-
-
-        HTTPException – Syncing the commands failed.
-        CommandSyncFailure – Syncing the commands failed due to a user related error, typically because the command has invalid data. This is equivalent to an HTTP status code of 400.
-        Forbidden – The client does not have the ``applications.commands`` scope in the guild.
-        MissingApplicationID – The client does not have an application ID.
-        TranslationError – An error occurred while translating the commands.
         """
 
         embed = discord.Embed(title="/sync Error", description="Something went wrong with this command.")
@@ -249,19 +244,20 @@ class AdminCog(commands.Cog, name="Administration"):
 
         await ctx.reply(embed=embed)
 
-    @commands.group(hidden=False)
+    @commands.hybrid_group()
     @commands.guild_only()
     async def prefixes(self, ctx: commands.Context) -> None:
         """View the prefixes set for this bot in this location."""
 
         async with ctx.typing():
             local_prefixes = await self.bot.get_prefix(ctx.message)
-            await ctx.send(f"Prefixes:\n{', '.join(local_prefixes)}")
+            print(local_prefixes)
+            await ctx.send(f"Prefixes:\n{', '.join((f'`{prefix}`' if prefix else 'None') for prefix in local_prefixes)}")
 
-    @prefixes.command(name="add")
+    @prefixes.command("add")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), is_admin())
-    @commands.cooldown(1, 30, commands.cooldowns.BucketType.user)
+    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
     async def prefixes_add(self, ctx: commands.Context, *, new_prefix: str) -> None:
         """Set a prefix that you'd like this bot to respond to.
 
@@ -282,17 +278,14 @@ class AdminCog(commands.Cog, name="Administration"):
             updated_prefixes = local_prefixes.copy()
             updated_prefixes.append(new_prefix)
 
-            # Update the database and cache.
-            update_query = """UPDATE guilds SET prefixes = ARRAY[$1] WHERE id = $2 RETURNING prefixes;"""
-            results = await self.bot.db_pool.fetchrow(update_query, ", ".join(updated_prefixes), ctx.guild.id)
-            self.bot.prefixes[ctx.guild.id] = results["prefixes"]
+            await self._update_prefixes(updated_prefixes, ctx.guild.id)
 
             await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
 
-    @prefixes.command(name="remove")
+    @prefixes.command("remove")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), is_admin())
-    @commands.cooldown(1, 30, commands.cooldowns.BucketType.user)
+    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
     async def prefixes_remove(self, ctx: commands.Context, *, old_prefix: str) -> None:
         """Remove a prefix that you'd like this bot to no longer respond to.
 
@@ -313,12 +306,32 @@ class AdminCog(commands.Cog, name="Administration"):
             updated_prefixes = local_prefixes.copy()
             updated_prefixes.remove(old_prefix)
 
-            # Update the database and cache.
-            update_query = "UPDATE guilds SET prefixes = ARRAY[$1] WHERE id = $2 RETURNING prefixes;"
-            results = await self.bot.db_pool.fetchrow(update_query, ", ".join(updated_prefixes), ctx.guild.id)
-            self.bot.prefixes[ctx.guild.id] = results["prefixes"]
+            await self._update_prefixes(updated_prefixes, ctx.guild.id)
 
             await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
+
+    @prefixes.command("reset")
+    @commands.guild_only()
+    @commands.check_any(commands.is_owner(), is_admin())
+    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
+    async def prefixes_reset(self, ctx: commands.Context) -> None:
+        """Remove all prefixes within this guild for the bot to respond to.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        """
+
+        reset_prefixes = ["$"]
+        await self._update_prefixes(reset_prefixes, ctx.guild.id)
+        await ctx.send(f"The prefix(es) for this guild have been reset to: `$`.")
+
+    async def _update_prefixes(self, new_prefixes: list[str], guild_id: int):
+        # Update the database and cache.
+        update_query = "UPDATE guilds SET prefixes = $1 WHERE id = $2 RETURNING prefixes;"
+        results = await self.bot.db_pool.fetchrow(update_query, new_prefixes, guild_id)
+        self.bot.prefixes[guild_id:] = results["prefixes"]
 
 
 async def setup(bot: Beira) -> None:

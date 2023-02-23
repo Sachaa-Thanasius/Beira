@@ -39,6 +39,10 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         self.bot = bot
         self.access_token = self.bot.config["patreon"]["creator_access_token"]
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="patreon", id=1077980959569362994)
+
     async def cog_load(self) -> None:
         """Start patreon-related background tasks."""
 

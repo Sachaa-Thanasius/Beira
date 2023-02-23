@@ -76,8 +76,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.emoji = discord.PartialEmoji(name="fandom", id=1074075978084667465)
         self.all_wikis = {}
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="fandom", id=1077980392742727791)
 
     async def cog_load(self) -> None:
         """Perform any necessary tasks before the bot connects to the Websocket, like loading wiki directions."""

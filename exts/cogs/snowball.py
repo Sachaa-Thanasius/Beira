@@ -50,8 +50,11 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.emoji = discord.PartialEmoji(name="Emoji_Snowflake", animated=True, id=919086724288774184)
         self.embed_data = {}
+
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="snowflake", animated=True, id=1077980648867901531)
 
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands before the bot connects to the Discord Gateway."""
@@ -98,14 +101,15 @@ class SnowballCog(commands.Cog, name="Snowball"):
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
     @commands.hybrid_group()
-    async def snow(self, ctx: commands.Context):
-        """A group of all snowball-related commands.
+    async def snow(self, ctx: commands.Context) -> None:
+        """A group of snowball-related commands.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
         """
+
         pass
 
     @snow.command()
@@ -118,18 +122,31 @@ class SnowballCog(commands.Cog, name="Snowball"):
             The invocation context.
         """
 
-        embed = (
-            discord.Embed(
-                color=0x5e9a40,
-                title=f"{self.qualified_name} Settings",
-                description="Below are the unchangeable settings for the bot's snowball hit rate, stock maximum, and "
-                            "more. The ability to change these on a per-guild basis will be coming soon."
-            )
-            .add_field(name=f"Odds = {ODDS}", value="The odds of landing a snowball on someone.", inline=False)
-            .add_field(name=f"Leaderboard Max = {LEADERBOARD_MAX}", value="The number of people to show on the leaderboard.", inline=False)
-            .add_field(name=f"Default Stock Cap = {DEFAULT_STOCK_CAP}", value="The maximum number of snowballs the average member can hold at once.", inline=False)
-            .add_field(name=f"Special Stock Cap = {SPECIAL_STOCK_CAP}", value="The maximum number of snowballs special members can hold at once.", inline=False)
-            .add_field(name=f"Transfer Cap = {TRANSFER_CAP}", value="The maximum number of snowballs that can be gifted or stolen at once.", inline=False)
+        embed = discord.Embed(
+            color=0x5e9a40,
+            title=f"{self.qualified_name} Settings",
+            description="Below are the unchangeable settings for the bot's snowball hit rate, stock maximum, and more."
+                        " The ability to change these on a per-guild basis will be coming soon."
+        ).add_field(
+            name=f"Odds = {ODDS}",
+            value="The odds of landing a snowball on someone.",
+            inline=False
+        ).add_field(
+            name=f"Leaderboard Max = {LEADERBOARD_MAX}",
+            value="The number of people to show on the leaderboard.",
+            inline=False
+        ).add_field(
+            name=f"Default Stock Cap = {DEFAULT_STOCK_CAP}",
+            value="The maximum number of snowballs the average member can hold at once.",
+            inline=False
+        ).add_field(
+            name=f"Special Stock Cap = {SPECIAL_STOCK_CAP}",
+            value="The maximum number of snowballs special members can hold at once.",
+            inline=False
+        ).add_field(
+            name=f"Transfer Cap = {TRANSFER_CAP}",
+            value="The maximum number of snowballs that can be gifted or stolen at once.",
+            inline=False
         )
 
         await ctx.send(embed=embed)
@@ -172,8 +189,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: commands.Context,
-                    target: Annotated[discord.Member, MemberNoSelfTargetConverter]) -> None:
+    async def throw(self, ctx: commands.Context, target: Annotated[discord.Member, MemberNoSelfTargetConverter]) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
