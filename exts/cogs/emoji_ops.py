@@ -41,6 +41,9 @@ class EmojiOperationsCog(commands.Cog, name="Emoji"):
             else:
                 break
 
+        if not converted_emoji:
+            converted_emoji = discord.PartialEmoji(name=entity)
+
         return converted_emoji
 
     @commands.hybrid_group("emoji")

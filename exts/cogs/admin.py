@@ -54,21 +54,18 @@ class AdminCog(commands.Cog, name="Administration"):
         def create_walk_embed(title: str, cmds: list[app_commands.AppCommand]) -> None:
             """Creates an embed for global and guild command areas and adds it to a collection of embeds."""
 
-            descr = ""
-            for cmd in cmds:
-                descr += f"**{cmd.mention}**\n{cmd.description}\n\n"
-            walk_embed = discord.Embed(title=title, color=0xcccccc,
-                                       description=descr)
+            descr = "\n".join([f"**{cmd.mention}**\n{cmd.description}\n" for cmd in cmds])
+            walk_embed = discord.Embed(title=title, color=0xcccccc, description=descr)
             all_embeds.append(walk_embed)
 
         global_commands = await self.bot.tree.fetch_commands()
         if global_commands:
-            create_walk_embed("Global Commands Registered", global_commands)
+            create_walk_embed("Global App Commands Registered", global_commands)
 
         for guild in guilds_to_check:
             guild_commands = await self.bot.tree.fetch_commands(guild=guild)
             if guild_commands:
-                create_walk_embed(f"Guild commands Registered - {guild}", guild_commands)
+                create_walk_embed(f"Guild App Commands Registered - {guild}", guild_commands)
 
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
@@ -87,6 +84,7 @@ class AdminCog(commands.Cog, name="Administration"):
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
+
         async with ctx.typing():
             if extension:
                 embed = discord.Embed(color=0xcccccc, description="")
@@ -204,7 +202,7 @@ class AdminCog(commands.Cog, name="Administration"):
         Parameters
         ----------
         ctx : :class:`commands.Context`
-            The invocation context
+            The invocation context.
         error : :class:`commands.CommandError`
             The error thrown by the command.
         """
@@ -244,14 +242,13 @@ class AdminCog(commands.Cog, name="Administration"):
 
         await ctx.reply(embed=embed)
 
-    @commands.hybrid_group()
+    @commands.hybrid_group(fallback="get")
     @commands.guild_only()
     async def prefixes(self, ctx: commands.Context) -> None:
         """View the prefixes set for this bot in this location."""
 
         async with ctx.typing():
             local_prefixes = await self.bot.get_prefix(ctx.message)
-            print(local_prefixes)
             await ctx.send(f"Prefixes:\n{', '.join((f'`{prefix}`' if prefix else 'None') for prefix in local_prefixes)}")
 
     @prefixes.command("add")
@@ -269,18 +266,19 @@ class AdminCog(commands.Cog, name="Administration"):
             The prefix to be added.
         """
 
-        local_prefixes = await self.bot.get_prefix(ctx.message)
+        async with ctx.typing():
+            local_prefixes = await self.bot.get_prefix(ctx.message)
 
-        if new_prefix in local_prefixes:
-            await ctx.send("You already registered this prefix.")
+            if new_prefix in local_prefixes:
+                await ctx.send("You already registered this prefix.")
 
-        else:
-            updated_prefixes = local_prefixes.copy()
-            updated_prefixes.append(new_prefix)
+            else:
+                updated_prefixes = local_prefixes.copy()
+                updated_prefixes.append(new_prefix)
 
-            await self._update_prefixes(updated_prefixes, ctx.guild.id)
+                await self._update_prefixes(updated_prefixes, ctx.guild.id)
 
-            await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
+                await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
 
     @prefixes.command("remove")
     @commands.guild_only()
@@ -297,18 +295,19 @@ class AdminCog(commands.Cog, name="Administration"):
             The prefix to be removed.
         """
 
-        local_prefixes = await self.bot.get_prefix(ctx.message)
+        async with ctx.typing():
+            local_prefixes = await self.bot.get_prefix(ctx.message)
 
-        if old_prefix not in local_prefixes:
-            await ctx.send("This prefix either was never registered in this guild or has already been unregistered.")
+            if old_prefix not in local_prefixes:
+                await ctx.send("This prefix either was never registered in this guild or has already been unregistered.")
 
-        else:
-            updated_prefixes = local_prefixes.copy()
-            updated_prefixes.remove(old_prefix)
+            else:
+                updated_prefixes = local_prefixes.copy()
+                updated_prefixes.remove(old_prefix)
 
-            await self._update_prefixes(updated_prefixes, ctx.guild.id)
+                await self._update_prefixes(updated_prefixes, ctx.guild.id)
 
-            await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
+                await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
 
     @prefixes.command("reset")
     @commands.guild_only()
@@ -323,15 +322,25 @@ class AdminCog(commands.Cog, name="Administration"):
             The invocation context.
         """
 
-        reset_prefixes = ["$"]
-        await self._update_prefixes(reset_prefixes, ctx.guild.id)
-        await ctx.send(f"The prefix(es) for this guild have been reset to: `$`.")
+        async with ctx.typing():
+            reset_prefixes = ["$"]
+            await self._update_prefixes(reset_prefixes, ctx.guild.id)
+            await ctx.send(f"The prefix(es) for this guild have been reset to: `$`.")
 
-    async def _update_prefixes(self, new_prefixes: list[str], guild_id: int):
-        # Update the database and cache.
-        update_query = "UPDATE guilds SET prefixes = $1 WHERE id = $2 RETURNING prefixes;"
+    async def _update_prefixes(self, new_prefixes: list[str], guild_id: int) -> None:
+        """Update the set of prefixes for a particular guild in the database and cache.
+
+        Parameters
+        ----------
+        new_prefixes : list[:class:`str`]
+            The new set of prefixes.
+        guild_id : :class:`int`
+            The guild which needs updating.
+        """
+
+        update_query = """UPDATE guilds SET prefixes = $1 WHERE id = $2 RETURNING prefixes;"""
         results = await self.bot.db_pool.fetchrow(update_query, new_prefixes, guild_id)
-        self.bot.prefixes[guild_id:] = results["prefixes"]
+        self.bot.prefixes[guild_id] = results["prefixes"]
 
 
 async def setup(bot: Beira) -> None:

@@ -1,5 +1,5 @@
 """
-atlas_wrapper.py: A small asynchronous wrapper for iris's Atlas FanFiction.Net (or FFN) API.
+atlas_wrapper.py: A small asynchronous wrapper for iris's Atlas FanFiction.Net (or FFN) metadata API.
 """
 
 from __future__ import annotations
@@ -11,6 +11,7 @@ from datetime import datetime
 from typing import ClassVar
 from urllib.parse import urljoin
 
+import aiohttp.client_exceptions
 from aiohttp import BasicAuth, ClientSession
 from cattrs import Converter
 
@@ -19,7 +20,13 @@ from fanfic_wrappers.ff_metadata_classes import FFNMetadata
 LOGGER = logging.getLogger(__name__)
 
 
-class AtlasStoryNotFound(Exception):
+class AtlasException(Exception):
+    """The base exception for the Atlas Client module."""
+
+    pass
+
+
+class AtlasStoryNotFound(AtlasException):
     """An exception raised when :class:`AtlasClient` doesn't find an FFN work."""
 
     pass
@@ -81,9 +88,14 @@ class AtlasClient:
 
         async with self._semaphore:
             url = urljoin(self.ATLAS_BASE_URL, endpoint)
-            async with self._session.get(url=url, headers=self._headers, params=params, auth=self._auth) as response:
-                data = await response.json()
-                return data
+
+            try:
+                async with self._session.get(url=url, headers=self._headers, params=params, auth=self._auth) as response:
+                    data = await response.json()
+                    return data
+
+            except aiohttp.client_exceptions.ClientResponseError:
+                raise AtlasException("Unable to connect to Atlas.")
 
     async def get_max_update_id(self) -> int:
         """Gets the maximum `update_id` currently in use.

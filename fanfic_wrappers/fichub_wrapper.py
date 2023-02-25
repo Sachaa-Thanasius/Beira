@@ -5,18 +5,25 @@ fichub_wrapper.py: A small asynchronous wrapper for FicHub's fanfic API, specifi
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from datetime import datetime
-from pprint import pprint
 from typing import ClassVar
 from urllib.parse import urljoin
 
+import aiohttp.client_exceptions
 from aiohttp import ClientSession
 from cattrs import Converter
 
 from fanfic_wrappers.ff_metadata_classes import AO3Metadata, FicHubDownloadUrls
 
 LOGGER = logging.getLogger(__name__)
+
+
+class FicHubException(Exception):
+    """The base exception for the FicHub Client module."""
+
+    pass
 
 
 class FicHubClient:
@@ -32,7 +39,8 @@ class FicHubClient:
 
     def __init__(self, *, session: ClientSession):
         self._session: ClientSession = session
-        self._headers = {"User-Agent": "Atlas API wrapper/@Thanos"}
+        self._headers = {"User-Agent": "FicHub API wrapper/@Thanos"}
+        self._semaphore = asyncio.Semaphore(value=5)
 
         self.dwnld_urls_conv = Converter()
         self.converter = Converter()
@@ -59,13 +67,16 @@ class FicHubClient:
             The JSON data from the API's response.
         """
 
-        async with self._session.get(
-                url=urljoin(self.FICHUB_BASE_URL, endpoint),
-                headers=self._headers,
-                params=params
-        ) as response:
-            data = await response.json()
-            return data
+        async with self._semaphore:
+            url = urljoin(self.FICHUB_BASE_URL, endpoint)
+
+            try:
+                async with self._session.get(url=url, headers=self._headers, params=params) as response:
+                    data = await response.json()
+                    return data
+
+            except aiohttp.client_exceptions.ClientResponseError:
+                raise FicHubException("Unable to connect to FicHub.")
 
     async def get_story_metadata(self, url: str) -> AO3Metadata:
         """Gets a specific Ao3 fic's metadata.
@@ -83,7 +94,7 @@ class FicHubClient:
 
         query = {"q": url}
         resp_dict = await self._get("meta", query)
-        pprint(resp_dict)
+
         metadata = self.converter.structure(resp_dict, AO3Metadata)
         return metadata
 
