@@ -5,17 +5,18 @@ custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
 from __future__ import annotations
 
 import asyncio
-from contextlib import contextmanager
-from functools import wraps
 import logging
 from collections.abc import Callable
-from time import perf_counter
+from contextlib import contextmanager
+from functools import wraps
 from logging.handlers import RotatingFileHandler
-from typing import Any
-from typing_extensions import Self
-
 from pathlib import Path
-from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour, maybe_coroutine
+from time import perf_counter
+from typing import Any
+
+from discord.utils import _ColourFormatter as ColourFormatter
+from discord.utils import stream_supports_colour
+from typing_extensions import Self
 
 
 class RemoveNoise(logging.Filter):

@@ -8,15 +8,16 @@ import json
 import logging
 from datetime import timedelta
 from time import perf_counter
-from typing import Any, TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import discord
-from discord.ext import commands
 from discord.app_commands import Choice
+from discord.ext import commands
 from discord.utils import utcnow
 
 from utils.db_funcs import upsert_users, upsert_guilds
 from utils.embeds import StatsEmbed
+
 
 if TYPE_CHECKING:
     from bot import Beira

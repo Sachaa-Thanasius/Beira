@@ -49,15 +49,16 @@ class Beira(commands.Bot):
         A collection of :class:`discord.Emoji`\'s with truncated names stored on startup for easy future retrieval.
     """
 
-    def __init__(self,
-                 *args,
-                 db_pool: asyncpg.Pool,
-                 web_session: aiohttp.ClientSession,
-                 initial_extensions: list[str] = None,
-                 testing_guild_ids: list[int] = None,
-                 test_mode: bool = False,
-                 **kwargs):
-
+    def __init__(
+        self,
+        *args,
+        db_pool: asyncpg.Pool,
+        web_session: aiohttp.ClientSession,
+        initial_extensions: list[str] = None,
+        testing_guild_ids: list[int] = None,
+        test_mode: bool = False,
+        **kwargs
+    ):
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
         self.web_session = web_session
@@ -76,6 +77,7 @@ class Beira(commands.Bot):
     @property
     def config(self) -> dict:
         """dict: All configuration information from the config.json file."""
+
         return self._config
 
     async def _load_guild_prefixes(self) -> None:
@@ -238,7 +240,6 @@ async def main() -> None:
     async with aiohttp.ClientSession() as session, asyncpg.create_pool(
             dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=postgres_db_init
     ) as pool:
-
         # Set the starting parameters.
         default_prefix = CONFIG["discord"]["default_prefix"]
         default_intents = discord.Intents.all()
@@ -247,6 +248,7 @@ async def main() -> None:
         init_exts = [
             "exts.cogs.admin",
             "exts.cogs.ai_generation",
+            "exts.cogs.basic_commands",
             "exts.cogs.bot_stats",
             "exts.cogs.custom_notifications",
             "exts.cogs.emoji_ops",
@@ -270,8 +272,7 @@ async def main() -> None:
                 testing_guild_ids=testing_guilds,
                 test_mode=testing
         ) as bot:
-
-            with CustomLogger():                                # Custom logging class
+            with CustomLogger():  # Custom logging class
                 await bot.start(CONFIG["discord"]["token"])
 
 

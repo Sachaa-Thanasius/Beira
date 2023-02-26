@@ -5,11 +5,12 @@ patreon.py: A cog for checking which Discord members are currently patrons of AC
 from __future__ import annotations
 
 import logging
-from dataclasses import dataclass
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord
+from attrs import define, field
 from discord.ext import commands, tasks
+
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -19,11 +20,11 @@ LOGGER = logging.getLogger(__name__)
 CAMPAIGN_BASE = "https://www.patreon.com/api/oauth2/v2/campaigns"
 
 
-@dataclass
+@define
 class PatreonMember:
     user_id: str
     discord_id: int
-    current_tiers: list[Any]
+    current_tiers: list[Any] = field(factory=list)
 
 
 class PatreonCheckCog(commands.Cog, name="Patreon"):

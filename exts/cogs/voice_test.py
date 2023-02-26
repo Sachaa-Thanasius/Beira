@@ -5,14 +5,14 @@ voice_test.py: A cog for testing voice-related parts of the discord.py library.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING
-
-from random import choice
 from pathlib import Path
+from random import choice
+from typing import TYPE_CHECKING
 
 import discord
 from discord import FFmpegPCMAudio
 from discord.ext import commands
+
 
 if TYPE_CHECKING:
     from bot import Beira

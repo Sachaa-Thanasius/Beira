@@ -6,24 +6,25 @@ from __future__ import annotations
 
 import logging
 import re
+from bisect import bisect_left
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
-from copy import deepcopy
 from random import choice, randint
-from bisect import bisect_left
 from typing import TYPE_CHECKING, ClassVar
-from typing_extensions import Self
 
-from attrs import define, field, asdict
-from cattrs import Converter
 import discord
+from attrs import asdict, define, field
+from cattrs import Converter
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import MISSING
+from typing_extensions import Self
 
-from utils.embeds import PaginatedEmbed, EMOJI_URL
-from utils.paginated_views import PaginatedEmbedView
 from utils.custom_logging import benchmark
+from utils.embeds import EMOJI_URL, PaginatedEmbed
+from utils.paginated_views import PaginatedEmbedView
+
 
 if TYPE_CHECKING:
     from bot import Beira

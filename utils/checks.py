@@ -14,6 +14,7 @@ from discord.utils import maybe_coroutine
 
 from utils.errors import NotOwnerOrFriend, NotAdmin
 
+
 LOGGER = logging.getLogger(__name__)
 
 
@@ -47,29 +48,6 @@ def is_admin():
         if not (ctx.guild is not None and ctx.author.guild_permissions.administrator):
             raise NotAdmin("Only someone with administrator permissions can do this.")
         return True
-
-    return commands.check(predicate)
-
-
-def certain_channels_only():
-    """A :func:`.check` that checks if the person invoking this command is the
-    right channels of the guild in the current context.
-
-    This check raises the :exc:`commands.CheckFailure` on failure.
-    """
-
-    async def predicate(ctx: commands.Context) -> bool:
-        admin_cog = ctx.bot.get_cog("Administration")
-
-        # Ensure the message was sent in a guild.
-        if ctx.guild is not None:
-            # Ensure the message was sent in that guild's allowed channels.
-            allowed_channels = admin_cog.allowed_channels.get(ctx.guild.id)
-            if allowed_channels:
-                if ctx.channel.id in allowed_channels:
-                    return True
-
-        raise commands.CheckFailure("You can't do that in this channel.")
 
     return commands.check(predicate)
 

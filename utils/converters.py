@@ -11,6 +11,7 @@ from discord.ext import commands
 
 from utils.errors import CannotTargetSelf
 
+
 LOGGER = logging.getLogger(__name__)
 
 

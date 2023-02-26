@@ -11,8 +11,7 @@ from datetime import datetime
 from typing import ClassVar
 from urllib.parse import urljoin
 
-import aiohttp.client_exceptions
-from aiohttp import ClientSession
+from aiohttp import ClientSession, client_exceptions
 from cattrs import Converter
 
 from fanfic_wrappers.ff_metadata_classes import AO3Metadata, FicHubDownloadUrls
@@ -75,7 +74,7 @@ class FicHubClient:
                     data = await response.json()
                     return data
 
-            except aiohttp.client_exceptions.ClientResponseError:
+            except client_exceptions.ClientResponseError:
                 raise FicHubException("Unable to connect to FicHub.")
 
     async def get_story_metadata(self, url: str) -> AO3Metadata:

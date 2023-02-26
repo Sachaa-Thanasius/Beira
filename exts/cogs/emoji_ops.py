@@ -10,7 +10,7 @@ from typing import TYPE_CHECKING
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.ext.commands import EmojiConverter, PartialEmojiConverter
+
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class EmojiOperationsCog(commands.Cog, name="Emoji"):
+class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     """A cog with commands for performing actions with emojis."""
 
     def __init__(self, bot: Beira):
@@ -30,7 +30,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji"):
 
     @staticmethod
     async def parse_str_as_emoji(ctx: commands.Context, entity: str) -> discord.Emoji | discord.PartialEmoji | None:
-        converters = [EmojiConverter(), PartialEmojiConverter()]
+        converters = [commands.EmojiConverter(), commands.PartialEmojiConverter()]
         converted_emoji = None
 
         for converter in converters:

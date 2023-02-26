@@ -9,14 +9,15 @@ import re
 from collections.abc import Mapping
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any
-from typing_extensions import Self
 
 import discord
-from discord.ext import commands
 from discord import app_commands
+from discord.ext import commands
+from typing_extensions import Self
 
 from utils.embeds import DTEmbed, PaginatedEmbed
 from utils.paginated_views import PaginatedEmbedView
+
 
 if TYPE_CHECKING:
     from bot import Beira

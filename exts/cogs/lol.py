@@ -6,16 +6,17 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from urllib.parse import quote, urljoin
 from pathlib import Path
 from typing import TYPE_CHECKING
+from urllib.parse import quote, urljoin
 
-from arsenic import services, browsers, get_session, errors
-from bs4 import BeautifulSoup
 import discord
+from arsenic import browsers, errors, get_session, services
+from bs4 import BeautifulSoup
 from discord.ext import commands
 
 from utils.embeds import StatsEmbed
+
 
 if TYPE_CHECKING:
     from bot import Beira

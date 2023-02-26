@@ -11,8 +11,7 @@ from datetime import datetime
 from typing import ClassVar
 from urllib.parse import urljoin
 
-import aiohttp.client_exceptions
-from aiohttp import BasicAuth, ClientSession
+from aiohttp import BasicAuth, ClientSession, client_exceptions
 from cattrs import Converter
 
 from fanfic_wrappers.ff_metadata_classes import FFNMetadata
@@ -28,6 +27,12 @@ class AtlasException(Exception):
 
 class AtlasStoryNotFound(AtlasException):
     """An exception raised when :class:`AtlasClient` doesn't find an FFN work."""
+
+    pass
+
+
+class AtlasBulkResultsNotFound(AtlasException):
+    """An exception raised when :class:`AtlasClient` doesn't find any FFN work matching a bulk search criteria."""
 
     pass
 
@@ -94,7 +99,7 @@ class AtlasClient:
                     data = await response.json()
                     return data
 
-            except aiohttp.client_exceptions.ClientResponseError:
+            except client_exceptions.ClientResponseError:
                 raise AtlasException("Unable to connect to Atlas.")
 
     async def get_max_update_id(self) -> int:
@@ -177,6 +182,8 @@ class AtlasClient:
             raise ValueError("The results limit should be no more than 10000.")
 
         raw_metadata_list: list[dict] = await self._get("ffn/meta", params=query_params)
+        if len(raw_metadata_list) == 0:
+            raise AtlasBulkResultsNotFound("No search results found.")
         metadata_list = self.converter.structure(raw_metadata_list, list[FFNMetadata])
 
         return metadata_list

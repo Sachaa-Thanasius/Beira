@@ -13,14 +13,15 @@ from io import BytesIO
 from pathlib import Path
 from shutil import rmtree
 from time import perf_counter
-from typing import ClassVar, TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, ClassVar, Literal
 
-import openai_async
-from PIL import Image
 import discord
+import openai_async
 from discord.ext import commands
+from PIL import Image
 
 from utils.custom_logging import benchmark
+
 
 if TYPE_CHECKING:
     from bot import Beira

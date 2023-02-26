@@ -7,17 +7,18 @@ from __future__ import annotations
 
 import functools
 import logging
-from typing import TYPE_CHECKING
-
-from bs4 import BeautifulSoup
-from urllib.parse import quote, urljoin
 from json import load
+from typing import TYPE_CHECKING
+from urllib.parse import quote, urljoin
+
 import discord
+from bs4 import BeautifulSoup
 from discord import app_commands
 from discord.ext import commands
 
-from utils.embeds import EMOJI_URL, DTEmbed
 from utils.custom_logging import benchmark
+from utils.embeds import EMOJI_URL, DTEmbed
+
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -92,6 +93,21 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
 
         # Load the file with the wiki information and directories.
+        '''Not being used yet:
+        
+        "Harry Potter and the Perversion of Purity": {
+            "base_url": "https://perversion-of-purity.fandom.com",
+            "pages_directory": ["/wiki/Special:AllPages"]
+        },
+        "Harry Potter and the Conjoining of Paragons": {
+            "base_url": "https://conjoining-of-paragons.fandom.com",
+            "pages_directory": ["/wiki/Special:AllPages"]
+        },
+        "Ace Iverson and the Fabric of Fate": {
+            "base_url": "https://fabric-of-fate.fandom.com",
+            "pages_directory": ["/wiki/Special:AllPages"]
+        }
+        '''
         try:
             with open("data/fandom_wiki_data.json", "r") as f:
                 self.all_wikis = load(f)

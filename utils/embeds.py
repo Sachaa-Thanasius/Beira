@@ -4,16 +4,15 @@ embeds.py: This class provides embeds for user-specific statistics separated int
 
 from __future__ import annotations
 
+import datetime
 import logging
 from collections.abc import Sequence
-import datetime
-from typing import Any, Callable, TYPE_CHECKING
-
-import discord
-from typing_extensions import Self
+from typing import TYPE_CHECKING, Any, Callable
 
 from discord import Embed
 from discord.utils import MISSING
+from typing_extensions import Self
+
 
 if TYPE_CHECKING:
     from discord import Emoji

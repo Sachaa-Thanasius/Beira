@@ -8,15 +8,16 @@ import asyncio
 import logging
 import re
 from io import BytesIO
-from typing import Literal, Pattern, TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal, Pattern
 
 import AO3
-from aiohttp import BasicAuth
 import discord
+from aiohttp import BasicAuth
 from discord.ext import commands
 
 from utils.embeds import DTEmbed
 from fanfic_wrappers.atlas_wrapper import AtlasClient
+
 
 if TYPE_CHECKING:
     from bot import Beira

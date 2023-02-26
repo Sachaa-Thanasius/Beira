@@ -7,12 +7,12 @@ from __future__ import annotations
 import logging
 from typing import TYPE_CHECKING
 
-from pathlib import Path
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 from utils.checks import is_admin
+
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -21,10 +21,6 @@ LOGGER = logging.getLogger(__name__)
 
 # List for cogs that you don't want to be reloaded, using dot-style notation (e.g. "exts.cogs.snowball").
 IGNORE_EXTENSIONS = []
-
-# Find all extensions using the file path, excluding those in IGNORE_EXTENSIONS.
-cogs_folder = Path(__file__).resolve().parent
-ALL_EXTENSIONS = [(f"{fp.stem}", f"exts.cogs.{fp.stem}") for fp in cogs_folder.iterdir() if fp.suffix == ".py"]
 
 
 class AdminCog(commands.Cog, name="Administration"):
@@ -71,7 +67,6 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @commands.hybrid_command(hidden=True)
     @commands.is_owner()
-    @app_commands.choices(extension=[app_commands.Choice(name=ext[0], value=ext[1]) for ext in ALL_EXTENSIONS])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def reload(self, ctx: commands.Context, extension: str) -> None:
         """Reloads an extension/cog.
@@ -89,7 +84,7 @@ class AdminCog(commands.Cog, name="Administration"):
             if extension:
                 embed = discord.Embed(color=0xcccccc, description="")
 
-                if extension[5:] in IGNORE_EXTENSIONS:
+                if extension in IGNORE_EXTENSIONS:
                     embed.description = f"Currently exempt from reloads: {extension}"
                 else:
                     if extension not in list(self.bot.extensions.keys()):
@@ -105,6 +100,15 @@ class AdminCog(commands.Cog, name="Administration"):
                         LOGGER.info(f"Reloaded extension: {extension}")
 
                 await ctx.send(embed=embed, ephemeral=True)
+
+    @reload.autocomplete("extension")
+    async def reload_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        """Autocompletes extension names."""
+
+        return [
+                   app_commands.Choice(name=ext.rsplit(".", 1)[1], value=ext) for ext in self.bot.extensions
+                   if current.lower() in ext.lower()
+               ][:25]
 
     @commands.hybrid_command(hidden=True)
     @commands.is_owner()
@@ -242,6 +246,13 @@ class AdminCog(commands.Cog, name="Administration"):
 
         await ctx.reply(embed=embed)
 
+    async def _update_prefixes(self, new_prefixes: list[str], guild_id: int) -> None:
+        """Update the set of prefixes for a particular guild in the database and cache."""
+
+        update_query = """UPDATE guilds SET prefixes = $1 WHERE id = $2 RETURNING prefixes;"""
+        results = await self.bot.db_pool.fetchrow(update_query, new_prefixes, guild_id)
+        self.bot.prefixes[guild_id] = results["prefixes"]
+
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
     async def prefixes(self, ctx: commands.Context) -> None:
@@ -326,21 +337,6 @@ class AdminCog(commands.Cog, name="Administration"):
             reset_prefixes = ["$"]
             await self._update_prefixes(reset_prefixes, ctx.guild.id)
             await ctx.send(f"The prefix(es) for this guild have been reset to: `$`.")
-
-    async def _update_prefixes(self, new_prefixes: list[str], guild_id: int) -> None:
-        """Update the set of prefixes for a particular guild in the database and cache.
-
-        Parameters
-        ----------
-        new_prefixes : list[:class:`str`]
-            The new set of prefixes.
-        guild_id : :class:`int`
-            The guild which needs updating.
-        """
-
-        update_query = """UPDATE guilds SET prefixes = $1 WHERE id = $2 RETURNING prefixes;"""
-        results = await self.bot.db_pool.fetchrow(update_query, new_prefixes, guild_id)
-        self.bot.prefixes[guild_id] = results["prefixes"]
 
 
 async def setup(bot: Beira) -> None:

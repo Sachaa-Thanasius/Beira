@@ -12,6 +12,7 @@ from typing import Any
 import discord
 from discord.ui import Modal, TextInput, View
 
+
 LOGGER = logging.getLogger(__name__)
 
 
