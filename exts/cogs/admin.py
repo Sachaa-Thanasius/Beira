@@ -232,7 +232,7 @@ class AdminCog(commands.Cog, name="Administration"):
             embed.description = "You do not have the permissions to create emojis here."
 
         elif isinstance(error, app_commands.MissingApplicationID):
-            embed.description = "The client does not have an application ID."
+            embed.description = "The bot does not have an application ID."
 
         elif isinstance(error, app_commands.TranslationError):
             embed.description = "An error occurred while translating the commands."

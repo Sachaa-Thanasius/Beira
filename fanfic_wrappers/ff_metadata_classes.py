@@ -40,10 +40,16 @@ class FFNMetadata:
     fandom_id1: int | None = None
     error: object | None = None
 
-    def get_story_url(self) -> str:
+    @property
+    def story_url(self) -> str:
+        """:class:`str`: The url for the story on FFN."""
+
         return urljoin("https://www.fanfiction.net/s/", str(self.id))
 
-    def get_author_url(self) -> str:
+    @property
+    def author_url(self) -> str:
+        """:class:`str`: The url for the author's FFN profile."""
+
         return urljoin("https://www.fanfiction.net/u/", str(self.author_id))
 
 

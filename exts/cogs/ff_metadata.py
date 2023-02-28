@@ -8,6 +8,7 @@ import asyncio
 import logging
 import re
 from io import BytesIO
+from time import perf_counter
 from typing import TYPE_CHECKING, Literal, Pattern
 
 import AO3
@@ -35,24 +36,27 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     def __init__(self, bot: Beira):
         self.bot = bot
         self.emoji = "📊"
-        self.atlas_client = AtlasClient(
-            auth=BasicAuth(
-                login=bot.config["atlas_fanfic"]["user"],
-                password=bot.config["atlas_fanfic"]["pass"]
-            ),
-            session=self.bot.web_session
-        )
-        self.ao3_session = AO3.Session(self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"])
+        self.ao3_session = None
+        self.atlas_client = None
+
         self.allowed_channels: dict[int, set[int]] = {
-            self.bot.config["discord"]["guilds"]["prod"][0]: {722085126908936210, 774395652984537109},
+            self.bot.config["discord"]["guilds"]["prod"][0]: {722085126908936210, 774395652984537109, 695705014341074944},
             self.bot.config["discord"]["guilds"]["dev"][0]: {975459460560605204},
             self.bot.config["discord"]["guilds"]["dev"][1]: {1043702766113136680},
         }
+
         self.link_pattern: dict[str, Pattern[str]] = {
             "ffn": re.compile(r"(https://|http://|)(www\.|m\.|)fanfiction\.net/s/(\d+)"),
             "ao3_work": re.compile(r"(https://|http://|)(www\.|)archiveofourown\.org/works/(\d+)"),
             "ao3_series": re.compile(r"(https://|http://|)(www\.|)archiveofourown\.org/series/(\d+)"),
         }
+
+    async def cog_load(self) -> None:
+        auth = BasicAuth(login=self.bot.config["atlas_fanfic"]["user"], password=self.bot.config["atlas_fanfic"]["pass"])
+        self.atlas_client = AtlasClient(auth=auth, session=self.bot.web_session)
+
+        loop = self.bot.loop or asyncio.get_event_loop()
+        self.ao3_session = await loop.run_in_executor(None, AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"])
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -94,10 +98,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         """
 
         # Populate the ids of channels to allow.
-        if channels == "this":
-            channel_ids = [ctx.channel.id]
-        else:
-            channel_ids = [channel.id for channel in ctx.guild.channels]
+        channel_ids = [ctx.channel.id] if channels == "this" else [channel.id for channel in ctx.guild.channels]
 
         # Add the channel ids to the allow set.
         if self.allowed_channels.get(ctx.guild.id):
@@ -122,10 +123,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         """
 
         # Populate the ids of channels to disallow.
-        if channels == "this":
-            channel_ids = [ctx.channel.id]
-        else:
-            channel_ids = [channel.id for channel in ctx.guild.channels]
+        channel_ids = [ctx.channel.id] if channels == "this" else [channel.id for channel in ctx.guild.channels]
 
         # Remove the channel ids from the allow set.
         if self.allowed_channels.get(ctx.guild.id):
@@ -165,20 +163,21 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             else:
                 search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
                 await self.bot.loop.run_in_executor(None, search.update)
+
                 if len(search.results) > 0:
                     work = search.results[0]
                     ao3_embed, profile_image = await self.create_ao3_work_embed(work)
                 else:
                     ao3_embed = DTEmbed(
                         title="No Results",
-                        description="No results found. You may want to edit your search to make it less specific."
+                        description="No results found. You may need to edit your search."
                     )
 
             await ctx.reply(file=profile_image, embed=ao3_embed)
 
     @commands.command()
     async def ffn(self, ctx: commands.Context, *, name_or_url: str) -> None:
-        """Search FanFiction.Net for a fic with a certain title.
+        """Search FanFiction.Net for a fic with a certain title or url.
 
         Parameters
         ----------
@@ -191,50 +190,52 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         async with ctx.typing():
             if fic_id := self.atlas_client.extract_fic_id(name_or_url):
                 story_data = await self.atlas_client.get_story_metadata(fic_id)
+                ffn_embed = await self.create_ffn_embed(story_data)
+
             else:
                 results = await self.atlas_client.get_bulk_metadata(title_ilike=name_or_url, limit=1)
-                story_data = results[0]
 
-            ffn_embed = await self.create_ffn_embed(story_data)
+                if results:
+                    story_data = results[0]
+                    ffn_embed = await self.create_ffn_embed(story_data)
+                else:
+                    ffn_embed = DTEmbed(
+                        title="No Results",
+                        description="No results found. You may need to edit your search."
+                    )
+
             await ctx.reply(embed=ffn_embed)
 
     @staticmethod
     async def create_ao3_work_embed(work: AO3.Work) -> (DTEmbed, discord.File):
         """Create an embed that holds all the relevant metadata for an Archive of Our Own work."""
 
-        updated = work.date_updated.strftime('%B %d, %Y')
-
         author: AO3.User = work.authors[0]
         await asyncio.get_event_loop().run_in_executor(None, author.reload)
-        thumbnail_name, thumbnail_bytes = author.get_avatar()
-        thumbnail_file = discord.File(fp=BytesIO(thumbnail_bytes), filename="profile_image.png")
 
-        ao3_embed = DTEmbed(
-            title=work.title,
-            url=work.url,
-            description=work.summary
-        ).set_author(
-            name=", ".join([str(author.username) for author in work.authors]),
-            url=work.authors[0].url,
-            icon_url=AO3_ICON_URL
-        ).set_thumbnail(
-            url="attachment://profile_image.png"
-        ).add_field(
-            name="\N{SCROLL} Last Updated",
-            value=f"{updated}"
-        ).add_field(
-            name="\N{OPEN BOOK} Length",
-            value=f"{work.words:,d} words in {work.nchapters} chapter(s)"
-        ).add_field(
-            name=f"\N{BOOKMARK} Rating: {work.rating}",
-            value=f"{', '.join(work.fandoms)} • {', '.join(work.categories)} • {', '.join(work.characters[:3])}",
-            inline=False
-        ).add_field(
-            name="\N{BAR CHART} Stats",
-            value=f"**Comments:** {work.comments:,d} • **Kudos:** {work.kudos:,d} • "
-                  f"**Bookmarks:** {work.bookmarks:,d} • **Hits:** {work.hits:,d}",
-            inline=False
-        ).set_footer(text="A substitute for displaying Ao3 information, using Armindo Flores's Ao3 API.")
+        updated = work.date_updated.strftime('%B %d, %Y')
+        author_names = ", ".join([str(author.username) for author in work.authors])
+        thumbnail_file = discord.File(fp=BytesIO(author.get_avatar()[1]), filename="profile_image.png")
+
+        ao3_embed = (
+            DTEmbed(title=work.title, url=work.url, description=work.summary)
+            .set_author(name=author_names, url=author.url, icon_url=AO3_ICON_URL)
+            .set_thumbnail(url="attachment://profile_image.png")
+            .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
+            .add_field(name="\N{OPEN BOOK} Length", value=f"{work.words:,d} words in {work.nchapters} chapter(s)")
+            .add_field(
+                name=f"\N{BOOKMARK} Rating: {work.rating}",
+                value=f"{', '.join(work.fandoms)} • {', '.join(work.categories)} • {', '.join(work.characters[:3])}",
+                inline=False
+            )
+            .add_field(
+                name="\N{BAR CHART} Stats",
+                value=f"**Comments:** {work.comments:,d} • **Kudos:** {work.kudos:,d} • "
+                      f"**Bookmarks:** {work.bookmarks:,d} • **Hits:** {work.hits:,d}",
+                inline=False
+            )
+            .set_footer(text="A substitute for displaying Ao3 information, using Armindo Flores's Ao3 API.")
+        )
 
         return ao3_embed, thumbnail_file
 
@@ -242,34 +243,26 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     async def create_ao3_series_embed(series: AO3.Series) -> (DTEmbed, discord.File):
         """Create an embed that holds all the relevant metadata for an Archive of Our Own series."""
 
-        updated = series.series_updated.strftime('%B %d, %Y')
-
         author: AO3.User = series.creators[0]
         await asyncio.get_event_loop().run_in_executor(None, author.reload)
-        thumbnail_bytes = author.get_avatar()[1]
-        thumbnail_file = discord.File(fp=BytesIO(thumbnail_bytes), filename="profile_image.png")
 
-        ao3_embed = DTEmbed(
-            title=series.name,
-            url=series.url,
-            description=series.description
-        ).set_author(
-            name=", ".join([str(creator.username) for creator in series.creators]),
-            url=series.creators[0].url,
-            icon_url=AO3_ICON_URL
-        ).set_thumbnail(
-            url="attachment://profile_image.png"
-        ).add_field(
-            name="\N{BOOKS} Works:",
-            value="\n".join([f"[{work.title}]({work.url})" for work in series.work_list]),
-            inline=False
-        ).add_field(
-            name="\N{SCROLL} Last Updated",
-            value=f"{updated}"
-        ).add_field(
-            name="\N{BOOK} Length",
-            value=f"{series.words:,d} words in {series.nworks} work(s)"
-        ).set_footer(text="A substitute for displaying Ao3 information, using Armindo Flores's Ao3 API.")
+        updated = series.series_updated.strftime('%B %d, %Y')
+        author_names = ", ".join([str(creator.username) for creator in series.creators])
+        thumbnail_file = discord.File(fp=BytesIO(author.get_avatar()[1]), filename="profile_image.png")
+
+        ao3_embed = (
+            DTEmbed(title=series.name, url=series.url, description=series.description)
+            .set_author(name=author_names, url=author.url, icon_url=AO3_ICON_URL)
+            .set_thumbnail(url="attachment://profile_image.png")
+            .add_field(
+                name="\N{BOOKS} Works:",
+                value="\n".join([f"[{work.title}]({work.url})" for work in series.work_list]),
+                inline=False
+            )
+            .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
+            .add_field(name="\N{BOOK} Length", value=f"{series.words:,d} words in {series.nworks} work(s)")
+            .set_footer(text="A substitute for displaying Ao3 information, using Armindo Flores's Ao3 API.")
+        )
 
         return ao3_embed, thumbnail_file
 
@@ -279,30 +272,22 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
         updated = story.updated.strftime('%B %d, %Y')
 
-        ffn_embed = DTEmbed(
-            title=story.title,
-            url=story.get_story_url(),
-            description=story.description
-        ).set_author(
-            name=story.author_name,
-            url=story.get_author_url(),
-            icon_url=FFN_ICON_URL
-        ).add_field(
-            name="\N{SCROLL} Last Updated",
-            value=f"{updated}"
-        ).add_field(
-            name="\N{BOOK} Length",
-            value=f"{story.word_count:,d} words in {story.chapter_count} chapter(s)"
-        ).add_field(
-            name=f"\N{BOOKMARK} Rating: Fiction {story.rating}",
-            value=f"{story.raw_fandoms} • {story.raw_genres} • {story.raw_characters}",
-            inline=False
-        ).add_field(
-            name="\N{BAR CHART} Stats",
-            value=f"**Reviews:** {story.review_count:,d} • **Faves:** {story.favorite_count:,d} • "
-                  f"**Follows:** {story.follow_count:,d}",
-            inline=False
-        ).set_footer(text="A short-term substitute for displaying FFN information, using iris's Atlas API.")
+        ffn_embed = (
+            DTEmbed(title=story.title, url=story.story_url, description=story.description)
+            .set_author(name=story.author_name, url=story.author_url, icon_url=FFN_ICON_URL)
+            .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
+            .add_field(name="\N{BOOK} Length", value=f"{story.word_count:,d} words in {story.chapter_count} chapter(s)")
+            .add_field(
+                name=f"\N{BOOKMARK} Rating: Fiction {story.rating}",
+                value=f"{story.raw_fandoms} • {story.raw_genres} • {story.raw_characters}",
+                inline=False
+            ).add_field(
+                name="\N{BAR CHART} Stats",
+                value=f"**Reviews:** {story.review_count:,d} • **Faves:** {story.favorite_count:,d} • "
+                      f"**Follows:** {story.follow_count:,d}",
+                inline=False
+            ).set_footer(text="Made using iris's Atlas API. Some results may be slightly out of date.")
+        )
 
         return ffn_embed
 

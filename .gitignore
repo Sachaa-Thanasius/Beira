@@ -1,5 +1,3 @@
-config.json
-*.log
 __pycache__
 */__pycache__
 data/dunk/
@@ -7,3 +5,5 @@ logs/
 misc/
 venv/
 *.pyc
+*.log
+config.json

@@ -25,18 +25,6 @@ class AtlasException(Exception):
     pass
 
 
-class AtlasStoryNotFound(AtlasException):
-    """An exception raised when :class:`AtlasClient` doesn't find an FFN work."""
-
-    pass
-
-
-class AtlasBulkResultsNotFound(AtlasException):
-    """An exception raised when :class:`AtlasClient` doesn't find any FFN work matching a bulk search criteria."""
-
-    pass
-
-
 class AtlasClient:
     """A small async wrapper for iris's Atlas FanFiction.Net (or FFN) API.
 
@@ -61,7 +49,7 @@ class AtlasClient:
 
     def register_converter_hooks(self):
         self.converter.register_structure_hook(datetime, lambda dt, _: datetime.fromisoformat(dt[:(-1 if "Z" in dt else 0)]))
-        self.converter.register_unstructure_hook(datetime, lambda dt, _: datetime.isoformat(dt[:(-1 if "Z" in dt else 0)]))
+        self.converter.register_unstructure_hook(datetime, lambda dt: datetime.isoformat(dt[:(-1 if "Z" in dt else 0)]))
 
     @property
     def auth(self) -> BasicAuth:
@@ -96,11 +84,12 @@ class AtlasClient:
 
             try:
                 async with self._session.get(url=url, headers=self._headers, params=params, auth=self._auth) as response:
+                    response.raise_for_status()
                     data = await response.json()
                     return data
 
-            except client_exceptions.ClientResponseError:
-                raise AtlasException("Unable to connect to Atlas.")
+            except client_exceptions.ClientResponseError as exc:
+                raise AtlasException(f"{exc.status}: {exc.message}")
 
     async def get_max_update_id(self) -> int:
         """Gets the maximum `update_id` currently in use.
@@ -127,14 +116,14 @@ class AtlasClient:
         return ffn_story_id
 
     async def get_bulk_metadata(
-            self,
-            min_update_id: int | None = None,
-            min_fic_id: int | None = None,
-            title_ilike: str | None = None,
-            description_ilike: str | None = None,
-            raw_fandoms_ilike: str | None = None,
-            author_id: int | None = None,
-            limit: int | None = None
+        self,
+        min_update_id: int | None = None,
+        min_fic_id: int | None = None,
+        title_ilike: str | None = None,
+        description_ilike: str | None = None,
+        raw_fandoms_ilike: str | None = None,
+        author_id: int | None = None,
+        limit: int | None = None
     ) -> list[FFNMetadata]:
         """Gets a block of FFN story metadata.
 
@@ -147,9 +136,9 @@ class AtlasClient:
         title_ilike : :class:`str`, optional
             A sql `ilike` query applied to `title` to filter results. Percent and underscore operators allowed.
         description_ilike : :class:`str`, optional
-            A sql `ilike` query applied to `description` to filter results. Percent and underscore operators allowed.
+            A sql `ilike` query applied to `description` to filter results. SQL-style percent and underscore operators allowed.
         raw_fandoms_ilike : :class:`str`, optional
-            A sql `ilike` query applied to `raw_fandoms` to filter results. Percent and underscore operators allowed.
+            A sql `ilike` query applied to `raw_fandoms` to filter results. SQL-style percent and underscore operators allowed.
         author_id : :class:`int`, optional
             The `author_id` used to filter results.
         limit : :class:`int`, optional
@@ -176,14 +165,13 @@ class AtlasClient:
         if author_id:
             query_params["author_id"] = author_id
 
-        if limit and limit <= 100000:
-            query_params["limit"] = limit
-        else:
-            raise ValueError("The results limit should be no more than 10000.")
+        if limit:
+            if limit <= 100000:
+                query_params["limit"] = limit
+            else:
+                raise ValueError("The results limit should be no more than 10000.")
 
         raw_metadata_list: list[dict] = await self._get("ffn/meta", params=query_params)
-        if len(raw_metadata_list) == 0:
-            raise AtlasBulkResultsNotFound("No search results found.")
         metadata_list = self.converter.structure(raw_metadata_list, list[FFNMetadata])
 
         return metadata_list
@@ -203,11 +191,6 @@ class AtlasClient:
         """
 
         raw_metadata: dict = await self._get(f"ffn/meta/{ffn_id}")
-
-        message = raw_metadata.get("message")
-        if message and message == "not_found":
-            raise AtlasStoryNotFound("The story could not be found with the Atlas API.")
-
         metadata = self.converter.structure(raw_metadata, FFNMetadata)
         return metadata
 

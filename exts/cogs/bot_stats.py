@@ -146,13 +146,13 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @commands.hybrid_command(name="usage")
     async def check_usage(
-            self,
-            ctx: commands.Context,
-            *,
-            time_period: Literal["today", "last month", "last year", "all time"] = "all time",
-            command: str = None,
-            guilds: bool = False,
-            universal: bool = False
+        self,
+        ctx: commands.Context,
+        *,
+        time_period: Literal["today", "last month", "last year", "all time"] = "all time",
+        command: str = None,
+        guilds: bool = False,
+        universal: bool = False
     ) -> None:
         """Retrieve statistics about bot command usage.
 
@@ -195,11 +195,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await ctx.reply(embed=embed)
 
     async def get_usage(
-            self,
-            time_period: int = 0,
-            command: str | None = None,
-            guild: discord.Guild | None = None,
-            universal: bool = False
+        self,
+        time_period: int = 0,
+        command: str | None = None,
+        guild: discord.Guild | None = None,
+        universal: bool = False
     ):
         """Queries the database for command usage."""
 

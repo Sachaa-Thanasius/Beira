@@ -55,8 +55,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         ctx : :class:`commands.Context`
             The invocation context.
         """
-
-        pass
+        ...
 
     @emoji_.command("identify")
     async def emoji_identify(self, ctx: commands.Context, entity: str) -> None:

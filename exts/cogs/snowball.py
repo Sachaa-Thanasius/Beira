@@ -114,8 +114,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         ctx : :class:`commands.Context`
             The invocation context.
         """
-
-        pass
+        ...
 
     @snow.command()
     async def settings(self, ctx: commands.Context) -> None:

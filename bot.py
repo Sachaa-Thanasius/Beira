@@ -18,8 +18,15 @@ from discord.ext import commands
 import config
 from utils.custom_logging import CustomLogger
 
+
 CONFIG = config.config()
 LOGGER = logging.getLogger("bot.Beira")
+
+
+async def psql_init(connection: asyncpg.Connection):
+    """Sets up codecs for Postgres connection."""
+
+    await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
 class Beira(commands.Bot):
@@ -58,7 +65,7 @@ class Beira(commands.Bot):
         testing_guild_ids: list[int] = None,
         test_mode: bool = False,
         **kwargs
-    ):
+    ) -> None:
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
         self.web_session = web_session
@@ -159,11 +166,13 @@ class Beira(commands.Bot):
         await self._load_extensions()
 
         # If there is a need to isolate commands in development, they will only sync with development guilds.
+        '''
         if self.test_mode and self.testing_guild_ids:
             for guild_id in self.testing_guild_ids:
                 guild = discord.Object(guild_id)
                 self.tree.copy_global_to(guild=guild)
                 await self.tree.sync(guild=guild)
+        '''
 
     async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
         if not self.prefixes:
@@ -234,12 +243,8 @@ async def main() -> None:
     """Starts an instance of the bot."""
 
     # Connect to the PostgreSQL database and asynchronous web session.
-    async def postgres_db_init(connection: asyncpg.Connection):
-        await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
-
-    async with aiohttp.ClientSession() as session, asyncpg.create_pool(
-            dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=postgres_db_init
-    ) as pool:
+    dsn = CONFIG["db"]["postgres_url"]
+    async with aiohttp.ClientSession() as session, asyncpg.create_pool(dsn=dsn, command_timeout=30, init=psql_init) as pool:
         # Set the starting parameters.
         default_prefix = CONFIG["discord"]["default_prefix"]
         default_intents = discord.Intents.all()
@@ -256,6 +261,7 @@ async def main() -> None:
             "exts.cogs.ff_metadata",
             "exts.cogs.help",
             "exts.cogs.lol",
+            "exts.cogs.music_voice",
             "exts.cogs.patreon",
             "exts.cogs.pin_archive",
             "exts.cogs.snowball",
@@ -264,15 +270,15 @@ async def main() -> None:
         ]
 
         async with Beira(
-                command_prefix=default_prefix,
-                intents=default_intents,
-                db_pool=pool,
-                web_session=session,
-                initial_extensions=init_exts,
-                testing_guild_ids=testing_guilds,
-                test_mode=testing
+            command_prefix=default_prefix,
+            intents=default_intents,
+            db_pool=pool,
+            web_session=session,
+            initial_extensions=init_exts,
+            testing_guild_ids=testing_guilds,
+            test_mode=testing
         ) as bot:
-            with CustomLogger():  # Custom logging class
+            async with CustomLogger():  # Custom logging class
                 await bot.start(CONFIG["discord"]["token"])
 
 
