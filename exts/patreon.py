@@ -42,6 +42,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="patreon", id=1077980959569362994)
 
     async def cog_load(self) -> None:

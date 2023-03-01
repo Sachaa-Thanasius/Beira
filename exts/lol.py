@@ -23,8 +23,8 @@ if TYPE_CHECKING:
 
 LOGGER = logging.getLogger(__name__)
 
-GECKODRIVER = Path(__file__).parents[2].joinpath("drivers/geckodriver/geckodriver.exe")
-GECKODRIVER_LOGS = Path(__file__).parents[2].joinpath("logs/geckodriver.log")
+GECKODRIVER = Path(__file__).parents[1].joinpath("drivers/geckodriver/geckodriver.exe")
+GECKODRIVER_LOGS = Path(__file__).parents[1].joinpath("logs/geckodriver.log")
 
 
 class UpdateOPGGView(discord.ui.View):
@@ -92,6 +92,8 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
     @commands.hybrid_command()

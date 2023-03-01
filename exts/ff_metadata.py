@@ -8,7 +8,6 @@ import asyncio
 import logging
 import re
 from io import BytesIO
-from time import perf_counter
 from typing import TYPE_CHECKING, Literal, Pattern
 
 import AO3
@@ -60,6 +59,8 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{BAR CHART}")
 
     @commands.Cog.listener()

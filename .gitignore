@@ -4,6 +4,7 @@ data/dunk/
 logs/
 misc/
 venv/
+.idea/
 *.pyc
 *.log
 config.json

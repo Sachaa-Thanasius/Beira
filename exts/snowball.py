@@ -59,6 +59,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="snowflake", animated=True, id=1077980648867901531)
 
     async def cog_load(self) -> None:

@@ -150,6 +150,8 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{BOOKS}")
 
     async def cog_load(self) -> None:
@@ -161,7 +163,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         self.story_records.update(self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo]))
 
         # Load story text from markdown files.
-        project_path = Path(__file__).resolve().parents[2]
+        project_path = Path(__file__).resolve().parents[1]
         for file in project_path.glob("data/story_text/**/*.md"):
             if "text" in file.name:
                 await self.load_story_text(file)

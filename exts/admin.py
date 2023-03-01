@@ -31,6 +31,8 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
 
     @commands.command(hidden=True)

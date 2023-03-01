@@ -51,10 +51,12 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
-        self.data_path = Path(__file__).resolve().parents[2].joinpath("data/dunk/general_morph")
+        self.data_path = Path(__file__).resolve().parents[1].joinpath("data/dunk/general_morph")
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{ROBOT FACE}")
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
@@ -409,7 +411,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             # Display the image.
             embed = (
-                discord.Embed(color=0x042069, title="Feel inspired!")
+                discord.Embed(color=0x904206, title="Feel inspired!")
                 .set_image(url=image_url)
                 .set_footer(
                     text="Generated with InspiroBot, found at https://inspirobot.me/",

@@ -48,6 +48,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
     async def track_command_use(self, ctx: commands.Context) -> None:

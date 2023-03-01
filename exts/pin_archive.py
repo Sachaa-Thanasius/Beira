@@ -32,6 +32,8 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{PUSHPIN}")
 
     async def cog_check(self, ctx: commands.Context) -> bool:

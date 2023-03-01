@@ -245,28 +245,29 @@ async def main() -> None:
     # Connect to the PostgreSQL database and asynchronous web session.
     dsn = CONFIG["db"]["postgres_url"]
     async with aiohttp.ClientSession() as session, asyncpg.create_pool(dsn=dsn, command_timeout=30, init=psql_init) as pool:
+
         # Set the starting parameters.
         default_prefix = CONFIG["discord"]["default_prefix"]
         default_intents = discord.Intents.all()
         testing_guilds = CONFIG["discord"]["guilds"]["dev"]
         testing = False
         init_exts = [
-            "exts.cogs.admin",
-            "exts.cogs.ai_generation",
-            "exts.cogs.basic_commands",
-            "exts.cogs.bot_stats",
-            "exts.cogs.custom_notifications",
-            "exts.cogs.emoji_ops",
-            "exts.cogs.fandom_wiki",
-            "exts.cogs.ff_metadata",
-            "exts.cogs.help",
-            "exts.cogs.lol",
-            "exts.cogs.music_voice",
-            "exts.cogs.patreon",
-            "exts.cogs.pin_archive",
-            "exts.cogs.snowball",
-            "exts.cogs.starkid",
-            "exts.cogs.story_search"
+            "exts.admin",
+            "exts.ai_generation",
+            "exts.basic_commands",
+            "exts.bot_stats",
+            "exts.custom_notifications",
+            "exts.emoji_ops",
+            "exts.fandom_wiki",
+            "exts.ff_metadata",
+            "exts.help",
+            "exts.lol",
+            "exts.music_voice",
+            "exts.patreon",
+            "exts.pin_archive",
+            "exts.snowball",
+            "exts.starkid",
+            "exts.story_search"
         ]
 
         async with Beira(

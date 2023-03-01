@@ -84,9 +84,13 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{SPEAKER WITH ONE SOUND WAVE}")
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
+
         # Extract the original error.
         if isinstance(error, commands.HybridCommandError):
             error = error.original
@@ -96,9 +100,11 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
         if isinstance(error, commands.CommandInvokeError):
             error = error.original
 
-        LOGGER.exception(f"Exception: {error}", exc_info=error)
+        if isinstance(error, commands.MissingPermissions):
+            embed.description = "You don't have permission to do this."
+        else:
+            LOGGER.exception(f"Exception: {error}", exc_info=error)
 
-        embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
@@ -190,13 +196,36 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
         app_commands.Choice(name="show queue", value="s")
     ])
     async def queue(self, ctx: commands.Context, *, option: str, url: str | None = None):
-        """a/add = add url, r/remove = remove url, s/show = show queue"""
+        """Do something with the music queue. Depending on the option, the url is optional.
+
+        Parameters
+        ----------
+        ctx: :class:`commands.Context`
+            The invocation context.
+        option : :class:`str`
+            Choose what you want to do with the queue:
+            a/add = `add url`; r/remove = `remove url`; s/show = `show queue`
+        url : :class:`str`, optional
+            The url to add or remove from the queue, if you chose that option.
+        """
 
         queue = self.__url_queue__[ctx.guild.id]
 
         if url and (option in ("a", "add")):
-            queue.append(url)
-            await ctx.send(f"Added song to queue in position {len(queue)}.")
+            loop = self.bot.loop or asyncio.get_event_loop()
+            data = await loop.run_in_executor(None, lambda: ytdlp.extract_info(url, download=False))
+
+            if 'entries' in data:
+                # take first item from a playlist
+                data = [entry for entry in data['entries']]
+
+                playlist_urls = [datum['url'] for datum in data]
+                queue.extend(playlist_urls)
+                await ctx.send(f"Added {len(playlist_urls)} songs to queue.")
+
+            else:
+                queue.append(url)
+                await ctx.send(f"Added song to queue in position {len(queue)}.")
 
         elif option in ("s", "show"):
             await ctx.send(f"{[y for y in queue]}")
@@ -210,7 +239,7 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
     @commands.hybrid_command()
     async def volume(self, ctx: commands.Context, volume: int | None) -> None:
-        """Shows or changes the player's volume.
+        """Show the player's volume. If you give an input, change it as well.
 
         Parameters
         ----------
@@ -227,12 +256,16 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
             return
 
         if volume is None:
-            curr_volume = vc.source.volume * 100  # type: ignore
+            curr_volume = vc.source.volume * 100
             await ctx.send(f"Current volume is {curr_volume}%.")
 
         else:
-            vc.source.volume = volume * 100
-            await ctx.send(f"Changed volume to {volume}%")
+            # Only allow those with mod permission(s) to do this.
+            if ctx.channel.permissions_for(ctx.author).manage_messages:
+                vc.source.volume = volume / 100
+                await ctx.send(f"Changed volume to {volume}%.")
+            else:
+                raise commands.MissingPermissions
 
     @commands.hybrid_command()
     async def pause(self, ctx: commands.Context) -> None:
@@ -300,5 +333,7 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
 
 async def setup(bot: Beira):
-    MusicCog.__url_queue__ = {guild.id: [] for guild in bot.guilds}
-    await bot.add_cog(MusicCog(bot))
+    """Connects cog to bot and initializes the music queue."""
+
+    MusicVoiceCog.__url_queue__ = {guild.id: [] for guild in bot.guilds}
+    await bot.add_cog(MusicVoiceCog(bot))

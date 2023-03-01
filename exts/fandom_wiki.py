@@ -81,6 +81,8 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="fandom", id=1077980392742727791)
 
     async def cog_load(self) -> None:

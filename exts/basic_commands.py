@@ -29,6 +29,10 @@ class BasicCommandsCog(commands.Cog, name="Basic Commands"):
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        return discord.PartialEmoji(name="\N{CIRCLED BULLET}")
+
     @commands.hybrid_command()
     async def hello(self, ctx: commands.Context) -> None:
         """Get back a default "Hello, World!" response."""

@@ -26,6 +26,8 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
         return discord.PartialEmoji(name="\N{GRINNING FACE}")
 
     @staticmethod
