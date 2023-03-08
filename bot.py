@@ -8,7 +8,6 @@ from __future__ import annotations
 import json
 import logging
 import asyncio
-from pathlib import Path
 
 import aiohttp
 import asyncpg
@@ -16,6 +15,7 @@ import discord
 from discord.ext import commands
 
 import config
+from exts import EXTENSIONS
 from utils.custom_logging import CustomLogger
 
 
@@ -49,11 +49,6 @@ class Beira(commands.Bot):
         startup.
     **kwargs
         Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.
-
-    Attributes
-    ----------
-    emojis_stock: dict[:class:`discord.Emoji`]
-        A collection of :class:`discord.Emoji`\'s with truncated names stored on startup for easy future retrieval.
     """
 
     def __init__(
@@ -77,7 +72,7 @@ class Beira(commands.Bot):
         # Things to load before connecting to the Gateway.
         self.prefixes: dict[int, list[str]] = {}
 
-        # Things to load right after connecting to the Gateway.
+        # Things to load right after connecting to the Gateway for easy future retrieval.
         self.emojis_stock: dict[str, discord.Emoji] = {}
         self.special_friends: dict[str, int] = {}
 
@@ -86,6 +81,14 @@ class Beira(commands.Bot):
         """dict: All configuration information from the config.json file."""
 
         return self._config
+
+    async def load_cache(self) -> None:
+        """Load some variables once on startup."""
+
+        await self.wait_until_ready()
+        self._load_emoji_stock()
+        self._load_friends_dict()
+        await self.is_owner(self.user)
 
     async def _load_guild_prefixes(self) -> None:
         """Load all prefixes from the bot database."""
@@ -100,25 +103,13 @@ class Beira(commands.Bot):
         If a list of initial ones isn't provided, all extensions are loaded by default.
         """
 
-        if self.initial_extensions:
-            # Attempt to load all specified extensions.
-            for extension in self.initial_extensions:
-                try:
-                    await self.load_extension(extension)
-                    LOGGER.info(f"Loaded extension: {extension}")
-                except discord.ext.commands.ExtensionError as err:
-                    LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
-
-        else:
-            # Attempt to load all extensions visible to the bot.
-            test_cogs_folder = Path(__file__).parent.joinpath("exts/cogs")
-            for filepath in test_cogs_folder.iterdir():
-                if filepath.suffix == ".py":
-                    try:
-                        await self.load_extension(f"exts.cogs.{filepath.stem}")
-                        LOGGER.info(f"Loaded extension: {filepath.stem}")
-                    except discord.ext.commands.ExtensionError as err:
-                        LOGGER.exception(f"Failed to load extension: {filepath.stem}\n\n{err}")
+        exts_to_load = self.initial_extensions or EXTENSIONS
+        for extension in exts_to_load:
+            try:
+                await self.load_extension(extension)
+                LOGGER.info(f"Loaded extension: {extension}")
+            except discord.ext.commands.ExtensionError as err:
+                LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
     def _load_emoji_stock(self) -> None:
         """Sets a dict of emojis for quick reference.
@@ -148,22 +139,12 @@ class Beira(commands.Bot):
             self.special_friends[self.get_user(user_id).name] = user_id
 
     async def on_ready(self) -> None:
-        """Loads several reference variables and dicts if they haven't been loaded already."""
-
-        if len(self.emojis_stock) == 0:
-            self._load_emoji_stock()
-
-        if len(self.special_friends) == 0:
-            self._load_friends_dict()
-
-        if not self.owner_id:
-            await self.is_owner(self.user)
-
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
 
     async def setup_hook(self) -> None:
         await self._load_guild_prefixes()
         await self._load_extensions()
+        self.loop.create_task(self.load_cache())
 
         # If there is a need to isolate commands in development, they will only sync with development guilds.
         '''
@@ -279,8 +260,10 @@ async def main() -> None:
             testing_guild_ids=testing_guilds,
             test_mode=testing
         ) as bot:
-            async with CustomLogger():  # Custom logging class
+            async with CustomLogger():
                 await bot.start(CONFIG["discord"]["token"])
+
+    await asyncio.sleep(1)
 
 
 if __name__ == "__main__":

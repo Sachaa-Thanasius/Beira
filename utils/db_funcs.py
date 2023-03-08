@@ -44,7 +44,7 @@ async def upsert_users(db_pool: Pool, *users: discord.User | discord.Member | tu
         else:
             values.append(user)
 
-    await db_pool.executemany(upsert_query, values)
+    await db_pool.executemany(upsert_query, values, timeout=60.0)
 
 
 async def upsert_guilds(db_pool: Pool, *guilds: discord.Guild | tuple[int, str, str]):
@@ -75,5 +75,5 @@ async def upsert_guilds(db_pool: Pool, *guilds: discord.Guild | tuple[int, str, 
         else:
             values.append(guild)
 
-    await db_pool.executemany(upsert_query, values)
+    await db_pool.executemany(upsert_query, values, timeout=60.0)
 

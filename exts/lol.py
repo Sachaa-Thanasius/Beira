@@ -44,7 +44,7 @@ class UpdateOPGGView(discord.ui.View):
         button.label = "Updating..."
         button.disabled = True
 
-        await interaction.response.edit_message(view=self)
+        await interaction.response.edit_message(view=self)  # type: ignore
 
         # Only activate for bot owner.
         if interaction.user.id == self.bot.owner_id:

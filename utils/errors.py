@@ -33,7 +33,16 @@ class NotOwnerOrFriend(commands.CheckFailure):
 class NotAdmin(commands.CheckFailure):
     """Exception raised when the message author is not an administrator of the guild in the current context.
 
-    This inherits from :exc:`CheckFailure`.
+    This inherits from :exc:`commands.CheckFailure`.
+    """
+
+    pass
+
+
+class NotInBotVoiceChannel(commands.CheckFailure):
+    """Exception raised when the message author is not in the same voice channel as the bot in a context's guild.
+
+    This inherits from :exc:`commands.CheckFailure`.
     """
 
     pass

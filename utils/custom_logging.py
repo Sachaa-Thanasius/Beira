@@ -23,6 +23,10 @@ class RemoveNoise(logging.Filter):
     """Filter for custom logging system.
 
     Copied from Umbra.
+
+    References
+    ----------
+    https://github.com/AbstractUmbra/Mipha/blob/main/bot.py#L91
     """
 
     def __init__(self) -> None:
@@ -34,6 +38,7 @@ class RemoveNoise(logging.Filter):
         return True
 
 
+# TODO: Personalize logging beyond Umbra's work.
 class CustomLogger:
     """Custom logging system.
 
@@ -54,6 +59,10 @@ class CustomLogger:
         A path to the directory for all log files.
     stream : :class:`bool`
         A boolean indicating whether the logs should be output to a stream.
+
+    References
+    ----------
+    https://github.com/AbstractUmbra/Mipha/blob/main/bot.py#L109
     """
 
     def __init__(self, *, stream: bool = True) -> None:
@@ -120,6 +129,14 @@ def benchmark(func: Callable[..., Any], logger: logging.Logger) -> Callable[...,
     -------
     wrapper : Callable[..., Any]
         A modified function decorated with a benchmark logging mechanism.
+
+    Notes
+    -----
+    To use, place these lines near the top of a file:
+        ``import logging``
+        ``from utils.custom_logging import benchmark``
+        ``LOGGER = logging.getLogger(__name__)``
+        ``with_benchmark = functools.partial(benchmark, logger=LOGGER)``
     """
 
     @contextmanager

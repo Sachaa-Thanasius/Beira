@@ -115,7 +115,7 @@ class PaginatedEmbedView(View):
 
         check = (interaction.user is not None) and (self.author == interaction.user)
         if not check:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=30)
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=30)     # type: ignore
 
         return check
 
@@ -197,7 +197,7 @@ class PaginatedEmbedView(View):
         self.current_page = new_page
         embed_page = self.format_page()         # Update the page embed.
         self.update_page_buttons()              # Update the page buttons.
-        await interaction.response.edit_message(embed=embed_page, view=self)
+        await interaction.response.edit_message(embed=embed_page, view=self)    # type: ignore
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:first")
     async def turn_to_first_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -217,7 +217,7 @@ class PaginatedEmbedView(View):
 
         # Get page number from a modal.
         modal = PageNumEntryModal(self.total_pages)
-        await interaction.response.send_modal(modal)
+        await interaction.response.send_modal(modal)    # type: ignore
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -246,7 +246,7 @@ class PaginatedEmbedView(View):
     async def quit_view(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Deletes the original message with the view after a slight delay."""
 
-        await interaction.response.defer()
+        await interaction.response.defer()  # type: ignore
         await asyncio.sleep(0.5)
         await interaction.delete_original_response()
         self.stop()

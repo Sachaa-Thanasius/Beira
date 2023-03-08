@@ -12,6 +12,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from utils.checks import is_admin
+from . import EXTENSIONS
 
 
 if TYPE_CHECKING:
@@ -67,9 +68,10 @@ class AdminCog(commands.Cog, name="Administration"):
 
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
+    # TODO: Make equivalent load() and unload() functions, and/or set up jishaku.
     @commands.hybrid_command(hidden=True)
     @commands.is_owner()
-    @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
+    @app_commands.describe(extension="The file name of the extension/cog you wish to reload, excluding the file type.")
     async def reload(self, ctx: commands.Context, extension: str) -> None:
         """Reloads an extension/cog.
 
@@ -84,31 +86,111 @@ class AdminCog(commands.Cog, name="Administration"):
 
         async with ctx.typing():
             if extension:
-                embed = discord.Embed(color=0xcccccc, description="")
+                embed = discord.Embed(color=0xcccccc)
 
                 if extension in IGNORE_EXTENSIONS:
                     embed.description = f"Currently exempt from reloads: {extension}"
+                elif extension not in self.bot.extensions:
+                    embed.description = f"Never initially loaded this extension: {extension}"
                 else:
-                    if extension not in list(self.bot.extensions.keys()):
-                        embed.description = f"Never initially loaded this extension: {extension}"
-
                     try:
                         await self.bot.reload_extension(extension)
                     except commands.ExtensionError as err:
-                        embed.description += f"\nCouldn't reload extension: {extension}"
+                        embed.description = f"Couldn't reload extension: {extension}\n{err}"
                         LOGGER.error(f"Couldn't reload extension: {extension}", exc_info=err)
                     else:
-                        embed.description += f"\nReloaded extension: {extension}"
-                        LOGGER.info(f"Reloaded extension: {extension}")
+                        embed.description = f"Reloaded extension: {extension}"
+                        LOGGER.info(f"Reloaded extension via `reload`: {extension}")
+
+                await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.hybrid_command(hidden=True)
+    @commands.is_owner()
+    @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
+    async def load(self, ctx: commands.Context, extension: str) -> None:
+        """Loads an extension/cog.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        extension : :class:`str`
+            The name of the chosen extension to load, excluding the file type. If activated as a prefix command, the
+            path needs to be typed out from the project root directory with periods as separators.
+        """
+
+        async with ctx.typing():
+            if extension:
+                embed = discord.Embed(color=0xcccccc)
+
+                if extension in IGNORE_EXTENSIONS:
+                    embed.description = f"Currently exempt from loading: {extension}"
+                elif extension in self.bot.extensions:
+                    embed.description = f"This extension is already loaded: {extension}"
+                else:
+                    try:
+                        await self.bot.load_extension(extension)
+                    except commands.ExtensionError as err:
+                        embed.description = f"Couldn't load extension: {extension}\n{err}"
+                        LOGGER.error(f"Couldn't load extension: {extension}", exc_info=err)
+                    else:
+                        embed.description = f"Loaded extension: {extension}"
+                        LOGGER.info(f"Loaded extension via `load`: {extension}")
+
+                await ctx.send(embed=embed, ephemeral=True)
+
+    @commands.hybrid_command(hidden=True)
+    @commands.is_owner()
+    @app_commands.describe(extension="The file name of the extension/cog you wish to unload, excluding the file type.")
+    async def unload(self, ctx: commands.Context, extension: str) -> None:
+        """Unloads an extension/cog.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        extension : :class:`str`
+            The name of the chosen extension to unload, excluding the file type. If activated as a prefix command, the
+            path needs to be typed out from the project root directory with periods as separators.
+        """
+
+        async with ctx.typing():
+            if extension:
+                embed = discord.Embed(color=0xcccccc)
+
+                if extension in IGNORE_EXTENSIONS:
+                    embed.description = f"Currently exempt from unloads: {extension}"
+                elif extension not in self.bot.extensions:
+                    embed.description = f"This extension has already been unloaded: {extension}"
+                else:
+                    try:
+                        await self.bot.unload_extension(extension)
+                    except commands.ExtensionError as err:
+                        embed.description = f"Couldn't unload extension: {extension}\n{err}"
+                        LOGGER.error(f"Couldn't unload extension: {extension}", exc_info=err)
+                    else:
+                        embed.description = f"Unloaded extension: {extension}"
+                        LOGGER.info(f"Reloaded extension via `reload`: {extension}")
 
                 await ctx.send(embed=embed, ephemeral=True)
 
     @reload.autocomplete("extension")
-    async def reload_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
-        """Autocompletes extension names."""
+    @unload.autocomplete("extension")
+    async def ext_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        """Autocompletes names for currently loaded extensions."""
 
         return [
                    app_commands.Choice(name=ext.rsplit(".", 1)[1], value=ext) for ext in self.bot.extensions
+                   if current.lower() in ext.lower()
+               ][:25]
+
+    @load.autocomplete("extension")
+    async def load_ext_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        """Autocompletes names for extensions that are ignored or unloaded."""
+
+        exts_to_load = set(EXTENSIONS).difference(set(self.bot.extensions), set(IGNORE_EXTENSIONS))
+        return [
+                   app_commands.Choice(name=ext.rsplit(".", 1)[1], value=ext) for ext in exts_to_load
                    if current.lower() in ext.lower()
                ][:25]
 
@@ -163,26 +245,27 @@ class AdminCog(commands.Cog, name="Administration"):
         """
 
         if not guilds:
-            if spec == "~":
-                synced = await ctx.bot.tree.sync(guild=ctx.guild)
-            elif spec == "*":
-                ctx.bot.tree.copy_global_to(guild=ctx.guild)
-                synced = await ctx.bot.tree.sync(guild=ctx.guild)
-            elif spec == "^":
-                ctx.bot.tree.clear_commands(guild=ctx.guild)
-                await ctx.bot.tree.sync(guild=ctx.guild)
-                synced = []
-            elif spec == "-":
-                ctx.bot.tree.clear_commands(guild=None)
-                await ctx.bot.tree.sync()
-                synced = []
-            elif spec == "+":
-                for guild in ctx.bot.guilds:
-                    ctx.bot.tree.clear_commands(guild=guild)
-                    await ctx.bot.tree.sync(guild=guild)
-                synced = []
-            else:
-                synced = await ctx.bot.tree.sync()
+            match spec:
+                case "~":
+                    synced = await ctx.bot.tree.sync(guild=ctx.guild)
+                case "*":
+                    ctx.bot.tree.copy_global_to(guild=ctx.guild)
+                    synced = await ctx.bot.tree.sync(guild=ctx.guild)
+                case "^":
+                    ctx.bot.tree.clear_commands(guild=ctx.guild)
+                    await ctx.bot.tree.sync(guild=ctx.guild)
+                    synced = []
+                case "-":
+                    ctx.bot.tree.clear_commands(guild=None)
+                    await ctx.bot.tree.sync()
+                    synced = []
+                case "+":
+                    for guild in ctx.bot.guilds:
+                        ctx.bot.tree.clear_commands(guild=guild)
+                        await ctx.bot.tree.sync(guild=guild)
+                    synced = []
+                case _:
+                    synced = await ctx.bot.tree.sync()
 
             await ctx.send(
                 f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}",

@@ -12,7 +12,7 @@ from discord.app_commands.commands import Check
 from discord.ext import commands
 from discord.utils import maybe_coroutine
 
-from utils.errors import NotOwnerOrFriend, NotAdmin
+from utils.errors import NotOwnerOrFriend, NotAdmin, NotInBotVoiceChannel
 
 
 LOGGER = logging.getLogger(__name__)
@@ -47,6 +47,28 @@ def is_admin():
     async def predicate(ctx: commands.Context) -> bool:
         if not (ctx.guild is not None and ctx.author.guild_permissions.administrator):
             raise NotAdmin("Only someone with administrator permissions can do this.")
+        return True
+
+    return commands.check(predicate)
+
+
+def in_bot_vc():
+    """A :func:`.check` that checks if the person invoking this command is in
+    the same voice channel as the bot within a guild.
+
+    This check raises a special exception, :exc:`NotInBotVoiceChannel` that is derived
+    from :exc:`commands.CheckFailure`.
+    """
+
+    async def predicate(ctx: commands.Context) -> bool:
+        print("In check")
+        vc: discord.VoiceClient | None = ctx.voice_client  # type: ignore
+        if not (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel):
+            print(f"Check. VC: {vc}")
+            print(f"Check. ctx.author.voice: {ctx.author.voice}")
+            if vc and ctx.author.voice:
+                print(f"Check. channel match: {ctx.author.voice.channel == vc.channel}; {ctx.author.voice.channel} == {vc.channel}")
+            raise NotInBotVoiceChannel("You are not connected to the same voice channel as the bot.")
         return True
 
     return commands.check(predicate)

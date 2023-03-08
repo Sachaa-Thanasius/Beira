@@ -91,7 +91,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             INSERT into commands (guild_id, channel_id, user_id, date_time, prefix, command, app_command, failed)
             VALUES($1, $2, $3, $4, $5, $6, $7, $8)
         """
-        await self.bot.db_pool.execute(query, *cmd)
+        await self.bot.db_pool.execute(query, *cmd, timeout=60.0)
 
     @commands.Cog.listener()
     async def on_command_completion(self, ctx: commands.Context) -> None:

@@ -136,7 +136,7 @@ class HelpCogDropdown(discord.ui.Select):
     async def callback(self, interaction: discord.Interaction) -> None:
         choice = self.values[0]
         result_embed = self.view.make_cog_embed(choice)
-        await interaction.response.edit_message(embed=result_embed, view=self)
+        await interaction.response.edit_message(embed=result_embed, view=self)  # type: ignore
 
 
 '''
@@ -508,7 +508,7 @@ class LittleHelpCog(commands.Cog, name="Help"):
         else:
             await ctx.send_help()
 
-        await interaction.response.send_message(content="Help dialogue sent!", ephemeral=True)
+        await interaction.response.send_message(content="Help dialogue sent!", ephemeral=True)  # type: ignore
 
     @help.autocomplete("command")
     async def command_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
