@@ -10,7 +10,6 @@ import logging
 from collections import deque
 from collections.abc import Iterable, Mapping
 from copy import deepcopy
-from pprint import pprint
 from typing import TYPE_CHECKING, ClassVar
 
 import discord
@@ -35,7 +34,6 @@ LOGGER = logging.getLogger(__name__)
 yt_dlp.utils.bug_reports_message = lambda: ''
 
 ytdlp_format_options = {
-    'verbose': True,
     'format': 'bestaudio/best',
     'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
     'restrictfilenames': True,
@@ -50,6 +48,7 @@ ytdlp_format_options = {
 }
 
 ffmpeg_options = {
+    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
     'options': '-vn',
 }
 
@@ -96,13 +95,18 @@ class Track:
 
 
 class TrackQueue:
+    """A queue class to be attached to a guild, used for music tracks.
+
+    TODO: Put Stackoverflow post as reference.
+    """
+
     def __init__(self, ctx: commands.Context, tracks: Iterable):
-        self._ctx = ctx
+        self._channel = ctx.channel
         self._guild = ctx.guild
         self._bot = ctx.bot
         self._cog = ctx.cog
 
-        self._track_queue = deque(tracks)
+        self._track_queue: deque[Track] = deque(tracks)
         self._has_next = asyncio.Event()
         self._track_done = asyncio.Event()
         self.repeat = False
@@ -111,6 +115,7 @@ class TrackQueue:
 
     @property
     def track_queue(self) -> deque:
+        """:class:`deque`: The actual track queue."""
         return self._track_queue
 
     def __len__(self):
@@ -118,27 +123,21 @@ class TrackQueue:
 
     async def deque_loop(self):
         await self._bot.wait_until_ready()
-        print("Entering the deque loop function")
 
         self._has_next.set()
-        print(f"Before loop start - Set events: has_next({self._has_next}), track_done({self._track_done})")
 
         vc: discord.VoiceClient = self._guild.voice_client  # type: ignore
         while vc.is_connected():
             self._track_done.clear()
 
-            print("Start of loop")
             try:
-                print("Waiting for next item in queue...")
                 await asyncio.wait_for(self._has_next.wait(), 300.0)
-                print("Got next item in queue!")
 
                 if self.repeat:
                     source = self._track_queue[0]
                     self._track_queue.rotate(-1)
                 else:
                     source = self._track_queue.popleft()
-                    print("Popped the source from the queue!")
 
             except IndexError as err:
                 LOGGER.error("The queue is empty, even though it shouldn't be.", exc_info=err)
@@ -149,8 +148,8 @@ class TrackQueue:
                 break
 
             else:
-                self._has_next.clear()
-                print(f"After popping song from queue and clearing has_next - Set events: has_next({self._has_next}), track_done({self._track_done})")
+                if len(self._track_queue) == 0:
+                    self._has_next.clear()
 
                 if isinstance(source, Track):
                     source = await YTDLPSource.from_url(source.webpage_url, requester=source.requester, stream=True)
@@ -161,39 +160,41 @@ class TrackQueue:
 
                     # Allow queue to progress to the next song.
                     self._bot.loop.call_soon_threadsafe(self._track_done.set)
-                    print(
-                        f"After the current playing track is finished - Set events: has_next({self._has_next}), track_done({self._track_done})")
-                    if len(self._track_queue) > 0:
-                        self._has_next.set()
 
-                vc: discord.VoiceClient = self._guild.voice_client   # type: ignore
+                    if len(self._track_queue) > 0:
+                        self._bot.loop.call_soon_threadsafe(self._has_next.set)
 
                 vc.play(source, after=_after_audio_finish)
 
                 await self.send_current(source)
-                print("Waiting for current track to finish...")
                 await self._track_done.wait()
-                print("End of loop")
 
-        print("Exited loop")
         await vc.disconnect(force=True)
 
     def add_tracks(self, *tracks: Track) -> None:
         self._track_queue.extend(tracks)
         self._has_next.set()
 
-    def remove_track(self, value: str) -> None:
-        if value.isdigit():
-            del self._track_queue[int(value) - 1]
-        else:
-            self._track_queue.remove(value)
-        if len(self._track_queue) == 0:
-            self._has_next.clear()
-
     def move_track(self, before_index: int, after_index: int) -> None:
         track = self._track_queue[before_index - 1]
         del self._track_queue[before_index - 1]
         self._track_queue.insert(after_index - 1, track)
+
+    def remove_track(self, value: int) -> None:
+        del self._track_queue[value - 1]
+        if len(self._track_queue) == 0:
+            self._has_next.clear()
+
+    def skip_to_track(self, index: int = 1) -> None:
+        vc: discord.VoiceClient = self._guild.voice_client  # type: ignore
+
+        if index < 1 or index > len(self._track_queue):
+            pass
+
+        for i in range(index):
+            self._track_queue.pop()
+
+        vc.stop()
 
     def clear_queue(self) -> None:
         self._track_queue.clear()
@@ -201,7 +202,11 @@ class TrackQueue:
             self._has_next.clear()
 
     async def send_current(self, item: Track | YTDLPSource) -> None:
-        end_time = f"{item.duration // 60}:{item.duration % 60:02}"
+        if item.duration > 3600:
+            end_time = f"{item.duration // 3600}:{(item.duration % 3600) // 60}:{item.duration % 60:02}"
+        else:
+            end_time = f"{item.duration // 60}:{item.duration % 60:02}"
+
         description = (
             f"[{escape_markdown(item.title)}]({item.webpage_url})\n"
             f"`[0:00-{end_time}]`\n"
@@ -209,7 +214,7 @@ class TrackQueue:
             f"Requested by {item.requester.mention}"
         )
         embed = discord.Embed(title="Now Playing", description=description).set_thumbnail(url=item.thumbnail)
-        await self._ctx.send(embed=embed)
+        await self._channel.send(embed=embed)
 
 
 class YTDLPSource(discord.PCMVolumeTransformer):
@@ -236,7 +241,6 @@ class YTDLPSource(discord.PCMVolumeTransformer):
     ) -> YTDLPSource:
         loop = loop or asyncio.get_event_loop()
         data = await loop.run_in_executor(None, lambda: ytdlp.extract_info(url, download=not stream))
-        # data = ytdlp.sanitize_info(data)
 
         if 'entries' in data:
             # take first item from a playlist
@@ -289,28 +293,14 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
         return discord.PartialEmoji(name="\N{SPEAKER WITH ONE SOUND WAVE}")
 
-    @classmethod
-    async def _load_queue_guilds(cls, bot: Beira) -> None:
-        await bot.wait_until_ready()
-        cls.__track_queue__ = {guild.id: None for guild in bot.guilds}
-        print("on_load")
-        pprint(cls.__track_queue__)
-
-    async def cog_load(self) -> None:
-        # self.bot.loop.create_task(self._load_queue_guilds(self.bot))
-        await super().cog_load()
-
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, commands.HybridCommandError):
+        if isinstance(error, (commands.HybridCommandError, commands.CommandInvokeError)):
             error = error.original
             if isinstance(error, app_commands.CommandInvokeError):
                 error = error.original
-
-        if isinstance(error, commands.CommandInvokeError):
-            error = error.original
 
         if isinstance(error, commands.MissingPermissions):
             embed.description = "You don't have permission to do this."
@@ -351,25 +341,17 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
         ctx : :class:`commands.Context`
             The invocation context.
         query : :class:`str`
-            If location is "local", a filename or filepath for the bot's local filesystem (case-sensitive, relative
-            path). If "stream", a url or YouTube search term.
+            A YouTube url or YouTube search term.
         """
 
         async with ctx.typing():
             items = await Track.from_url(query, ctx.author, loop=self.bot.loop)
-
-            if self.__track_queue__.get(ctx.guild.id):
+            if self.__track_queue__.get(ctx.guild.id) is not None:
                 queue = self.__track_queue__.get(ctx.guild.id)
-                print("Already have queue: ", queue)
                 queue.add_tracks(*items)
             else:
-                print("Have to make queue.")
-                print("Before")
-                pprint(self.__track_queue__)
                 queue = TrackQueue(ctx, items)
                 self.__track_queue__[ctx.guild.id] = queue
-                print("After: Have to make queue, result: ", self.__track_queue__[ctx.guild.id])
-                pprint(self.__track_queue__)
 
             if len(items) == 1:
                 content = f"Added song to queue in position {len(queue)}."
@@ -397,14 +379,14 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
     @queue.command()
     @in_bot_vc()
-    async def remove(self, ctx: commands.Context, entry: str) -> None:
+    async def remove(self, ctx: commands.Context, entry: int) -> None:
         """Remove a track from the queue by position.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        entry : :class:`str`
+        entry : :class:`int`
             The track's position.
         """
 
@@ -442,11 +424,9 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
         if vc.source is None:
             await ctx.send("Not currently playing anything.")
-
         elif volume is None:
             curr_volume = vc.source.volume * 100
             await ctx.send(f"Current volume is {curr_volume}%.")
-
         else:
             vc.source.volume = volume / 100
             await ctx.send(f"Changed volume to {volume}%.")
@@ -489,7 +469,6 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
         if vc.is_paused():
             vc.resume()
             await ctx.send("Resumed playback.")
-
         else:
             vc.pause()
             await ctx.send("Paused playback.")
@@ -523,8 +502,12 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
         vc: discord.VoiceClient | None = ctx.voice_client  # type: ignore
 
-        if vc is None and ctx.author.voice:
-            await ctx.author.voice.channel.connect()
+        if vc is None:
+            if ctx.author.voice:
+                await ctx.author.voice.channel.connect()
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+                raise commands.CommandError("Author not connected to a voice channel.")
 
 
 async def setup(bot: Beira):

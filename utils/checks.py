@@ -61,14 +61,24 @@ def in_bot_vc():
     """
 
     async def predicate(ctx: commands.Context) -> bool:
-        print("In check")
         vc: discord.VoiceClient | None = ctx.voice_client  # type: ignore
         if not (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel):
-            print(f"Check. VC: {vc}")
-            print(f"Check. ctx.author.voice: {ctx.author.voice}")
-            if vc and ctx.author.voice:
-                print(f"Check. channel match: {ctx.author.voice.channel == vc.channel}; {ctx.author.voice.channel} == {vc.channel}")
             raise NotInBotVoiceChannel("You are not connected to the same voice channel as the bot.")
+        return True
+
+    return commands.check(predicate)
+
+
+def in_aci100_guild():
+    """A :func:`.check` that checks if the person invoking this command is in
+    the ACI100 guild.
+
+    This check raises the exception :exc:`commands.CheckFailure`.
+    """
+
+    async def predicate(ctx: commands.Context) -> bool:
+        if ctx.guild.id != 602735169090224139:
+            raise commands.CheckFailure("This function isn't active in this guild.")
         return True
 
     return commands.check(predicate)
@@ -102,4 +112,3 @@ def check_any(*checks: Check) -> Check:
         raise app_commands.CheckFailure(checks, errors)
 
     return app_commands.check(predicate)
-
