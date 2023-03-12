@@ -4,16 +4,17 @@ patreon.py: A cog for checking which Discord members are currently patrons of AC
 
 from __future__ import annotations
 
+import json
 import logging
 from copy import deepcopy
 from itertools import islice
+from pathlib import Path
 from typing import TYPE_CHECKING, Any
+from urllib.parse import urljoin
 
 import discord
 from attrs import define, field
 from discord.ext import commands, tasks
-
-from utils.paginated_views import PaginatedEmbedView
 
 
 if TYPE_CHECKING:
@@ -23,121 +24,10 @@ LOGGER = logging.getLogger(__name__)
 
 CAMPAIGN_BASE = "https://www.patreon.com/api/oauth2/v2/campaigns"
 
-'''
-<:Spelunker:896608599550337044>
-<:Lilitor:896608599533580338>
-<:Darma:896608599449665568>
-<:Vican:896793487138246716>
-<:Avareya:896608599411933194>
-<:Everym:896608598984114247>
-<:Othria:896793881973252196>
-<:Praetorian:896608597272834082>
-<:Psychics:892645293135384637>
-<:Demigods:892645293856788532>
-<:Elemental:896608598975733760>
-<:TheMage:892645292757889095>
-<:PryoNilithm:896609173918335038>
-<:Deities:892645294217498634>
-<:Primordials:892645293231857724>
-'''
-patreon_tiers_info = {
-    "ACI100 Patreon Tiers": (
-        0,
-        "Use the select menu below to explore the different tiers that ACI100 has on Patreon and what benefits they come with.",
-        ("icons_info", 880113401207095346)
-    ),
-    "The Nilithm Patrons": (
-        1,
-        "Tier specific role and colour on the ACI100 Discord Server.",
-        896600345948598343
-    ),
-    "The Rebel Patrons": (
-        3,
-        "Early access to all ACI100 Podcast episodes and a welcome message when they sign up.",
-        896793822854545409
-    ),
-    "The Spelunker Patrons": (
-        5,
-        "Early access to all fanfiction chapters, access to private patreon channels, and a special mention on the official ACI1000 website.",
-        896608599550337044
-    ),
-    "The Lilitor Patrons": (
-        10,
-        "Online copies of all original work published during their patronage.**^**",
-        896608599533580338
-    ),
-    "The Darma Patrons": (
-        15,
-        "Paperback copies of all original work published during their patronage.**^**",
-        896608599449665568
-    ),
-    "The Vicanian Patrons": (
-        20,
-        "Custom role on the discord server that they can pick the colour and name of. It will be their second-highest role.",
-        896793487138246716
-    ),
-    "The Avaeryan Patrons": (
-        25,
-        "Signed paperback copies of all original work published during their patronage.**^**",
-        896608599411933194
-    ),
-    "The Everyl Patrons": (
-        30,
-        "Special dedication at the end of all fanfiction chapters.",
-        896608598984114247
-    ),
-    "The Othrian Patrons": (
-        35,
-        "Guest appearance on the podcast — if desired.",
-        896793881973252196
-    ),
-    "The Praetorian Patrons": (
-        50,
-        "30 minute call to talk about ACI100's fanfiction works without spoilers.",
-        896608597272834082
-    ),
-    "The Psychic Patrons": (
-        75,
-        "Four exclusive one-shots per year written by ACI100, with a certain degree of say in what exactly gets written.",
-        892645293135384637
-    ),
-    "The Demigod Patrons": (
-        100,
-        "Minor character in ACI100's original works.",
-        892645293856788532
-    ),
-    "The Elemental Patrons": (
-        125,
-        "30 minute call to talk about ACI100's original works without spoilers.",
-        896608598975733760
-    ),
-    "The Mage Patrons": (
-        150,
-        "Opportunity to have their name written in the acknowledgement section of all future published work.",
-        892645292757889095
-    ),
-    "The Pryo Nilithm Patrons": (
-        175,
-        "30 minute call to talk about ACI100's fanfiction works with spoilers.",
-        896609173918335038
-    ),
-    "The Deity Patrons": (
-        200,
-        "30 minute call to talk about ACI100's original works with very minor spoilers.",
-        892645294217498634
-    ),
-    "The Primordial Patrons": (
-        250,
-        "Signed, special edition copies of all original work published during their patronage.**^**",
-        892645293231857724
-    )
-}
-
 
 class ACI100PatreonTierSelectView(discord.ui.View):
-    def __init__(self, bot: Beira, tier_info: dict[str, tuple[Any]], **kwargs):
+    def __init__(self, tier_info: dict[str, list[Any]], **kwargs):
         super().__init__(**kwargs)
-        self.bot = bot
         self.tier_info = tier_info
         self.select_tier.options = self._set_select_options()
         self.current_tier = "ACI100 Patreon Tiers"
@@ -146,13 +36,8 @@ class ACI100PatreonTierSelectView(discord.ui.View):
     def _set_select_options(self):
         options = []
         for tier, info in self.tier_info.items():
-            if tier == "ACI100 Patreon Tiers":
-                emoji = discord.PartialEmoji(name=info[-1][0], id=info[-1][1])
-                label = tier
-            else:
-                emoji = self.bot.get_emoji(info[-1])
-                label = f"{tier} - ${info[1]}"
-            options.append(discord.SelectOption(label=label, value=tier, description=info[2][:97] + "...", emoji=emoji))
+            label = f"{tier} - ${info[1]}" if tier == "ACI100 Patreon Tiers" else tier
+            options.append(discord.SelectOption(label=label, value=tier, description=info[2][:97] + "...", emoji=info[-1]))
         return options
 
     def _increment_current_tier(self, incr: int):
@@ -177,6 +62,24 @@ class ACI100PatreonTierSelectView(discord.ui.View):
     def format_page(self) -> discord.Embed:
         result_info = self.tier_info.get(self.current_tier)
 
+        '''
+        <:Spelunker:896608599550337044>
+        <:Lilitor:896608599533580338>
+        <:Darma:896608599449665568>
+        <:Vican:896793487138246716>
+        <:Avareya:896608599411933194>
+        <:Everym:896608598984114247>
+        <:Othria:896793881973252196>
+        <:Praetorian:896608597272834082>
+        <:Psychics:892645293135384637>
+        <:Demigods:892645293856788532>
+        <:Elemental:896608598975733760>
+        <:TheMage:892645292757889095>
+        <:PryoNilithm:896609173918335038>
+        <:Deities:892645294217498634>
+        <:Primordials:892645293231857724>
+        '''
+
         if self.current_tier not in self.page_cache:
             if self.current_tier != "ACI100 Patreon Tiers":
                 descr = "__**Benefits**__\n" + "\n".join([
@@ -186,13 +89,11 @@ class ACI100PatreonTierSelectView(discord.ui.View):
                 if "^" in descr:
                     descr += "\n\n**^**Provided they have been a patron for at least three months."
 
-                emoji = self.bot.get_emoji(result_info[-1])
                 embed = discord.Embed(color=result_info[0].color, title=f"{self.current_tier} - ${result_info[1]}", description=descr)
             else:
-                emoji = discord.PartialEmoji(name=result_info[-1][0], id=result_info[-1][1])
-                embed = discord.Embed(color=0x000000, title="ACI100 Patreon Tiers", description=result_info[2])
+                embed = discord.Embed(color=0x000000, title=self.current_tier, description=result_info[2])
 
-            embed.set_thumbnail(url=emoji.url)
+            embed.set_thumbnail(url=result_info[-1].url)
             author_icon_url = "https://cdn.discordapp.com/emojis/1077980959569362994.webp?size=48&quality=lossless"
             embed.set_author(name="ACI100 Patreon", url="https://www.patreon.com/aci100", icon_url=author_icon_url)
 
@@ -210,7 +111,7 @@ class ACI100PatreonTierSelectView(discord.ui.View):
         embed = self.format_page()
         await interaction.edit_original_response(embed=embed, view=self)
 
-    @discord.ui.button(label="<")
+    @discord.ui.button(label="<", disabled=True)
     async def previous_tier(self, interaction: discord.Interaction, _: discord.ui.Button):
         await interaction.response.defer()  # type: ignore
         self._increment_current_tier(-1)
@@ -257,7 +158,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         """Start patreon-related background tasks."""
 
         self.bot.loop.create_task(self._get_patreon_roles())
-        ...
+        # self.bot.loop.create_task(self.get_current_discord_patrons())
 
     async def cog_unload(self) -> None:
         """Stop patreon-related background tasks."""
@@ -274,24 +175,29 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     async def _get_patreon_roles(self):
         await self.bot.wait_until_ready()
 
-        guild = self.bot.get_guild(602735169090224139)
-        for name, info in patreon_tiers_info.items():
+        with open(Path(__file__).parents[1].resolve().joinpath("data/patreon_tier_data.json")) as f:
+            self.patreon_tiers_info: dict[str, list] = json.load(f)
+
+        aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
+        guild = self.bot.get_guild(aci100_id)
+
+        for name, info in self.patreon_tiers_info.items():
             if name != "ACI100 Patreon Tiers":
                 role = discord.utils.get(guild.roles, name=name)
-                patreon_tiers_info[name] = (role,) + patreon_tiers_info[name]
+                self.patreon_tiers_info[name].insert(0, role)
+                self.patreon_tiers_info[name][-1] = self.bot.get_emoji(self.patreon_tiers_info[name][-1])
             else:
-                partial = discord.PartialEmoji(name="icons_info", id=880113401207095346)
-                patreon_tiers_info[name] = (partial,) + patreon_tiers_info[name]
+                self.patreon_tiers_info[name].insert(0, None)
+                emoji_tuple = self.patreon_tiers_info[name][-1]
+                self.patreon_tiers_info[name][-1] = discord.PartialEmoji(name=emoji_tuple[0], id=emoji_tuple[1])
 
     @commands.hybrid_command()
     async def patreon_benefits(self, ctx: commands.Context):
-        try:
-            async with ctx.typing():
-                view = ACI100PatreonTierSelectView(bot=self.bot, tier_info=patreon_tiers_info)
-                embed = view.get_starting_embed()
-                await ctx.send(embed=embed, view=view)
-        except Exception as err:
-            LOGGER.exception("Error in command", exc_info=err)
+        """See what kind of patreon benefits and tiers ACI100 has to offer."""
+        print("patreon_benefits called")
+        async with ctx.typing():
+            view = ACI100PatreonTierSelectView(tier_info=self.patreon_tiers_info)
+            await ctx.send(embed=view.get_starting_embed(), view=view)
 
     @tasks.loop(minutes=15)
     async def get_current_discord_patrons(self) -> None:
@@ -316,8 +222,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         # Get campaign data.
         async with self.bot.web_session.get(
-                CAMPAIGN_BASE,
-                headers={"Authorization": f"Bearer {self.access_token}"}
+            CAMPAIGN_BASE,
+            headers={"Authorization": f"Bearer {self.access_token}"}
         ) as response:
             campaigns = await response.json()
             campaign_id = campaigns["data"][0]["id"]
@@ -329,7 +235,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         while True:
             async with self.bot.web_session.get(
-                CAMPAIGN_BASE + f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}",
+                urljoin(CAMPAIGN_BASE, f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
                 headers={"Authorization": f"Bearer {self.access_token}"}
             ) as resp:
 
