@@ -233,6 +233,7 @@ async def main() -> None:
         testing_guilds = CONFIG["discord"]["guilds"]["dev"]
         testing = False
         init_exts = [
+            "exts._dev",
             "exts.admin",
             "exts.ai_generation",
             "exts.basic_commands",

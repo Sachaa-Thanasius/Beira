@@ -1,7 +1,6 @@
 """
 music_voice.py: A cog for testing voice-related parts of the discord.py library.
 """
-# This example requires the 'message_content' privileged intent to function.
 
 from __future__ import annotations
 
@@ -27,6 +26,9 @@ from utils.paginated_views import PaginatedEmbedView
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -34,22 +36,23 @@ LOGGER = logging.getLogger(__name__)
 yt_dlp.utils.bug_reports_message = lambda: ''
 
 ytdlp_format_options = {
-    'format': 'bestaudio/best',
-    'outtmpl': '%(extractor)s-%(id)s-%(title)s.%(ext)s',
-    'restrictfilenames': True,
-    'noplaylist': True,
-    'nocheckcertificate': True,
-    'ignoreerrors': True,
-    'logtostderr': False,
-    'quiet': True,
-    'no_warnings': True,
-    'default_search': 'auto',
-    'source_address': '0.0.0.0',  # bind to ipv4 since ipv6 addresses cause issues sometimes
+    "verbose": True,
+    "format": "bestaudio/best",
+    "outtmpl": "%(extractor)s-%(id)s-%(title)s.%(ext)s",
+    "restrictfilenames": True,
+    "noplaylist": True,
+    "nocheckcertificate": True,
+    "ignoreerrors": True,
+    "logtostderr": False,
+    "quiet": True,
+    "no_warnings": True,
+    "default_search": "auto",
+    "source_address": "0.0.0.0",  # bind to ipv4 since ipv6 addresses cause issues sometimes
 }
 
 ffmpeg_options = {
-    'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-    'options': '-vn',
+    "before_options": "-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5",
+    "options": "-vn",
 }
 
 ytdlp = yt_dlp.YoutubeDL(ytdlp_format_options)
@@ -205,7 +208,7 @@ class TrackQueue:
         if item.duration > 3600:
             end_time = f"{item.duration // 3600}:{(item.duration % 3600) // 60}:{item.duration % 60:02}"
         else:
-            end_time = f"{item.duration // 60}:{item.duration % 60:02}"
+            end_time = "{}:{:02}".format(*divmod(item.duration, 60))
 
         description = (
             f"[{escape_markdown(item.title)}]({item.webpage_url})\n"
@@ -334,7 +337,7 @@ class MusicVoiceCog(commands.Cog, name="Music and Voice"):
 
     @commands.hybrid_command()
     async def play(self, ctx: commands.Context, *, query: str) -> None:
-        """Plays a file from the bot's local filesystem, or a url.
+        """Plays audio from a url.
 
         Parameters
         ----------

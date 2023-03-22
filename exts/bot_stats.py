@@ -21,6 +21,8 @@ from utils.embeds import StatsEmbed
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -53,13 +55,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
     async def track_command_use(self, ctx: commands.Context) -> None:
-        """Stores records of command uses in the database after some processing.
-
-        Parameters
-        ----------
-        ctx : :class:`commands.Context`
-            The invocation context for the command.
-        """
+        """Stores records of command uses in the database after some processing."""
 
         # Make sure all possible involved users and guilds are in the database before using their ids as foreign keys.
         user_info, guild_info = [ctx.author], [ctx.guild]
@@ -109,9 +105,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """
 
         if (
-                interaction.command is not None and
-                interaction.type is discord.InteractionType.application_command and
-                not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
+            interaction.command is not None and
+            interaction.type is discord.InteractionType.application_command and
+            not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
         ):
             ctx = await commands.Context.from_interaction(interaction)
             ctx.command_failed = interaction.command_failed
@@ -119,7 +115,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @commands.Cog.listener()
     async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
-        """Record prefix, hybrid, and application command usage, even if the result is an error."""
+        """Records prefix, hybrid, and application command usage, even if the result is an error."""
 
         if not isinstance(error, commands.CommandNotFound):
             await self.track_command_use(ctx)
@@ -202,7 +198,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         command: str | None = None,
         guild: discord.Guild | None = None,
         universal: bool = False
-    ):
+    ) -> list:
         """Queries the database for command usage."""
 
         query_args = ()         # Holds the query args as objects.

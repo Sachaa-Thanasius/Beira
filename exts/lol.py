@@ -20,6 +20,8 @@ from utils.embeds import StatsEmbed
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -175,7 +177,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
             tasks.append(asyncio.get_event_loop().create_task(self.check_lol_stats(name)))
         results = await asyncio.gather(*tasks)
 
-        leaderboard = list(filter(lambda x: x != ("None", "None", "None"), results))
+        leaderboard = [result for result in results if result != ("None", "None", "None")]
         leaderboard.sort(key=lambda x: x[1])
 
         # Construct the embed for the leaderboard.

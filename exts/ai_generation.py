@@ -23,8 +23,9 @@ from PIL import Image
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
 
-"""Constants"""
 LOGGER = logging.getLogger(__name__)
 FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to ffmpeg on your machine if need be.
 
@@ -107,9 +108,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         temp_dir = tf.mkdtemp()
 
         # Create temporary filesystem paths to generated filenames.
-        temp_paths = tuple(
-            map(lambda ext: Path(temp_dir).joinpath(f"temp_output{ext[0]}." + ext[1]), list(enumerate(extensions)))
-        )
+        temp_paths = tuple(Path(temp_dir).joinpath(f"temp_output{i}." + ext) for i, ext in enumerate(extensions))
         yield temp_paths
 
         # Clean up.

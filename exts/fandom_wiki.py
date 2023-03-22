@@ -22,6 +22,8 @@ from utils.embeds import EMOJI_URL, DTEmbed
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 with_benchmark = functools.partial(benchmark, logger=LOGGER)
@@ -200,7 +202,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 get_wiki_name = self.all_wikis.get(wiki_name)
 
         # --------------------------------
-
         # Check if the wiki has any recorded pages.
         get_wiki_pages: dict = get_wiki_name.get("all_pages")
 
@@ -209,7 +210,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             return failed_embed
 
         # --------------------------------
-
         # Check if the wiki has the requested query as a page.
         final_embed = AoCWikiEmbed() if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed()
 
@@ -235,7 +235,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         wiki_page_link = urljoin(self.all_wikis[wiki_name]['base_url'], get_specific_wiki_page)
 
         # --------------------------------
-
         # Add the primary embed parameters.
         final_embed.title = wiki_query
         final_embed.url = wiki_page_link

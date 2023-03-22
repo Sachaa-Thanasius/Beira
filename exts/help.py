@@ -21,6 +21,8 @@ from utils.paginated_views import PaginatedEmbedView
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 

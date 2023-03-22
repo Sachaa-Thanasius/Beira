@@ -27,6 +27,8 @@ from utils.snowball_utils import (
 if TYPE_CHECKING:
     from asyncpg import Record
     from bot import Beira
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -195,7 +197,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: commands.Context, target: discord.Member) -> None:
+    async def throw(self, ctx: commands.Context, *, target: discord.Member) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
@@ -248,9 +250,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
-    @app_commands.describe(
-        receiver="Who do you want to give some of your balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: commands.Context, amount: int, receiver: discord.Member) -> None:
+    @app_commands.describe(receiver="Who do you want to give some balls? You can't transfer more than 10 at a time.")
+    async def transfer(self, ctx: commands.Context, amount: int, *, receiver: discord.Member) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
@@ -315,7 +316,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
-    async def steal(self, ctx: commands.Context, amount: int, victim: discord.Member) -> None:
+    async def steal(self, ctx: commands.Context, amount: int, *, victim: discord.Member) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
@@ -371,7 +372,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.group(fallback="get")
     @commands.guild_only()
     @app_commands.describe(target="Look up a particular Snowball Sparrer's stats.")
-    async def stats(self, ctx: commands.Context, target: discord.User = commands.Author) -> None:
+    async def stats(self, ctx: commands.Context, *, target: discord.User = commands.Author) -> None:
         """See who's the best at shooting snow spheres.
 
         Parameters
@@ -414,7 +415,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @stats.command(name="global")
     @app_commands.describe(target="Look up a a player's stats as a summation across all servers.")
-    async def stats_global(self, ctx: commands.Context, target: discord.User = commands.Author) -> None:
+    async def stats_global(self, ctx: commands.Context, *, target: discord.User = commands.Author) -> None:
         """See who's the best across all Beira servers.
 
         Parameters
@@ -540,6 +541,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         ctx : :class:`commands.Context`
             The invocation context.
         """
+
         code_value = self.embed_data["inspo"]["note"].format(self.embed_data["inspo"]["url"])
         inspo_value = self.embed_data["code"]["note"].format(self.embed_data["code"]["url"])
 
@@ -550,8 +552,14 @@ class SnowballCog(commands.Cog, name="Snowball"):
         )
         await ctx.send(embed=embed, ephemeral=True)
 
-    async def update_snowball_record(self, member: discord.Member, hits: int = 0, misses: int = 0, kos: int = 0,
-                                     stock: int = 0) -> None:
+    async def update_snowball_record(
+        self,
+        member: discord.Member,
+        hits: int = 0,
+        misses: int = 0,
+        kos: int = 0,
+        stock: int = 0
+    ) -> None:
         """Upserts a user's snowball stats based on the given stat parameters."""
 
         stock_insert = stock

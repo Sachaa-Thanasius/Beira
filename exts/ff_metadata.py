@@ -22,6 +22,8 @@ from fanfic_wrappers.atlas_wrapper import AtlasClient
 if TYPE_CHECKING:
     from bot import Beira
     from fanfic_wrappers.ff_metadata_classes import FFNMetadata
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -214,7 +216,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         author: AO3.User = work.authors[0]
         await asyncio.get_event_loop().run_in_executor(None, author.reload)
 
-        updated = work.date_updated.strftime('%B %d, %Y')
+        updated = work.date_updated.strftime('%B %d, %Y') + (" (Complete)" if work.complete else "")
         author_names = ", ".join([str(author.username) for author in work.authors])
         thumbnail_file = discord.File(fp=BytesIO(author.get_avatar()[1]), filename="profile_image.png")
 
@@ -247,7 +249,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         author: AO3.User = series.creators[0]
         await asyncio.get_event_loop().run_in_executor(None, author.reload)
 
-        updated = series.series_updated.strftime('%B %d, %Y')
+        updated = series.series_updated.strftime('%B %d, %Y') + ("(Complete)" if series.complete else "")
         author_names = ", ".join([str(creator.username) for creator in series.creators])
         thumbnail_file = discord.File(fp=BytesIO(author.get_avatar()[1]), filename="profile_image.png")
 
@@ -271,12 +273,13 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     async def create_ffn_embed(story: FFNMetadata) -> DTEmbed:
         """Create an embed that holds all the relevant metadata for a FanFiction.Net story."""
 
-        updated = story.updated.strftime('%B %d, %Y')
+        date_tuple = ("Last Updated", story.updated) if story.updated is not None else ("Published", story.published)
+        date_tuple[1] += ("(Complete)" if story.is_complete else "")
 
         ffn_embed = (
             DTEmbed(title=story.title, url=story.story_url, description=story.description)
             .set_author(name=story.author_name, url=story.author_url, icon_url=FFN_ICON_URL)
-            .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
+            .add_field(name=f"\N{SCROLL} {date_tuple[0]}", value=date_tuple[1].strftime("%B %d, %Y"))
             .add_field(name="\N{BOOK} Length", value=f"{story.word_count:,d} words in {story.chapter_count} chapter(s)")
             .add_field(
                 name=f"\N{BOOKMARK} Rating: Fiction {story.rating}",
@@ -287,7 +290,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
                 value=f"**Reviews:** {story.review_count:,d} • **Faves:** {story.favorite_count:,d} • "
                       f"**Follows:** {story.follow_count:,d}",
                 inline=False
-            ).set_footer(text="Made using iris's Atlas API. Some results may be slightly out of date.")
+            ).set_footer(text="Made using iris's Atlas API. Some results may be out of date or unavailable.")
         )
 
         return ffn_embed

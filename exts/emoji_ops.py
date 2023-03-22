@@ -14,6 +14,8 @@ from discord.ext import commands
 
 if TYPE_CHECKING:
     from bot import Beira
+else:
+    Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
 
@@ -105,11 +107,11 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
     @emoji_.command("add")
     async def emoji_add(
-            self,
-            ctx: commands.Context,
-            name: str,
-            entity: str | None = None,
-            attachment: discord.Attachment | None = None
+        self,
+        ctx: commands.Context,
+        name: str,
+        entity: str | None = None,
+        attachment: discord.Attachment | None = None
     ) -> None:
         """Adds an emoji to the server, assuming you have the permissions to do that.
 
@@ -169,13 +171,10 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         embed = discord.Embed(title="Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, commands.HybridCommandError):
+        if isinstance(error, (commands.HybridCommandError, commands.CommandInvokeError)):
             error = error.original
             if isinstance(error, app_commands.CommandInvokeError):
                 error = error.original
-
-        if isinstance(error, commands.CommandInvokeError):
-            error = error.original
 
         # Respond to the error.
         if isinstance(error, discord.Forbidden):
