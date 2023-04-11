@@ -274,12 +274,11 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         """Create an embed that holds all the relevant metadata for a FanFiction.Net story."""
 
         date_tuple = ("Last Updated", story.updated) if story.updated is not None else ("Published", story.published)
-        date_tuple[1] += ("(Complete)" if story.is_complete else "")
 
         ffn_embed = (
             DTEmbed(title=story.title, url=story.story_url, description=story.description)
             .set_author(name=story.author_name, url=story.author_url, icon_url=FFN_ICON_URL)
-            .add_field(name=f"\N{SCROLL} {date_tuple[0]}", value=date_tuple[1].strftime("%B %d, %Y"))
+            .add_field(name=f"\N{SCROLL} {date_tuple[0]}", value=date_tuple[1].strftime("%B %d, %Y") + ("(Complete)" if story.is_complete else ""))
             .add_field(name="\N{BOOK} Length", value=f"{story.word_count:,d} words in {story.chapter_count} chapter(s)")
             .add_field(
                 name=f"\N{BOOKMARK} Rating: Fiction {story.rating}",

@@ -35,7 +35,7 @@ class CustomNotificationsCog(commands.Cog, name="ACI Role Notifications"):
                 694615102237835324,
                 747520979735019572
             ],
-            "mod_role_id": 940801230001815552,
+            "mod_role_id": 940801230001815552,      # Currently only set to one mod's role.
         }
 
     @commands.Cog.listener()

@@ -20,14 +20,13 @@ import openai
 from discord.ext import commands
 from PIL import Image
 
-
 if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
-FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")       # Set your own path to ffmpeg on your machine if need be.
+FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")  # Set your own path to ffmpeg on your machine if need be.
 
 # InspiroBot constants.
 INSPIROBOT_API_URL = "https://inspirobot.me/api"
@@ -135,7 +134,6 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """
 
         with AIGenerationCog.temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
-
             # Save the input images to temporary files.
             with Image.open(before_img_buffer) as avatar_image:
                 avatar_image.save(avatar_temp, "png")
@@ -282,8 +280,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             gif_file = discord.File(result_gif, filename=f"pigeonlord.gif")
             embed = (
                 discord.Embed(color=0x5d6e7f, title=f"{target.display_name}'s True Form", description="***Behold!***")
-                       .set_image(url=f"attachment://pigeonlord.gif")
-                       .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
+                .set_image(url=f"attachment://pigeonlord.gif")
+                .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
             )
 
             sent_message = await ctx.send(embed=embed, file=gif_file)
@@ -320,9 +318,9 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             gif_file = discord.File(result_gif, filename="morph.gif")
             embed = (
                 discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
-                       .add_field(name="Prompt", value=prompt)
-                       .set_image(url="attachment://morph.gif")
-                       .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
+                .add_field(name="Prompt", value=prompt)
+                .set_image(url="attachment://morph.gif")
+                .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
             )
 
             LOGGER.info(f"Total morph time: {morph_time:.5f}s")
@@ -337,7 +335,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     @openai.command()
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def generate(self, ctx: commands.Context, generation_type: Literal["text", "image"] = "image", *, prompt: str) -> None:
+    async def generate(self, ctx: commands.Context, generation_type: Literal["text", "image"] = "image", *,
+                       prompt: str) -> None:
         """Create and send AI-generated images or text based on a given prompt.
 
         Parameters
@@ -364,8 +363,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 embed.title += " Image"
                 (
                     embed.add_field(name="Prompt", value=prompt)
-                         .set_image(url="attachment://ai_image.png")
-                         .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
+                    .set_image(url="attachment://ai_image.png")
+                    .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
                 )
                 sent_message = await ctx.send(embed=embed, file=ai_img_file)
 
@@ -381,8 +380,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 embed.title += " Text"
                 (
                     embed.add_field(name="Prompt", value=prompt, inline=False)
-                         .add_field(name="Result", value=ai_text, inline=False)
-                         .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
+                    .add_field(name="Result", value=ai_text, inline=False)
+                    .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {creation_time:.3f}s")
                 )
                 await ctx.send(embed=embed)
 
@@ -400,7 +399,10 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             embed = (
                 discord.Embed(color=0xe04206)
                 .set_image(url=image_url)
-                .set_footer(text="Generated with InspiroBot at https://inspirobot.me/", icon_url=INSPIROBOT_ICON_URL)
+                .set_footer(
+                    text="Generated with InspiroBot at https://inspirobot.me/",
+                    icon_url=INSPIROBOT_ICON_URL
+                )
             )
         await ctx.send(embed=embed)
 

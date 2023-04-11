@@ -5,7 +5,6 @@ bot.py: The main bot initializer and starter.
 
 from __future__ import annotations
 
-import json
 import logging
 import asyncio
 
@@ -17,16 +16,11 @@ from discord.ext import commands
 import config
 from exts import EXTENSIONS
 from utils.custom_logging import CustomLogger
+from utils.db_funcs import psql_init
 
 
 CONFIG = config.config()
 LOGGER = logging.getLogger("bot.Beira")
-
-
-async def psql_init(connection: asyncpg.Connection):
-    """Sets up codecs for Postgres connection."""
-
-    await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
 class Beira(commands.Bot):
@@ -144,6 +138,7 @@ class Beira(commands.Bot):
     async def setup_hook(self) -> None:
         await self._load_guild_prefixes()
         await self._load_extensions()
+
         self.loop.create_task(self.load_cache())
 
         # If there is a need to isolate commands in development, they will only sync with development guilds.
@@ -244,7 +239,7 @@ async def main() -> None:
             "exts.ff_metadata",
             "exts.help",
             "exts.lol",
-            "exts.music_voice",
+            "exts.music",
             "exts.patreon",
             "exts.pin_archive",
             "exts.snowball",

@@ -8,7 +8,6 @@ import logging
 import re
 from bisect import bisect_left
 from copy import deepcopy
-from functools import partial
 from pathlib import Path
 from random import choice, randint
 from typing import TYPE_CHECKING, ClassVar
@@ -21,7 +20,6 @@ from discord.ext import commands
 from discord.utils import MISSING
 from typing_extensions import Self
 
-from utils.custom_logging import benchmark
 from utils.embeds import EMOJI_URL, PaginatedEmbed
 from utils.paginated_views import PaginatedEmbedView
 
@@ -32,7 +30,6 @@ else:
     Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
-with_benchmark = partial(benchmark, logger=LOGGER)
 
 
 @define
@@ -171,7 +168,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                 await self.load_story_text(file)
 
     @classmethod
-    @with_benchmark
     async def load_story_text(cls, filepath: Path):
         """Load the story metadata and text."""
 
@@ -222,7 +218,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         LOGGER.info(f"Loaded file: {filepath.stem}")
 
     @classmethod
-    @with_benchmark
     def process_text(cls, story: str, terms: str, exact: bool = True) -> list[tuple]:
         """Collects all lines from story text that contain the given terms."""
 

@@ -5,7 +5,6 @@ first.
 
 from __future__ import annotations
 
-import functools
 import logging
 from json import load
 from typing import TYPE_CHECKING
@@ -16,7 +15,6 @@ from bs4 import BeautifulSoup
 from discord import app_commands
 from discord.ext import commands
 
-from utils.custom_logging import benchmark
 from utils.embeds import EMOJI_URL, DTEmbed
 
 
@@ -26,7 +24,6 @@ else:
     Beira = commands.Bot
 
 LOGGER = logging.getLogger(__name__)
-with_benchmark = functools.partial(benchmark, logger=LOGGER)
 
 all_wiki_names = []
 
@@ -92,7 +89,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         await self.load_all_wiki_pages()
 
-    @with_benchmark
     async def load_all_wiki_pages(self):
         """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
 
@@ -115,7 +111,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         try:
             with open("data/fandom_wiki_data.json", "r") as f:
                 self.all_wikis = load(f)
-                LOGGER.info(f"Loaded file: {f.name}")
+                # LOGGER.info(f"Loaded file: {f.name}")
         except FileNotFoundError as err:
             LOGGER.exception("JSON File wasn't found", exc_info=err)
 
@@ -137,7 +133,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                     else:
                         continue
 
-            LOGGER.info(f"Loaded wiki info: {wiki_name}")
+            # LOGGER.info(f"Loaded wiki info: {wiki_name}")
         LOGGER.info(f"All wiki names: {all_wiki_names}")
 
     @commands.hybrid_command()

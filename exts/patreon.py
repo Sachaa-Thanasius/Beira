@@ -42,9 +42,9 @@ class PatreonTierSelectView(discord.ui.View):
     def _set_select_options(self) -> list[discord.SelectOption]:
         options = []
         for i, tier in enumerate(self.tiers):
-            label = f"{tier['tier_name']} - ${tier['tier_value']}" if i != 0 else tier['tier_name']
+            label = f"{tier['tier_name']} - ${tier['tier_value']}" if i != 0 else tier["tier_name"]
             descr = tier["tier_info"][:97] + "..."
-            options.append(discord.SelectOption(label=label, value=str(i), description=descr, emoji=tier['tier_emoji']))
+            options.append(discord.SelectOption(label=label, value=str(i), description=descr, emoji=tier["tier_emoji"]))
 
         return options
 
@@ -132,7 +132,7 @@ class PatreonMember:
 
 
 class PatreonCheckCog(commands.Cog, name="Patreon"):
-    """A cog for checking which Discord members are currently patrons of ACI100.
+    """A cog for Patreon-related tasks, like checking which Discord members are currently patrons of ACI100.
 
     In development.
     """
@@ -206,7 +206,6 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
         patreon_guild = self.bot.get_guild(aci100_id)
-
         patron_roles = (role for role in patreon_guild.roles if "patrons" in role.name.lower())
         self.patrons_on_discord: dict[str, list[discord.Member]] = {role.name: role.members for role in patron_roles}
 
@@ -234,9 +233,9 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         while True:
             async with self.bot.web_session.get(
-                    urljoin(CAMPAIGN_BASE,
-                            f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
-                    headers={"Authorization": f"Bearer {self.access_token}"}
+                urljoin(CAMPAIGN_BASE,
+                        f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
+                headers={"Authorization": f"Bearer {self.access_token}"}
             ) as resp:
 
                 # Print an error if it exists.
@@ -251,7 +250,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                 for member in resp_json["data"]:
                     user_id = member["relationships"]["user"]["data"]["id"]
                     print(f"User ID: {user_id}")
-                    user = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])
+                    user: dict = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])
                     print(f"User: {user}")
 
                     assert user is not None

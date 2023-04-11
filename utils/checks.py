@@ -61,7 +61,7 @@ def in_bot_vc():
     """
 
     async def predicate(ctx: commands.Context) -> bool:
-        vc: discord.VoiceClient | None = ctx.voice_client  # type: ignore
+        vc: discord.VoiceProtocol | None = ctx.voice_client
         if not (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel):
             raise NotInBotVoiceChannel("You are not connected to the same voice channel as the bot.")
         return True

@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 IGNORE_EXTENSIONS = []
 
 
-class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
+class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
 
     def __init__(self, bot: Beira) -> None:
@@ -46,6 +46,12 @@ class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
         return await original(ctx)
 
     @commands.command()
+    async def shutdown(self, ctx: commands.Context) -> None:
+        LOGGER.info("Shutting down bot with dev command.")
+        await ctx.send("Shutting down bot...")
+        await self.bot.close()
+
+    @commands.command()
     async def walk(self, ctx: commands.Context) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
@@ -62,7 +68,7 @@ class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
             """Creates an embed for global and guild command areas and adds it to a collection of embeds."""
 
             descr = "\n".join([f"**{cmd.mention}**\n{cmd.description}\n" for cmd in cmds])
-            walk_embed = discord.Embed(title=title, color=0xcccccc, description=descr)
+            walk_embed = discord.Embed(color=0xcccccc, title=title, description=descr)
             all_embeds.append(walk_embed)
 
         global_commands = await self.bot.tree.fetch_commands()
@@ -77,7 +83,7 @@ class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.describe(extension="The file name of the extension/cog you wish to reload, excluding the file type.")
     async def reload(self, ctx: commands.Context, extension: str) -> None:
         """Reloads an extension/cog.
@@ -112,7 +118,7 @@ class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def load(self, ctx: commands.Context, extension: str) -> None:
         """Loads an extension/cog.
@@ -147,7 +153,7 @@ class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.describe(extension="The file name of the extension/cog you wish to unload, excluding the file type.")
     async def unload(self, ctx: commands.Context, extension: str) -> None:
         """Unloads an extension/cog.
@@ -202,7 +208,7 @@ class DevCog(commands.Cog, name="Dev Things", command_attrs=dict(hidden=True)):
                ][:25]
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),

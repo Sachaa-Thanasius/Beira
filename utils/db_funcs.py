@@ -4,6 +4,7 @@ db_funcs.py: Utility functions for interacting with the database.
 
 from __future__ import annotations
 
+import json
 import logging
 from typing import TYPE_CHECKING
 
@@ -11,9 +12,16 @@ import discord
 
 
 if TYPE_CHECKING:
-    from asyncpg import Pool
+    from asyncpg import Pool, Connection
+
 
 LOGGER = logging.getLogger(__name__)
+
+
+async def psql_init(connection: Connection):
+    """Sets up codecs for Postgres connection."""
+
+    await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
 async def upsert_users(db_pool: Pool, *users: discord.User | discord.Member | tuple[int, str, str]):

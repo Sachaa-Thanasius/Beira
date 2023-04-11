@@ -45,9 +45,6 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             else:
                 break
 
-        if not converted_emoji:
-            converted_emoji = discord.PartialEmoji(name=entity)
-
         return converted_emoji
 
     @commands.hybrid_group("emoji")
@@ -107,11 +104,11 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
     @emoji_.command("add")
     async def emoji_add(
-        self,
-        ctx: commands.Context,
-        name: str,
-        entity: str | None = None,
-        attachment: discord.Attachment | None = None
+            self,
+            ctx: commands.Context,
+            name: str,
+            entity: str | None = None,
+            attachment: discord.Attachment | None = None
     ) -> None:
         """Adds an emoji to the server, assuming you have the permissions to do that.
 
@@ -152,7 +149,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
         #  Notify user of results.
         if new_emoji:
-            await ctx.reply("Emoji successfully added!")
+            await ctx.reply(f"Emoji successfully added: {new_emoji}")
         else:
             await ctx.reply("Something went wrong. The emoji could not be added.")
 
