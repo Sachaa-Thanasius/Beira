@@ -180,7 +180,7 @@ class MusicCog(commands.Cog, name="Music"):
             self,
             ctx: commands.Context,
             *,
-            tracks: Annotated[WavelinkSearchConverter, Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist]
+            search: str
     ) -> None:
         """Play audio from a YouTube url or search term.
 
@@ -188,11 +188,13 @@ class MusicCog(commands.Cog, name="Music"):
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        tracks : :class:`wavelink.YouTubeTrack`
+        search : :class:`wavelink.YouTubeTrack`
             An auto-converted track or collection of tracks.
         """
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+
+        tracks = WavelinkSearchConverter.convert(ctx, search)
 
         async with ctx.typing():
             if vc.queue.is_empty and not vc.is_playing():
