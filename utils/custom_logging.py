@@ -78,6 +78,7 @@ class CustomLogger:
     def __enter__(self) -> Self:
         """Set and customize loggers."""
 
+        logging.getLogger("wavelink").setLevel(logging.INFO)
         logging.getLogger("discord").setLevel(logging.INFO)
         logging.getLogger("discord.http").setLevel(logging.INFO)
         logging.getLogger("discord.state").addFilter(RemoveNoise())

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import math
 from typing import Any
 
 import discord
@@ -90,13 +91,12 @@ class PaginatedEmbedView(View):
 
     def __init__(self, *, author: discord.User | discord.Member, all_pages_content: list[Any], per_page: int = 1) -> None:
         super().__init__(timeout=60.0)
-
         self.message = None
         self.author = author
 
         # Page-related instance variables.
         self.per_page = per_page
-        self.total_pages = len(all_pages_content)
+        self.total_pages = math.ceil(len(all_pages_content) / per_page)
 
         self.pages = [all_pages_content[i: (i + per_page)] for i in range(0, len(all_pages_content), per_page)]
         self.page_cache: list[Any] = [None for _ in self.pages]
@@ -186,6 +186,8 @@ class PaginatedEmbedView(View):
             self.turn_to_last_page.disabled = False
 
     def get_starting_embed(self) -> discord.Embed:
+        """Get the embed of the first page."""
+
         self.former_page, self.current_page = 1, 1
         embed_page = self.format_page()
         return embed_page

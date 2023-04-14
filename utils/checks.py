@@ -62,7 +62,11 @@ def in_bot_vc():
 
     async def predicate(ctx: commands.Context) -> bool:
         vc: discord.VoiceProtocol | None = ctx.voice_client
-        if not (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel):
+
+        if (
+                not ctx.author.guild_permissions.administrator and
+                not (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel)
+        ):
             raise NotInBotVoiceChannel("You are not connected to the same voice channel as the bot.")
         return True
 
@@ -78,7 +82,7 @@ def in_aci100_guild():
 
     async def predicate(ctx: commands.Context) -> bool:
         if ctx.guild.id != 602735169090224139:
-            raise commands.CheckFailure("This function isn't active in this guild.")
+            raise commands.CheckFailure("This command isn't active in this guild.")
         return True
 
     return commands.check(predicate)

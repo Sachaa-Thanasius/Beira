@@ -248,16 +248,19 @@ async def main() -> None:
         ]
 
         async with Beira(
-            command_prefix=default_prefix,
-            intents=default_intents,
-            db_pool=pool,
-            web_session=session,
-            initial_extensions=init_exts,
-            testing_guild_ids=testing_guilds,
-            test_mode=testing
+                command_prefix=default_prefix,
+                intents=default_intents,
+                db_pool=pool,
+                web_session=session,
+                initial_extensions=init_exts,
+                testing_guild_ids=testing_guilds,
+                test_mode=testing
         ) as bot:
             async with CustomLogger():
-                await bot.start(CONFIG["discord"]["token"])
+                try:
+                    await bot.start(CONFIG["discord"]["token"])
+                except Exception:
+                    await bot.close()
 
     await asyncio.sleep(1)
 

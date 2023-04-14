@@ -6,7 +6,8 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import TYPE_CHECKING, Literal, Annotated
+from copy import deepcopy
+from typing import TYPE_CHECKING, Literal
 
 import discord
 import wavelink
@@ -18,8 +19,9 @@ from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
 from utils.checks import in_bot_vc
+from utils.embeds import PaginatedEmbed
 from utils.errors import NotInBotVoiceChannel
-
+from utils.paginated_views import PaginatedEmbedView
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -30,8 +32,8 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 
-async def format_track_embed(embed: discord.Embed, track: wavelink.Playable) -> discord.Embed:
-    """Format an embed to show information about a Wavelink track."""
+async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
+    """Modify an embed to show information about a Wavelink track."""
 
     duration = track.duration // 1000
     if duration > 3600:
@@ -39,69 +41,137 @@ async def format_track_embed(embed: discord.Embed, track: wavelink.Playable) -> 
     else:
         end_time = "{}:{:02}".format(*divmod(duration, 60))
 
-    descr = f"[{escape_markdown(track.title)} - {escape_markdown(track.author)}]({track.uri})\n`[0:00-{end_time}]`"
+    if isinstance(track, Playable):
+        embed.description = (
+            f"[{escape_markdown(track.title)}]({track.uri})\n"
+            f"{escape_markdown(track.author)}\n"
+            f"`[0:00-{end_time}]`"
+        )
+    elif isinstance(track, spotify.SpotifyTrack):
+        embed.description = (
+            f"[{escape_markdown(track.title)}]({track.uri})\n"
+            f"{escape_markdown(', '.join(track.artists))}\n"
+            f"`[0:00-{end_time}]`"
+        )
 
-    embed.description = descr
     if isinstance(track, wavelink.YouTubeTrack):
         embed.set_thumbnail(url=(track.thumbnail or await track.fetch_thumbnail()))
 
     return embed
 
 
-class WavelinkSearchConverter:
+class SoundCloudPlaylist(Playable, Playlist):
+    """Represents a Lavalink SoundCloud playlist object.
+
+    Attributes
+    ----------
+    name: str
+        The name of the playlist.
+    tracks: list[:class:`wavelink.SoundCloudTrack`]
+        The list of :class:`wavelink.SoundCloudTrack` in the playlist.
+    selected_track: Optional[int]
+        The selected video in the playlist. This could be ``None``.
+    """
+
+    # PREFIX: str = "scpl:"
+
+    def __init__(self, data: dict) -> None:
+        self.tracks: list[wavelink.SoundCloudTrack] = []
+        self.name: str = data["playlistInfo"]["name"]
+
+        self.selected_track: int | None = data["playlistInfo"].get("selectedTrack")
+        if self.selected_track is not None:
+            self.selected_track = int(self.selected_track)
+
+        for track_data in data["tracks"]:
+            track = wavelink.SoundCloudTrack(track_data)
+            self.tracks.append(track)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class WavelinkSearchConverter(commands.Converter):
     @classmethod
-    async def convert(cls, ctx: commands.Context, argument: str) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        """Converter which searches for and returns the relevant track.
+    async def convert(
+            cls,
+            ctx: commands.Context,
+            argument: str
+    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
+        """Converter which searches for and returns the relevant track(s).
 
         Used as a type hint in a discord.py command.
         """
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
 
-        '''
-        Get the track(s) by checking in this order:
-
-        1) YouTube playlist
-        2) YouTube video
-        3) YouTube Music
-        4) SoundCloud
-        5) Spotify (converted to YouTube internally)
-        6) Direct or local url
-            a. Search YouTube with search terms as a query.
-        '''
-
         check = yarl.URL(argument)
 
-        if (
-                (str(check.host) == "youtube.com" or str(check.host) == "www.youtube.com") and
-                (check.query.get("list") or argument.startswith("ytpl:"))
-        ):
-            tracks = await vc.current_node.get_playlist(cls=wavelink.YouTubePlaylist, query=argument)
-        elif (
-                (str(check.host) == "youtube.com" or str(check.host) == "www.youtube.com") and
-                (check.query.get("v") or argument.startswith("ytsearch:"))
-        ):
+        """
+        Get the track(s) by checking in this order:
+
+        1) YouTube video
+        2) Youtube playlist
+        3) YouTube Music track
+        4) SoundCloud playlist
+        5) SoundCloud track
+        6) Spotify (converted to YouTube internally)
+            a. Unusable output
+            b. Playlist/Album
+            c. Track
+        7) Unknown
+            a. Direct url
+            b. Search YouTube with the argument as the query.
+        """
+        if check.host in ("youtube.com", "www.youtube.com") and (check.query.get("v") or argument.startswith("ytsearch:")):
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
-        elif str(check.host) == "music.youtube.com" or argument.startswith("ytmsearch:"):
+        elif check.host in ("youtube.com", "www.youtube.com") and (check.query.get("list") or argument.startswith("ytpl:")):
+            tracks = await vc.current_node.get_playlist(cls=wavelink.YouTubePlaylist, query=argument)
+        elif check.host == "music.youtube.com" or argument.startswith("ytmsearch:"):
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeMusicTrack, query=argument)
-        elif str(check.host) == "soundcloud.com" or argument.startswith("scsearch:"):
+        elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.path:
+            tracks = await vc.current_node.get_playlist(cls=SoundCloudPlaylist, query=argument)
+        elif check.host in ("soundcloud.com", "www.soundcloud.com") or argument.startswith("scsearch:"):
             tracks = await vc.current_node.get_tracks(cls=wavelink.SoundCloudTrack, query=argument)
-        elif str(check.host) == "spotify.com" or str(check.host) == "open.spotify.com":
+        elif check.host in ("spotify.com", "open.spotify.com"):
             decoded = spotify.decode_url(argument)
-            if not decoded or decoded["type"] is not spotify.SpotifySearchType.track:
-                # await ctx.send("That Spotify Track URL is invalid.")
-                raise commands.BadArgument("Could not find any songs matching that query.")
-            tracks = await spotify.SpotifyTrack.search(argument, node=vc.current_node)
+            if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
+                raise commands.BadArgument("Could not find any Spotify songs matching that query.")
+            elif decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
+                tracks = [track async for track in spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)]
+            else:
+                tracks = await spotify.SpotifyTrack.search(argument, type=decoded["type"], node=vc.current_node)
         else:
             try:
                 tracks = await vc.current_node.get_tracks(cls=wavelink.GenericTrack, query=argument)
             except ValueError:
-                tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query="ytsearch:" + argument)
+                tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query="ytsearch: " + argument)
 
         if not tracks:
             raise commands.BadArgument("Could not find any songs matching that query.")
 
         return tracks
+
+
+class MusicQueueView(PaginatedEmbedView):
+    def format_page(self) -> discord.Embed:
+        embed_page = PaginatedEmbed(color=0x149cdf, title="Music Queue")
+
+        if self.total_pages == 0:
+            embed_page.set_page_footer(0, 0).description = "The queue is empty."
+
+        else:
+            if self.page_cache[self.current_page - 1] is None:
+                # Expected page size of 10
+                self.current_page_content = self.pages[self.current_page - 1]
+                embed_page.description = "\n".join([f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song in enumerate(self.current_page_content)])
+                embed_page.set_page_footer(self.current_page, self.total_pages)
+
+                self.page_cache[self.current_page - 1] = embed_page
+            else:
+                return deepcopy(self.page_cache[self.current_page - 1])
+
+        return embed_page
 
 
 class MusicCog(commands.Cog, name="Music"):
@@ -112,21 +182,21 @@ class MusicCog(commands.Cog, name="Music"):
     def cog_emoji(self) -> discord.PartialEmoji:
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
-        return discord.PartialEmoji(name="\N{SPEAKER WITH ONE SOUND WAVE}")
+        return discord.PartialEmoji(name="\N{MUSICAL NOTE}")
 
     async def cog_load(self) -> None:
-        sc = spotify.SpotifyClient(
-            client_id=self.bot.config["spotify"]["client_id"],
-            client_secret=self.bot.config["spotify"]["client_secret"]
-        )
-        node: wavelink.Node = wavelink.Node(
-            uri=self.bot.config["lavalink"]["uri"],
-            password=self.bot.config["lavalink"]["password"],
-            # session=self.bot.web_session
-        )
+        """Create and connect to the Lavalink node(s)."""
+
+        spotify_cfg = self.bot.config["spotify"]
+        sc = spotify.SpotifyClient(client_id=spotify_cfg["client_id"], client_secret=spotify_cfg["client_secret"])
+        lavalink_cfg = self.bot.config["lavalink"]
+        node: wavelink.Node = wavelink.Node(uri=lavalink_cfg["uri"], password=lavalink_cfg["password"])
+
         await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
     async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+        """Catch errors from commands inside this cog."""
+
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
 
         # Extract the original error.
@@ -164,7 +234,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def connect(self, ctx: commands.Context) -> None:
         """Join a voice channel."""
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
 
         if vc is not None and ctx.author.voice is not None:
             await vc.move_to(ctx.channel)
@@ -176,77 +246,66 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @commands.hybrid_command()
-    async def play(
-            self,
-            ctx: commands.Context,
-            *,
-            search: str
-    ) -> None:
+    async def play(self, ctx: commands.Context, *, search: str) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
-        search : :class:`wavelink.YouTubeTrack`
-            An auto-converted track or collection of tracks.
+        search : :class:`str`
+            A url or search query.
         """
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        tracks = await WavelinkSearchConverter.convert(ctx, search)
 
-        tracks = WavelinkSearchConverter.convert(ctx, search)
+        async def add_tracks_to_queue() -> None:
+            """Accounts for tracks being contained in another object or structure."""
+
+            if isinstance(tracks, list) or isinstance(tracks, (wavelink.YouTubePlaylist, SoundCloudPlaylist)):
+                remaining_tracks = tracks if isinstance(tracks, list) else tracks.tracks
+                vc.queue.extend(remaining_tracks)
+                await ctx.send(f"Added `{len(remaining_tracks)}` tracks to the queue.")
+            else:
+                await vc.queue.put_wait(tracks)
+                await ctx.send(f"Added `{tracks.title}` to the queue.")
 
         async with ctx.typing():
             if vc.queue.is_empty and not vc.is_playing():
-                if isinstance(tracks, list):
-                    track_for_descr = tracks[0]
-                elif isinstance(tracks, wavelink.YouTubePlaylist):
-                    track_for_descr = tracks.tracks[0]
-                else:
-                    track_for_descr = tracks
+                await add_tracks_to_queue()
 
-                embed = await format_track_embed(discord.Embed(title="Now Playing"), track_for_descr)
+                first_track = vc.queue.get()
+                await vc.play(first_track)
 
+                embed = await format_track_embed(discord.Embed(title="Now Playing"), first_track)
                 await ctx.send(embed=embed)
-                await vc.play(track_for_descr)
-                if isinstance(tracks, list) or isinstance(tracks, wavelink.YouTubePlaylist):
-                    if isinstance(tracks, list):
-                        remaining_tracks = tracks[1:]
-                    elif isinstance(tracks, wavelink.YouTubePlaylist):
-                        remaining_tracks = tracks.tracks[1:]
-
-                    if len(remaining_tracks) >= 1:
-                        vc.queue.extend(remaining_tracks)
-                        await ctx.send(f"Added `{len(remaining_tracks)}` tracks to the queue...")
             else:
-                if isinstance(tracks, list) or isinstance(tracks, wavelink.YouTubePlaylist):
-                    if isinstance(tracks, list):
-                        remaining_tracks = tracks
-                    elif isinstance(tracks, wavelink.YouTubePlaylist):
-                        remaining_tracks = tracks.tracks
-
-                    vc.queue.extend(remaining_tracks)
-                    await ctx.send(f"Added `{len(remaining_tracks)}` tracks to the queue...")
-                else:
-                    await vc.queue.put_wait(tracks)
-                    await ctx.send(f"Added `{tracks.title}` to the queue...")
+                await add_tracks_to_queue()
 
     @commands.hybrid_group(fallback="get")
-    async def queue(self, ctx: commands.Context):
+    async def queue(self, ctx: commands.Context) -> None:
         """Queue-related commands. By default, this displays everything in the queue.
 
         Use /play to add things to the queue.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+
+        queue_embeds = []
+        if vc.current:
+            current_embed = await format_track_embed(discord.Embed(title="Now Playing"), vc.current)
+            queue_embeds.append(current_embed)
 
         if not vc.queue.is_empty:
-            description = "\n".join([f"{i + 1}. {escape_markdown(y.title)}" for i, y in enumerate(vc.queue)])
-            embed = discord.Embed(title="Queue", description=description[:4096])
+            view = MusicQueueView(author=ctx.author, all_pages_content=[track.title for track in vc.queue], per_page=10)
+            queue_embeds.append(view.get_starting_embed())
+            message = await ctx.send(embeds=queue_embeds, view=view)
+            view.message = message
         else:
-            embed = discord.Embed(title="Queue", description="The queue is currently empty.")
-
-        await ctx.send(embed=embed)
+            embed = discord.Embed(title="Music Queue", description="The queue is currently empty.")
+            queue_embeds.append(embed)
+            await ctx.send(embeds=queue_embeds)
 
     @queue.command()
     @in_bot_vc()
@@ -321,7 +380,8 @@ class MusicCog(commands.Cog, name="Music"):
         if not vc.queue.is_empty:
             await vc.stop()
             await asyncio.sleep(1)
-            await ctx.send(f"Now playing: {vc.current}")
+            embed = await format_track_embed(discord.Embed(title="Now Playing"), track=vc.current)
+            await ctx.send(embed=embed)
 
     @commands.hybrid_command()
     @in_bot_vc()
@@ -378,7 +438,7 @@ class MusicCog(commands.Cog, name="Music"):
             vc.queue.loop, vc.queue.loop_all = False, True
             await ctx.send("Looping over all tracks in the queue until disabled.")
         elif loop == "Current Track":
-            vc.queue.loop_all, vc.queue.loop = False, True
+            vc.queue.loop, vc.queue.loop_all = True, False
             await ctx.send("Looping the current track until disabled.")
         else:
             vc.queue.loop, vc.queue.loop_all = False, False
@@ -394,25 +454,26 @@ class MusicCog(commands.Cog, name="Music"):
         ctx : :class:`commands.Context`
             The invocation context.
         position : :class:`str`
-            The time to jump to, given in the format `hours:minutes:seconds`.
+            The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
         """
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
 
         if vc.current.is_seekable:
+            # Make sure the input is converted to milliseconds.
             result = int(sum(x * float(t) for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")))) * 1000)
             if result > vc.current.duration or result < 0:
                 await ctx.send("Invalid position to seek.")
             else:
                 await vc.seek(result)
-                await ctx.send(f"Jumped to position {position} in the current track.")
+                await ctx.send(f"Jumped to position `{position}` in the current track.")
         else:
             await ctx.send("This track doesn't allow seeking, sorry.")
 
     @commands.hybrid_command()
     @in_bot_vc()
     async def volume(self, ctx: commands.Context, volume: int | None = None) -> None:
-        """Show the player's volume. If you give an input, change it as well.
+        """Show the player's volume. If given a number, you can change it as well, with 1000 as the limit.
 
         Parameters
         ----------
