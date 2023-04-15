@@ -54,7 +54,7 @@ class SoundCloudPlaylist(Playable, Playlist):
         The selected video in the playlist. This could be ``None``.
     """
 
-    # PREFIX: str = "scpl:"
+    # PREFIX: str = "scpl:"         # Not sure SoundCloud playlists have a specific prefix within Lavalink, or however it's implemented.
 
     def __init__(self, data: dict) -> None:
         self.tracks: list[wavelink.SoundCloudTrack] = []
