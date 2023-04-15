@@ -2,26 +2,30 @@
 music.py: This cog provides functionality for playing tracks in voice channels given search terms or urls, implemented
 with Wavelink + Lavalink.
 """
+
 from __future__ import annotations
 
 import asyncio
 import logging
+import random
 from copy import deepcopy
 from typing import TYPE_CHECKING, Literal
 
 import discord
 import wavelink
-import yarl
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import escape_markdown
-from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
 from utils.checks import in_bot_vc
 from utils.embeds import PaginatedEmbed
 from utils.errors import NotInBotVoiceChannel
 from utils.paginated_views import PaginatedEmbedView
+from utils.wavelink_utils import (
+    format_track_embed,
+    SoundCloudPlaylist,
+    WavelinkSearchConverter
+)
 
 if TYPE_CHECKING:
     from bot import Beira
@@ -30,127 +34,6 @@ else:
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
-    """Modify an embed to show information about a Wavelink track."""
-
-    duration = track.duration // 1000
-    if duration > 3600:
-        end_time = f"{duration // 3600}:{(duration % 3600) // 60:02}:{duration % 60:02}"
-    else:
-        end_time = "{}:{:02}".format(*divmod(duration, 60))
-
-    if isinstance(track, Playable):
-        embed.description = (
-            f"[{escape_markdown(track.title)}]({track.uri})\n"
-            f"{escape_markdown(track.author)}\n"
-            f"`[0:00-{end_time}]`"
-        )
-    elif isinstance(track, spotify.SpotifyTrack):
-        embed.description = (
-            f"[{escape_markdown(track.title)}]({track.uri})\n"
-            f"{escape_markdown(', '.join(track.artists))}\n"
-            f"`[0:00-{end_time}]`"
-        )
-
-    if isinstance(track, wavelink.YouTubeTrack):
-        embed.set_thumbnail(url=(track.thumbnail or await track.fetch_thumbnail()))
-
-    return embed
-
-
-class SoundCloudPlaylist(Playable, Playlist):
-    """Represents a Lavalink SoundCloud playlist object.
-
-    Attributes
-    ----------
-    name: str
-        The name of the playlist.
-    tracks: list[:class:`wavelink.SoundCloudTrack`]
-        The list of :class:`wavelink.SoundCloudTrack` in the playlist.
-    selected_track: Optional[int]
-        The selected video in the playlist. This could be ``None``.
-    """
-
-    # PREFIX: str = "scpl:"
-
-    def __init__(self, data: dict) -> None:
-        self.tracks: list[wavelink.SoundCloudTrack] = []
-        self.name: str = data["playlistInfo"]["name"]
-
-        self.selected_track: int | None = data["playlistInfo"].get("selectedTrack")
-        if self.selected_track is not None:
-            self.selected_track = int(self.selected_track)
-
-        for track_data in data["tracks"]:
-            track = wavelink.SoundCloudTrack(track_data)
-            self.tracks.append(track)
-
-    def __str__(self) -> str:
-        return self.name
-
-
-class WavelinkSearchConverter(commands.Converter):
-    @classmethod
-    async def convert(
-            cls,
-            ctx: commands.Context,
-            argument: str
-    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        """Converter which searches for and returns the relevant track(s).
-
-        Used as a type hint in a discord.py command.
-        """
-
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
-
-        check = yarl.URL(argument)
-
-        """
-        Get the track(s) by checking in this order:
-
-        1) YouTube video
-        2) Youtube playlist
-        3) YouTube Music track
-        4) SoundCloud playlist
-        5) SoundCloud track
-        6) Spotify (converted to YouTube internally)
-            a. Unusable output
-            b. Playlist/Album
-            c. Track
-        7) Unknown
-            a. Direct url
-            b. Search YouTube with the argument as the query.
-        """
-        if check.host in ("youtube.com", "www.youtube.com") and (check.query.get("v") or argument.startswith("ytsearch:")):
-            tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
-        elif check.host in ("youtube.com", "www.youtube.com") and (check.query.get("list") or argument.startswith("ytpl:")):
-            tracks = await vc.current_node.get_playlist(cls=wavelink.YouTubePlaylist, query=argument)
-        elif check.host == "music.youtube.com" or argument.startswith("ytmsearch:"):
-            tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeMusicTrack, query=argument)
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.path:
-            tracks = await vc.current_node.get_playlist(cls=SoundCloudPlaylist, query=argument)
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") or argument.startswith("scsearch:"):
-            tracks = await vc.current_node.get_tracks(cls=wavelink.SoundCloudTrack, query=argument)
-        elif check.host in ("spotify.com", "open.spotify.com"):
-            decoded = spotify.decode_url(argument)
-            if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
-                raise commands.BadArgument("Could not find any Spotify songs matching that query.")
-            elif decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
-                tracks = [track async for track in spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)]
-            else:
-                tracks = await spotify.SpotifyTrack.search(argument, type=decoded["type"], node=vc.current_node)
-        else:
-            try:
-                tracks = await vc.current_node.get_tracks(cls=wavelink.GenericTrack, query=argument)
-            except ValueError:
-                tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query="ytsearch: " + argument)
-
-        if not tracks:
-            raise commands.BadArgument("Could not find any songs matching that query.")
-
-        return tracks
 
 
 class MusicQueueView(PaginatedEmbedView):
@@ -230,7 +113,12 @@ class MusicCog(commands.Cog, name="Music"):
         else:
             await payload.player.stop()
 
-    @commands.hybrid_command()
+    @commands.hybrid_group()
+    async def music(self, ctx: commands.Context) -> None:
+        """Music-related commands."""
+        ...
+
+    @music.command()
     async def connect(self, ctx: commands.Context) -> None:
         """Join a voice channel."""
 
@@ -245,14 +133,17 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.author.voice.channel.connect(cls=wavelink.Player)     # type: ignore
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
-    @commands.hybrid_command()
-    async def play(self, ctx: commands.Context, *, search: str) -> None:
+    @music.command()
+    async def play(self, ctx: commands.Context, shuffle: bool = False, *, search: str) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
         ----------
         ctx : :class:`commands.Context`
             The invocation context.
+        shuffle : :class:`bool`, default=False
+            Whether the playlist or list of tracks retrieved from this search should be shuffled before being played
+            and/or queued. Defaults to False.
         search : :class:`str`
             A url or search query.
         """
@@ -265,8 +156,10 @@ class MusicCog(commands.Cog, name="Music"):
 
             if isinstance(tracks, list) or isinstance(tracks, (wavelink.YouTubePlaylist, SoundCloudPlaylist)):
                 remaining_tracks = tracks if isinstance(tracks, list) else tracks.tracks
+                if shuffle:
+                    random.shuffle(remaining_tracks)
                 vc.queue.extend(remaining_tracks)
-                await ctx.send(f"Added `{len(remaining_tracks)}` tracks to the queue.")
+                await ctx.send(f"{'Shuffled and added' if shuffle else 'Added'} `{len(remaining_tracks)}` tracks to the queue.")
             else:
                 await vc.queue.put_wait(tracks)
                 await ctx.send(f"Added `{tracks.title}` to the queue.")
@@ -283,11 +176,46 @@ class MusicCog(commands.Cog, name="Music"):
             else:
                 await add_tracks_to_queue()
 
-    @commands.hybrid_group(fallback="get")
-    async def queue(self, ctx: commands.Context) -> None:
-        """Queue-related commands. By default, this displays everything in the queue.
+    @music.command()
+    @in_bot_vc()
+    async def pause(self, ctx: commands.Context) -> None:
+        """Pause the audio."""
 
-        Use /play to add things to the queue.
+        vc: wavelink.Player = ctx.voice_client  # type: ignore
+
+        if vc.is_paused():
+            await vc.resume()
+            await ctx.send("Resumed playback.")
+        else:
+            await vc.pause()
+            await ctx.send("Paused playback.")
+
+    @music.command()
+    @in_bot_vc()
+    async def resume(self, ctx: commands.Context) -> None:
+        """Resume the audio if paused."""
+
+        vc: wavelink.Player = ctx.voice_client  # type: ignore
+
+        if vc.is_paused():
+            await vc.resume()
+            await ctx.send("Resumed playback.")
+
+    @music.command()
+    @in_bot_vc()
+    async def stop(self, ctx: commands.Context) -> None:
+        """Stop playback and disconnect the bot from voice."""
+
+        vc: wavelink.Player = ctx.voice_client  # type: ignore
+
+        await vc.disconnect()
+        await ctx.send("Disconnected from voice channel.")
+
+    @music.group(fallback="get")
+    async def queue(self, ctx: commands.Context) -> None:
+        """Music queue-related commands. By default, this displays everything in the queue.
+
+        Use `play` to add things to the queue.
         """
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
@@ -341,7 +269,7 @@ class MusicCog(commands.Cog, name="Music"):
         else:
             await ctx.send("The queue is already empty.")
 
-    @commands.hybrid_command()
+    @music.command()
     @in_bot_vc()
     async def move(self, ctx: commands.Context, before: int, after: int) -> None:
         """Move a song from one spot to another within the queue.
@@ -370,7 +298,7 @@ class MusicCog(commands.Cog, name="Music"):
         vc.queue.put_at_index(after - 1, track)
         del vc.queue[before]
 
-    @commands.hybrid_command()
+    @music.command()
     @in_bot_vc()
     async def skip(self, ctx: commands.Context) -> None:
         """Skip to the next track in the queue."""
@@ -383,42 +311,19 @@ class MusicCog(commands.Cog, name="Music"):
             embed = await format_track_embed(discord.Embed(title="Now Playing"), track=vc.current)
             await ctx.send(embed=embed)
 
-    @commands.hybrid_command()
+    @music.command()
     @in_bot_vc()
-    async def pause(self, ctx: commands.Context) -> None:
-        """Pause the audio."""
+    async def shuffle(self, ctx: commands.Context) -> None:
+        """Shuffle the tracks in the queue."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
-
-        if vc.is_paused():
-            await vc.resume()
-            await ctx.send("Resumed playback.")
+        if not vc.queue.is_empty:
+            random.shuffle(vc.queue._queue)
+            await ctx.send("Shuffled the queue.")
         else:
-            await vc.pause()
-            await ctx.send("Paused playback.")
+            await ctx.send("There's nothing in the queue to shuffle right now.")
 
-    @commands.hybrid_command()
-    @in_bot_vc()
-    async def resume(self, ctx: commands.Context) -> None:
-        """Resume the audio if paused."""
-
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
-
-        if vc.is_paused():
-            await vc.resume()
-            await ctx.send("Resumed playback.")
-
-    @commands.hybrid_command()
-    @in_bot_vc()
-    async def stop(self, ctx: commands.Context) -> None:
-        """Stop playback and disconnect the bot from voice."""
-
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
-
-        await vc.disconnect()
-        await ctx.send("Disconnected from voice channel.")
-
-    @commands.hybrid_command()
+    @music.command()
     @in_bot_vc()
     async def loop(self, ctx: commands.Context, loop: Literal["All Tracks", "Current Track", "Off"] = "Off") -> None:
         """Loop the current track(s).
@@ -444,7 +349,7 @@ class MusicCog(commands.Cog, name="Music"):
             vc.queue.loop, vc.queue.loop_all = False, False
             await ctx.send("Reset the looping settings.")
 
-    @commands.hybrid_command()
+    @music.command()
     @in_bot_vc()
     async def seek(self, ctx: commands.Context, *, position: str) -> None:
         """Seek to a particular position in the current track, provided with a `hours:minutes:seconds` string.
@@ -460,7 +365,6 @@ class MusicCog(commands.Cog, name="Music"):
         vc: wavelink.Player = ctx.voice_client  # type: ignore
 
         if vc.current.is_seekable:
-            # Make sure the input is converted to milliseconds.
             result = int(sum(x * float(t) for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")))) * 1000)
             if result > vc.current.duration or result < 0:
                 await ctx.send("Invalid position to seek.")
@@ -470,7 +374,7 @@ class MusicCog(commands.Cog, name="Music"):
         else:
             await ctx.send("This track doesn't allow seeking, sorry.")
 
-    @commands.hybrid_command()
+    @music.command()
     @in_bot_vc()
     async def volume(self, ctx: commands.Context, volume: int | None = None) -> None:
         """Show the player's volume. If given a number, you can change it as well, with 1000 as the limit.
