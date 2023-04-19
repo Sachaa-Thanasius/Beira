@@ -79,9 +79,9 @@ async def upsert_guilds(db_pool: Pool, *guilds: discord.Guild | tuple[int, str, 
     values = []
     for guild in guilds:
         if isinstance(guild, discord.Guild):
-            values.append((guild.id, guild.name, guild.icon.url))
+            icon_url = "" if not guild.icon else guild.icon.url
+            values.append((guild.id, guild.name, icon_url))
         else:
             values.append(guild)
 
     await db_pool.executemany(upsert_query, values, timeout=60.0)
-

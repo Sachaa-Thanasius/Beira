@@ -20,10 +20,12 @@ import openai
 from discord.ext import commands
 from PIL import Image
 
+
 if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")  # Set your own path to ffmpeg on your machine if need be.
@@ -335,8 +337,13 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     @openai.command()
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def generate(self, ctx: commands.Context, generation_type: Literal["text", "image"] = "image", *,
-                       prompt: str) -> None:
+    async def generate(
+            self,
+            ctx: commands.Context,
+            generation_type: Literal["text", "image"] = "image",
+            *,
+            prompt: str
+    ) -> None:
         """Create and send AI-generated images or text based on a given prompt.
 
         Parameters

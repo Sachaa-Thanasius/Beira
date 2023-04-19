@@ -16,6 +16,8 @@ from discord.ui import Modal, TextInput, View
 
 LOGGER = logging.getLogger(__name__)
 
+page_turn = discord.PartialEmoji(name="a:page_turning_2", animated=True, id=1097321273593430156)
+
 
 class PageNumEntryModal(Modal):
     """A discord modal that allows users to enter a page number to jump to in the view that references this.
@@ -207,13 +209,13 @@ class PaginatedEmbedView(View):
 
         await self.update_page(interaction, 1)
 
-    @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:prev")
+    @discord.ui.button(label="←", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:prev")
     async def turn_to_previous_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the previous page of the view."""
 
         await self.update_page(interaction, self.current_page - 1)
 
-    @discord.ui.button(label="Turn to ...", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
+    @discord.ui.button(emoji=page_turn, style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
     async def enter_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Sends a modal that a user to enter their own page number into."""
 
@@ -232,7 +234,7 @@ class PaginatedEmbedView(View):
 
         await self.update_page(modal.interaction, temp_new_page)
 
-    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="page_view:next")
+    @discord.ui.button(label="→", style=discord.ButtonStyle.blurple, custom_id="page_view:next")
     async def turn_to_next_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the next page of the view."""
 
@@ -240,11 +242,11 @@ class PaginatedEmbedView(View):
 
     @discord.ui.button(label="≫", style=discord.ButtonStyle.blurple, custom_id="page_view:last")
     async def turn_to_last_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
-        """Skips to the last page of the view."""
+        """Skips to the last page of the view. ≫"""
 
         await self.update_page(interaction, self.total_pages)
 
-    @discord.ui.button(label="Quit", style=discord.ButtonStyle.red, custom_id="page_view:quit")
+    @discord.ui.button(label="\N{CROSS MARK}", style=discord.ButtonStyle.red, custom_id="page_view:quit")
     async def quit_view(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Deletes the original message with the view after a slight delay."""
 

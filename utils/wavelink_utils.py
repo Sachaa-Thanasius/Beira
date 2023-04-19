@@ -51,7 +51,7 @@ class SoundCloudPlaylist(Playable, Playlist):
     tracks: list[:class:`wavelink.SoundCloudTrack`]
         The list of :class:`wavelink.SoundCloudTrack` in the playlist.
     selected_track: Optional[int]
-        The selected video in the playlist. This could be ``None``.
+        The selected track in the playlist. This could be ``None``.
     """
 
     # PREFIX: str = "scpl:"         # Not sure SoundCloud playlists have a specific prefix within Lavalink, or however it's implemented.

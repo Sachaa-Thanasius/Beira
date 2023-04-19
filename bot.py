@@ -46,14 +46,14 @@ class Beira(commands.Bot):
     """
 
     def __init__(
-        self,
-        *args,
-        db_pool: asyncpg.Pool,
-        web_session: aiohttp.ClientSession,
-        initial_extensions: list[str] = None,
-        testing_guild_ids: list[int] = None,
-        test_mode: bool = False,
-        **kwargs
+            self,
+            *args,
+            db_pool: asyncpg.Pool,
+            web_session: aiohttp.ClientSession,
+            initial_extensions: list[str] = None,
+            testing_guild_ids: list[int] = None,
+            test_mode: bool = False,
+            **kwargs
     ) -> None:
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
@@ -218,49 +218,53 @@ class Beira(commands.Bot):
 async def main() -> None:
     """Starts an instance of the bot."""
 
-    # Connect to the PostgreSQL database and asynchronous web session.
-    dsn = CONFIG["db"]["postgres_url"]
-    async with aiohttp.ClientSession() as session, asyncpg.create_pool(dsn=dsn, command_timeout=30, init=psql_init) as pool:
+    # Initialize connections to a PostgreSQL database and an asynchronous web session.
+    session = aiohttp.ClientSession()
+    pool = asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=psql_init)
+    custom_logger = CustomLogger()
 
-        # Set the starting parameters.
-        default_prefix = CONFIG["discord"]["default_prefix"]
-        default_intents = discord.Intents.all()
-        testing_guilds = CONFIG["discord"]["guilds"]["dev"]
-        testing = False
-        init_exts = [
-            "exts._dev",
-            "exts.admin",
-            "exts.ai_generation",
-            "exts.basic_commands",
-            "exts.bot_stats",
-            "exts.custom_notifications",
-            "exts.emoji_ops",
-            "exts.fandom_wiki",
-            "exts.ff_metadata",
-            "exts.help",
-            "exts.lol",
-            "exts.music",
-            "exts.patreon",
-            "exts.pin_archive",
-            "exts.snowball",
-            "exts.starkid",
-            "exts.story_search"
-        ]
+    # Set the bot's basic starting parameters.
+    default_prefix = CONFIG["discord"]["default_prefix"]
+    default_intents = discord.Intents.all()
+    testing_guilds = CONFIG["discord"]["guilds"]["dev"]
+    testing = False
+    init_exts = [
+        "exts._dev",
+        "exts.admin",
+        "exts.ai_generation",
+        "exts.basic_commands",
+        "exts.bot_stats",
+        "exts.custom_notifications",
+        "exts.emoji_ops",
+        "exts.fandom_wiki",
+        "exts.ff_metadata",
+        "exts.help",
+        "exts.lol",
+        "exts.music",
+        "exts.patreon",
+        "exts.pin_archive",
+        "exts.snowball",
+        "exts.starkid",
+        "exts.story_search"
+    ]
 
-        async with Beira(
-                command_prefix=default_prefix,
-                intents=default_intents,
-                db_pool=pool,
-                web_session=session,
-                initial_extensions=init_exts,
-                testing_guild_ids=testing_guilds,
-                test_mode=testing
-        ) as bot:
-            async with CustomLogger():
-                try:
-                    await bot.start(CONFIG["discord"]["token"])
-                except Exception:
-                    await bot.close()
+    # Initialize the bot.
+    bot = Beira(
+        command_prefix=default_prefix,
+        intents=default_intents,
+        db_pool=pool,
+        web_session=session,
+        initial_extensions=init_exts,
+        testing_guild_ids=testing_guilds,
+        test_mode=testing
+    )
+
+    # Run everything in a context manager.
+    async with session, pool, bot, custom_logger:
+        try:
+            await bot.start(CONFIG["discord"]["token"])
+        except Exception:
+            await bot.close()
 
     await asyncio.sleep(1)
 

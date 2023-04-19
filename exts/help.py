@@ -15,7 +15,7 @@ from discord import app_commands
 from discord.ext import commands
 from typing_extensions import Self
 
-from utils.embeds import DTEmbed, PaginatedEmbed
+from utils.embeds import PaginatedEmbed
 from utils.paginated_views import PaginatedEmbedView
 
 
@@ -23,6 +23,7 @@ if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,9 +33,9 @@ class HelpEmbed(PaginatedEmbed):
 
     def __init__(self, **kwargs) -> None:
         # Default color: 0x16a75d
-        input_color = kwargs.get("colour") if kwargs.get("colour") else kwargs.get("color")
-        colour = input_color if input_color else 0x16a75d
-        super().__init__(colour=colour, **kwargs)
+        input_color = kwargs.get("colour") or kwargs.get("color")
+        kwargs["colour"] = input_color or 0x16a75d
+        super().__init__(**kwargs)
 
     def set_page_content(self, page_content: tuple | None = None) -> Self:
         if page_content is None:
@@ -141,13 +142,16 @@ class HelpCogDropdown(discord.ui.Select):
         await interaction.response.edit_message(embed=result_embed, view=self)  # type: ignore
 
 
-class MyHelpCommand(commands.HelpCommand):
+class BeiraHelpCommand(commands.HelpCommand):
     def __init__(self, **options: Any) -> None:
         command_attrs = dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user)))
         super().__init__(command_attrs=command_attrs, **options)
 
-    async def send_bot_help(self, mapping: Mapping[commands.Cog | None, list[commands.Command[Any, ..., Any]]],
-                            /) -> None:
+    async def send_bot_help(
+            self,
+            mapping: Mapping[commands.Cog | None, list[commands.Command[Any, ..., Any]]],
+            /
+    ) -> None:
         pages_content = []
         for cog, cmds in mapping.items():
             filtered = await self.filter_commands(cmds, sort=True)
@@ -213,9 +217,6 @@ class MyHelpCommand(commands.HelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
-    async def prepare_help_command(self, ctx: commands.Context, command: str | None = None, /) -> None:
-        await super().prepare_help_command(ctx, command)
-
     def get_opening_note(self) -> str:
         """Returns help command's opening note.
 
@@ -261,29 +262,13 @@ class MyHelpCommand(commands.HelpCommand):
         return description
 
 
-class LittleHelpCommand(commands.MinimalHelpCommand):
-    """A very small customization of :class:`commands.MinimalHelpCommand` with embeds as message bodies and generous cooldowns."""
-
-    def __init__(self) -> None:
-        command_attrs = dict(cooldown=(commands.CooldownMapping.from_cooldown(2, 5.0, commands.BucketType.user)))
-        super().__init__(command_attrs=command_attrs)
-
-    async def send_pages(self) -> None:
-        """A helper utility to send the page output from paginator to the destination. Modified to use embeds."""
-
-        destination = self.get_destination()
-        for page in self.paginator.pages:
-            embed = DTEmbed(description=page)
-            await destination.send(embed=embed)
-
-
-class LittleHelpCog(commands.Cog, name="Help"):
+class HelpCog(commands.Cog, name="Help"):
     """A cog that allows more dynamic usage of my custom help command class, :class:`LittleHelpCommand`."""
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
         self._old_help_command = self.bot.help_command
-        self.bot.help_command = MyHelpCommand()
+        self.bot.help_command = BeiraHelpCommand()
         self.bot.help_command.cog = self
 
     def cog_unload(self) -> None:
@@ -331,4 +316,4 @@ class LittleHelpCog(commands.Cog, name="Help"):
 async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
-    await bot.add_cog(LittleHelpCog(bot))
+    await bot.add_cog(HelpCog(bot))

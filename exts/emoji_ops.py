@@ -4,6 +4,7 @@ emoji_ops.py: This cog is meant to provide functionality for stealing emojis.
 
 from __future__ import annotations
 
+import unicodedata
 import logging
 from typing import TYPE_CHECKING
 
@@ -47,6 +48,43 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
         return converted_emoji
 
+    @commands.hybrid_group()
+    async def sticker(self, ctx: commands.Context) -> None:
+        """A group of sticker-related commands, like adding them to a server."""
+        ...
+
+    @sticker.command("add")
+    async def sticker_add(
+            self,
+            ctx: commands.Context,
+            name: str,
+            description: str,
+            emoji: str,
+            attachment: discord.Attachment,
+            reason: str | None = None
+    ):
+        """Add a sticker to the server, assuming you have the permissions to do that.
+
+        Parameters
+        ----------
+        ctx : :class:`commands.Context`
+            The invocation context.
+        name : :class:`str`
+            The name of the sticker. Must be at least 2 characters.
+        description : :class:`str`
+            The description for the sticker.
+        emoji : :class:`str`
+            The name of a unicode emoji that represents the sticker's expression.
+        attachment : :class:`discord.Attachment`
+            An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work.
+        reason : :class:`str`, optional
+            The reason for the sticker's existence to put in the audit log.
+        """
+
+        sticker_file = await attachment.to_file()
+        new_sticker = await ctx.guild.create_sticker(name=name, description=description, emoji=emoji, file=sticker_file, reason=reason)
+        await ctx.send(f"Created the `{name}` sticker.", stickers=[new_sticker])
+
     @commands.hybrid_group("emoji")
     async def emoji_(self, ctx: commands.Context) -> None:
         """A group of emoji-related commands, like identifying emojis and adding them to a server.
@@ -58,8 +96,8 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         """
         ...
 
-    @emoji_.command("identify")
-    async def emoji_identify(self, ctx: commands.Context, entity: str) -> None:
+    @emoji_.command("info")
+    async def emoji_info(self, ctx: commands.Context, entity: str) -> None:
         """Identify a particular emoji and see information about it.
 
         Parameters
@@ -110,7 +148,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             entity: str | None = None,
             attachment: discord.Attachment | None = None
     ) -> None:
-        """Adds an emoji to the server, assuming you have the permissions to do that.
+        """Add an emoji to the server, assuming you have the permissions to do that.
 
         Parameters
         ----------
@@ -153,6 +191,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         else:
             await ctx.reply("Something went wrong. The emoji could not be added.")
 
+    @sticker_add.error
     @emoji_add.error
     async def emoji_steal_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
         """A local error handler for the :func:`emoji_steal` command.
@@ -175,14 +214,14 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
         # Respond to the error.
         if isinstance(error, discord.Forbidden):
-            embed.description = "You do not have the permissions to create emojis here."
+            embed.description = "You do not have the permissions to create emojis/stickers here."
 
         elif isinstance(error, discord.HTTPException):
             embed.description = "Something went wrong in the creation process."
 
         else:
-            LOGGER.error("Error in emoji_steal command", exc_info=error)
-            embed.description = "Something went wrong. The emoji could not be added."
+            LOGGER.error(f"Error in `{ctx.command.name}` command", exc_info=error)
+            embed.description = "Something went wrong. The emoji/sticker could not be added."
 
         await ctx.reply(embed=embed)
 
