@@ -155,7 +155,7 @@ class Beira(commands.Bot):
             await self._load_guild_prefixes()
 
         if message.guild:
-            return self.prefixes.get(message.guild.id)
+            return self.prefixes.get(message.guild.id, "$")
         else:
             return "$"
 
