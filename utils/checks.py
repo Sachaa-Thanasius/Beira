@@ -12,7 +12,13 @@ from discord.app_commands.commands import Check
 from discord.ext import commands
 from discord.utils import maybe_coroutine
 
-from utils.errors import NotOwnerOrFriend, NotAdmin, NotInBotVoiceChannel
+from utils.errors import (
+    NotOwnerOrFriend,
+    NotAdmin,
+    NotInBotVoiceChannel,
+    UserIsBlocked,
+    GuildIsBlocked
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -83,6 +89,24 @@ def in_aci100_guild():
     async def predicate(ctx: commands.Context) -> bool:
         if ctx.guild.id != 602735169090224139:
             raise commands.CheckFailure("This command isn't active in this guild.")
+        return True
+
+    return commands.check(predicate)
+
+
+def is_blocked():
+    """A :func:`.check` that checks if the command is being invoked from a blocked user or guild.
+
+    This check raises the exception :exc:`commands.CheckFailure`.
+    """
+
+
+    async def predicate(ctx: commands.Context) -> bool:
+        if ctx.bot.owner_id != ctx.author.id:
+            if ctx.author.id in ctx.bot.blocked_entities["users"]:
+                raise UserIsBlocked("This user is prohibited from using bot commands.")
+            if ctx.guild and (ctx.guild.id in ctx.bot.blocked_entities["guilds"]):
+                raise GuildIsBlocked("This guild is prohibited from using bot commands.")
         return True
 
     return commands.check(predicate)

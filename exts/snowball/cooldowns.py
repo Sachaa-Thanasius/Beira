@@ -1,5 +1,5 @@
 """
-snowball_utils.py: Utility functions for snowball commands.
+cooldowns.py: Cooldowns for snowball commands.
 """
 
 from __future__ import annotations

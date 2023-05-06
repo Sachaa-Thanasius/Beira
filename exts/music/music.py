@@ -5,7 +5,6 @@ with Wavelink + Lavalink.
 
 from __future__ import annotations
 
-import asyncio
 import collections
 import itertools
 import logging
@@ -19,20 +18,19 @@ from discord import app_commands
 from discord.ext import commands
 from wavelink.ext import spotify
 
+from bot import BeiraContext
 from utils.checks import in_bot_vc
 from utils.embeds import PaginatedEmbed
 from utils.errors import NotInBotVoiceChannel
-from utils.paginated_views import PaginatedEmbedView
-from utils.wavelink_utils import (
-    format_track_embed,
-    SoundCloudPlaylist,
-    WavelinkSearchConverter
-)
+from utils.pagination import PaginatedEmbedView
+from .wavelink_utils import format_track_embed, SoundCloudPlaylist, WavelinkSearchConverter
+
 
 if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -75,7 +73,7 @@ class MusicCog(commands.Cog, name="Music"):
         spotify_cfg = self.bot.config["spotify"]
         sc = spotify.SpotifyClient(client_id=spotify_cfg["client_id"], client_secret=spotify_cfg["client_secret"])
         lavalink_cfg = self.bot.config["lavalink"]
-        node: wavelink.Node = wavelink.Node(uri=lavalink_cfg["uri"], password=lavalink_cfg["password"])
+        node = wavelink.Node(uri=lavalink_cfg["uri"], password=lavalink_cfg["password"])
 
         await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
@@ -112,16 +110,19 @@ class MusicCog(commands.Cog, name="Music"):
         if not payload.player.queue.is_empty:
             new_track = await payload.player.queue.get_wait()
             await payload.player.play(new_track)
+
+            current_embed = await format_track_embed(discord.Embed(title="Now Playing"), new_track)
+            await payload.player.chan_ctx.send(embed=current_embed)
         else:
             await payload.player.stop()
 
     @commands.hybrid_group()
-    async def music(self, ctx: commands.Context) -> None:
+    async def music(self, ctx: BeiraContext) -> None:
         """Music-related commands."""
         ...
 
     @music.command()
-    async def connect(self, ctx: commands.Context) -> None:
+    async def connect(self, ctx: BeiraContext) -> None:
         """Join a voice channel."""
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
@@ -137,16 +138,15 @@ class MusicCog(commands.Cog, name="Music"):
 
     @staticmethod
     async def _add_tracks_to_queue(
-            ctx: commands.Context,
+            vc: wavelink.Player,
             tracks: wavelink.Playable | spotify.SpotifyTrack | list[wavelink.Playable | spotify.SpotifyTrack] | wavelink.Playlist,
+            requester: discord.Member,
             shuffle: bool
-    ) -> None:
+    ) -> str:
         """Adds tracks to a queue even if they are contained in another object or structure.
 
-        In addition, it sends a message detailing what was added to the queue.
+        Also, it returns the appropriate notification string.
         """
-
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
 
         if (
                 (isinstance(tracks, list) and len(tracks) > 1) or
@@ -155,24 +155,30 @@ class MusicCog(commands.Cog, name="Music"):
             all_tracks = tracks if isinstance(tracks, list) else tracks.tracks
             if shuffle:
                 random.shuffle(all_tracks)
+
+            for track in all_tracks:
+                track.requester = requester
+
             vc.queue.extend(all_tracks)
-            stmt_start = 'Shuffled and added' if shuffle else 'Added'
-            await ctx.send(f"{stmt_start} `{len(all_tracks)}` tracks to the queue.")
+            notif_text = f"{'Shuffled and added' if shuffle else 'Added'} `{len(all_tracks)}` tracks to the queue."
         elif isinstance(tracks, list):
-            for track in tracks:
-                await vc.queue.put_wait(track)
-                await ctx.send(f"Added `{track.title}` to the queue.")
+            tracks[0].requester = requester
+            await vc.queue.put_wait(tracks[0])
+            notif_text = f"Added `{tracks[0].title}` to the queue."
         else:
+            tracks.requester = requester
             await vc.queue.put_wait(tracks)
-            await ctx.send(f"Added `{tracks.title}` to the queue.")
+            notif_text = f"Added `{tracks.title}` to the queue."
+
+        return notif_text
 
     @music.command()
-    async def play(self, ctx: commands.Context, shuffle: bool = False, *, search: str) -> None:
+    async def play(self, ctx: BeiraContext, shuffle: bool = False, *, search: str) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         shuffle : :class:`bool`, default=False
             Whether the playlist or list of tracks retrieved from this search should be shuffled before being played
@@ -182,12 +188,14 @@ class MusicCog(commands.Cog, name="Music"):
         """
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc.chan_ctx = ctx.channel
 
         tracks = await WavelinkSearchConverter.convert(ctx, search)
 
         async with ctx.typing():
             if vc.queue.is_empty and not vc.is_playing():
-                await self._add_tracks_to_queue(ctx, tracks, shuffle)
+                text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
+                await ctx.send(text)
 
                 first_track = vc.queue.get()
                 await vc.play(first_track)
@@ -195,11 +203,12 @@ class MusicCog(commands.Cog, name="Music"):
                 embed = await format_track_embed(discord.Embed(title="Now Playing"), first_track)
                 await ctx.send(embed=embed)
             else:
-                await self._add_tracks_to_queue(ctx, tracks, shuffle)
+                text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
+                await ctx.send(text)
 
     @music.command()
     @in_bot_vc()
-    async def pause(self, ctx: commands.Context) -> None:
+    async def pause(self, ctx: BeiraContext) -> None:
         """Pause the audio."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -213,7 +222,7 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @in_bot_vc()
-    async def resume(self, ctx: commands.Context) -> None:
+    async def resume(self, ctx: BeiraContext) -> None:
         """Resume the audio if paused."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -224,7 +233,7 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command(aliases=["disconnect"])
     @in_bot_vc()
-    async def stop(self, ctx: commands.Context) -> None:
+    async def stop(self, ctx: BeiraContext) -> None:
         """Stop playback and disconnect the bot from voice."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -233,7 +242,7 @@ class MusicCog(commands.Cog, name="Music"):
         await ctx.send("Disconnected from voice channel.")
 
     @music.group(fallback="get")
-    async def queue(self, ctx: commands.Context) -> None:
+    async def queue(self, ctx: BeiraContext) -> None:
         """Music queue-related commands. By default, this displays everything in the queue.
 
         Use `play` to add things to the queue.
@@ -253,12 +262,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @queue.command()
     @in_bot_vc()
-    async def remove(self, ctx: commands.Context, entry: int) -> None:
+    async def remove(self, ctx: BeiraContext, entry: int) -> None:
         """Remove a track from the queue by position.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         entry : :class:`int`
             The track's position.
@@ -274,7 +283,7 @@ class MusicCog(commands.Cog, name="Music"):
 
     @queue.command()
     @in_bot_vc()
-    async def clear(self, ctx: commands.Context) -> None:
+    async def clear(self, ctx: BeiraContext) -> None:
         """Empty the queue."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -287,12 +296,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @in_bot_vc()
-    async def move(self, ctx: commands.Context, before: int, after: int) -> None:
+    async def move(self, ctx: BeiraContext, before: int, after: int) -> None:
         """Move a song from one spot to another within the queue.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         before : :class:`int`
             The index of the song you want moved.
@@ -313,12 +322,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @in_bot_vc()
-    async def skip(self, ctx: commands.Context, index: int = 1) -> None:
+    async def skip(self, ctx: BeiraContext, index: int = 1) -> None:
         """Skip to the numbered track in the queue. If no number is given, skip to the next track.
 
         Parameters
         ----------
-        ctx: :class:`commands.Context`
+        ctx: :class:`BeiraContext`
             The invocation context.
         index : :class:`int`
             The place in the queue to skip to.
@@ -328,22 +337,19 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc.queue.is_empty:
             await ctx.send("The queue is empty and can't be skipped into.")
-        elif index >= vc.queue.count or index < 0:
+        elif index >= vc.queue.count or index < 1:
             await ctx.send("Please enter a valid queue index.")
         else:
             if index > 1:
                 thing = itertools.islice(vc.queue._queue, index - 1, vc.queue.count)
                 vc.queue._queue = collections.deque(thing)
             vc.queue.loop = False
-
             await vc.stop()
-            await asyncio.sleep(0.5)
-            embed = await format_track_embed(discord.Embed(title="Now Playing"), track=vc.current)
-            await ctx.send(embed=embed)
+            await ctx.send(f"Skipped to the song at position {index}", ephemeral=True)
 
     @music.command()
     @in_bot_vc()
-    async def shuffle(self, ctx: commands.Context) -> None:
+    async def shuffle(self, ctx: BeiraContext) -> None:
         """Shuffle the tracks in the queue."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -355,12 +361,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @in_bot_vc()
-    async def loop(self, ctx: commands.Context, loop: Literal["All Tracks", "Current Track", "Off"] = "Off") -> None:
+    async def loop(self, ctx: BeiraContext, loop: Literal["All Tracks", "Current Track", "Off"] = "Off") -> None:
         """Loop the current track(s).
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         loop : Literal["All Tracks", "Current Track", "Off"]
             The loop settings. "All Tracks" loops everything in the queue, "Current Track" loops the playing track, and
@@ -381,12 +387,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @in_bot_vc()
-    async def seek(self, ctx: commands.Context, *, position: str) -> None:
+    async def seek(self, ctx: BeiraContext, *, position: str) -> None:
         """Seek to a particular position in the current track, provided with a `hours:minutes:seconds` string.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         position : :class:`str`
             The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
@@ -406,12 +412,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @in_bot_vc()
-    async def volume(self, ctx: commands.Context, volume: int | None = None) -> None:
+    async def volume(self, ctx: BeiraContext, volume: int | None = None) -> None:
         """Show the player's volume. If given a number, you can change it as well, with 1000 as the limit.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         volume : :class:`int`, optional
             The volume to change to, with a maximum of 1000.
@@ -428,7 +434,7 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Changed volume to {volume}.")
 
     @play.before_invoke
-    async def ensure_voice(self, ctx: commands.Context) -> None:
+    async def ensure_voice(self, ctx: BeiraContext) -> None:
         """Ensures that the voice client automatically connects the right channel."""
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
@@ -439,9 +445,3 @@ class MusicCog(commands.Cog, name="Music"):
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 raise commands.CommandError("Author not connected to a voice channel.")
-
-
-async def setup(bot: Beira) -> None:
-    """Connects cog to bot."""
-
-    await bot.add_cog(MusicCog(bot))

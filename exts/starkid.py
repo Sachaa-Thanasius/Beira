@@ -10,11 +10,14 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
+from bot import BeiraContext
+
 
 if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -32,7 +35,7 @@ class StarKidCog(commands.Cog, name="StarKid"):
         return discord.PartialEmoji(name="starkid", id=1077980709802758215)
 
     @commands.hybrid_command()
-    async def nightmare_of_black(self, ctx: commands.Context) -> None:
+    async def nightmare_of_black(self, ctx: BeiraContext) -> None:
         """Bring forth a morphed, warped image of the Lords of Black to prostrate and pray before."""
 
         embed = discord.Embed(

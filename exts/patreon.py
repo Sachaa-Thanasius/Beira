@@ -13,6 +13,7 @@ import discord
 from attrs import define, field
 from discord.ext import commands, tasks
 
+from bot import BeiraContext
 
 if TYPE_CHECKING:
     from asyncpg import Record
@@ -191,7 +192,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         self.patreon_tiers_info.insert(0, menu_info)
 
     @commands.hybrid_command()
-    async def patreon_benefits(self, ctx: commands.Context):
+    async def patreon_benefits(self, ctx: BeiraContext):
         """See what kind of patreon benefits and tiers ACI100 has to offer."""
 
         async with ctx.typing():

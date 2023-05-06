@@ -15,6 +15,7 @@ from bs4 import BeautifulSoup
 from discord import app_commands
 from discord.ext import commands
 
+from bot import BeiraContext
 from utils.embeds import EMOJI_URL, DTEmbed
 
 
@@ -139,12 +140,12 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
     @app_commands.choices(wiki=[app_commands.Choice(name=name, value=name) for name in all_wiki_names])
-    async def wiki(self, ctx: commands.Context, wiki: str, search_term: str) -> None:
+    async def wiki(self, ctx: BeiraContext, wiki: str, search_term: str) -> None:
         """Search a selection of pre-indexed Fandom wikis. General purpose.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         wiki : :class:`str`
             The name of the wiki that's being searched.
@@ -272,7 +273,10 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     @staticmethod
     def _clean_fandom_page(soup: BeautifulSoup) -> BeautifulSoup:
-        """Attempt to remove everything from a Fandom wiki page that isn't the first few lins."""
+        """Attempts to clean a Fandom wiki page.
+
+        Removes everything from a Fandom wiki page that isn't the first few lines, if possible.
+        """
 
         summary_end_index = 0
 
@@ -281,15 +285,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         for box in infoboxes:
             box.replace_with("")
 
-        # print(f"Infoboxes\n\n{content.text}")
-
         toc = soup.find("div", id="toc", recursive=True)
         if toc:
             if soup.index(toc) > summary_end_index:
                 summary_end_index = soup.index(toc)
             toc.decompose()
-
-        # print(f"ToC\n\n{content.text}")
 
         subheading = soup.find("h2")
         if subheading:
@@ -297,19 +297,15 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 summary_end_index = soup.index(subheading)
             subheading.decompose()
 
-        # print(f"Subheading\n\n{content.text}")
-
         if summary_end_index != 0:
             for element in soup.contents[summary_end_index + 1:]:
                 element.replace_with("")
 
-        # print(f"Everything after index\n\n{content.text}")
-
+        # Remove empty newlines.
         for element in soup.contents:
             if element.text == "\n":
                 element.replace_with("")
 
-        # print(f"Newlines\n\n{content.text}")
         return soup
 
 

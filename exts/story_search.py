@@ -20,14 +20,16 @@ from discord.ext import commands
 from discord.utils import MISSING
 from typing_extensions import Self
 
+from bot import BeiraContext
 from utils.embeds import EMOJI_URL, PaginatedEmbed
-from utils.paginated_views import PaginatedEmbedView
+from utils.pagination import PaginatedEmbedView
 
 
 if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -276,12 +278,12 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         return value_from_index
 
     @commands.hybrid_command()
-    async def random_text(self, ctx: commands.Context) -> None:
+    async def random_text(self, ctx: BeiraContext) -> None:
         """Display a random line from the story.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context where the command was called.
         """
 
@@ -312,12 +314,12 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         app_commands.Choice(name="Fabric of Fate", value="fof"),
         app_commands.Choice(name="Perversion of Purity", value="pop"),
     ])
-    async def search_text(self, ctx: commands.Context, story: str, *, query: str) -> None:
+    async def search_text(self, ctx: BeiraContext, story: str, *, query: str) -> None:
         """Search the works of ACI100 for a word or phrase.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         story : :class:`str`
             The acronym or abbreviation of a story's title. Currently, there are only four choices.
@@ -333,12 +335,12 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             view.message = message
 
     @commands.hybrid_command()
-    async def search_cadmean(self, ctx: commands.Context, *, query: str) -> None:
+    async def search_cadmean(self, ctx: BeiraContext, *, query: str) -> None:
         """Search *A Cadmean Victory Remastered* by MJ Bradley for a word or phrase.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         query : :class:`str`
             The string to search for in the story.

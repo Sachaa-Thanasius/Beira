@@ -46,3 +46,21 @@ class NotInBotVoiceChannel(commands.CheckFailure):
     """
 
     pass
+
+
+class UserIsBlocked(commands.CheckFailure):
+    """Exception raised when the message author is blocked from using the bot.
+
+    This inherits from :exc:`commands.CheckFailure`.
+    """
+
+    pass
+
+
+class GuildIsBlocked(commands.CheckFailure):
+    """Exception raised when the message guild is blocked from using the bot.
+
+    This inherits from :exc:`commands.CheckFailure`.
+    """
+
+    pass

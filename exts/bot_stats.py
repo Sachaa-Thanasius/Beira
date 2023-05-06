@@ -15,7 +15,8 @@ from discord.app_commands import Choice
 from discord.ext import commands
 from discord.utils import utcnow
 
-from utils.db_funcs import upsert_users, upsert_guilds
+from bot import BeiraContext
+from utils.db_utils import upsert_users, upsert_guilds
 from utils.embeds import StatsEmbed
 
 
@@ -23,6 +24,7 @@ if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -54,7 +56,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
-    async def track_command_use(self, ctx: commands.Context) -> None:
+    async def track_command_use(self, ctx: BeiraContext) -> None:
         """Stores records of command uses in the database after some processing."""
 
         # Make sure all possible involved users and guilds are in the database before using their ids as foreign keys.
@@ -85,18 +87,18 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         query = """
             INSERT into commands (guild_id, channel_id, user_id, date_time, prefix, command, app_command, failed)
-            VALUES($1, $2, $3, $4, $5, $6, $7, $8)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
         """
         await self.bot.db_pool.execute(query, *cmd, timeout=60.0)
 
-    @commands.Cog.listener()
-    async def on_command_completion(self, ctx: commands.Context) -> None:
+    @commands.Cog.listener("on_command_completion")
+    async def track_command_completion(self, ctx: BeiraContext) -> None:
         """Record prefix and hybrid command usage."""
 
         await self.track_command_use(ctx)
 
-    @commands.Cog.listener()
-    async def on_interaction(self, interaction: discord.Interaction) -> None:
+    @commands.Cog.listener("on_interaction")
+    async def track_interaction(self, interaction: discord.Interaction) -> None:
         """Record application command usage, ignoring hybrid or other interactions.
 
         References
@@ -105,16 +107,16 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """
 
         if (
-            interaction.command is not None and
-            interaction.type is discord.InteractionType.application_command and
-            not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
+                interaction.command is not None and
+                interaction.type is discord.InteractionType.application_command and
+                not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
         ):
-            ctx = await commands.Context.from_interaction(interaction)
+            ctx = await BeiraContext.from_interaction(interaction)
             ctx.command_failed = interaction.command_failed
             await self.track_command_use(ctx)
 
-    @commands.Cog.listener()
-    async def on_command_error(self, ctx: commands.Context, error: commands.CommandError) -> None:
+    @commands.Cog.listener("on_command_error")
+    async def track_command_error(self, ctx: BeiraContext, error: commands.CommandError) -> None:
         """Records prefix, hybrid, and application command usage, even if the result is an error."""
 
         if not isinstance(error, commands.CommandNotFound):
@@ -127,12 +129,12 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await upsert_guilds(self.bot.db_pool, guild)
 
     @commands.hybrid_command(name="ping")
-    async def ping_(self, ctx: commands.Context) -> None:
+    async def ping_(self, ctx: BeiraContext) -> None:
         """Display the time necessary for the bot to communicate with Discord.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         """
 
@@ -144,19 +146,19 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @commands.hybrid_command(name="usage")
     async def check_usage(
-        self,
-        ctx: commands.Context,
-        *,
-        time_period: Literal["today", "last month", "last year", "all time"] = "all time",
-        command: str = None,
-        guilds: bool = False,
-        universal: bool = False
+            self,
+            ctx: BeiraContext,
+            *,
+            time_period: Literal["today", "last month", "last year", "all time"] = "all time",
+            command: str = None,
+            guilds: bool = False,
+            universal: bool = False
     ) -> None:
         """Retrieve statistics about bot command usage.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         time_period : Literal["today", "last month", "last year", "all time"], default="all time"
             Whether to stay local or look among all guilds. Defaults to 'all time'.
@@ -168,15 +170,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             Whether to look at users among all guilds. Defaults to False.
         """
 
-        match time_period:
-            case "today":
-                actual_time_pd = 1
-            case "last month":
-                actual_time_pd = 30
-            case "last year":
-                actual_time_pd = 365
-            case _:
-                actual_time_pd = 0
+        periods = {"today": 1, "last month": 30, "last year": 365}
+        actual_time_pd = periods.get(time_period, 0)
 
         guild = None if guilds else ctx.guild
 
@@ -193,11 +188,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await ctx.reply(embed=embed)
 
     async def get_usage(
-        self,
-        time_period: int = 0,
-        command: str | None = None,
-        guild: discord.Guild | None = None,
-        universal: bool = False
+            self,
+            time_period: int = 0,
+            command: str | None = None,
+            guild: discord.Guild | None = None,
+            universal: bool = False
     ) -> list:
         """Queries the database for command usage."""
 
@@ -207,9 +202,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         # Create the base queries.
         if guild:
             query = """
-                SELECT member_name, COUNT(*)
-                FROM commands cmds INNER JOIN users u on cmds.user_id = u.id
-                GROUP BY member_name
+                SELECT user_name, COUNT(*)
+                FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
+                GROUP BY user_name
                 ORDER BY COUNT(*) DESC
                 LIMIT 10;
             """
@@ -221,7 +216,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         else:
             query = """
                 SELECT guild_name, COUNT(*)
-                FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.id
+                FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
                 GROUP BY guild_name
                 ORDER BY COUNT(*) DESC
                 LIMIT 10;
@@ -250,7 +245,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """Autocompletes with bot command names."""
 
         assert self.bot.help_command
-        ctx = await self.bot.get_context(interaction, cls=commands.Context)
+        ctx = await self.bot.get_context(interaction, cls=BeiraContext)
         help_command = self.bot.help_command.copy()
         help_command.context = ctx
 

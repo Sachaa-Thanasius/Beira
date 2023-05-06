@@ -5,13 +5,9 @@ and morphs.
 
 from __future__ import annotations
 
-import asyncio
 import logging
-import tempfile as tf
-from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
-from shutil import rmtree
 from time import perf_counter
 from typing import TYPE_CHECKING, ClassVar, Literal
 
@@ -19,6 +15,14 @@ import discord
 import openai
 from discord.ext import commands
 from PIL import Image
+
+from bot import BeiraContext
+from .ai_utils import (
+    create_completion,
+    create_image,
+    create_inspiration,
+    create_morph
+)
 
 
 if TYPE_CHECKING:
@@ -88,33 +92,6 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
-    @staticmethod
-    @contextmanager
-    def temp_file_names(*extensions: str):
-        """Create temporary filesystem paths to filenames in a temporary folder.
-
-        Upon completion, the folder is removed.
-
-        Parameters
-        ----------
-        *extensions : tuple[:class:`str`]
-            The file extensions that the generated filenames should have, e.g. py, txt, doc.
-
-        Yields
-        ------
-        temp_paths : tuple[:class:`Path`]
-            Filepaths with random filenames with the given file extensions, in order.
-        """
-
-        temp_dir = tf.mkdtemp()
-
-        # Create temporary filesystem paths to generated filenames.
-        temp_paths = tuple(Path(temp_dir).joinpath(f"temp_output{i}." + ext) for i, ext in enumerate(extensions))
-        yield temp_paths
-
-        # Clean up.
-        rmtree(temp_dir)
-
     async def save_image_from_url(self, url: str) -> BytesIO:
 
         async with self.bot.web_session.get(url) as resp:
@@ -125,106 +102,6 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 output_buffer.seek(0)
 
             return output_buffer
-
-    @staticmethod
-    async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) -> BytesIO:
-        """Create a morph gif between two images using ffmpeg.
-
-        References
-        ----------
-        https://stackoverflow.com/questions/71178068/video-morph-between-two-images-ffmpeg-minterpolate
-        """
-
-        with AIGenerationCog.temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
-            # Save the input images to temporary files.
-            with Image.open(before_img_buffer) as avatar_image:
-                avatar_image.save(avatar_temp, "png")
-
-            with Image.open(after_img_buffer) as ai_image:
-                ai_image.save(ai_temp, "png")
-
-            # Run an ffmpeg command to create and save the morph mp4 from the temp images.
-            cmd1_list = [
-                f'{FFMPEG}', '-nostdin', '-y', '-r', '0.3', '-stream_loop', '1', '-i', f'{avatar_temp}',
-                '-r', '0.3', '-stream_loop', '2', '-i', f'{ai_temp}',
-                '-filter_complex',
-                '[0][1]concat=n=2:v=1:a=0[v];[v]minterpolate=fps=24:scd=none,trim=3:7,setpts=PTS-STARTPTS',
-                '-pix_fmt', 'yuv420p', f'{mp4_temp}'
-            ]
-            process1 = await asyncio.create_subprocess_exec(*cmd1_list)
-            await process1.wait()
-            LOGGER.info("MP4 creation completed")
-
-            # Run another ffmpeg command to convert the morph mp4 into a gif.
-            cmd2_list = [f'{FFMPEG}', '-i', f'{mp4_temp}', '-f', 'gif', f'{gif_temp}']
-            process2 = await asyncio.create_subprocess_exec(*cmd2_list)
-            await process2.wait()
-            LOGGER.info("GIF creation completed.")
-
-            # Save the gif to a buffer.
-            gif_buffer = BytesIO(gif_temp.read_bytes())
-            gif_buffer.seek(0)
-
-        return gif_buffer
-
-    @staticmethod
-    async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
-        """Makes a call to OpenAI's API to generate an image based on given inputs.
-
-        Parameters
-        ----------
-        prompt : :class:`str`
-            The text OpenAI will use to generate the image.
-        size : tuple[:class:`int`, :class:`int`]
-            The dimensions of the resulting image.
-
-        Returns
-        -------
-        url : :class:`str`
-            The url of the generated image.
-        """
-
-        size_str = f"{size[0]}x{size[1]}"
-        image_response = await openai.Image.acreate(prompt=prompt, n=1, size=size_str)
-        return image_response.data[0].url
-
-    @staticmethod
-    async def create_completion(prompt: str) -> str:
-        """Makes a call to OpenAI's API to generate text based on given input.
-
-        Parameters
-        ----------
-        prompt : :class:`str`
-            The text OpenAI will generatively complete.
-
-        Returns
-        -------
-        text : :class:`str`
-            The generated text completion.
-        """
-
-        completion_response = await openai.Completion.acreate(
-            prompt=prompt,
-            model="text-davinci-003",
-            max_tokens=150,
-            temperature=0
-        )
-        return completion_response.choices[0].text
-
-    async def create_inspiration(self) -> str:
-        """Makes a call to InspiroBot's API to generate an inspirational poster.
-
-        Returns
-        -------
-        image_url : :class:`str`
-            The url for the generated poster.
-        """
-
-        async with self.bot.web_session.get(url=INSPIROBOT_API_URL, params={"generate": "true"}) as response:
-            response.raise_for_status()
-            image_url = await response.text()
-
-        return image_url
 
     async def morph_user(self, target: discord.User, prompt: str) -> (str, BytesIO):
         """Does the morph process.
@@ -244,9 +121,9 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         with Image.open(avatar_buffer) as avatar_image:
             file_size = avatar_image.size
 
-        ai_url = await self.create_image(prompt, file_size)
+        ai_url = await create_image(prompt, file_size)
         ai_buffer = await self.save_image_from_url(ai_url)
-        gif_buffer = await self.create_morph(avatar_buffer, ai_buffer)
+        gif_buffer = await create_morph(avatar_buffer, ai_buffer)
 
         return ai_url, gif_buffer
 
@@ -361,7 +238,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             if generation_type == "image":
                 log_start_time = perf_counter()
-                ai_url = await self.create_image(prompt, (512, 512))
+                ai_url = await create_image(prompt, (512, 512))
                 ai_buffer = await self.save_image_from_url(ai_url)
                 creation_time = perf_counter() - log_start_time
 
@@ -380,7 +257,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             elif generation_type == "text":
                 log_start_time = perf_counter()
-                ai_text = await self.create_completion(prompt)
+                ai_text = await create_completion(prompt)
                 creation_time = perf_counter() - log_start_time
 
                 # Send the generated image in an embed.
@@ -398,24 +275,14 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    async def inspire_me(self, ctx: commands.Context) -> None:
+    async def inspire_me(self, ctx: BeiraContext) -> None:
         """Generate a random inspirational poster with InspiroBot."""
 
         async with ctx.typing():
-            image_url = await self.create_inspiration()
+            image_url = await create_inspiration(ctx.session)
             embed = (
                 discord.Embed(color=0xe04206)
                 .set_image(url=image_url)
-                .set_footer(
-                    text="Generated with InspiroBot at https://inspirobot.me/",
-                    icon_url=INSPIROBOT_ICON_URL
-                )
+                .set_footer(text="Generated with InspiroBot at https://inspirobot.me/", icon_url=INSPIROBOT_ICON_URL)
             )
         await ctx.send(embed=embed)
-
-
-async def setup(bot: Beira) -> None:
-    """Sets the OpenAI API key, and connects cog to bot."""
-
-    openai.api_key = bot.config["openai"]["api_key"]
-    await bot.add_cog(AIGenerationCog(bot))

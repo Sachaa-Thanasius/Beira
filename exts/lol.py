@@ -15,6 +15,7 @@ from arsenic import browsers, errors, get_session, services
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
+from bot import BeiraContext
 from utils.embeds import StatsEmbed
 
 
@@ -22,6 +23,7 @@ if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -99,12 +101,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
     @commands.hybrid_command()
-    async def lol_stats(self, ctx: commands.Context, summoner_name: str) -> None:
+    async def lol_stats(self, ctx: BeiraContext, summoner_name: str) -> None:
         """Gets the League of Legends stats for a summoner.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         summoner_name : :class:`str`
             The summoner name, or username, of the League of Legends player being queried.
@@ -125,12 +127,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    async def lol_leaderboard(self, ctx: commands.Context, *, summoner_names: str | None = None) -> None:
+    async def lol_leaderboard(self, ctx: BeiraContext, *, summoner_names: str | None = None) -> None:
         """Get the League of Legends ranked stats for a group of summoners and display them.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         summoner_names : list[:class:`str`]
             A string of summoner names to create a leaderboard from. Separate these by spaces.

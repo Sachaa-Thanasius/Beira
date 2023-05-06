@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import logging
 import asyncio
+from typing import Any
 
 import aiohttp
 import asyncpg
@@ -15,12 +16,27 @@ from discord.ext import commands
 
 import config
 from exts import EXTENSIONS
+from utils.checks import is_blocked
 from utils.custom_logging import CustomLogger
-from utils.db_funcs import psql_init
+from utils.db_utils import psql_init
 
 
 CONFIG = config.config()
 LOGGER = logging.getLogger("bot.Beira")
+
+
+class BeiraContext(commands.Context):
+    bot: Beira
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.error_handled = False
+
+    @property
+    def session(self) -> aiohttp.ClientSession:
+        """:class:`aiohttp.ClientSession`: Returns the asynchronous http session used by the bot for external needs."""
+
+        return self.bot.web_session
 
 
 class Beira(commands.Bot):
@@ -65,10 +81,14 @@ class Beira(commands.Bot):
 
         # Things to load before connecting to the Gateway.
         self.prefixes: dict[int, list[str]] = {}
+        self.blocked_entities: dict[str, list[Any]] = {}
 
         # Things to load right after connecting to the Gateway for easy future retrieval.
         self.emojis_stock: dict[str, discord.Emoji] = {}
         self.special_friends: dict[str, int] = {}
+
+        # Add a global check for blocked members.
+        self.add_check(is_blocked().predicate)
 
     @property
     def config(self) -> dict:
@@ -76,20 +96,25 @@ class Beira(commands.Bot):
 
         return self._config
 
-    async def load_cache(self) -> None:
-        """Load some variables once on startup."""
+    async def _load_blocked_entities(self) -> None:
+        user_query = """SELECT user_id FROM users WHERE is_blocked;"""
+        guild_query = """SELECT guild_id FROM guilds WHERE is_blocked;"""
 
-        await self.wait_until_ready()
-        self._load_emoji_stock()
-        self._load_friends_dict()
-        await self.is_owner(self.user)
+        async with self.db_pool.acquire() as conn:
+            async with conn.transaction():
+                user_records = await conn.fetch(user_query)
+                guild_records = await conn.fetch(guild_query)
+
+        self.blocked_entities["users"] = [record["user_id"] for record in user_records]
+        self.blocked_entities["guilds"] = [record["guild_id"] for record in guild_records]
 
     async def _load_guild_prefixes(self) -> None:
         """Load all prefixes from the bot database."""
 
-        query = """SELECT id, prefixes FROM guilds"""
+        query = """SELECT guild_id, prefix FROM guild_prefixes;"""
         db_prefixes = await self.db_pool.fetch(query)
-        self.prefixes = {entry["id"]: entry["prefixes"] for entry in db_prefixes}
+        for entry in db_prefixes:
+            self.prefixes.setdefault(entry["id"], []).append(entry["prefixes"])
 
     async def _load_extensions(self) -> None:
         """Loads extensions/cogs.
@@ -111,7 +136,7 @@ class Beira(commands.Bot):
         Most of the keys used here are shorthand for the actual names.
         """
 
-        self.emojis_stock = {
+        self.emojis_stock.update({
             "blue_star": self.get_emoji(917859752057376779),
             "pink_star": self.get_emoji(917859752095133757),
             "orange_star": self.get_emoji(988609772821573694),
@@ -125,18 +150,27 @@ class Beira(commands.Bot):
             "fof": self.get_emoji(856969711241396254),
             "pop": self.get_emoji(856969710486814730),
             "mr_jare": self.get_emoji(1061029880059400262)
-        }
+        })
 
     def _load_friends_dict(self) -> None:
-        friends_ids = CONFIG["discord"]["friend_ids"]
+        friends_ids: list[int] = CONFIG["discord"]["friend_ids"]
         for user_id in friends_ids:
             self.special_friends[self.get_user(user_id).name] = user_id
+
+    async def load_cache(self) -> None:
+        """Load some variables once on startup."""
+
+        await self.wait_until_ready()
+        self._load_emoji_stock()
+        self._load_friends_dict()
+        await self.is_owner(self.user)
 
     async def on_ready(self) -> None:
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
 
     async def setup_hook(self) -> None:
         await self._load_guild_prefixes()
+        await self._load_blocked_entities()
         await self._load_extensions()
 
         self.loop.create_task(self.load_cache())
@@ -154,10 +188,11 @@ class Beira(commands.Bot):
         if not self.prefixes:
             await self._load_guild_prefixes()
 
-        if message.guild:
-            return self.prefixes.get(message.guild.id, "$")
-        else:
-            return "$"
+        loaded_prefixes = self.prefixes.get(message.guild.id, "$") if message.guild else "$"
+        return loaded_prefixes
+
+    async def get_context(self, origin: discord.Message | discord.Interaction, /, cls=BeiraContext) -> commands.Context:
+        return await super().get_context(origin, cls=cls)
 
     def is_special_friend(self, user: discord.abc.User, /):
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
@@ -218,11 +253,6 @@ class Beira(commands.Bot):
 async def main() -> None:
     """Starts an instance of the bot."""
 
-    # Initialize connections to a PostgreSQL database and an asynchronous web session.
-    session = aiohttp.ClientSession()
-    pool = asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=psql_init)
-    custom_logger = CustomLogger()
-
     # Set the bot's basic starting parameters.
     default_prefix = CONFIG["discord"]["default_prefix"]
     default_intents = discord.Intents.all()
@@ -248,6 +278,11 @@ async def main() -> None:
         "exts.story_search"
     ]
 
+    # Initialize a connection to a PostgreSQL database, an asynchronous web session, and a custom logger setup.
+    session = aiohttp.ClientSession()
+    pool = asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=psql_init)
+    custom_logger = CustomLogger()
+
     # Initialize the bot.
     bot = Beira(
         command_prefix=default_prefix,
@@ -259,7 +294,7 @@ async def main() -> None:
         test_mode=testing
     )
 
-    # Run everything in a context manager.
+    # Run everything in a context manager to account for async objects.
     async with session, pool, bot, custom_logger:
         try:
             await bot.start(CONFIG["discord"]["token"])

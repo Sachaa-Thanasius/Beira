@@ -12,6 +12,8 @@ from discord import app_commands
 from discord.ext import commands
 
 import config
+from bot import BeiraContext
+from utils.db_utils import upsert_users, upsert_guilds
 from . import EXTENSIONS
 
 
@@ -19,6 +21,7 @@ if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 CONFIG = config.config()
 LOGGER = logging.getLogger(__name__)
@@ -42,22 +45,83 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     async def cog_check(self, ctx: commands.Context) -> bool:
         """Set up bot owner check as universal within the cog."""
 
-        original = commands.is_owner().predicate
-        return await original(ctx)
+        return await self.bot.is_owner(ctx.author)
+
+    @commands.group()
+    async def block(self, ctx: BeiraContext) -> None:
+        ...
+
+    @block.command("show")
+    async def block_show(self, ctx: BeiraContext) -> None:
+        users = self.bot.blocked_entities["users"]
+        guilds = self.bot.blocked_entities["guilds"]
+
+        users_embed = discord.Embed(title="Blocked Users", description="\n".join(str(self.bot.get_user(u)) for u in users))
+        guilds_embed = discord.Embed(title="Blocked Guilds", description="\n".join(str(self.bot.get_guild(g)) for g in guilds))
+        await ctx.send(embeds=[users_embed, guilds_embed])
+
+    @block.command("add")
+    async def block_add(self, ctx: BeiraContext, entity: discord.User | discord.Guild) -> None:
+        """Register a user or guild to prevent them from using bot commands.
+
+        Parameters
+        ----------
+        ctx : :class:`BeiraContext`
+            The invocation context.
+        entity : :class:`discord.User` | :class:`discord.Guild`
+            The user or guild to block.
+        """
+
+        try:
+            if isinstance(entity, discord.User):
+                await upsert_users(self.bot.db_pool, (entity.id, entity.name, True))
+            else:
+                await upsert_guilds(self.bot.db_pool, (entity.id, entity.name, True))
+            self.bot.blocked_entities["users" if isinstance(entity, discord.User) else "guilds"].append(entity.id)
+        except Exception as e:
+            LOGGER.error("", exc_info=e)
+            await ctx.send("Unable to block this entity at this time.")
+        else:
+            await ctx.send(f"Blocked {entity} from bot usage.", ephemeral=True)
+
+    @block.command("remove")
+    async def block_remove(self, ctx: BeiraContext, entity: discord.User | discord.Guild) -> None:
+        """Unregister a user or guild to allow them to bot commands.
+
+        Parameters
+        ----------
+        ctx : :class:`BeiraContext`
+            The invocation context
+        entity : :class:`discord.User` | :class:`discord.Guild`
+            The user or guild to unblock.
+        """
+
+        try:
+            if isinstance(entity, discord.User):
+                await upsert_users(self.bot.db_pool, (entity.id, entity.name, True))
+            else:
+                await upsert_guilds(self.bot.db_pool, (entity.id, entity.name, True))
+            self.bot.blocked_entities["users" if isinstance(entity, discord.User) else "guilds"].remove(entity.id)
+        except Exception:
+            await ctx.send("Unable to unblock this entity at this time.")
+        else:
+            await ctx.send(f"Unblocked {entity} from bot usage.", ephemeral=True)
 
     @commands.command()
-    async def shutdown(self, ctx: commands.Context) -> None:
+    async def shutdown(self, ctx: BeiraContext) -> None:
+        """Shutdown the bot."""
+
         LOGGER.info("Shutting down bot with dev command.")
         await ctx.send("Shutting down bot...")
         await self.bot.close()
 
     @commands.command()
-    async def walk(self, ctx: commands.Context) -> None:
+    async def walk(self, ctx: BeiraContext) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context where the command was called.
         """
 
@@ -85,12 +149,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     @commands.hybrid_command()
     @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.describe(extension="The file name of the extension/cog you wish to reload, excluding the file type.")
-    async def reload(self, ctx: commands.Context, extension: str) -> None:
+    async def reload(self, ctx: BeiraContext, extension: str) -> None:
         """Reloads an extension/cog.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         extension : :class:`str`
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
@@ -120,12 +184,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     @commands.hybrid_command()
     @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
-    async def load(self, ctx: commands.Context, extension: str) -> None:
+    async def load(self, ctx: BeiraContext, extension: str) -> None:
         """Loads an extension/cog.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         extension : :class:`str`
             The name of the chosen extension to load, excluding the file type. If activated as a prefix command, the
@@ -155,12 +219,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     @commands.hybrid_command()
     @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.describe(extension="The file name of the extension/cog you wish to unload, excluding the file type.")
-    async def unload(self, ctx: commands.Context, extension: str) -> None:
+    async def unload(self, ctx: BeiraContext, extension: str) -> None:
         """Unloads an extension/cog.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         extension : :class:`str`
             The name of the chosen extension to unload, excluding the file type. If activated as a prefix command, the
@@ -207,7 +271,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                    if current.lower() in ext.lower()
                ][:25]
 
-    @commands.hybrid_command()
+    @commands.hybrid_command("sync")
     @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
@@ -216,11 +280,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         app_commands.Choice(name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.", value="-"),
         app_commands.Choice(name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", value="+")
     ])
-    async def sync(
-        self,
-        ctx: commands.Context,
-        guilds: commands.Greedy[discord.Object] = None,
-        spec: app_commands.Choice[str] | None = None
+    async def sync_(
+            self,
+            ctx: BeiraContext,
+            guilds: commands.Greedy[discord.Object] = None,
+            spec: app_commands.Choice[str] | None = None
     ) -> None:
         """Syncs the command tree in a way based on input.
 
@@ -228,7 +292,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         guilds : Greedy[:class:`discord.Object`]
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
@@ -280,30 +344,27 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                     case _:
                         synced = await ctx.bot.tree.sync()
 
-                await ctx.send(
-                    f"Synced {len(synced)} commands {'globally' if spec is None else 'to the current guild.'}",
-                    ephemeral=True
-                )
-                return
+                place = "globally" if spec is None else "to the current guild."
+                await ctx.send(f"Synced {len(synced)} commands {place}", ephemeral=True)
+            else:
+                ret = 0
+                for guild in guilds:
+                    try:
+                        await ctx.bot.tree.sync(guild=guild)
+                    except discord.HTTPException:
+                        pass
+                    else:
+                        ret += 1
 
-            ret = 0
-            for guild in guilds:
-                try:
-                    await ctx.bot.tree.sync(guild=guild)
-                except discord.HTTPException:
-                    pass
-                else:
-                    ret += 1
+                await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.", ephemeral=True)
 
-            await ctx.send(f"Synced the tree to {ret}/{len(guilds)}.", ephemeral=True)
-
-    @sync.error
-    async def sync_error(self, ctx: commands.Context, error: commands.CommandError):
-        """A local error handler for the :func:`emoji_steal` command.
+    @sync_.error
+    async def sync_error(self, ctx: BeiraContext, error: commands.CommandError):
+        """A local error handler for the :meth:`sync_` command.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         error : :class:`commands.CommandError`
             The error thrown by the command.
@@ -312,32 +373,25 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         embed = discord.Embed(title="/sync Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, (commands.HybridCommandError, commands.CommandInvokeError)):
-            error = error.original
-            if isinstance(error, app_commands.CommandInvokeError):
-                error = error.original
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
 
         # Respond to the error.
         if isinstance(error, app_commands.CommandSyncFailure):
-            embed.description = "Syncing the commands failed due to a user related error, typically because the " \
-                                "command has invalid data. This is equivalent to an HTTP status code of 400."
-            LOGGER.error("CommandSyncFailure", exc_info=error)
-
+            embed.description = "Syncing the commands failed due to a user related error, typically because the command has invalid data. This is equivalent to an HTTP status code of 400."
+            LOGGER.error("", exc_info=error)
         elif isinstance(error, discord.Forbidden):
             embed.description = "You do not have the permissions to create emojis here."
-
         elif isinstance(error, app_commands.MissingApplicationID):
             embed.description = "The bot does not have an application ID."
-
         elif isinstance(error, app_commands.TranslationError):
             embed.description = "An error occurred while translating the commands."
-
         elif isinstance(error, discord.HTTPException):
             embed.description = "Generic HTTP error: Syncing the commands failed."
-
         else:
+            embed.description = "Syncing the commands failed."
             LOGGER.error("Unknown error in sync command", exc_info=error)
-            embed.description = "Other: Syncing the commands failed."
 
         await ctx.reply(embed=embed)
 

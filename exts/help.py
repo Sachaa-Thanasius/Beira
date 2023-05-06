@@ -15,8 +15,9 @@ from discord import app_commands
 from discord.ext import commands
 from typing_extensions import Self
 
+from bot import BeiraContext
 from utils.embeds import PaginatedEmbed
-from utils.paginated_views import PaginatedEmbedView
+from utils.pagination import PaginatedEmbedView
 
 
 if TYPE_CHECKING:
@@ -280,7 +281,7 @@ class HelpCog(commands.Cog, name="Help"):
     async def help(self, interaction: discord.Interaction, command: str | None = None) -> None:
         """Accesses the help commands through the slash system."""
 
-        ctx = await self.bot.get_context(interaction, cls=commands.Context)
+        ctx = await self.bot.get_context(interaction, cls=BeiraContext)
 
         if command is not None:
             await ctx.send_help(command)
@@ -294,7 +295,7 @@ class HelpCog(commands.Cog, name="Help"):
         """Autocompletes the help command."""
 
         assert self.bot.help_command
-        ctx = await self.bot.get_context(interaction, cls=commands.Context)
+        ctx = await self.bot.get_context(interaction, cls=BeiraContext)
         help_command = self.bot.help_command.copy()
         help_command.context = ctx
 

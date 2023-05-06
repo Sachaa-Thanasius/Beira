@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 import discord
 from discord.ext import commands
 
+from bot import BeiraContext
 from utils.checks import is_admin
 
 
@@ -17,6 +18,7 @@ if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -33,16 +35,9 @@ class AdminCog(commands.Cog, name="Administration"):
 
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
 
-    async def _update_prefixes(self, new_prefixes: list[str], guild_id: int) -> None:
-        """Update the set of prefixes for a particular guild in the database and cache."""
-
-        update_query = """UPDATE guilds SET prefixes = $1 WHERE id = $2 RETURNING prefixes;"""
-        results = await self.bot.db_pool.fetchrow(update_query, new_prefixes, guild_id)
-        self.bot.prefixes[guild_id] = results["prefixes"]
-
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
-    async def prefixes(self, ctx: commands.Context) -> None:
+    async def prefixes(self, ctx: BeiraContext) -> None:
         """View the prefixes set for this bot in this location."""
 
         async with ctx.typing():
@@ -52,13 +47,12 @@ class AdminCog(commands.Cog, name="Administration"):
     @prefixes.command("add")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), is_admin())
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    async def prefixes_add(self, ctx: commands.Context, *, new_prefix: str) -> None:
+    async def prefixes_add(self, ctx: BeiraContext, *, new_prefix: str) -> None:
         """Set a prefix that you'd like this bot to respond to.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         new_prefix : :class:`str`
             The prefix to be added.
@@ -69,25 +63,35 @@ class AdminCog(commands.Cog, name="Administration"):
 
             if new_prefix in local_prefixes:
                 await ctx.send("You already registered this prefix.")
-
             else:
-                updated_prefixes = local_prefixes.copy()
-                updated_prefixes.append(new_prefix)
-
-                await self._update_prefixes(updated_prefixes, ctx.guild.id)
-
-                await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
+                guild_query = """INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT DO NOTHING;"""
+                prefix_query = """
+                    INSERT INTO guild_prefixes (guild_id, prefix)
+                    VALUES ($1, $2)
+                    ON CONFLICT (guild_id, prefix) DO NOTHING;
+                """
+                async with self.bot.db_pool.acquire() as conn:
+                    try:
+                        # Update it in the database.
+                        async with conn.transaction():
+                            await conn.execute(guild_query, ctx.guild.id)
+                            await conn.execute(prefix_query, ctx.guild.id, new_prefix)
+                        # Update it in the cache.
+                        self.bot.prefixes.setdefault(ctx.guild.id, []).append(new_prefix)
+                    except Exception:
+                        await ctx.send("This prefix could not be added at this time.")
+                    else:
+                        await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
 
     @prefixes.command("remove")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), is_admin())
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    async def prefixes_remove(self, ctx: commands.Context, *, old_prefix: str) -> None:
+    async def prefixes_remove(self, ctx: BeiraContext, *, old_prefix: str) -> None:
         """Remove a prefix that you'd like this bot to no longer respond to.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         old_prefix : :class:`str`
             The prefix to be removed.
@@ -98,32 +102,41 @@ class AdminCog(commands.Cog, name="Administration"):
 
             if old_prefix not in local_prefixes:
                 await ctx.send("This prefix either was never registered in this guild or has already been unregistered.")
-
             else:
-                updated_prefixes = local_prefixes.copy()
-                updated_prefixes.remove(old_prefix)
-
-                await self._update_prefixes(updated_prefixes, ctx.guild.id)
-
-                await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
+                prefix_query = """DELETE FROM guild_prefixes WHERE guild_id = $1 AND prefix = $2;"""
+                try:
+                    # Update it in the database.
+                    await self.bot.db_pool.execute(prefix_query, ctx.guild.id, old_prefix)
+                    # Update it in the cache.
+                    self.bot.prefixes.setdefault(ctx.guild.id, []).remove(old_prefix)
+                except Exception:
+                    await ctx.send("This prefix could not be removed at this time.")
+                else:
+                    await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
 
     @prefixes.command("reset")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), is_admin())
-    @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    async def prefixes_reset(self, ctx: commands.Context) -> None:
-        """Remove all prefixes within this guild for the bot to respond to.
+    async def prefixes_reset(self, ctx: BeiraContext) -> None:
+        """Remove all prefixes within this server for the bot to respond to.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         """
 
         async with ctx.typing():
-            reset_prefixes = ["$"]
-            await self._update_prefixes(reset_prefixes, ctx.guild.id)
-            await ctx.send(f"The prefix(es) for this guild have been reset to: `$`.")
+            prefix_query = """DELETE FROM guild_prefixes WHERE guild_id = $1;"""
+            try:
+                # Update it in the database.
+                await self.bot.db_pool.execute(prefix_query, ctx.guild.id)
+                # Update it in the cache.
+                self.bot.prefixes.setdefault(ctx.guild.id, []).clear()
+            except Exception:
+                await ctx.send("This server's prefixes could not be reset.")
+            else:
+                await ctx.send(f"The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.")
 
 
 async def setup(bot: Beira) -> None:

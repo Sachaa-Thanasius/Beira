@@ -11,11 +11,14 @@ from typing import TYPE_CHECKING, Literal
 import discord
 from discord.ext import commands
 
+from bot import BeiraContext
+
 
 if TYPE_CHECKING:
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -50,26 +53,26 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=
 
     # Commands
     @commands.command()
-    async def set_archive_channel(self, ctx: commands.Context, channel: MessageableGuildChannel) -> None:
+    async def set_archive_channel(self, ctx: BeiraContext, channel: MessageableGuildChannel) -> None:
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def move_archive_channel(self, ctx: commands.Context, channel: MessageableGuildChannel) -> None:
+    async def move_archive_channel(self, ctx: BeiraContext, channel: MessageableGuildChannel) -> None:
         LOGGER.info(f"move_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def get_pins(self, ctx: commands.Context, channel: MessageableGuildChannel) -> None:
+    async def get_pins(self, ctx: BeiraContext, channel: MessageableGuildChannel) -> None:
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
         all_pins = await channel.pins()
         print(all_pins)
 
     @commands.command()
-    async def set_mode(self, ctx: commands.Context, mode: Literal["latest", "oldest"] = "oldest") -> None:
+    async def set_mode(self, ctx: BeiraContext, mode: Literal["latest", "oldest"] = "oldest") -> None:
         self.mode = mode
         LOGGER.info(f"set_mode(): {ctx.author}, {mode}")
 
     @commands.command()
-    async def activate(self, ctx: commands.Context) -> None:
+    async def activate(self, ctx: BeiraContext) -> None:
         LOGGER.info(f"activate(): {ctx.author}, {ctx.guild}")
 
 

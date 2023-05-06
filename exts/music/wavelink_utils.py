@@ -22,18 +22,16 @@ async def format_track_embed(embed: discord.Embed, track: Playable | spotify.Spo
     else:
         end_time = "{}:{:02}".format(*divmod(duration, 60))
 
+    embed.description = f"[{escape_markdown(track.title)}]({track.uri})\n"
     if isinstance(track, Playable):
-        embed.description = (
-            f"[{escape_markdown(track.title)}]({track.uri})\n"
-            f"{escape_markdown(track.author)}\n"
-            f"`[0:00-{end_time}]`"
-        )
+        embed.description += f"{escape_markdown(track.author)}\n"
     elif isinstance(track, spotify.SpotifyTrack):
-        embed.description = (
-            f"[{escape_markdown(track.title)}]({track.uri})\n"
-            f"{escape_markdown(', '.join(track.artists))}\n"
-            f"`[0:00-{end_time}]`"
-        )
+        embed.description += f"{escape_markdown(', '.join(track.artists))}\n"
+
+    embed.description += f"`[0:00-{end_time}]`"
+
+    if getattr(track, "requester", None):
+        embed.description += f"\n\nRequested by: {track.requester.mention}"
 
     if isinstance(track, wavelink.YouTubeTrack):
         embed.set_thumbnail(url=(track.thumbnail or await track.fetch_thumbnail()))
@@ -54,7 +52,7 @@ class SoundCloudPlaylist(Playable, Playlist):
         The selected track in the playlist. This could be ``None``.
     """
 
-    # PREFIX: str = "scpl:"         # Not sure SoundCloud playlists have a specific prefix within Lavalink, or however it's implemented.
+    # PREFIX: str = "scpl:"         # Not sure SoundCloud playlists have a specific prefix within Lavalink.
 
     def __init__(self, data: dict) -> None:
         self.tracks: list[wavelink.SoundCloudTrack] = []
@@ -111,9 +109,9 @@ class WavelinkSearchConverter(commands.Converter):
             a. Direct url
             b. Search YouTube with the argument as the query.
         """
-        if check.host in ("youtube.com", "www.youtube.com") and (check.query.get("v") or argument.startswith("ytsearch:")):
+        if (check.host in ("youtube.com", "www.youtube.com") and check.query.get("v")) or argument.startswith("ytsearch:"):
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
-        elif check.host in ("youtube.com", "www.youtube.com") and (check.query.get("list") or argument.startswith("ytpl:")):
+        elif (check.host in ("youtube.com", "www.youtube.com") and check.query.get("list")) or argument.startswith("ytpl:"):
             tracks = await vc.current_node.get_playlist(cls=wavelink.YouTubePlaylist, query=argument)
         elif check.host == "music.youtube.com" or argument.startswith("ytmsearch:"):
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeMusicTrack, query=argument)
