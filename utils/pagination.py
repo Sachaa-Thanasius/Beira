@@ -16,8 +16,6 @@ from discord.ui import Modal, TextInput, View
 
 LOGGER = logging.getLogger(__name__)
 
-# page_turn = discord.PartialEmoji(name="a:page_turning_2", animated=True, id=1097321273593430156)
-
 
 class PageNumEntryModal(Modal):
     """A discord modal that allows users to enter a page number to jump to in the view that references this.
@@ -99,12 +97,10 @@ class PaginatedEmbedView(View):
         # Page-related instance variables.
         self.per_page = per_page
         self.total_pages = math.ceil(len(all_pages_content) / per_page)
-
         self.pages = [all_pages_content[i: (i + per_page)] for i in range(0, len(all_pages_content), per_page)]
         self.page_cache: list[Any] = [None for _ in self.pages]
 
-        self.current_page = 1
-        self.former_page = 1
+        self.current_page, self.former_page = 1, 1
         self.current_page_content = ()
 
         # Have the right buttons activated on instantiation.
@@ -117,8 +113,7 @@ class PaginatedEmbedView(View):
 
         check = (interaction.user is not None) and (self.author == interaction.user)
         if not check:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True, delete_after=30)     # type: ignore
-
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)     # type: ignore  # PyCharm doesn't understand descriptor typing.
         return check
 
     async def on_timeout(self) -> None:
@@ -142,15 +137,15 @@ class PaginatedEmbedView(View):
         """Only adds the necessary page buttons based on how many pages there are."""
 
         if self.total_pages > 2:
-            self.add_item(self.turn_to_first_page)
+            self.add_item(self.turn_to_first)
         if self.total_pages > 1:
-            self.add_item(self.turn_to_previous_page)
+            self.add_item(self.turn_to_previous)
         if self.total_pages > 2:
             self.add_item(self.enter_page)
         if self.total_pages > 1:
-            self.add_item(self.turn_to_next_page)
+            self.add_item(self.turn_to_next)
         if self.total_pages > 2:
-            self.add_item(self.turn_to_last_page)
+            self.add_item(self.turn_to_last)
 
         self.add_item(self.quit_view)
 
@@ -159,33 +154,23 @@ class PaginatedEmbedView(View):
 
         # Disable buttons based on the total number of pages.
         if self.total_pages <= 1:
-            self.turn_to_previous_page.disabled = True
-            self.turn_to_first_page.disabled = True
-            self.turn_to_next_page.disabled = True
-            self.turn_to_last_page.disabled = True
-            self.enter_page.disabled = True
+            for button in (self.turn_to_first, self.turn_to_next, self.turn_to_previous, self.turn_to_last, self.enter_page):
+                button.disabled = True
             return
-
         else:
             self.enter_page.disabled = False
 
         # Disable buttons based on the page extremes.
         if self.current_page == 1:
-            self.turn_to_previous_page.disabled = True
-            self.turn_to_first_page.disabled = True
-
+            self.turn_to_previous.disabled = self.turn_to_first.disabled = True
         elif self.current_page == self.total_pages:
-            self.turn_to_next_page.disabled = True
-            self.turn_to_last_page.disabled = True
+            self.turn_to_next.disabled = self.turn_to_last.disabled = True
 
         # Enable buttons based on movement relative to the page extremes.
         if self.former_page == 1 and self.current_page != 1:
-            self.turn_to_previous_page.disabled = False
-            self.turn_to_first_page.disabled = False
-
+            self.turn_to_previous.disabled = self.turn_to_first.disabled = False
         elif self.former_page == self.total_pages and self.current_page != self.total_pages:
-            self.turn_to_next_page.disabled = False
-            self.turn_to_last_page.disabled = False
+            self.turn_to_next.disabled = self.turn_to_last.disabled = False
 
     def get_starting_embed(self) -> discord.Embed:
         """Get the embed of the first page."""
@@ -204,18 +189,18 @@ class PaginatedEmbedView(View):
         await interaction.response.edit_message(embed=embed_page, view=self)    # type: ignore
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:first")
-    async def turn_to_first_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def turn_to_first(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Skips to the first page of the view."""
 
         await self.update_page(interaction, 1)
 
     @discord.ui.button(label="<", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:prev")
-    async def turn_to_previous_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def turn_to_previous(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the previous page of the view."""
 
         await self.update_page(interaction, self.current_page - 1)
 
-    @discord.ui.button(label="🕮", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
+    @discord.ui.button(label="📖", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
     async def enter_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Sends a modal that a user to enter their own page number into."""
 
@@ -235,13 +220,13 @@ class PaginatedEmbedView(View):
         await self.update_page(modal.interaction, temp_new_page)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="page_view:next")
-    async def turn_to_next_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def turn_to_next(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Turns to the next page of the view."""
 
         await self.update_page(interaction, self.current_page + 1)
 
     @discord.ui.button(label="≫", style=discord.ButtonStyle.blurple, custom_id="page_view:last")
-    async def turn_to_last_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def turn_to_last(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Skips to the last page of the view."""
 
         await self.update_page(interaction, self.total_pages)

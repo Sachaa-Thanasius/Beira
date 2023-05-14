@@ -100,12 +100,11 @@ def is_blocked():
     This check raises the exception :exc:`commands.CheckFailure`.
     """
 
-
     async def predicate(ctx: commands.Context) -> bool:
         if ctx.bot.owner_id != ctx.author.id:
-            if ctx.author.id in ctx.bot.blocked_entities["users"]:
+            if ctx.author.id in ctx.bot.blocked_entities_cache["users"]:
                 raise UserIsBlocked("This user is prohibited from using bot commands.")
-            if ctx.guild and (ctx.guild.id in ctx.bot.blocked_entities["guilds"]):
+            if ctx.guild and (ctx.guild.id in ctx.bot.blocked_entities_cache["guilds"]):
                 raise GuildIsBlocked("This guild is prohibited from using bot commands.")
         return True
 

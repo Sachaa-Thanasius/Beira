@@ -13,5 +13,10 @@
     },
     "openai": {
         "api_key": ""
+    },
+    "lavalink":
+    {
+        "uri": "",
+        "password": ""
     }
 }

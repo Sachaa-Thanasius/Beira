@@ -134,9 +134,13 @@ def benchmark(func: Callable[..., Any], logger: logging.Logger) -> Callable[...,
     Notes
     -----
     To use, place these lines near the top of a file:
+
         ``import logging``
+
         ``from utils.custom_logging import benchmark``
+
         ``LOGGER = logging.getLogger(__name__)``
+
         ``with_benchmark = functools.partial(benchmark, logger=LOGGER)``
     """
 

@@ -9,7 +9,7 @@ import logging
 from io import BytesIO
 from pathlib import Path
 from time import perf_counter
-from typing import TYPE_CHECKING, ClassVar, Literal
+from typing import TYPE_CHECKING, Literal
 
 import discord
 import openai
@@ -18,6 +18,8 @@ from PIL import Image
 
 from bot import BeiraContext
 from .ai_utils import (
+    get_image,
+    process_image,
     create_completion,
     create_image,
     create_inspiration,
@@ -32,10 +34,7 @@ else:
 
 
 LOGGER = logging.getLogger(__name__)
-FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")  # Set your own path to ffmpeg on your machine if need be.
 
-# InspiroBot constants.
-INSPIROBOT_API_URL = "https://inspirobot.me/api"
 INSPIROBOT_ICON_URL = "https://pbs.twimg.com/profile_images/815624354876760064/zPmAZWP4_400x400.jpg"
 
 
@@ -54,8 +53,6 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     Note: This is all Athena's fault.
     """
 
-    api_key: ClassVar[str]
-
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
         self.data_path = Path(__file__).resolve().parents[1].joinpath("data/dunk/general_morph")
@@ -69,7 +66,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     async def cog_load(self) -> None:
         openai.aiosession.set(self.bot.web_session)
 
-    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
         """Handles any errors within this cog."""
 
         embed = discord.Embed(color=0x5e9a40)
@@ -92,17 +89,6 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
-    async def save_image_from_url(self, url: str) -> BytesIO:
-
-        async with self.bot.web_session.get(url) as resp:
-            image_bytes = await resp.read()
-            with Image.open(BytesIO(image_bytes)) as new_image:
-                output_buffer = BytesIO()
-                new_image.save(output_buffer, "png")
-                output_buffer.seek(0)
-
-            return output_buffer
-
     async def morph_user(self, target: discord.User, prompt: str) -> (str, BytesIO):
         """Does the morph process.
 
@@ -122,24 +108,26 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             file_size = avatar_image.size
 
         ai_url = await create_image(prompt, file_size)
-        ai_buffer = await self.save_image_from_url(ai_url)
+        ai_bytes = await get_image(self.bot.web_session, ai_url)
+        ai_buffer = await self.bot.loop.run_in_executor(None, process_image, ai_bytes)
+        # ai_buffer = await self.save_image_from_url(ai_url)
         gif_buffer = await create_morph(avatar_buffer, ai_buffer)
 
         return ai_url, gif_buffer
 
     @commands.hybrid_group()
-    async def openai(self, ctx: commands.Context):
+    async def openai(self, ctx: BeiraContext):
         """A group of commands using OpenAI's API. Includes morphing, image generation, and text generation."""
         ...
 
     @openai.command(name="pigeonify")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def morph_athena(self, ctx: commands.Context, target: discord.User | None = None) -> None:
+    async def morph_athena(self, ctx: BeiraContext, target: discord.User | None = None) -> None:
         """Turn Athena (or someone else) into the pigeon she is at heart.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         target : :class:`discord.User`, optional
             The user whose avatar will be pigeonified. Defaults to Athena.
@@ -173,12 +161,12 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     @openai.command(name="morph")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
-    async def morph_general(self, ctx: commands.Context, target: discord.User, *, prompt: str) -> None:
+    async def morph_general(self, ctx: BeiraContext, target: discord.User, *, prompt: str) -> None:
         """Create a morph gif with a user's avatar and a prompt-based AI image.
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         target : :class:`discord.User`
             The user whose avatar will be morphed.
@@ -216,7 +204,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     async def generate(
             self,
-            ctx: commands.Context,
+            ctx: BeiraContext,
             generation_type: Literal["text", "image"] = "image",
             *,
             prompt: str
@@ -225,7 +213,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         Parameters
         ----------
-        ctx : :class:`commands.Context`
+        ctx : :class:`BeiraContext`
             The invocation context.
         generation_type : Literal["text", "image"], default="image"
             What the AI is generating.
@@ -239,7 +227,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             if generation_type == "image":
                 log_start_time = perf_counter()
                 ai_url = await create_image(prompt, (512, 512))
-                ai_buffer = await self.save_image_from_url(ai_url)
+                ai_bytes = await get_image(ctx.session, ai_url)
+                ai_buffer = await self.bot.loop.run_in_executor(None, process_image, ai_bytes)
                 creation_time = perf_counter() - log_start_time
 
                 # Send the generated text in an embed.

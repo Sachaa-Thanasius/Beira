@@ -7,6 +7,7 @@ from pathlib import Path
 import aiofiles
 import aiohttp
 import openai
+from PIL import Image
 
 
 LOGGER = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ INSPIROBOT_API_URL = "https://inspirobot.me/api"
 
 @asynccontextmanager
 async def temp_file_names(*extensions: str):
-    """Create temporary filesystem paths to filenames in a temporary folder.
+    """Create temporary filesystem paths to generated filenames in a temporary folder.
 
     Upon completion, the folder is removed.
 
@@ -33,9 +34,40 @@ async def temp_file_names(*extensions: str):
     """
 
     async with aiofiles.tempfile.TemporaryDirectory() as temp_dir:
-        # Create temporary filesystem paths to generated filenames.
         temp_paths = tuple(Path(temp_dir).joinpath(f"temp_output{i}." + ext) for i, ext in enumerate(extensions))
         yield temp_paths
+
+
+async def get_image(session: aiohttp.ClientSession, url: str) -> bytes:
+    """Asynchronously load the bytes of an image from a url.
+
+    Parameters
+    ----------
+    session : :class:`aiohttp.ClientSession`
+        The web session with which to retrieve the image data.
+    url : :class:`str`
+        The url to retrieve the image from.
+
+    Returns
+    -------
+    image_bytes : :class:`bytes`
+        The image data.
+    """
+
+    async with session.get(url) as resp:
+        image_bytes = await resp.read()
+    return image_bytes
+
+
+def process_image(image_bytes: bytes) -> BytesIO:
+    """Processes image data with PIL."""
+
+    with Image.open(BytesIO(image_bytes)) as new_image:
+        output_buffer = BytesIO()
+        new_image.save(output_buffer, "png")
+        output_buffer.seek(0)
+
+    return output_buffer
 
 
 async def create_completion(prompt: str) -> str:
@@ -77,8 +109,7 @@ async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
         The url of the generated image.
     """
 
-    size_str = f"{size[0]}x{size[1]}"
-    image_response = await openai.Image.acreate(prompt=prompt, n=1, size=size_str)
+    image_response = await openai.Image.acreate(prompt=prompt, n=1, size=f"{size[0]}x{size[1]}")
     return image_response.data[0].url
 
 
@@ -106,22 +137,31 @@ async def create_inspiration(session: aiohttp.ClientSession) -> str:
 async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) -> BytesIO:
     """Create a morph gif between two images using ffmpeg.
 
+    Parameters
+    ----------
+    before_img_buffer : :class:`BytesIO`
+        The starting image loaded as bytes in a buffer.
+    after_img_buffer : :class:`BytesIO`
+        The ending image loaded as bytes in a buffer.
+
+    Returns
+    -------
+    gif_buffer : :class:`BytesIO`
+        The gif loaded as bytes in a buffer.
+
     References
     ----------
-    https://stackoverflow.com/questions/71178068/video-morph-between-two-images-ffmpeg-minterpolate
+    Source of the ffmpeg command: https://stackoverflow.com/questions/71178068/video-morph-between-two-images-ffmpeg-minterpolate
     """
 
     async with temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
+
         # Save the input images to temporary files.
         async with aiofiles.open(avatar_temp, "wb") as file:
             await file.write(before_img_buffer.getvalue())
+
         async with aiofiles.open(ai_temp, "wb") as file:
             await file.write(after_img_buffer.getvalue())
-
-        # with Image.open(before_img_buffer) as avatar_image:
-        #     avatar_image.save(avatar_temp, "png")
-        # with Image.open(after_img_buffer) as ai_image:
-        #     ai_image.save(ai_temp, "png")
 
         # Run an ffmpeg command to create and save the morph mp4 from the temp images.
         cmd1_list = [

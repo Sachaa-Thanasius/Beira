@@ -13,6 +13,7 @@ from discord import app_commands
 from discord.ext import commands
 
 from bot import BeiraContext
+from .ai_generation.ai_utils import get_image
 
 
 if TYPE_CHECKING:
@@ -177,23 +178,25 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         elif entity:
             converted_emoji = await self.convert_str_to_emoji(ctx, entity)
 
-            if isinstance(converted_emoji, discord.PartialEmoji) and converted_emoji.is_unicode_emoji():
-                await ctx.send("You can't steal Unicode characters/emojis.")
+            if converted_emoji is None:
+                # The given symbol isn't a discord emoji or recognizable as Unicode.
+                await ctx.send("Unrecognizable symbol/emoji.")
                 return
-
-            if converted_emoji:
+            elif isinstance(converted_emoji, discord.PartialEmoji) and converted_emoji.is_unicode_emoji():
+                if len(entity) == 1:
+                    await ctx.send("You can't steal Unicode characters/emojis.")
+                    return
+                else:
+                    # Attempt to read the input as an image url.
+                    emoji_bytes = await get_image(ctx.session, entity)
+            else:
                 # Attempt to convert and read the input as an emoji normally.
                 emoji_bytes = await converted_emoji.read()
-
-            else:
-                # Otherwise, attempt to read the input as an image url.
-                cog = ctx.bot.get_cog("AI Generation")
-                emoji_bytes_io = await cog.save_image_from_url(entity)      # Custom function, not in dpy library.
-                emoji_bytes = emoji_bytes_io.read()
 
             new_emoji = await ctx.guild.create_custom_emoji(name=name, image=emoji_bytes)
 
         else:
+            discord.PartialEmoji.from_str()
             emoji_bytes = await attachment.read()
             new_emoji = await ctx.guild.create_custom_emoji(name=name, image=emoji_bytes)
 
@@ -296,7 +299,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send(f"Sticker successfully added: `{name}`.", stickers=[new_sticker])
 
     @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
-    async def context_menu_sticker_add(self, interaction: discord.Interaction, message: discord.Message) -> None:
+    async def context_menu_sticker_add(self, interaction: discord.Interaction[Beira], message: discord.Message) -> None:
         added_count = 0
         errors = []
         if message.stickers:

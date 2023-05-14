@@ -77,7 +77,7 @@ class AdminCog(commands.Cog, name="Administration"):
                             await conn.execute(guild_query, ctx.guild.id)
                             await conn.execute(prefix_query, ctx.guild.id, new_prefix)
                         # Update it in the cache.
-                        self.bot.prefixes.setdefault(ctx.guild.id, []).append(new_prefix)
+                        self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
                     except Exception:
                         await ctx.send("This prefix could not be added at this time.")
                     else:
@@ -108,7 +108,7 @@ class AdminCog(commands.Cog, name="Administration"):
                     # Update it in the database.
                     await self.bot.db_pool.execute(prefix_query, ctx.guild.id, old_prefix)
                     # Update it in the cache.
-                    self.bot.prefixes.setdefault(ctx.guild.id, []).remove(old_prefix)
+                    self.bot.prefix_cache.setdefault(ctx.guild.id, []).remove(old_prefix)
                 except Exception:
                     await ctx.send("This prefix could not be removed at this time.")
                 else:
@@ -132,7 +132,7 @@ class AdminCog(commands.Cog, name="Administration"):
                 # Update it in the database.
                 await self.bot.db_pool.execute(prefix_query, ctx.guild.id)
                 # Update it in the cache.
-                self.bot.prefixes.setdefault(ctx.guild.id, []).clear()
+                self.bot.prefix_cache.setdefault(ctx.guild.id, []).clear()
             except Exception:
                 await ctx.send("This server's prefixes could not be reset.")
             else:

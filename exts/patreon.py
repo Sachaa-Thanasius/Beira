@@ -15,11 +15,13 @@ from discord.ext import commands, tasks
 
 from bot import BeiraContext
 
+
 if TYPE_CHECKING:
     from asyncpg import Record
     from bot import Beira
 else:
     Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 

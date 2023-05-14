@@ -32,11 +32,11 @@
             "https://i.pinimg.com/originals/b8/20/f9/b820f9cc3283edf2abdafa82057188fc.gif"]
     },
     "inspo": {
-        "note": "Since this bot is a reimplementation of Discord's Snowsgiving 2021 Snowball Bot with the mostly the same commands, though they will undergo further adjustment. Visit their [Snowball Bot FAQ]({}) for information about the original purpose, commands, and more.",
+        "note": "Since this cog is a reimplementation of Discord's Snowsgiving 2021 Snowball Bot with the mostly the same commands, though they will undergo further adjustment. Visit their [Snowball Bot FAQ]({}) for information about the original purpose, commands, and more.",
         "url": "https://web.archive.org/web/20220103003050/https://support.discord.com/hc/en-us/articles/4414111886359-Snowsgiving-2021-Snowball-Bot-FAQ"
     },
     "code": {
-        "note": "I reworked quite a bit of it, but the code that I used as the base for this was by a guy named Mukesh over on GitHub. Check out the code repository for his snowball bot [here]({}). Credit to Rapptz and Umbra as well for their personal bots providing examples of discord.py implementation.",
+        "note": "I reworked quite a bit of it, but the code that I used as the base for this cog was by a guy named Mukesh over on GitHub. Check out the code repository for his snowball bot [here]({}). Credit to Rapptz and Umbra as well for their personal bots providing examples of discord.py implementation.",
         "url": "https://github.com/0xMukesh/snowball-bot"
     }
 }

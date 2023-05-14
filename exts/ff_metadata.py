@@ -206,14 +206,14 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
                     story_data = await self.atlas_client.get_story_metadata(fic_id)
                     embed = await create_atlas_ffn_embed(story_data)
                 elif (
-                        match := re.search(self.link_pattern["ao3_series"], message.content) and
+                        (match := re.search(self.link_pattern["ao3_series"], message.content)) and
                         message.guild.id != self.bot.config["discord"]["guilds"]["prod"][0]
                 ):
                     series_id = match.group(3)
                     story_data = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
                     embed = await create_ao3_series_embed(story_data)
                 elif (
-                        match := re.search(self.link_pattern["ao3_work"], message.content) and
+                        (match := re.search(self.link_pattern["ao3_work"], message.content)) and
                         message.guild.id != self.bot.config["discord"]["guilds"]["prod"][0]
                 ):
                     url = match.group(0)
@@ -353,6 +353,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         return story_data
 
     async def search_other(self, url: str) -> fichub_api.Story | None:
+
         story = await self.fichub_client.get_story_metadata(url)
         return story
 

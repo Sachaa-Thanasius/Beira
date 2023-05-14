@@ -18,7 +18,6 @@ from utils.checks import is_owner_or_friend
 from utils.db_utils import upsert_guilds, upsert_users
 from utils.embeds import StatsEmbed
 from utils.errors import CannotTargetSelf
-from .cooldowns import collect_cooldown, steal_cooldown, transfer_cooldown
 
 
 if TYPE_CHECKING:
@@ -36,6 +35,45 @@ LEADERBOARD_MAX = 10     # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100  # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200  # Maximum number of snowballs for self and friends.
 TRANSFER_CAP = 10        # Maximum number of snowballs that can be gifted or stolen.
+
+
+def collect_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
+    """Sets cooldown for SnowballCog.collect() command. 10 seconds by default."""
+
+    rate, per = 1.0, 15.0                           # Default cooldown
+    exempt = [ctx.bot.special_friends["aeroali"]]
+
+    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
+        return None
+    elif ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+        per = 1.0
+    return commands.Cooldown(rate, per)
+
+
+def transfer_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
+    """Sets cooldown for SnowballCog.transfer() command. 60 seconds by default."""
+
+    rate, per = 1.0, 60.0                           # Default cooldown
+    exempt = [ctx.bot.special_friends["aeroali"]]
+
+    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):  # My user id
+        return None
+    elif ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+        per = 2.0
+    return commands.Cooldown(rate, per)
+
+
+def steal_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
+    """Sets cooldown for SnowballCog.steal() command. 90 seconds by default."""
+
+    rate, per = 1.0, 90.0                           # Default cooldown
+    exempt = [ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["Athena Hope"]]
+
+    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
+        return None
+    elif ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+        per = 2.0
+    return commands.Cooldown(rate, per)
 
 
 class SnowballCog(commands.Cog, name="Snowball"):
@@ -89,21 +127,17 @@ class SnowballCog(commands.Cog, name="Snowball"):
             embed.title = "Missing Parameter!"
             embed.description = "This command needs a target."
             ctx.command.reset_cooldown(ctx)
-
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
-
         elif isinstance(error, CannotTargetSelf):
             embed.title = "No Targeting Yourself!"
             embed.description = "Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the face."
-
         else:
             embed.title = f"{ctx.command.name}: Unknown Command Error"
             embed.description = "Maybe the snowballs are revolting. Maybe you hit a beehive. Regardless, there's " \
                                 "some kind of error. Please try again in a minute or two."
-
-            LOGGER.exception("Snowball: Unknown Command Error.", exc_info=error)
+            LOGGER.exception("", exc_info=error)
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
@@ -578,8 +612,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
                     kos = snowball_stats.kos + EXCLUDED.kos,
                     stock = snowball_stats.stock + $7;
         """
-        await self.bot.db_pool.execute(snowball_upsert_query, member.id, member.guild.id, hits, misses, kos,
-                                       stock_insert, stock)
+        await self.bot.db_pool.execute(
+            snowball_upsert_query, member.id, member.guild.id, hits, misses, kos, stock_insert, stock
+        )
 
     async def _make_leaderboard_fields(self, embed: StatsEmbed, records: list[Record]) -> None:
         """Edits a leaderboard embed by adding information about its members through fields.
@@ -608,3 +643,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
         else:
             entity = self.bot.get_user(record["user_id"])
         return entity
+
+
+async def setup(bot) -> None:
+    """Connects cog to bot."""
+
+    await bot.add_cog(SnowballCog(bot))

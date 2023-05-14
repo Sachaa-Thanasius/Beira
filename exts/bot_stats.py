@@ -7,7 +7,6 @@ from __future__ import annotations
 import json
 import logging
 from datetime import timedelta
-from time import perf_counter
 from typing import TYPE_CHECKING, Any, Literal
 
 import discord
@@ -56,6 +55,12 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        LOGGER.error("", exc_info=error)
+
     async def track_command_use(self, ctx: BeiraContext) -> None:
         """Stores records of command uses in the database after some processing."""
 
@@ -98,7 +103,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await self.track_command_use(ctx)
 
     @commands.Cog.listener("on_interaction")
-    async def track_interaction(self, interaction: discord.Interaction) -> None:
+    async def track_interaction(self, interaction: discord.Interaction[Beira]) -> None:
         """Record application command usage, ignoring hybrid or other interactions.
 
         References
@@ -122,27 +127,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         if not isinstance(error, commands.CommandNotFound):
             await self.track_command_use(ctx)
 
-    @commands.Cog.listener()
-    async def on_guild_join(self, guild: discord.Guild):
+    @commands.Cog.listener("on_guild_join")
+    async def add_guild_to_db(self, guild: discord.Guild):
         """Upserts a guild - one that the bot just joined - to the database."""
 
         await upsert_guilds(self.bot.db_pool, guild)
-
-    @commands.hybrid_command(name="ping")
-    async def ping_(self, ctx: BeiraContext) -> None:
-        """Display the time necessary for the bot to communicate with Discord.
-
-        Parameters
-        ----------
-        ctx : :class:`BeiraContext`
-            The invocation context.
-        """
-
-        start_time = perf_counter()
-        message = await ctx.send("Ping...")
-        end_time = perf_counter()
-
-        await message.edit(content=f"Pong! {end_time - start_time:.3f}s")
 
     @commands.hybrid_command(name="usage")
     async def check_usage(
@@ -241,7 +230,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         return await self.bot.db_pool.fetch(query, *query_args)
 
     @check_usage.autocomplete("command")
-    async def command_autocomplete(self, interaction: discord.Interaction, current: str) -> list[Choice[str]]:
+    async def command_autocomplete(self, interaction: discord.Interaction[Beira], current: str) -> list[Choice[str]]:
         """Autocompletes with bot command names."""
 
         assert self.bot.help_command

@@ -46,8 +46,10 @@ class MusicQueueView(PaginatedEmbedView):
             if self.page_cache[self.current_page - 1] is None:
                 # Expected page size of 10
                 self.current_page_content = self.pages[self.current_page - 1]
-                embed_page.description = "\n".join([f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song in
-                                                    enumerate(self.current_page_content)])
+                embed_page.description = "\n".join((
+                    f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song
+                    in enumerate(self.current_page_content))
+                )
                 embed_page.set_page_footer(self.current_page, self.total_pages)
 
                 self.page_cache[self.current_page - 1] = embed_page
@@ -58,6 +60,7 @@ class MusicQueueView(PaginatedEmbedView):
 
 
 class MusicCog(commands.Cog, name="Music"):
+
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
 
@@ -111,7 +114,7 @@ class MusicCog(commands.Cog, name="Music"):
             new_track = await payload.player.queue.get_wait()
             await payload.player.play(new_track)
 
-            current_embed = await format_track_embed(discord.Embed(title="Now Playing"), new_track)
+            current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), new_track)
             await payload.player.chan_ctx.send(embed=current_embed)
         else:
             await payload.player.stop()
@@ -200,7 +203,7 @@ class MusicCog(commands.Cog, name="Music"):
                 first_track = vc.queue.get()
                 await vc.play(first_track)
 
-                embed = await format_track_embed(discord.Embed(title="Now Playing"), first_track)
+                embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), first_track)
                 await ctx.send(embed=embed)
             else:
                 text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
@@ -241,6 +244,19 @@ class MusicCog(commands.Cog, name="Music"):
         await vc.disconnect()
         await ctx.send("Disconnected from voice channel.")
 
+    @music.command()
+    async def current(self, ctx: BeiraContext) -> None:
+        """Display the current track."""
+
+        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+
+        if vc.current:
+            current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
+        else:
+            current_embed = discord.Embed(color=0x149cdf, title="Now Playing", description="Nothing is playing currently.")
+
+        await ctx.send(embed=current_embed)
+
     @music.group(fallback="get")
     async def queue(self, ctx: BeiraContext) -> None:
         """Music queue-related commands. By default, this displays everything in the queue.
@@ -252,7 +268,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         queue_embeds = []
         if vc.current:
-            current_embed = await format_track_embed(discord.Embed(title="Now Playing"), vc.current)
+            current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
             queue_embeds.append(current_embed)
 
         view = MusicQueueView(author=ctx.author, all_pages_content=[track.title for track in vc.queue], per_page=10)

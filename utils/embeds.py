@@ -134,7 +134,7 @@ class PaginatedEmbed(Embed):
         if current_page is None:
             current_page = 0
         if max_pages is None:
-            current_page = 0
+            max_pages = 0
 
         self.set_footer(text=f"Page {current_page}/{max_pages}")
 

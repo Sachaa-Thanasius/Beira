@@ -5,8 +5,8 @@ first.
 
 from __future__ import annotations
 
+import json
 import logging
-from json import load
 from typing import TYPE_CHECKING
 from urllib.parse import quote, urljoin
 
@@ -24,9 +24,8 @@ if TYPE_CHECKING:
 else:
     Beira = commands.Bot
 
-LOGGER = logging.getLogger(__name__)
 
-all_wiki_names = []
+LOGGER = logging.getLogger(__name__)
 
 
 class AoCWikiEmbed(DTEmbed):
@@ -73,6 +72,13 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     ----------
     bot : :class:`Beira`
         The main Discord bot this cog is a part of.
+
+    Attributes
+    ----------
+    bot : :class:`Beira`
+        The main Discord bot this cog is a part of.
+    all_wikis : dict
+        The dict containing information for various wikis.
     """
 
     def __init__(self, bot: Beira) -> None:
@@ -111,7 +117,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         '''
         try:
             with open("data/fandom_wiki_data.json", "r") as f:
-                self.all_wikis = load(f)
+                self.all_wikis.update(json.load(f))
                 # LOGGER.info(f"Loaded file: {f.name}")
         except FileNotFoundError as err:
             LOGGER.exception("JSON File wasn't found", exc_info=err)
@@ -119,7 +125,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         # Walk through all wiki pages linked on the directory page(s).
         for wiki_name, wiki_data in self.all_wikis.items():
             wiki_data["all_pages"] = {}
-            all_wiki_names.append(wiki_name)
 
             for url in wiki_data["pages_directory"]:
                 directory_url = urljoin(wiki_data['base_url'], url)
@@ -135,11 +140,10 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                         continue
 
             # LOGGER.info(f"Loaded wiki info: {wiki_name}")
-        LOGGER.info(f"All wiki names: {all_wiki_names}")
+        LOGGER.info(f"All wiki names: {self.all_wikis.keys()}")
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
-    @app_commands.choices(wiki=[app_commands.Choice(name=name, value=name) for name in all_wiki_names])
     async def wiki(self, ctx: BeiraContext, wiki: str, search_term: str) -> None:
         """Search a selection of pre-indexed Fandom wikis. General purpose.
 
@@ -156,8 +160,15 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         embed = await self.search_wiki(wiki, search_term)
         await ctx.send(embed=embed)
 
+    @wiki.autocomplete("wiki")
+    async def wiki_autocomplete(self, _: discord.Interaction[Beira], current: str) -> list[app_commands.Choice[str]]:
+        """Autocomplete callback for the names of different wikis."""
+
+        options = self.all_wikis.values()
+        return [app_commands.Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
+
     @wiki.autocomplete("search_term")
-    async def wiki_autocomplete(self, interaction: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    async def wiki_search_term_autocomplete(self, interaction: discord.Interaction[Beira], current: str) -> list[app_commands.Choice[str]]:
         """Autocomplete callback for the names of different wiki pages.
 
         Defaults to searching through the AoC wiki if the given wiki name is invalid.

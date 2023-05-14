@@ -31,6 +31,30 @@ GECKODRIVER = Path(__file__).parents[1].joinpath("drivers/geckodriver/geckodrive
 GECKODRIVER_LOGS = Path(__file__).parents[1].joinpath("logs/geckodriver.log")
 
 
+async def update_op_gg_profiles(urls: list[str]) -> None:
+    """Use a webdriver to press an update button on all the given urls.
+
+    Parameters
+    ----------
+    urls: list[:class:`str`]
+        The op.gg profile urls to interact with during this webdriver session.
+    """
+
+    # Create the webdriver.
+    service = services.Geckodriver(binary=str(GECKODRIVER), log_file=open(GECKODRIVER_LOGS, mode='a'))
+    browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
+
+    async with get_session(service, browser) as session:
+        for url in urls:
+            await session.get(url)
+            try:
+                update_button = await session.wait_for_element(10, "button[class*=eapd0am1]")
+            except (errors.ArsenicTimeout, errors.NoSuchWindow, errors.NoSuchElement):
+                continue
+            await update_button.click()
+            await asyncio.sleep(1)
+
+
 class UpdateOPGGView(discord.ui.View):
     """A small view that adds an update button for OP.GG stats."""
 
@@ -40,7 +64,7 @@ class UpdateOPGGView(discord.ui.View):
         self.summoner_name_list = summoner_name_list
 
     @discord.ui.button(label="Update", style=discord.ButtonStyle.blurple)
-    async def update(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def update(self, interaction: discord.Interaction[Beira], button: discord.ui.Button) -> None:
         """Update the information in the given leaderboard."""
 
         # Change the button to show the update is in progress.
@@ -56,7 +80,7 @@ class UpdateOPGGView(discord.ui.View):
 
             if cog and isinstance(cog, LoLCog):
                 # Update every member's OP.GG page.
-                await cog.update_op_gg_profiles(
+                await update_op_gg_profiles(
                     [urljoin(cog.req_site, quote(name)) for name in self.summoner_name_list])
 
                 # Recreate and resend the leaderboard.
@@ -100,7 +124,13 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
-    @commands.hybrid_command()
+    @commands.hybrid_group()
+    async def lol(self, ctx: BeiraContext) -> None:
+        """A group of League of Legends-related commands."""
+
+        ...
+
+    @lol.command("stats")
     async def lol_stats(self, ctx: BeiraContext, summoner_name: str) -> None:
         """Gets the League of Legends stats for a summoner.
 
@@ -126,7 +156,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         await ctx.send(embed=embed)
 
-    @commands.hybrid_command()
+    @lol.command("leaderboard")
     async def lol_leaderboard(self, ctx: BeiraContext, *, summoner_names: str | None = None) -> None:
         """Get the League of Legends ranked stats for a group of summoners and display them.
 
@@ -154,7 +184,6 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         # Get the information for every user and construct the leaderboard embed.
         embed: StatsEmbed = await self.create_lol_leaderboard(summoner_name_list)
-
         view = UpdateOPGGView(self.bot, summoner_name_list)
 
         await ctx.send(embed=embed, view=view)
@@ -174,9 +203,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         """
 
         # Get the information for every user.
-        tasks = []
-        for name in summoner_name_list:
-            tasks.append(asyncio.get_event_loop().create_task(self.check_lol_stats(name)))
+        tasks = [self.bot.loop.create_task(self.check_lol_stats(name)) for name in summoner_name_list]
         results = await asyncio.gather(*tasks)
 
         leaderboard = [result for result in results if result != ("None", "None", "None")]
@@ -204,7 +231,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Returns
         -------
-        summoner_name, winrate, rank : tuple[str, str, str]
+        summoner_name, winrate, rank : tuple[:class:`str`, :class:`str`, :class:`str`]
             The stats of the LoL user, including name, winrate, and rank.
         """
 
@@ -219,7 +246,6 @@ class LoLCog(commands.Cog, name="League of Legends"):
             soup = BeautifulSoup(text, "html.parser")
             winrate = soup.find("div", class_="ratio").text.removeprefix('Win Rate ')
             rank = soup.find("div", class_="tier").text.capitalize()
-
         except AttributeError:
             # Thrown if the summoner has no games in ranked or no data at all.
             summoner_name, winrate, rank = "None", "None", "None"
@@ -227,30 +253,6 @@ class LoLCog(commands.Cog, name="League of Legends"):
         await asyncio.sleep(0.25)
 
         return summoner_name, winrate, rank
-
-    @staticmethod
-    async def update_op_gg_profiles(urls: list[str]) -> None:
-        """Use a webdriver to press an update button on all the given urls.
-
-        Parameters
-        ----------
-        urls: list[:class:`str`]
-            The op.gg profile urls to interact with during this webdriver session.
-        """
-
-        # Create the webdriver.
-        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=open(GECKODRIVER_LOGS, mode='a'))
-        browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
-
-        async with get_session(service, browser) as session:
-            for url in urls:
-                await session.get(url)
-                try:
-                    update_button = await session.wait_for_element(10, "button[class*=eapd0am1]")
-                except (errors.ArsenicTimeout, errors.NoSuchWindow, errors.NoSuchElement):
-                    continue
-                await update_button.click()
-                await asyncio.sleep(1)
 
 
 async def setup(bot: Beira):

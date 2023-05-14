@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-async def psql_init(connection: Connection) -> None:
+async def pool_init(connection: Connection) -> None:
     """Sets up codecs for Postgres connection."""
 
     await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)

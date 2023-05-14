@@ -31,7 +31,10 @@ IGNORE_EXTENSIONS = []
 
 
 class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
-    """A cog for handling bot-related administrative tasks like syncing commands or reloading cogs while live."""
+    """A cog for handling bot-related like syncing commands or reloading cogs while live.
+
+    Meant to be used by the bot dev(s) only.
+    """
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
@@ -47,67 +50,82 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 
         return await self.bot.is_owner(ctx.author)
 
-    @commands.group()
+    @commands.hybrid_group()
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     async def block(self, ctx: BeiraContext) -> None:
+        """A group of commands for blocking/unblocking users or guilds from using the bot."""
+        # TODO: Fix, currently broken.
         ...
 
     @block.command("show")
     async def block_show(self, ctx: BeiraContext) -> None:
-        users = self.bot.blocked_entities["users"]
-        guilds = self.bot.blocked_entities["guilds"]
+        """Display the users and guilds that are blocked from using the bot."""
+
+        users = self.bot.blocked_entities_cache["users"]
+        guilds = self.bot.blocked_entities_cache["guilds"]
 
         users_embed = discord.Embed(title="Blocked Users", description="\n".join(str(self.bot.get_user(u)) for u in users))
         guilds_embed = discord.Embed(title="Blocked Guilds", description="\n".join(str(self.bot.get_guild(g)) for g in guilds))
         await ctx.send(embeds=[users_embed, guilds_embed])
 
     @block.command("add")
-    async def block_add(self, ctx: BeiraContext, entity: discord.User | discord.Guild) -> None:
-        """Register a user or guild to prevent them from using bot commands.
+    async def block_add(self, ctx: BeiraContext, user: discord.User | None, guild: int | None) -> None:
+        """Register a user and/or guild to prevent them from using bot commands.
 
         Parameters
         ----------
         ctx : :class:`BeiraContext`
             The invocation context.
-        entity : :class:`discord.User` | :class:`discord.Guild`
-            The user or guild to block.
+        user : :class:`discord.User`, optional
+            The user to block. Optional.
+        guild : :class:`discord.Guild`, optional
+            The user to block. Optional.
         """
 
         try:
-            if isinstance(entity, discord.User):
-                await upsert_users(self.bot.db_pool, (entity.id, entity.name, True))
-            else:
-                await upsert_guilds(self.bot.db_pool, (entity.id, entity.name, True))
-            self.bot.blocked_entities["users" if isinstance(entity, discord.User) else "guilds"].append(entity.id)
+            if user:
+                await upsert_users(self.bot.db_pool, (user.id, user.name, True))
+                self.bot.blocked_entities_cache["users"].append(user.id)
+                await ctx.send(f"Blocked {user} from bot usage.", ephemeral=True)
+            if guild:
+                guild = self.bot.get_guild(guild)
+                await upsert_guilds(self.bot.db_pool, (guild.id, guild.name, True))
+                self.bot.blocked_entities_cache["guilds"].append(guild.id)
+                await ctx.send(f"Blocked {guild} from bot usage.", ephemeral=True)
         except Exception as e:
             LOGGER.error("", exc_info=e)
-            await ctx.send("Unable to block this entity at this time.")
-        else:
-            await ctx.send(f"Blocked {entity} from bot usage.", ephemeral=True)
+            await ctx.send("Unable to block this user/guild at this time.", ephemeral=True)
 
     @block.command("remove")
-    async def block_remove(self, ctx: BeiraContext, entity: discord.User | discord.Guild) -> None:
+    async def block_remove(self, ctx: BeiraContext, user: discord.User | None, guild: int | None) -> None:
         """Unregister a user or guild to allow them to bot commands.
 
         Parameters
         ----------
         ctx : :class:`BeiraContext`
             The invocation context
-        entity : :class:`discord.User` | :class:`discord.Guild`
-            The user or guild to unblock.
+        user : :class:`discord.User`, optional
+            The user to unblock. Optional.
+        guild : :class:`discord.Guild`, optional
+            The user to unblock. Optional.
         """
 
         try:
-            if isinstance(entity, discord.User):
-                await upsert_users(self.bot.db_pool, (entity.id, entity.name, True))
-            else:
-                await upsert_guilds(self.bot.db_pool, (entity.id, entity.name, True))
-            self.bot.blocked_entities["users" if isinstance(entity, discord.User) else "guilds"].remove(entity.id)
-        except Exception:
-            await ctx.send("Unable to unblock this entity at this time.")
-        else:
-            await ctx.send(f"Unblocked {entity} from bot usage.", ephemeral=True)
+            if user:
+                await upsert_users(self.bot.db_pool, (user.id, user.name, False))
+                self.bot.blocked_entities_cache["users"].remove(user.id)
+                await ctx.send(f"Unblocked {user} from bot usage.", ephemeral=True)
+            if guild:
+                guild = self.bot.get_guild(guild)
+                await upsert_guilds(self.bot.db_pool, (guild.id, guild.name, False))
+                self.bot.blocked_entities_cache["guilds"].remove(guild.id)
+                await ctx.send(f"Unblocked {guild} from bot usage.", ephemeral=True)
+        except Exception as e:
+            LOGGER.error("", exc_info=e)
+            await ctx.send("Unable to unblock this user at this time.", ephemeral=True)
 
-    @commands.command()
+    @commands.hybrid_command()
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     async def shutdown(self, ctx: BeiraContext) -> None:
         """Shutdown the bot."""
 
@@ -115,7 +133,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.send("Shutting down bot...")
         await self.bot.close()
 
-    @commands.command()
+    @commands.hybrid_command()
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
     async def walk(self, ctx: BeiraContext) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
@@ -131,7 +150,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         def create_walk_embed(title: str, cmds: list[app_commands.AppCommand]) -> None:
             """Creates an embed for global and guild command areas and adds it to a collection of embeds."""
 
-            descr = "\n".join([f"**{cmd.mention}**\n{cmd.description}\n" for cmd in cmds])
+            descr = "\n".join([f"**{cmd.mention}**\n" for cmd in cmds])
             walk_embed = discord.Embed(color=0xcccccc, title=title, description=descr)
             all_embeds.append(walk_embed)
 
@@ -145,6 +164,14 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                 create_walk_embed(f"Guild App Commands Registered - {guild}", guild_commands)
 
         await ctx.reply(embeds=all_embeds, ephemeral=True)
+
+    @commands.hybrid_command()
+    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    async def reconfig(self, ctx: BeiraContext) -> None:
+        """Reloads the config info manually during runtime."""
+
+        await self.bot.loop.run_in_executor(None, self.bot.reload_config)
+        await ctx.send("Config reloaded.")
 
     @commands.hybrid_command()
     @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
@@ -253,7 +280,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 
     @reload.autocomplete("extension")
     @unload.autocomplete("extension")
-    async def ext_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    async def ext_autocomplete(self, _: discord.Interaction[Beira], current: str) -> list[app_commands.Choice[str]]:
         """Autocompletes names for currently loaded extensions."""
 
         return [
@@ -262,7 +289,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                ][:25]
 
     @load.autocomplete("extension")
-    async def load_ext_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    async def load_ext_autocomplete(self, _: discord.Interaction[Beira], current: str) -> list[app_commands.Choice[str]]:
         """Autocompletes names for extensions that are ignored or unloaded."""
 
         exts_to_load = set(EXTENSIONS).difference(set(self.bot.extensions), set(IGNORE_EXTENSIONS))
@@ -382,7 +409,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             embed.description = "Syncing the commands failed due to a user related error, typically because the command has invalid data. This is equivalent to an HTTP status code of 400."
             LOGGER.error("", exc_info=error)
         elif isinstance(error, discord.Forbidden):
-            embed.description = "You do not have the permissions to create emojis here."
+            embed.description = "The bot does not have the `applications.commands` scope in the guild."
         elif isinstance(error, app_commands.MissingApplicationID):
             embed.description = "The bot does not have an application ID."
         elif isinstance(error, app_commands.TranslationError):
@@ -394,6 +421,26 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             LOGGER.error("Unknown error in sync command", exc_info=error)
 
         await ctx.reply(embed=embed)
+
+    @commands.command()
+    async def test(self, ctx: BeiraContext) -> None:
+        """Test command."""
+
+        LOGGER.info("Test the ability to force multiple images in an embed's main image area.")
+        image_urls = [
+            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-for-PC-620x388.jpg",
+            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-Free-Download-620x388.jpg",
+            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-Full-HD-620x349.jpg",
+            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-HD-620x388.jpg"
+        ]
+
+        # Main embed url has to be the same for all of these embeds.
+        embed = discord.Embed(description="[Test description](https://www.google.com)", url="https://google.com")
+        embed.set_image(url=image_urls[0])
+        embeds = [embed]
+        embeds.extend(embed.copy().set_image(url=image_url) for image_url in image_urls[1:])
+
+        await ctx.send(embeds=embeds)
 
 
 async def setup(bot: Beira) -> None:
