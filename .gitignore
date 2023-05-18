@@ -8,3 +8,4 @@ venv/
 *.pyc
 *.log
 config.json
+table_insertions.sql
