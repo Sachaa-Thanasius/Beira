@@ -1,4 +1,5 @@
 from .music import MusicCog
+from .wavelink_utils import *
 
 
 async def setup(bot) -> None:

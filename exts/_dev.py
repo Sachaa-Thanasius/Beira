@@ -51,10 +51,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         return await self.bot.is_owner(ctx.author)
 
     @commands.hybrid_group()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def block(self, ctx: BeiraContext) -> None:
-        """A group of commands for blocking/unblocking users or guilds from using the bot."""
-        # TODO: Fix, currently broken.
+        """A group of commands for blocking and unblocking users or guilds from using the bot."""
         ...
 
     @block.command("show")
@@ -64,68 +63,102 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         users = self.bot.blocked_entities_cache["users"]
         guilds = self.bot.blocked_entities_cache["guilds"]
 
-        users_embed = discord.Embed(title="Blocked Users", description="\n".join(str(self.bot.get_user(u)) for u in users))
-        guilds_embed = discord.Embed(title="Blocked Guilds", description="\n".join(str(self.bot.get_guild(g)) for g in guilds))
+        users_embed = discord.Embed(title="Blocked Users", description="\n".join(str(self.bot.get_user(u) or u) for u in users))
+        guilds_embed = discord.Embed(title="Blocked Guilds", description="\n".join(str(self.bot.get_guild(g) or g) for g in guilds))
         await ctx.send(embeds=[users_embed, guilds_embed])
 
     @block.command("add")
-    async def block_add(self, ctx: BeiraContext, user: discord.User | None, guild: int | None) -> None:
-        """Register a user and/or guild to prevent them from using bot commands.
+    async def block_add(
+            self,
+            ctx: BeiraContext,
+            users: commands.Greedy[discord.User] = None,
+            guilds: commands.Greedy[discord.Guild | discord.Object] = None
+    ) -> None:
+        """Block any number of users and/or guilds from using bot commands.
 
         Parameters
         ----------
         ctx : :class:`BeiraContext`
             The invocation context.
-        user : :class:`discord.User`, optional
-            The user to block. Optional.
-        guild : :class:`discord.Guild`, optional
-            The user to block. Optional.
+        users : :class:`commands.Greedy`[:class:`discord.User`], optional
+            The users to block. Optional.
+        guilds : :class:`commands.Greedy`[:class:`discord.Guild` | :class:`discord.Object`], optional
+            The guilds to block. Optional.
         """
 
         try:
-            if user:
-                await upsert_users(self.bot.db_pool, (user.id, user.name, True))
-                self.bot.blocked_entities_cache["users"].append(user.id)
-                await ctx.send(f"Blocked {user} from bot usage.", ephemeral=True)
-            if guild:
-                guild = self.bot.get_guild(guild)
-                await upsert_guilds(self.bot.db_pool, (guild.id, guild.name, True))
-                self.bot.blocked_entities_cache["guilds"].append(guild.id)
-                await ctx.send(f"Blocked {guild} from bot usage.", ephemeral=True)
+            print(guilds)
+            # Update the database and cache.
+            async with self.bot.db_pool.acquire() as conn:
+                async with conn.transaction():
+                    if users:
+                        await upsert_users(conn, *((user.id, True) for user in users))
+                    if guilds:
+                        await upsert_guilds(conn, *((guild.id, True) for guild in guilds))
+
+            # Update the cache.
+            embeds = []
+            if users:
+                self.bot.blocked_entities_cache["users"].update(user.id for user in users)
+                embeds.append(discord.Embed(title="Users", description='\n'.join(str(self.bot.get_user(u) or u) for u in users)))
+            if guilds:
+                self.bot.blocked_entities_cache["guilds"].update(guild.id for guild in guilds)
+                embeds.append(discord.Embed(title="Guilds", description='\n'.join(str(self.bot.get_guild(g) or g) for g in guilds)))
+
+            # Display the results.
+            await ctx.send("Blocked the following from bot usage:", embeds=embeds, ephemeral=True)
+
         except Exception as e:
             LOGGER.error("", exc_info=e)
-            await ctx.send("Unable to block this user/guild at this time.", ephemeral=True)
+            await ctx.send("Unable to block these users/guilds at this time.", ephemeral=True)
 
     @block.command("remove")
-    async def block_remove(self, ctx: BeiraContext, user: discord.User | None, guild: int | None) -> None:
-        """Unregister a user or guild to allow them to bot commands.
+    async def block_remove(
+            self,
+            ctx: BeiraContext,
+            users: commands.Greedy[discord.User] = None,
+            guilds: commands.Greedy[discord.Guild | discord.Object] = None
+    ) -> None:
+        """Unblock any number of users and/or guilds to allow them to bot commands.
 
         Parameters
         ----------
         ctx : :class:`BeiraContext`
             The invocation context
-        user : :class:`discord.User`, optional
-            The user to unblock. Optional.
-        guild : :class:`discord.Guild`, optional
-            The user to unblock. Optional.
+        users : :class:`commands.Greedy`[:class:`discord.User`], optional
+            The users to unblock. Optional.
+        guilds : :class:`commands.Greedy`[:class:`discord.Guild` | :class:`discord.Object`], optional
+            The guilds to unblock. Optional.
         """
 
         try:
-            if user:
-                await upsert_users(self.bot.db_pool, (user.id, user.name, False))
-                self.bot.blocked_entities_cache["users"].remove(user.id)
-                await ctx.send(f"Unblocked {user} from bot usage.", ephemeral=True)
-            if guild:
-                guild = self.bot.get_guild(guild)
-                await upsert_guilds(self.bot.db_pool, (guild.id, guild.name, False))
-                self.bot.blocked_entities_cache["guilds"].remove(guild.id)
-                await ctx.send(f"Unblocked {guild} from bot usage.", ephemeral=True)
+            print(guilds)
+            # Update the database.
+            async with self.bot.db_pool.acquire() as conn:
+                async with conn.transaction():
+                    if users:
+                        await upsert_users(conn, *((user.id, False) for user in users))
+                    if guilds:
+                        await upsert_guilds(conn, *((guild.id, False) for guild in guilds))
+
+            # Update the cache.
+            embeds = []
+            if users:
+                self.bot.blocked_entities_cache["users"] = self.bot.blocked_entities_cache["users"].difference(user.id for user in users)
+                embeds.append(discord.Embed(title="Users", description='\n'.join(str(user) for user in users)))
+            if guilds:
+                self.bot.blocked_entities_cache["guilds"] = self.bot.blocked_entities_cache["guilds"].difference(guild.id for guild in guilds)
+                embeds.append(discord.Embed(title="Guilds", description='\n'.join(str(guild) for guild in guilds)))
+
+            # Display the results.
+            await ctx.send("Unblocked the following from bot usage:", embeds=embeds, ephemeral=True)
+
         except Exception as e:
             LOGGER.error("", exc_info=e)
-            await ctx.send("Unable to unblock this user at this time.", ephemeral=True)
+            await ctx.send("Unable to unblock these users/guilds at this time.", ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def shutdown(self, ctx: BeiraContext) -> None:
         """Shutdown the bot."""
 
@@ -134,7 +167,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await self.bot.close()
 
     @commands.hybrid_command()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def walk(self, ctx: BeiraContext) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
@@ -166,7 +199,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def reconfig(self, ctx: BeiraContext) -> None:
         """Reloads the config info manually during runtime."""
 
@@ -174,7 +207,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.send("Config reloaded.")
 
     @commands.hybrid_command()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to reload, excluding the file type.")
     async def reload(self, ctx: BeiraContext, extension: str) -> None:
         """Reloads an extension/cog.
@@ -209,7 +242,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def load(self, ctx: BeiraContext, extension: str) -> None:
         """Loads an extension/cog.
@@ -244,7 +277,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to unload, excluding the file type.")
     async def unload(self, ctx: BeiraContext, extension: str) -> None:
         """Unloads an extension/cog.
@@ -299,7 +332,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                ][:25]
 
     @commands.hybrid_command("sync")
-    @app_commands.guilds(*[discord.Object(id) for id in CONFIG["discord"]["guilds"]["dev"]])
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
@@ -310,7 +343,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     async def sync_(
             self,
             ctx: BeiraContext,
-            guilds: commands.Greedy[discord.Object] = None,
+            guilds: commands.Greedy[discord.Object],
             spec: app_commands.Choice[str] | None = None
     ) -> None:
         """Syncs the command tree in a way based on input.
@@ -371,8 +404,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                     case _:
                         synced = await ctx.bot.tree.sync()
 
-                place = "globally" if spec is None else "to the current guild."
-                await ctx.send(f"Synced {len(synced)} commands {place}", ephemeral=True)
+                place = "globally" if spec is None else "to the current guild"
+                await ctx.send(f"Synced {len(synced)} commands {place}.", ephemeral=True)
             else:
                 ret = 0
                 for guild in guilds:
@@ -423,8 +456,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.reply(embed=embed)
 
     @commands.command()
-    async def test(self, ctx: BeiraContext) -> None:
-        """Test command."""
+    async def test_pre(self, ctx: BeiraContext) -> None:
+        """Test prefix command."""
 
         LOGGER.info("Test the ability to force multiple images in an embed's main image area.")
         image_urls = [
@@ -441,6 +474,20 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         embeds.extend(embed.copy().set_image(url=image_url) for image_url in image_urls[1:])
 
         await ctx.send(embeds=embeds)
+
+    @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
+    async def test_hy(self, ctx: BeiraContext) -> None:
+        """Test hybrid command."""
+
+        await ctx.send("Test hybrid command.")
+
+    @app_commands.command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
+    async def test_sl(self, interaction: discord.Interaction[Beira]) -> None:
+        """Test app command."""
+
+        await interaction.response.send_message("Test app command.")
 
 
 async def setup(bot: Beira) -> None:

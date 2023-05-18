@@ -35,6 +35,13 @@ class MiscCog(commands.Cog, name="Misc"):
 
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
 
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+        # Just log the exception, whatever it is.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        LOGGER.exception("", exc_info=error)
+
     @commands.hybrid_command()
     async def hello(self, ctx: BeiraContext) -> None:
         """Get back a default "Hello, World!" response."""

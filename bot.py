@@ -81,7 +81,7 @@ class Beira(commands.Bot):
 
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}
-        self.blocked_entities_cache: dict[str, list[Any]] = {}
+        self.blocked_entities_cache: dict[str, set] = {}
 
         # Things to load right after connecting to the Gateway for easy future retrieval.
         self.emojis_stock: dict[str, discord.Emoji] = {}
@@ -113,8 +113,8 @@ class Beira(commands.Bot):
                 user_records = await conn.fetch(user_query)
                 guild_records = await conn.fetch(guild_query)
 
-        self.blocked_entities_cache["users"] = [record["user_id"] for record in user_records]
-        self.blocked_entities_cache["guilds"] = [record["guild_id"] for record in guild_records]
+        self.blocked_entities_cache["users"] = {record["user_id"] for record in user_records}
+        self.blocked_entities_cache["guilds"] = {record["guild_id"] for record in guild_records}
 
     async def _load_guild_prefixes(self) -> None:
         """Load all prefixes from the bot database."""

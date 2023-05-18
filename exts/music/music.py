@@ -353,7 +353,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc.queue.is_empty:
             await ctx.send("The queue is empty and can't be skipped into.")
-        elif index >= vc.queue.count or index < 1:
+        elif index > vc.queue.count or index < 1:
             await ctx.send("Please enter a valid queue index.")
         else:
             if index > 1:

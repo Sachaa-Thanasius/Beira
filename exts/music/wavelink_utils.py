@@ -13,6 +13,9 @@ from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
 
+__all__ = ("format_track_embed", "SoundCloudPlaylist", "WavelinkSearchConverter")
+
+
 async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 

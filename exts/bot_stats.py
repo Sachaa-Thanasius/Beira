@@ -191,9 +191,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         # Create the base queries.
         if guild:
             query = """
-                SELECT user_name, COUNT(*)
+                SELECT u.user_id, COUNT(*)
                 FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
-                GROUP BY user_name
+                GROUP BY u.user_id
                 ORDER BY COUNT(*) DESC
                 LIMIT 10;
             """
@@ -204,9 +204,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         else:
             query = """
-                SELECT guild_name, COUNT(*)
+                SELECT g.guild_id, COUNT(*)
                 FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
-                GROUP BY guild_name
+                GROUP BY g.guild_id
                 ORDER BY COUNT(*) DESC
                 LIMIT 10;
             """
