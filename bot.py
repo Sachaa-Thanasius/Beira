@@ -276,6 +276,7 @@ async def main() -> None:
         "exts.ai_generation",
         "exts.bot_stats",
         "exts.custom_notifications",
+        "exts.dice",
         "exts.emoji_ops",
         "exts.fandom_wiki",
         "exts.ff_metadata",

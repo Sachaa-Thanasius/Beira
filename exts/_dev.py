@@ -87,7 +87,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         """
 
         try:
-            print(guilds)
             # Update the database and cache.
             async with self.bot.db_pool.acquire() as conn:
                 async with conn.transaction():
@@ -132,7 +131,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         """
 
         try:
-            print(guilds)
             # Update the database.
             async with self.bot.db_pool.acquire() as conn:
                 async with conn.transaction():

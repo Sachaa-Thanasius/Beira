@@ -23,6 +23,18 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 
+class catchtime:
+    """Source: https://stackoverflow.com/a/69156219"""
+
+    def __enter__(self):
+        self.time = perf_counter()
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.time = perf_counter() - self.time
+        self.readout = f'Time: {self.time:.3f} seconds'
+
+
 class MiscCog(commands.Cog, name="Misc"):
     """A cog with some basic commands, originally used for testing slash and hybrid command functionality."""
 
