@@ -55,6 +55,28 @@ class MiscCog(commands.Cog, name="Misc"):
         LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()
+    async def about(self, ctx: BeiraContext) -> None:
+        """See some basic information about the bot, including its source."""
+
+        owner = self.bot.get_user(self.bot.owner_id)
+        embed = (
+            discord.Embed(
+                color=0xcfeedf,
+                title="About",
+                description="**Source:** [GitHub](https://github.com/Sachaa-Thanasius/Beira)\n"
+                            f"**Members:** {len(self.bot.users):,d}\n"
+                            f"**Channels:** {len(list(self.bot.get_all_channels())):,d}\n"
+                            f"**Servers:** {len(self.bot.guilds):,d}\n"
+                            f"**Commands:** {len(self.bot.commands):,d}",
+                timestamp=discord.utils.utcnow()
+            )
+            .set_author(name=f"Made by {owner}", icon_url=owner.display_avatar.url)
+            .set_thumbnail(url=self.bot.user.display_avatar.url)
+            .set_footer(text=f"Made with discord.py v{discord.__version__}")
+        )
+        await ctx.send(embed=embed)
+
+    @commands.hybrid_command()
     async def hello(self, ctx: BeiraContext) -> None:
         """Get back a default "Hello, World!" response."""
 

@@ -341,7 +341,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     async def sync_(
             self,
             ctx: BeiraContext,
-            guilds: commands.Greedy[discord.Object],
+            guilds: commands.Greedy[discord.Object] = None,
             spec: app_commands.Choice[str] | None = None
     ) -> None:
         """Syncs the command tree in a way based on input.

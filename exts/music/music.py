@@ -110,7 +110,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
         """Called when the current track has finished playing."""
 
-        if not payload.player.queue.is_empty:
+        if payload.player.is_connected() and not payload.player.queue.is_empty:
             new_track = await payload.player.queue.get_wait()
             await payload.player.play(new_track)
 
@@ -122,6 +122,7 @@ class MusicCog(commands.Cog, name="Music"):
     @commands.hybrid_group()
     async def music(self, ctx: BeiraContext) -> None:
         """Music-related commands."""
+
         ...
 
     @music.command()
@@ -357,8 +358,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("Please enter a valid queue index.")
         else:
             if index > 1:
-                thing = itertools.islice(vc.queue._queue, index - 1, vc.queue.count)
-                vc.queue._queue = collections.deque(thing)
+                temp = itertools.islice(vc.queue._queue, index - 1, vc.queue.count)
+                vc.queue._queue = collections.deque(temp)
             vc.queue.loop = False
             await vc.stop()
             await ctx.send(f"Skipped to the song at position {index}", ephemeral=True)
