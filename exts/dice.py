@@ -3,6 +3,7 @@ from __future__ import annotations
 import random
 import logging
 import re
+from io import StringIO
 from typing import TYPE_CHECKING, Any
 
 import asteval
@@ -58,6 +59,51 @@ standard_dice = {
 }
 
 
+class DiceEmbed(discord.Embed):
+    def __init__(self, rolls_info: dict[str, list[int]], modifier: int = 0, **kwargs):
+        description = StringIO()
+        if len(rolls_info) == 1:
+            die_type, die_rolls = rolls_info.popitem()
+            emoji = die.emoji if (die := standard_dice.get(int(die_type.removeprefix("d")))) else "\N{GAME DIE}"
+
+            description.write(f"{emoji} **Rolled**")
+
+            if len(die_rolls) == 1:
+                description.write(f" a {die_type}: **{die_rolls[0]}**\n")
+            else:
+                description.write(f" {len(die_rolls)} {die_type}s: *{die_rolls}*\n")
+
+            if modifier != 0:
+                description.write(f"- Modifier: *{modifier}*\n")
+
+            if modifier != 0 or len(die_rolls) > 1:
+                description.write(f"\nTotal: **{sum(die_rolls) + modifier}**")
+        else:
+            total = 0
+
+            description.write("Rolled:\n\n")
+
+            for die_type, die_rolls in rolls_info.items():
+                emoji = die.emoji if (die := standard_dice.get(int(die_type.removeprefix("d")))) else "\N{GAME DIE}"
+                description.write(f"- {emoji}")
+
+                if len(die_rolls) == 1:
+                    description.write(f" a {die_type}: **{die_rolls[0]}**\n")
+                else:
+                    subtotal = sum(die_rolls)
+                    total += subtotal
+                    description.write(f" {len(die_rolls)} {die_type}s: **{subtotal}** *{die_rolls}*\n\n")
+
+            if modifier != 0:
+                description.write(f"- Modifier: *{modifier}*\n")
+
+            description.write(f"Total: **{total + modifier}**")
+
+        kwargs["description"] = description.getvalue()
+        super().__init__(**kwargs)
+
+
+
 class DiceButton(Button["DiceView"]):
     """A button subclass that specifically displays dice and acts as a die roller.
 
@@ -86,22 +132,12 @@ class DiceButton(Button["DiceView"]):
     async def callback(self, interaction: discord.Interaction[Beira]) -> None:
         """Roll the selected dice and display the result."""
 
-        embed = discord.Embed(colour=self.color, description="")
-
-        # Perform each roll.
-        # - Account for modifiers and non-1 number of rolls set in the parent view.
         if self.view.num_rolls == 1:
-            num = random.randint(1, self.value) + self.view.modifier
-            author_text = f"Rolled a {self.label}: {num}"
+            results = [random.randint(1, self.value) + self.view.modifier]
         else:
-            nums = [random.randint(1, self.value) for _ in range(self.view.num_rolls)]
-            author_text = f"Rolled {self.view.num_rolls} {self.label}s: {sum(nums, self.view.modifier)}"
-            embed.description += f"- *Individual rolls: {nums}*\n"
+            results = [random.randint(1, self.value) for _ in range(self.view.num_rolls)]
 
-        embed.set_author(name=author_text, icon_url=self.emoji.url)     # Display the main information in the author area.
-
-        if self.view.modifier != 0:
-            embed.description += f"- *Modifier was {self.view.modifier}*"
+        embed = DiceEmbed({self.label.lower(): results}, self.view.modifier, colour=self.color)
 
         if not interaction.response.is_done():  # type: ignore # PyCharm doesn't see InteractionResponse here.
             await interaction.response.send_message(embed=embed, ephemeral=True)    # type: ignore # PyCharm doesn't see InteractionResponse here.
@@ -229,6 +265,8 @@ class DiceView(View):
         The modifier to apply at the end of a roll or series of rolls.
     num_rolls : :class:`int`
         The number of rolls to perform. Allows item interactions to cause multiple rolls.
+    expression : :class:`str`
+        The custom dice expression from user input to be evaluated.
     """
 
     def __init__(self, **kwargs) -> None:
@@ -289,14 +327,14 @@ class DiceView(View):
         if modal_timed_out or self.is_finished():
             return
 
-        # Ensure input is a number and in range 1-20, and display result on button.
+        # Ensure input is a number greater than 1, and display result on button.
         modifier_value = modal.modifier_input.value
         if not modifier_value or not modifier_value.isdigit():
             button.label = "# of Rolls"
             self.num_rolls = 1
         else:
             mod_int = int(modifier_value)
-            if mod_int < 1 or mod_int > 20:
+            if mod_int < 1:
                 raise ValueError
             button.label = f"# of Rolls: {mod_int}"
             self.num_rolls = mod_int
@@ -304,7 +342,7 @@ class DiceView(View):
         await modal.interaction.response.edit_message(view=self)    # type: ignore # PyCharm doesn't see InteractionResponse here.
 
     @discord.ui.button(label="Custom Expression", style=discord.ButtonStyle.green, emoji="\N{ABACUS}", row=2)
-    async def set_expression(self, interaction: discord.Interaction[Beira], button: Button) -> None:
+    async def set_expression(self, interaction: discord.Interaction[Beira], _: Button) -> None:
         """Allow the user to enter a custom dice expression to be evaluated for result."""
 
         # Create and send a modal for user input.
@@ -320,31 +358,32 @@ class DiceView(View):
             return
 
         original_embed = (await interaction.original_response()).embeds[0]
-        temp_exp = modal.expression_input.value
-        if not temp_exp:
+
+        if not modal.expression_input.value:
             self.expression = ""
             original_embed.remove_field(0)
         else:
-            self.expression = temp_exp
+            self.expression = modal.expression_input.value
             original_embed.remove_field(0).add_field(name="Loaded Expression:", value=self.expression)
 
         # Edit the original embed to display it.
         await modal.interaction.response.edit_message(embed=original_embed, view=self)     # type: ignore # PyCharm doesn't see InteractionResponse here.
 
-    @discord.ui.button(label="\N{CLOCKWISE RIGHT AND LEFT SEMICIRCLE ARROWS}", style=discord.ButtonStyle.green, row=2)
-    async def run_expression(self, interaction: discord.Interaction, button: Button) -> None:
+    @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", style=discord.ButtonStyle.green, row=2)
+    async def run_expression(self, interaction: discord.Interaction, _: Button) -> None:
         abacus_url = "https://symbl-world.akamaized.net/i/webp/87/a40e4fe8b833ea01e75a3544dcd431.webp"
 
         if not self.expression:
-            embed = discord.Embed().set_author(name=f"No expression to evaluate!", icon_url=abacus_url)
+            embed = discord.Embed(description=f"\N{ABACUS} No expression to evaluate!")
         else:
             normalized_expression = re.sub(r"(\d*)d(\d+)", self.replace_dice, self.expression)
             evaluation = self._aeval(normalized_expression)
             embed = discord.Embed(
-                description=f"- *Raw Expression: {self.expression}*\n"
+                description=f"\N{ABACUS} Rolled with custom expression:\n"
+                            f"- *Raw Expression: {self.expression}*\n"
                             f"- *Expression with rolls inserted: {normalized_expression}*\n"
                             f"Total: **{evaluation}**"
-            ).set_author(name=f"Rolled with custom expression:", icon_url=abacus_url)
+            )
 
         if not interaction.response.is_done():  # type: ignore # PyCharm doesn't see InteractionResponse here.
             await interaction.response.send_message(embed=embed, ephemeral=True)  # type: ignore # PyCharm doesn't see InteractionResponse here.
@@ -355,7 +394,7 @@ class DiceView(View):
     def replace_dice(m: re.Match) -> str:
         num = int(m.group(1)) if m.group(1) else 1
         limit = int(m.group(2))
-        rolls = [random.randint(1, num) for _ in range(limit)]
+        rolls = [random.randint(1, limit) for _ in range(num)]
         return "(" + " + ".join(str(ind_roll) for ind_roll in rolls) + ")"
 
 
