@@ -9,3 +9,5 @@ venv/
 *.log
 config.json
 table_insertions.sql
+final.py
+dump.json

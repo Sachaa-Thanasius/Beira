@@ -51,7 +51,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         return await self.bot.is_owner(ctx.author)
 
     @commands.hybrid_group()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def block(self, ctx: BeiraContext) -> None:
         """A group of commands for blocking and unblocking users or guilds from using the bot."""
         ...
@@ -156,7 +155,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             await ctx.send("Unable to unblock these users/guilds at this time.", ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def shutdown(self, ctx: BeiraContext) -> None:
         """Shutdown the bot."""
 
@@ -165,7 +163,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await self.bot.close()
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def walk(self, ctx: BeiraContext) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
@@ -197,7 +194,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def reconfig(self, ctx: BeiraContext) -> None:
         """Reloads the config info manually during runtime."""
 
@@ -205,7 +201,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.send("Config reloaded.")
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to reload, excluding the file type.")
     async def reload(self, ctx: BeiraContext, extension: str) -> None:
         """Reloads an extension/cog.
@@ -240,7 +235,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def load(self, ctx: BeiraContext, extension: str) -> None:
         """Loads an extension/cog.
@@ -275,7 +269,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                 await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to unload, excluding the file type.")
     async def unload(self, ctx: BeiraContext, extension: str) -> None:
         """Unloads an extension/cog.
@@ -330,7 +323,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                ][:25]
 
     @commands.hybrid_command("sync")
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
@@ -474,21 +466,19 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.send(embeds=embeds)
 
     @commands.hybrid_command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def test_hy(self, ctx: BeiraContext) -> None:
         """Test hybrid command."""
 
         await ctx.send("Test hybrid command.")
 
     @app_commands.command()
-    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def test_sl(self, interaction: discord.Interaction[Beira]) -> None:
         """Test app command."""
 
-        await interaction.response.send_message("Test app command.")
+        await interaction.response.send_message("Test app command.")        # type: ignore
 
 
 async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
-    await bot.add_cog(DevCog(bot))
+    await bot.add_cog(DevCog(bot), guilds=[discord.Object(guild_id) for guild_id in CONFIG["discord"]["guilds"]["dev"]])

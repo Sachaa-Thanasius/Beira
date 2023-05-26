@@ -111,6 +111,7 @@ class DiceEmbed(discord.Embed):
             **kwargs
     ) -> None:
 
+        # Determine what type of description needs to be made: straight rolls, or custom expression.
         if rolls_info:
             # Calculate the total before any display formatting happens.
             total = sum(sum(x) for x in rolls_info.values()) + modifier
@@ -369,6 +370,9 @@ class DiceView(View):
         """
 
         modal = DiceModifierModal()
+        if self.modifier != 0:
+            modal.modifier_input.default = str(self.modifier)
+
         await interaction.response.send_modal(modal)    # type: ignore
         modal_timed_out = await modal.wait()
 
@@ -396,6 +400,8 @@ class DiceView(View):
         modal = DiceModifierModal()
         modal.modifier_input.label = "Dice to Roll (Submit with nothing to reset)"
         modal.modifier_input.placeholder = "Enter number (greater than 1) here..."
+        if self.num_rolls != 1:
+            modal.modifier_input.default = str(self.num_rolls)
 
         await interaction.response.send_modal(modal)  # type: ignore
         modal_timed_out = await modal.wait()
@@ -423,6 +429,9 @@ class DiceView(View):
 
         # Create and send a modal for user input.
         modal = DiceExpressionModal()
+        if self.expression != "":
+            modal.expression_input.default = self.expression
+
         await interaction.response.send_modal(modal)  # type: ignore
         modal_timed_out = await modal.wait()
 
