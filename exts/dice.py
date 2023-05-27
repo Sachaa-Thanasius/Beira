@@ -89,6 +89,8 @@ def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
 
 
 def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
+    """Perform dice rolls based on a given expression with various dice, and return the filled in expression and final result."""
+
     normalized_expression = re.sub(r"(\d*)d(\d+)", replace_dice_in_expr, expression)
     evaluation = int(AEVAL(normalized_expression))
 
@@ -102,6 +104,18 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
 
 
 class DiceEmbed(discord.Embed):
+    """An embed subclass built to turn different types of dice roll results into a formatted description.
+
+    Parameters
+    ----------
+    rolls_info : dict[:class:`int`, list[:class:`int`]], optional
+        A dictionary of information with dice types as keys and corresponding dice rolls as values.
+    modifier : :class:`int`, default=0
+        The post-calculation modifier for the dice rolls.
+    expression_info : tuple[:class:`str`, :class:`str`, :class:`str`], optional
+        A tuple containing the original expression, the expression filled with dice rolls, and the expressions' final result.
+    """
+
     def __init__(
             self,
             *,

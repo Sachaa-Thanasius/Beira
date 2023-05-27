@@ -272,6 +272,7 @@ async def main() -> None:
     testing = False
     init_exts = [
         "exts._dev",
+        "exts._jishaku",
         "exts.admin",
         "exts.ai_generation",
         "exts.bot_stats",
