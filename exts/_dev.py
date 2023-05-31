@@ -5,9 +5,11 @@ _dev.py: A cog that implements commands for reloading and syncing extensions and
 from __future__ import annotations
 
 import logging
+import textwrap
 from typing import TYPE_CHECKING
 
 import discord
+from asyncpg.exceptions import PostgresWarning, PostgresError, PostgresConnectionError
 from discord import app_commands
 from discord.ext import commands
 
@@ -30,7 +32,7 @@ LOGGER = logging.getLogger(__name__)
 IGNORE_EXTENSIONS = []
 
 
-class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
+class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     """A cog for handling bot-related like syncing commands or reloading cogs while live.
 
     Meant to be used by the bot dev(s) only.
@@ -50,20 +52,21 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 
         return await self.bot.is_owner(ctx.author)
 
-    @commands.hybrid_group()
+    @commands.hybrid_group(fallback="get")
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def block(self, ctx: BeiraContext) -> None:
-        """A group of commands for blocking and unblocking users or guilds from using the bot."""
-        ...
+        """A group of commands for blocking and unblocking users or guilds from using the bot.
 
-    @block.command("show")
-    async def block_show(self, ctx: BeiraContext) -> None:
-        """Display the users and guilds that are blocked from using the bot."""
+        By default, display the users and guilds that are blocked from using the bot.
+        """
 
         users = self.bot.blocked_entities_cache["users"]
         guilds = self.bot.blocked_entities_cache["guilds"]
 
-        users_embed = discord.Embed(title="Blocked Users", description="\n".join(str(self.bot.get_user(u) or u) for u in users))
-        guilds_embed = discord.Embed(title="Blocked Guilds", description="\n".join(str(self.bot.get_guild(g) or g) for g in guilds))
+        users_embed = discord.Embed(title="Blocked Users",
+                                    description="\n".join(str(self.bot.get_user(u) or u) for u in users))
+        guilds_embed = discord.Embed(title="Blocked Guilds",
+                                     description="\n".join(str(self.bot.get_guild(g) or g) for g in guilds))
         await ctx.send(embeds=[users_embed, guilds_embed])
 
     @block.command("add")
@@ -106,11 +109,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             # Display the results.
             await ctx.send("Blocked the following from bot usage:", embeds=embeds, ephemeral=True)
 
-        except Exception as e:
-            LOGGER.error("", exc_info=e)
+        except (PostgresWarning, PostgresError, PostgresConnectionError) as err:
+            LOGGER.error("", exc_info=err)
             await ctx.send("Unable to block these users/guilds at this time.", ephemeral=True)
 
     @block.command("remove")
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def block_remove(
             self,
             ctx: BeiraContext,
@@ -150,11 +154,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             # Display the results.
             await ctx.send("Unblocked the following from bot usage:", embeds=embeds, ephemeral=True)
 
-        except Exception as e:
-            LOGGER.error("", exc_info=e)
+        except (PostgresWarning, PostgresError, PostgresConnectionError) as err:
+            LOGGER.error("", exc_info=err)
             await ctx.send("Unable to unblock these users/guilds at this time.", ephemeral=True)
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def shutdown(self, ctx: BeiraContext) -> None:
         """Shutdown the bot."""
 
@@ -163,6 +168,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await self.bot.close()
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def walk(self, ctx: BeiraContext) -> None:
         """Walk through all app commands globally and in every guild to see what is synced and where.
 
@@ -172,7 +178,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             The invocation context where the command was called.
         """
 
-        guilds_to_check = self.bot.guilds
         all_embeds = []
 
         def create_walk_embed(title: str, cmds: list[app_commands.AppCommand]) -> None:
@@ -186,7 +191,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         if global_commands:
             create_walk_embed("Global App Commands Registered", global_commands)
 
-        for guild in guilds_to_check:
+        for guild in self.bot.guilds:
             guild_commands = await self.bot.tree.fetch_commands(guild=guild)
             if guild_commands:
                 create_walk_embed(f"Guild App Commands Registered - {guild}", guild_commands)
@@ -194,6 +199,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.reply(embeds=all_embeds, ephemeral=True)
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def reconfig(self, ctx: BeiraContext) -> None:
         """Reloads the config info manually during runtime."""
 
@@ -201,6 +207,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.send("Config reloaded.")
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to reload, excluding the file type.")
     async def reload(self, ctx: BeiraContext, extension: str) -> None:
         """Reloads an extension/cog.
@@ -215,26 +222,26 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         """
 
         async with ctx.typing():
-            if extension:
-                embed = discord.Embed(color=0xcccccc)
+            embed = discord.Embed(color=0xcccccc)
 
-                if extension in IGNORE_EXTENSIONS:
-                    embed.description = f"Currently exempt from reloads: {extension}"
-                elif extension not in self.bot.extensions:
-                    embed.description = f"Never initially loaded this extension: {extension}"
+            if extension in IGNORE_EXTENSIONS:
+                embed.description = f"Currently exempt from reloads: {extension}"
+            elif extension not in self.bot.extensions:
+                embed.description = f"Never initially loaded this extension: {extension}"
+            else:
+                try:
+                    await self.bot.reload_extension(extension)
+                except commands.ExtensionError as err:
+                    embed.description = f"Couldn't reload extension: {extension}\n{err}"
+                    LOGGER.error(f"Couldn't reload extension: {extension}", exc_info=err)
                 else:
-                    try:
-                        await self.bot.reload_extension(extension)
-                    except commands.ExtensionError as err:
-                        embed.description = f"Couldn't reload extension: {extension}\n{err}"
-                        LOGGER.error(f"Couldn't reload extension: {extension}", exc_info=err)
-                    else:
-                        embed.description = f"Reloaded extension: {extension}"
-                        LOGGER.info(f"Reloaded extension via `reload`: {extension}")
+                    embed.description = f"Reloaded extension: {extension}"
+                    LOGGER.info(f"Reloaded extension via `reload`: {extension}")
 
-                await ctx.send(embed=embed, ephemeral=True)
+            await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to load, excluding the file type.")
     async def load(self, ctx: BeiraContext, extension: str) -> None:
         """Loads an extension/cog.
@@ -249,26 +256,26 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         """
 
         async with ctx.typing():
-            if extension:
-                embed = discord.Embed(color=0xcccccc)
+            embed = discord.Embed(color=0xcccccc)
 
-                if extension in IGNORE_EXTENSIONS:
-                    embed.description = f"Currently exempt from loading: {extension}"
-                elif extension in self.bot.extensions:
-                    embed.description = f"This extension is already loaded: {extension}"
+            if extension in IGNORE_EXTENSIONS:
+                embed.description = f"Currently exempt from loading: {extension}"
+            elif extension in self.bot.extensions:
+                embed.description = f"This extension is already loaded: {extension}"
+            else:
+                try:
+                    await self.bot.load_extension(extension)
+                except commands.ExtensionError as err:
+                    embed.description = f"Couldn't load extension: {extension}\n{err}"
+                    LOGGER.error(f"Couldn't load extension: {extension}", exc_info=err)
                 else:
-                    try:
-                        await self.bot.load_extension(extension)
-                    except commands.ExtensionError as err:
-                        embed.description = f"Couldn't load extension: {extension}\n{err}"
-                        LOGGER.error(f"Couldn't load extension: {extension}", exc_info=err)
-                    else:
-                        embed.description = f"Loaded extension: {extension}"
-                        LOGGER.info(f"Loaded extension via `load`: {extension}")
+                    embed.description = f"Loaded extension: {extension}"
+                    LOGGER.info(f"Loaded extension via `load`: {extension}")
 
-                await ctx.send(embed=embed, ephemeral=True)
+            await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.describe(extension="The file name of the extension/cog you wish to unload, excluding the file type.")
     async def unload(self, ctx: BeiraContext, extension: str) -> None:
         """Unloads an extension/cog.
@@ -283,24 +290,23 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         """
 
         async with ctx.typing():
-            if extension:
-                embed = discord.Embed(color=0xcccccc)
+            embed = discord.Embed(color=0xcccccc)
 
-                if extension in IGNORE_EXTENSIONS:
-                    embed.description = f"Currently exempt from unloads: {extension}"
-                elif extension not in self.bot.extensions:
-                    embed.description = f"This extension has already been unloaded: {extension}"
+            if extension in IGNORE_EXTENSIONS:
+                embed.description = f"Currently exempt from unloads: {extension}"
+            elif extension not in self.bot.extensions:
+                embed.description = f"This extension has already been unloaded: {extension}"
+            else:
+                try:
+                    await self.bot.unload_extension(extension)
+                except commands.ExtensionError as err:
+                    embed.description = f"Couldn't unload extension: {extension}\n{err}"
+                    LOGGER.error(f"Couldn't unload extension: {extension}", exc_info=err)
                 else:
-                    try:
-                        await self.bot.unload_extension(extension)
-                    except commands.ExtensionError as err:
-                        embed.description = f"Couldn't unload extension: {extension}\n{err}"
-                        LOGGER.error(f"Couldn't unload extension: {extension}", exc_info=err)
-                    else:
-                        embed.description = f"Unloaded extension: {extension}"
-                        LOGGER.info(f"Reloaded extension via `reload`: {extension}")
+                    embed.description = f"Unloaded extension: {extension}"
+                    LOGGER.info(f"Reloaded extension via `reload`: {extension}")
 
-                await ctx.send(embed=embed, ephemeral=True)
+            await ctx.send(embed=embed, ephemeral=True)
 
     @reload.autocomplete("extension")
     @unload.autocomplete("extension")
@@ -323,6 +329,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
                ][:25]
 
     @commands.hybrid_command("sync")
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
@@ -372,27 +379,26 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 
         async with ctx.typing():
             if not guilds:
-                match spec:
-                    case "~":
-                        synced = await ctx.bot.tree.sync(guild=ctx.guild)
-                    case "*":
-                        ctx.bot.tree.copy_global_to(guild=ctx.guild)
-                        synced = await ctx.bot.tree.sync(guild=ctx.guild)
-                    case "^":
-                        ctx.bot.tree.clear_commands(guild=ctx.guild)
-                        await ctx.bot.tree.sync(guild=ctx.guild)
-                        synced = []
-                    case "-":
-                        ctx.bot.tree.clear_commands(guild=None)
-                        await ctx.bot.tree.sync()
-                        synced = []
-                    case "+":
-                        for guild in ctx.bot.guilds:
-                            ctx.bot.tree.clear_commands(guild=guild)
-                            await ctx.bot.tree.sync(guild=guild)
-                        synced = []
-                    case _:
-                        synced = await ctx.bot.tree.sync()
+                if spec == "~":
+                    synced = await ctx.bot.tree.sync(guild=ctx.guild)
+                elif spec == "*":
+                    ctx.bot.tree.copy_global_to(guild=ctx.guild)
+                    synced = await ctx.bot.tree.sync(guild=ctx.guild)
+                elif spec == "^":
+                    ctx.bot.tree.clear_commands(guild=ctx.guild)
+                    await ctx.bot.tree.sync(guild=ctx.guild)
+                    synced = []
+                elif spec == "-":
+                    ctx.bot.tree.clear_commands(guild=None)
+                    await ctx.bot.tree.sync()
+                    synced = []
+                elif spec == "+":
+                    for guild in ctx.bot.guilds:
+                        ctx.bot.tree.clear_commands(guild=guild)
+                        await ctx.bot.tree.sync(guild=guild)
+                    synced = []
+                else:
+                    synced = await ctx.bot.tree.sync()
 
                 place = "globally" if spec is None else "to the current guild"
                 await ctx.send(f"Synced {len(synced)} commands {place}.", ephemeral=True)
@@ -429,7 +435,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 
         # Respond to the error.
         if isinstance(error, app_commands.CommandSyncFailure):
-            embed.description = "Syncing the commands failed due to a user related error, typically because the command has invalid data. This is equivalent to an HTTP status code of 400."
+            embed.description = textwrap.dedent(
+                """\
+                Syncing the commands failed due to a user related error, typically because the command has invalid data. \
+                This is equivalent to an HTTP status code of 400.
+                """
+            )
             LOGGER.error("", exc_info=error)
         elif isinstance(error, discord.Forbidden):
             embed.description = "The bot does not have the `applications.commands` scope in the guild."
@@ -449,7 +460,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
     async def test_pre(self, ctx: BeiraContext) -> None:
         """Test prefix command."""
 
-        LOGGER.info("Test the ability to force multiple images in an embed's main image area.")
         image_urls = [
             "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-for-PC-620x388.jpg",
             "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-Free-Download-620x388.jpg",
@@ -457,8 +467,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
             "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-HD-620x388.jpg"
         ]
 
-        # Main embed url has to be the same for all of these embeds.
-        embed = discord.Embed(description="[Test description](https://www.google.com)", url="https://google.com")
+        # Main embed url attribute has to be the same for all of these embeds.
+        embed = discord.Embed(
+            title="Test the ability to force multiple images in an embed's main image area.",
+            description="[Test description](https://www.google.com)",
+            url="https://google.com"
+        )
         embed.set_image(url=image_urls[0])
         embeds = [embed]
         embeds.extend(embed.copy().set_image(url=image_url) for image_url in image_urls[1:])
@@ -466,12 +480,14 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
         await ctx.send(embeds=embeds)
 
     @commands.hybrid_command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def test_hy(self, ctx: BeiraContext) -> None:
         """Test hybrid command."""
 
         await ctx.send("Test hybrid command.")
 
     @app_commands.command()
+    @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def test_sl(self, interaction: discord.Interaction[Beira]) -> None:
         """Test app command."""
 
@@ -481,4 +497,4 @@ class DevCog(commands.Cog, name="_Dev", command_attrs=dict(hidden=True)):
 async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
-    await bot.add_cog(DevCog(bot), guilds=[discord.Object(guild_id) for guild_id in CONFIG["discord"]["guilds"]["dev"]])
+    await bot.add_cog(DevCog(bot))  # , guilds=[discord.Object(guild_id) for guild_id in CONFIG["discord"]["guilds"]["dev"]])

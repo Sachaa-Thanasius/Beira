@@ -1,5 +1,11 @@
 """
 snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
+
+References
+----------
+Rules and code inspiration.
+https://web.archive.org/web/20220103003050/https://support.discord.com/hc/en-us/articles/4414111886359-Snowsgiving-2021-Snowball-Bot-FAQ
+https://github.com/0xMukesh/snowball-bot
 """
 
 from __future__ import annotations
@@ -37,6 +43,7 @@ SPECIAL_STOCK_CAP = 200  # Maximum number of snowballs for self and friends.
 TRANSFER_CAP = 10        # Maximum number of snowballs that can be gifted or stolen.
 
 
+"""Snowball cooldown callbacks."""
 def collect_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.collect() command. 10 seconds by default."""
 
@@ -104,8 +111,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands before the bot connects to the Discord Gateway."""
 
-        with open("data/snowball_embed_data.json", "r") as f:
-            self.embed_data = json.load(f)
+        with open("data/snowball_embed_data.json", "r", encoding="utf-8") as data_file:
+            self.embed_data = json.load(data_file)
 
     async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
         """Handles errors that occur within this cog.
@@ -143,14 +150,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @commands.hybrid_group()
     async def snow(self, ctx: BeiraContext) -> None:
-        """A group of snowball-related commands.
+        """A group of snowball-related commands."""
 
-        Parameters
-        ----------
-        ctx : :class:`BeiraContext`
-            The invocation context.
-        """
-        ...
+        pass
 
     @snow.command()
     async def settings(self, ctx: BeiraContext) -> None:
@@ -322,7 +324,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        elif (receiver_record is not None) and (receiver_record["stock"] + amount > stock_cap):
+        if (receiver_record is not None) and (receiver_record["stock"] + amount > stock_cap):
             failed_embed = discord.Embed(
                 color=0x69ff69,
                 description=f"Your friend has enough snowballs; this transfer would push them past the stock cap of "

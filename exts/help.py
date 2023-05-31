@@ -1,5 +1,9 @@
 """
 help.py: A custom help command for Beira set through a cog.
+
+References
+----------
+https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
 """
 
 from __future__ import annotations
@@ -78,11 +82,11 @@ class HelpCogModal(discord.ui.Modal):
         """Performs validation on the input and saves the interaction for a later response."""
         try:
             temp = int(self.input_page_num.value)
-        except ValueError:
+        except ValueError as exc:
             temp = self.input_page_num.value
             choice = next((i for i, name in enumerate(self.names) if temp.lower() in name.lower()), -1) + 1
             if not choice:
-                raise ValueError("No cogs match this name.")
+                raise ValueError("No cogs match this name.") from exc
         else:
             if temp > self.page_limit or temp < 1:
                 raise IndexError("This page number is invalid.")
@@ -97,7 +101,7 @@ class HelpBotView(PaginatedEmbedView):
     """
 
     def format_page(self) -> discord.Embed:
-        """Makes, or retrieves from the cache, the quote embed 'page' that the user will see.
+        """Makes, or retrieves from the cache, the help embed 'page' that the user will see.
 
         Assumes a per_page value of 1.
         """
@@ -191,9 +195,7 @@ class HelpCogView(PaginatedEmbedView):
 
 
 class BeiraHelpCommand(commands.HelpCommand):
-
-    def __init__(self, **options: Any) -> None:
-        super().__init__(**options)
+    """The custom help command for Beira."""
 
     async def send_bot_help(
             self,
@@ -254,14 +256,14 @@ class BeiraHelpCommand(commands.HelpCommand):
         channel = self.get_destination()
         await channel.send(embed=embed)
 
-    async def command_not_found(self, string: str, /) -> str:
+    def command_not_found(self, string: str, /) -> str:
         return f"No command called \"{string}\" found."
 
-    async def subcommand_not_found(self, command: commands.Command[Any, ..., Any], string: str, /) -> str:
+    def subcommand_not_found(self, command: commands.Command[Any, ..., Any], string: str, /) -> str:
         return f"Command `{command.name}` has no subcommand named \"{string}\"."
 
     async def send_error_message(self, error: str, /) -> None:
-        embed = HelpEmbed(title=f"Help: Error", description=error)
+        embed = HelpEmbed(title="Help: Error", description=error)
         channel = self.get_destination()
         await channel.send(embed=embed)
 
@@ -286,6 +288,8 @@ class BeiraHelpCommand(commands.HelpCommand):
         return f'{self.context.clean_prefix}{command.qualified_name} {command.signature}'
 
     async def format_cog_pages(self, cog: commands.Cog, page_size: int):
+        """Format information about cogs into pages for an embed-based view."""
+
         pages_content = []
 
         filtered = await self.filter_commands(cog.get_commands(), sort=True)
@@ -319,7 +323,7 @@ class HelpCog(commands.Cog, name="Help"):
         self.bot.help_command = BeiraHelpCommand()
         self.bot.help_command.cog = self
 
-    def cog_unload(self) -> None:
+    async def cog_unload(self) -> None:
         """Resets the bot's help command to its default state before unloading the cog."""
 
         self.bot.help_command = self._old_help_command

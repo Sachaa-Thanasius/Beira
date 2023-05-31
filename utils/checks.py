@@ -130,8 +130,8 @@ def check_any(*checks: Check) -> Check:
         for check in checks:
             try:
                 value = await maybe_coroutine(check, interaction)
-            except app_commands.CheckFailure as e:
-                errors.append(e)
+            except app_commands.CheckFailure as err:
+                errors.append(err)
             else:
                 if value:
                     return True

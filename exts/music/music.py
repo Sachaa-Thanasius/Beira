@@ -80,7 +80,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
-    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
         """Catch errors from commands inside this cog."""
 
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")

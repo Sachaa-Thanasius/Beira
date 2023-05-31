@@ -1,5 +1,7 @@
 """
 story_search.py: This cog is meant to provide functionality for searching the text of some books.
+
+Currently supports most long-form ACI100 works and MJ Bradley's A Cadmean Victory Remastered.
 """
 
 from __future__ import annotations
@@ -183,11 +185,11 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         re_volume_heading = re.compile(r"(^A Cadmean Victory Volume \w+)")
 
         # Start file copying and indexing.
-        with filepath.open("r", encoding="utf-8") as f:
+        with filepath.open("r", encoding="utf-8") as story_file:
 
             # Instantiate index lists, which act as a table of contents of sorts.
             stem = str(filepath.stem)[:-5]
-            temp_text = cls.story_records[stem].text = [line for line in f if line.strip() != ""]
+            temp_text = cls.story_records[stem].text = [line for line in story_file if line.strip() != ""]
             temp_chap_index = cls.story_records[stem].chapter_index
             temp_coll_index = cls.story_records[stem].collection_index
 
@@ -233,7 +235,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             if exact:
                 terms_presence = terms.lower() in line.lower()
             else:
-                terms_presence = any([term.lower() in line.lower() for term in terms.split()])
+                terms_presence = any(term.lower() in line.lower() for term in terms.split())
 
             if terms_presence:
                 # Connect the paragraph with the terms to the one following it.
@@ -355,6 +357,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
 
 async def setup(bot: Beira) -> None:
-    """Connect bot to cog."""
+    """Connects cog to bot."""
 
     await bot.add_cog(StorySearchCog(bot))

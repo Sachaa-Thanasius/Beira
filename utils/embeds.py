@@ -28,7 +28,7 @@ def field_range_tracking(func: Callable) -> Callable:
     Used primarily for the :class:`StatEmbed`, which has dedicated fields matching variables in here.
     """
 
-    def decorator(self: Self, *args, **kwargs):
+    def decorator(self, *args, **kwargs):
 
         # Store the starting index of the stat fields.
         self.clear_stat_fields()
@@ -218,14 +218,10 @@ class StatsEmbed(DTEmbed):
         stat_emojis = self.lengthen_emoji_list(stat_names, stat_emojis)
 
         # Add the stat fields.
-        for rank, (name, emoji, value) in enumerate(zip(stat_names, stat_emojis, stat_values)):
+        for name, emoji, value in zip(stat_names, stat_emojis, stat_values):
             # Potentially change the emoji placement.
-            if emoji_header_status:
-                name = f"{str(emoji)} | {str(name)}"
-            else:
-                value = f"{str(emoji)} **|** {str(value)}"
-
-            self.add_field(name=f"{str(name)}", value=f"{str(value)}", inline=inline)
+            name = f"{emoji} | {name}" if emoji_header_status else f"{emoji} **|** {value}"
+            self.add_field(name=f"{name}", value=f"{value}", inline=inline)
 
         return self
 

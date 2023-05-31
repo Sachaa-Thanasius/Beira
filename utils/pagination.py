@@ -113,7 +113,7 @@ class PaginatedEmbedView(View):
 
         check = (interaction.user is not None) and (self.author == interaction.user)
         if not check:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)     # type: ignore  # PyCharm doesn't understand descriptor typing.
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)     # type: ignore
         return check
 
     async def on_timeout(self) -> None:

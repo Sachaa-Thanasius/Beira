@@ -1,5 +1,7 @@
 """
 emoji_ops.py: This cog is meant to provide functionality for stealing emojis.
+
+Credit to Froopy and Danny for inspiration from their bots.
 """
 
 from __future__ import annotations
@@ -10,6 +12,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord import app_commands
+from discord.errors import DiscordException, Forbidden, HTTPException, NotFound
 from discord.ext import commands
 
 from bot import BeiraContext
@@ -45,7 +48,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
-    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
         """A local error handler for the emoji and sticker-related commands.
 
         Parameters
@@ -79,6 +82,21 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
     @staticmethod
     async def convert_str_to_emoji(ctx: BeiraContext, entity: str) -> discord.Emoji | discord.PartialEmoji | None:
+        """Attempt to convert a string to an emoji or partial emoji.
+
+        Parameters
+        ----------
+        ctx : :class:`BeiraContext`
+            The invocation context.
+        entity : :class:`str`
+            The string that might be an emoji or unicode character.
+
+        Returns
+        -------
+        converted_emoji : :class:`discord.Emoji` | :class:`discord.PartialEmoji` | None
+            The converted emoji or ``None`` if conversion failed.
+        """
+
         converters = [commands.EmojiConverter(), commands.PartialEmojiConverter()]
         converted_emoji = None
 
@@ -101,7 +119,8 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     @commands.hybrid_group("emoji")
     async def emoji_(self, ctx: BeiraContext) -> None:
         """A group of emoji-related commands, like identifying emojis and adding them to a server."""
-        ...
+
+        pass
 
     @emoji_.command("info")
     async def emoji_info(self, ctx: BeiraContext, entity: str) -> None:
@@ -196,7 +215,6 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             new_emoji = await ctx.guild.create_custom_emoji(name=name, image=emoji_bytes)
 
         else:
-            discord.PartialEmoji.from_str()
             emoji_bytes = await attachment.read()
             new_emoji = await ctx.guild.create_custom_emoji(name=name, image=emoji_bytes)
 
@@ -209,7 +227,8 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     @commands.hybrid_group()
     async def sticker(self, ctx: BeiraContext) -> None:
         """A group of sticker-related commands, like adding them to a server."""
-        ...
+
+        pass
 
     @sticker.command("info")
     async def sticker_info(self, ctx: BeiraContext, sticker: str) -> None:
@@ -300,6 +319,8 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
     @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
     async def context_menu_sticker_add(self, interaction: discord.Interaction[Beira], message: discord.Message) -> None:
+        """Context menu command for adding stickers from a message to the guild in context."""
+
         added_count = 0
         errors = []
         if message.stickers:
@@ -315,8 +336,8 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
                     )
                     added_count += 1
                     errors.append("")
-                except Exception as e:
-                    errors.append(str(e.args))
+                except (DiscordException, ValueError, TypeError, HTTPException, NotFound, Forbidden) as err:
+                    errors.append(str(err))
 
             content = f"{added_count} sticker(s) added!\n"
             error_str = "\n".join(f"{i}. {err}" for i, err in enumerate(errors) if err)
@@ -325,7 +346,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
             await interaction.response.send_message(content, ephemeral=True)  # type: ignore
         else:
-            await interaction.response.send_message(f"No stickers in this message.", ephemeral=True)  # type: ignore
+            await interaction.response.send_message("No stickers in this message.", ephemeral=True)  # type: ignore
 
 
 async def setup(bot: Beira):

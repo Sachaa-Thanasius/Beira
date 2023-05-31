@@ -195,6 +195,18 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
 
 class Ao3SeriesDropdownWrapper(discord.ui.View):
+    """A view that wraps a dropdown item.
+
+    Parameters
+    ----------
+    author : :class:`discord.User` | :class:`discord.Member`
+        The user who invoked the view.
+    series : :class:`AO3.Series`
+        The object holding metadata about an Ao3 series and the works within.
+    **kwargs
+        Arbitrary keyword arguments, primarily for :class:`View`. See that class for more information.
+    """
+
     def __init__(self, author: discord.User | discord.Member, series: AO3.Series, **kwargs):
         super().__init__(**kwargs)
         self.author = author
@@ -234,6 +246,12 @@ class Ao3SeriesDropdownWrapper(discord.ui.View):
         error = getattr(error, "original", error)
         LOGGER.error("", exc_info=error)
 
+    def update_navigation_items(self):
+        """Disable specific "page" switching components based on what page we're on, chosen by the user."""
+
+        self.turn_to_previous.disabled = (self.choice == 0)
+        self.turn_to_next.disabled = (self.choice == len(self.series.work_list))
+
     async def format_page(self) -> discord.Embed:
         """Makes the series/work 'page' that the user will see."""
 
@@ -245,35 +263,29 @@ class Ao3SeriesDropdownWrapper(discord.ui.View):
 
     @discord.ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
     async def works_dropdown(self, interaction: discord.Interaction, select: discord.ui.Select) -> None:
+        """A dropdown of works within a series that can be used to display more information about those as embed "pages"."""
+
         self.choice = int(select.values[0])
         result_embed = await self.format_page()
-
-        # Disable the buttons based on the current page.
-        self.turn_to_previous.disabled = (self.choice == 0)
-        self.turn_to_next.disabled = (self.choice == len(self.series.work_list))
-
+        self.update_navigation_items()
         await interaction.response.edit_message(embed=result_embed, view=self)  # type: ignore
 
     @discord.ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
-    async def turn_to_previous(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_previous(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        """A button to turn back a page between embeds."""
+
         self.choice -= 1
         result_embed = await self.format_page()
-
-        # Disable the buttons based on the current page.
-        button.disabled = (self.choice == 0)
-        self.turn_to_next.disabled = (self.choice == len(self.series.work_list))
-
+        self.update_navigation_items()
         await interaction.response.edit_message(embed=result_embed, view=self)  # type: ignore
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)
-    async def turn_to_next(self, interaction: discord.Interaction, button: discord.ui.Button) -> None:
+    async def turn_to_next(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+        """A button to turn forward a page between embeds."""
+
         self.choice += 1
         result_embed = await self.format_page()
-
-        # Disable the buttons based on the current page.
-        self.turn_to_previous.disabled = (self.choice == 0)
-        button.disabled = (self.choice == len(self.series.work_list))
-
+        self.update_navigation_items()
         await interaction.response.edit_message(embed=result_embed, view=self)  # type: ignore
 
 
@@ -459,6 +471,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             await ctx.reply(embed=ffn_embed)
 
     async def search_ao3(self, name_or_url: str) -> AO3.Work | AO3.Series | fichub_api.Story | None:
+        """More generically search Ao3 for works based on a partial title or full url."""
 
         if result := re.search(LINK_PATTERNS["ao3_work"], name_or_url):
             url = result.group(0)
@@ -476,6 +489,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         return story
 
     async def search_ffn(self, name_or_url: str) -> atlas_api.FFNStory | None:
+        """More generically search FFN for works based on a partial title or full url."""
 
         if fic_id := atlas_api.extract_fic_id(name_or_url):
             story_data = await self.atlas_client.get_story_metadata(fic_id)
@@ -486,6 +500,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         return story_data
 
     async def search_other(self, url: str) -> fichub_api.Story | None:
+        """More generically search for the metadata of other works based on a full url."""
 
         story = await self.fichub_client.get_story_metadata(url)
         return story

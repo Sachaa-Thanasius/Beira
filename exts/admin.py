@@ -8,7 +8,9 @@ import logging
 from typing import TYPE_CHECKING
 
 import discord
+from asyncpg.exceptions import PostgresWarning, PostgresConnectionError, PostgresError
 from discord.ext import commands
+from discord.utils import format_dt
 
 from bot import BeiraContext
 from utils.checks import is_admin
@@ -34,6 +36,22 @@ class AdminCog(commands.Cog, name="Administration"):
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
+
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+        LOGGER.error("", exc_info=error)
+
+    @commands.hybrid_command()
+    @commands.guild_only()
+    async def get_timeouts(self, ctx: BeiraContext) -> None:
+        """Get all timed out members on the server."""
+
+        async with ctx.typing():
+            toed_members = filter(lambda m: m.is_timed_out(), ctx.guild.members)
+            embed = discord.Embed(
+                title=f"Members Timed Out in {ctx.guild.name}",
+                description="\n".join(f"{mem}: {format_dt(mem.timed_out_until, style='f')}" for mem in toed_members)
+            )
+            await ctx.send(embed=embed)
 
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
@@ -78,7 +96,7 @@ class AdminCog(commands.Cog, name="Administration"):
                             await conn.execute(prefix_query, ctx.guild.id, new_prefix)
                         # Update it in the cache.
                         self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
-                    except Exception:
+                    except (PostgresWarning, PostgresError, PostgresConnectionError):
                         await ctx.send("This prefix could not be added at this time.")
                     else:
                         await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
@@ -109,7 +127,7 @@ class AdminCog(commands.Cog, name="Administration"):
                     await self.bot.db_pool.execute(prefix_query, ctx.guild.id, old_prefix)
                     # Update it in the cache.
                     self.bot.prefix_cache.setdefault(ctx.guild.id, []).remove(old_prefix)
-                except Exception:
+                except (PostgresWarning, PostgresError, PostgresConnectionError):
                     await ctx.send("This prefix could not be removed at this time.")
                 else:
                     await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
@@ -133,10 +151,10 @@ class AdminCog(commands.Cog, name="Administration"):
                 await self.bot.db_pool.execute(prefix_query, ctx.guild.id)
                 # Update it in the cache.
                 self.bot.prefix_cache.setdefault(ctx.guild.id, []).clear()
-            except Exception:
+            except (PostgresWarning, PostgresError, PostgresConnectionError):
                 await ctx.send("This server's prefixes could not be reset.")
             else:
-                await ctx.send(f"The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.")
+                await ctx.send("The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.")
 
 
 async def setup(bot: Beira) -> None:

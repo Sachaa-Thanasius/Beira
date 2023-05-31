@@ -100,30 +100,15 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
 
         # Load the file with the wiki information and directories.
-        '''Not being used yet:
-        
-        "Harry Potter and the Perversion of Purity": {
-            "base_url": "https://perversion-of-purity.fandom.com",
-            "pages_directory": ["/wiki/Special:AllPages"]
-        },
-        "Harry Potter and the Conjoining of Paragons": {
-            "base_url": "https://conjoining-of-paragons.fandom.com",
-            "pages_directory": ["/wiki/Special:AllPages"]
-        },
-        "Ace Iverson and the Fabric of Fate": {
-            "base_url": "https://fabric-of-fate.fandom.com",
-            "pages_directory": ["/wiki/Special:AllPages"]
-        }
-        '''
         try:
-            with open("data/fandom_wiki_data.json", "r") as f:
-                self.all_wikis.update(json.load(f))
+            with open("data/fandom_wiki_data.json", "r", encoding="utf-8") as data_file:
+                self.all_wikis.update(json.load(data_file))
                 # LOGGER.info(f"Loaded file: {f.name}")
         except FileNotFoundError as err:
             LOGGER.exception("JSON File wasn't found", exc_info=err)
 
         # Walk through all wiki pages linked on the directory page(s).
-        for wiki_name, wiki_data in self.all_wikis.items():
+        for wiki_data in self.all_wikis.values():
             wiki_data["all_pages"] = {}
 
             for url in wiki_data["pages_directory"]:
@@ -140,7 +125,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                         continue
 
             # LOGGER.info(f"Loaded wiki info: {wiki_name}")
-        LOGGER.info(f"All wiki names: {self.all_wikis.keys()}")
+        LOGGER.info(f"All wiki names: {list(self.all_wikis.keys())}")
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
@@ -192,7 +177,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             The text input to search with.
         """
 
-        failed_embed = discord.Embed(title=f"Wiki Unavailable")
+        failed_embed = discord.Embed(title="Wiki Unavailable")
 
         # Check if the wiki name is valid.
         get_wiki_name: dict = self.all_wikis.get(wiki_name)

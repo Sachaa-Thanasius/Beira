@@ -1,5 +1,9 @@
 """
 custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
+
+References
+----------
+https://github.com/AbstractUmbra/Mipha/blob/main/bot.py#L91
 """
 
 from __future__ import annotations

@@ -1,5 +1,7 @@
 """
 pin_archive.py: A cog that allows pins to overflow into a text channel.
+
+Currently, nothing more than a stub.
 """
 
 from __future__ import annotations
@@ -49,30 +51,36 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=
 
     @commands.Cog.listener()
     async def on_guild_channel_pins_update(self, channel: discord.abc.GuildChannel | discord.Thread, last_pin: datetime.datetime | None = None):
+        """Listen to pin events and display them."""
+
         LOGGER.info(f"on_guild_channel_pins_update(): {channel.guild}, {channel}, {last_pin}")
 
     # Commands
     @commands.command()
     async def set_archive_channel(self, ctx: BeiraContext, channel: MessageableGuildChannel) -> None:
+        """Set the archive channel."""
+
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def move_archive_channel(self, ctx: BeiraContext, channel: MessageableGuildChannel) -> None:
-        LOGGER.info(f"move_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
-
-    @commands.command()
     async def get_pins(self, ctx: BeiraContext, channel: MessageableGuildChannel) -> None:
+        """Print all pins in a guild channel."""
+
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
         all_pins = await channel.pins()
         print(all_pins)
 
     @commands.command()
     async def set_mode(self, ctx: BeiraContext, mode: Literal["latest", "oldest"] = "oldest") -> None:
+        """Set the mode for the pin archiving process: latest pins move to the archive channel, or oldest do."""
+
         self.mode = mode
         LOGGER.info(f"set_mode(): {ctx.author}, {mode}")
 
     @commands.command()
     async def activate(self, ctx: BeiraContext) -> None:
+        """Start the pin archiving process."""
+
         LOGGER.info(f"activate(): {ctx.author}, {ctx.guild}")
 
 

@@ -1,5 +1,7 @@
 """
 misc.py: A cog for testing slash and hybrid command functionality.
+
+Side note: This is the cog with the ``ping`` command.
 """
 
 from __future__ import annotations
@@ -21,18 +23,6 @@ else:
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-class catchtime:
-    """Source: https://stackoverflow.com/a/69156219"""
-
-    def __enter__(self):
-        self.time = perf_counter()
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        self.time = perf_counter() - self.time
-        self.readout = f'Time: {self.time:.3f} seconds'
 
 
 class MiscCog(commands.Cog, name="Misc"):

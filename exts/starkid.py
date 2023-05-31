@@ -1,5 +1,7 @@
 """
 starkid.py: A cog for StarKid-related commands and functionality.
+
+Shoutout to Theo and Ali for inspiration, as well as the whole StarKid server.
 """
 
 from __future__ import annotations

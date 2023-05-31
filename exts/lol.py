@@ -1,5 +1,7 @@
 """
 lol.py: A cog for checking user win rates and other stats in League of Legends.
+
+Credit to Ralph for the idea and initial implementation.
 """
 
 from __future__ import annotations
@@ -41,18 +43,19 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
     """
 
     # Create the webdriver.
-    service = services.Geckodriver(binary=str(GECKODRIVER), log_file=open(GECKODRIVER_LOGS, mode='a'))
-    browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
+    with open(GECKODRIVER_LOGS, mode='a', encoding="utf-8") as log_file:
+        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)
+        browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
-    async with get_session(service, browser) as session:
-        for url in urls:
-            await session.get(url)
-            try:
-                update_button = await session.wait_for_element(10, "button[class*=eapd0am1]")
-            except (errors.ArsenicTimeout, errors.NoSuchWindow, errors.NoSuchElement):
-                continue
-            await update_button.click()
-            await asyncio.sleep(1)
+        async with get_session(service, browser) as session:
+            for url in urls:
+                await session.get(url)
+                try:
+                    update_button = await session.wait_for_element(10, "button[class*=eapd0am1]")
+                except (errors.ArsenicTimeout, errors.NoSuchWindow, errors.NoSuchElement):
+                    continue
+                await update_button.click()
+                await asyncio.sleep(1)
 
 
 class UpdateOPGGView(discord.ui.View):
@@ -127,8 +130,6 @@ class LoLCog(commands.Cog, name="League of Legends"):
     @commands.hybrid_group()
     async def lol(self, ctx: BeiraContext) -> None:
         """A group of League of Legends-related commands."""
-
-        ...
 
     @lol.command("stats")
     async def lol_stats(self, ctx: BeiraContext, summoner_name: str) -> None:

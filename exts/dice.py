@@ -1,3 +1,7 @@
+"""
+dice.py: The extension that holds a die roll command and all the associated utility classes.
+"""
+
 from __future__ import annotations
 
 import random
@@ -12,6 +16,8 @@ import discord
 from attrs import define, field
 from discord.ext import commands
 from discord.ui import Button, Item, Modal, Select, TextInput, View
+
+from bot import BeiraContext
 
 
 if TYPE_CHECKING:
@@ -50,7 +56,7 @@ class Die:
 
 
 # A dict of standard dice represented via dataclasses.
-standard_dice = {
+standard_dice: dict[int, Die] = {
     4: Die(4, discord.PartialEmoji(name="d04", animated=True, id=1109234548727885884), discord.Colour(0x5971c4)),
     6: Die(6, discord.PartialEmoji(name="d06", animated=True, id=1109234547389907017), discord.Colour(0xc5964a)),
     8: Die(8, discord.PartialEmoji(name="d08", animated=True, id=1109234533041197196), discord.Colour(0x8dca6f)),
@@ -61,9 +67,11 @@ standard_dice = {
 }
 
 
-def replace_dice_in_expr(m: re.Match) -> str:
-    num = int(m.group(1)) if m.group(1) else 1
-    limit = int(m.group(2))
+def replace_dice_in_expr(match: re.Match) -> str:
+    """Replace the dice in an expression, e.g. ``5d6`` in ``5d6 + 7``, with an expression containing the resulting rolls."""
+
+    num = int(match.group(1)) if match.group(1) else 1
+    limit = int(match.group(2))
     rolls = [random.randint(1, limit) for _ in range(num)]
     return "(" + " + ".join(str(ind_roll) for ind_roll in rolls) + ")"
 
@@ -315,7 +323,7 @@ class DiceModifierModal(Modal):
 
 
 class DiceExpressionModal(Modal):
-    """A modal for taking a dice calculation expression as input.
+    """A modal for taking a die calculation expression as input.
 
     Attributes
     ----------
@@ -487,7 +495,7 @@ class DiceView(View):
                 send_kwargs["embed"] = DiceEmbed(rolls_info=roll_info, modifier=self.modifier)
                 send_kwargs["view"] = View().add_item(RerollButton(dice_info=dice_info, modifier=self.modifier))
             else:
-                send_kwargs["embed"] = discord.Embed(description=f"\N{ABACUS} No expression to evaluate!")
+                send_kwargs["embed"] = discord.Embed(description="\N{ABACUS} No expression to evaluate!")
 
         if not interaction.response.is_done():      # type: ignore
             await interaction.response.send_message(**send_kwargs)    # type: ignore
@@ -496,21 +504,35 @@ class DiceView(View):
 
 
 @commands.hybrid_command()
-async def roll(ctx: commands.Context) -> None:
-    """Send an interface for rolling different dice."""
+async def roll(ctx: BeiraContext, expression: str | None = None) -> None:
+    """Send an interface for rolling different dice.
 
-    embed = discord.Embed(
-        title="Take a chance. Roll the dice!",
-        description="Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple dice "
-                    "simultaneously!\n"
-                    "Note: Maximum number of rolls at once is 50."
-    )
-    embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif")
-    view = DiceView()
+    Parameters
+    ----------
+    ctx : :class:`BeiraContext`
+        The invocation context.
+    expression : :class:`str`, optional
+        A custom dice expression to calculate. Optional.
+    """
+
+    if not expression:
+        embed = discord.Embed(
+            title="Take a chance. Roll the dice!",
+            description="Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple dice "
+                        "simultaneously!\n"
+                        "Note: Maximum number of rolls at once is 50."
+        )
+        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif")
+        view = DiceView()
+    else:
+        filled_in_expression, result = roll_custom_dice_expression(expression)
+        embed = DiceEmbed(expression_info=(expression, filled_in_expression, result))
+        view = View().add_item(RerollButton(expression=expression))
+
     await ctx.send(embed=embed, view=view)
 
 
 async def setup(bot: Beira) -> None:
-    """Connect command to bot."""
+    """Add command to bot."""
 
     bot.add_command(roll)

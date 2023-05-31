@@ -1,5 +1,7 @@
 """
 patreon.py: A cog for checking which Discord members are currently patrons of ACI100.
+
+Work in progress to make the view portion functional for M J Bradley.
 """
 
 from __future__ import annotations
@@ -29,6 +31,8 @@ CAMPAIGN_BASE = "https://www.patreon.com/api/oauth2/v2/campaigns"
 
 
 class PatreonTierSelectView(discord.ui.View):
+    """A view that displays Patreon tiers and benefits as pages."""
+
     def __init__(self, tiers: list[dict], **kwargs) -> None:
         super().__init__(**kwargs)
         self.tiers = tiers
@@ -104,6 +108,8 @@ class PatreonTierSelectView(discord.ui.View):
 
     @discord.ui.select(placeholder="Choose a Patreon tier...", min_values=1, max_values=1)
     async def select_tier(self, interaction: discord.Interaction, select: discord.ui.Select):
+        """Dropdown that displays all the Patreon tiers and provides them as choices to navigate to."""
+
         await interaction.response.defer()  # type: ignore
         self.current_tier = int(select.values[0])
         self.update_page_buttons()
@@ -112,6 +118,8 @@ class PatreonTierSelectView(discord.ui.View):
 
     @discord.ui.button(label="<", disabled=True)
     async def show_previous_tier(self, interaction: discord.Interaction, _: discord.ui.Button):
+        """Button that displays the previous tier's information."""
+
         await interaction.response.defer()  # type: ignore
         self._increment_current_tier(-1)
         self.update_page_buttons()
@@ -120,6 +128,8 @@ class PatreonTierSelectView(discord.ui.View):
 
     @discord.ui.button(label=">")
     async def show_next_tier(self, interaction: discord.Interaction, _: discord.ui.Button):
+        """Button that displays the next tier's information."""
+
         await interaction.response.defer()  # type: ignore
         self._increment_current_tier(1)
         self.update_page_buttons()
@@ -129,6 +139,8 @@ class PatreonTierSelectView(discord.ui.View):
 
 @define
 class PatreonMember:
+    """Quick and dirty dataclass for patrons."""
+
     user_id: str
     discord_id: int
     current_tiers: list[Any] = field(factory=list)
@@ -169,7 +181,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         original = commands.is_owner().predicate
         return await original(ctx)
 
-    async def cog_command_error(self, ctx: commands.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
         LOGGER.exception("Error in Patreon Cog", exc_info=error)
 
     async def _get_patreon_roles(self):
@@ -216,6 +228,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
     @get_current_discord_patrons.before_loop
     async def before_background_task(self) -> None:
+        """Ensure the bot is connected to the Discord Gateway before doing anything."""
+
         await self.bot.wait_until_ready()
 
     async def get_current_actual_patrons(self) -> None:
@@ -278,6 +292,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
                 cursor = cursors["next"]
                 total = pagination_info["total"]
+                print(f"{total=}")
 
         not_ok_members = []
         for discord_id in self.patrons_on_discord:

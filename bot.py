@@ -7,7 +7,6 @@ from __future__ import annotations
 
 import logging
 import asyncio
-from typing import Any
 
 import aiohttp
 import asyncpg
@@ -26,6 +25,11 @@ LOGGER = logging.getLogger("bot.Beira")
 
 
 class BeiraContext(commands.Context):
+    """A custom context subclass for Beira.
+
+    Currently only further specifies the bot type and provides easier access to the bot's web session.
+    """
+
     bot: Beira
 
     def __init__(self, **kwargs):
@@ -174,6 +178,8 @@ class Beira(commands.Bot):
         await self.is_owner(self.user)
 
     async def on_ready(self) -> None:
+        """Display that the bot is ready."""
+
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
 
     async def setup_hook(self) -> None:
@@ -184,15 +190,6 @@ class Beira(commands.Bot):
         await self._load_extensions()
 
         self.loop.create_task(self.load_cache())
-
-        # If there is a need to isolate commands in development, they will only sync with development guilds.
-        '''
-        if self.test_mode and self.testing_guild_ids:
-            for guild_id in self.testing_guild_ids:
-                guild = discord.Object(guild_id)
-                self.tree.copy_global_to(guild=guild)
-                await self.tree.sync(guild=guild)
-        '''
 
     async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
         if not self.prefix_cache:
@@ -224,7 +221,6 @@ class Beira(commands.Bot):
 
         if len(self.special_friends) > 0:
             return user.id in self.special_friends.values()
-
         else:
             self._load_special_friends()
             if len(self.special_friends) > 0:
@@ -251,7 +247,6 @@ class Beira(commands.Bot):
 
         if len(self.special_friends) > 0:
             return user.id == self.special_friends["aeroali"]
-
         else:
             self._load_special_friends()
             if len(self.special_friends) > 0:

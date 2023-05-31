@@ -1,3 +1,11 @@
+"""
+_jishaku.py: Beira's import of Jishaku as a cog.
+
+References
+----------
+https://github.com/Gorialis/jishaku
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING
@@ -13,10 +21,10 @@ else:
 
 
 class JishakuCog(*OPTIONAL_FEATURES, *STANDARD_FEATURES):
-    pass
+    """Beira's import of Jishaku as a cog."""
 
 
 async def setup(bot: Beira):
-    """Connects the cog to the bot."""
+    """Connects cog to bot."""
 
     await bot.add_cog(JishakuCog(bot=bot))
