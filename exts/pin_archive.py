@@ -27,7 +27,7 @@ LOGGER = logging.getLogger(__name__)
 MessageableGuildChannel = discord.TextChannel | discord.VoiceChannel | discord.Thread
 
 
-class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs=dict(hidden=True)):
+class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": True}):
     """A cog that allows all pins in a guild to overflow into one text channel.
 
     In development, currently a stub.

@@ -161,7 +161,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     @commands.hybrid_command()
     @app_commands.guilds(*CONFIG["discord"]["guilds"]["dev"])
     async def shutdown(self, ctx: BeiraContext) -> None:
-        """Shutdown the bot."""
+        """Shut down the bot."""
 
         LOGGER.info("Shutting down bot with dev command.")
         await ctx.send("Shutting down bot...")

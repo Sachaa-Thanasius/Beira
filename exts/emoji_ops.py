@@ -175,7 +175,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             name: str,
             entity: str | None = None,
             attachment: discord.Attachment | None = None
-    ) -> None:
+    ):
         """Add an emoji to the server, assuming you have the permissions to do that.
 
         Parameters
@@ -191,23 +191,22 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         """
 
         if not (entity or attachment):
-            await ctx.send("You're missing an emoji, url, or attachment to add! Make sure you put the name first.")
-            return
+            return await ctx.send("You're missing an emoji, url, or attachment to add! Make sure you put the name first.")
 
-        elif entity:
+        if entity:
             converted_emoji = await self.convert_str_to_emoji(ctx, entity)
 
+            # The given symbol isn't a discord emoji or recognizable as Unicode.
             if converted_emoji is None:
-                # The given symbol isn't a discord emoji or recognizable as Unicode.
-                await ctx.send("Unrecognizable symbol/emoji.")
-                return
-            elif isinstance(converted_emoji, discord.PartialEmoji) and converted_emoji.is_unicode_emoji():
+                return await ctx.send("Unrecognizable symbol/emoji.")
+
+            if isinstance(converted_emoji, discord.PartialEmoji) and converted_emoji.is_unicode_emoji():
+                # The string has a single Unicode symbol.
                 if len(entity) == 1:
-                    await ctx.send("You can't steal Unicode characters/emojis.")
-                    return
-                else:
-                    # Attempt to read the input as an image url.
-                    emoji_bytes = await get_image(ctx.session, entity)
+                    return await ctx.send("You can't steal Unicode characters/emojis.")
+
+                # Attempt to read the input as an image url.
+                emoji_bytes = await get_image(ctx.session, entity)
             else:
                 # Attempt to convert and read the input as an emoji normally.
                 emoji_bytes = await converted_emoji.read()

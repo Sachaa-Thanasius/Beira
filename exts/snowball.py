@@ -25,34 +25,32 @@ from utils.db_utils import upsert_guilds, upsert_users
 from utils.embeds import StatsEmbed
 from utils.errors import CannotTargetSelf
 
-
 if TYPE_CHECKING:
     from asyncpg import Record
     from bot import Beira
 else:
     Beira = commands.Bot
 
-
 LOGGER = logging.getLogger(__name__)
 
 """Snowball constants"""
-ODDS = 0.67              # Chance of hitting someone with a snowball.
-LEADERBOARD_MAX = 10     # Number of people shown on one leaderboard at a time.
+ODDS = 0.67  # Chance of hitting someone with a snowball.
+LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100  # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200  # Maximum number of snowballs for self and friends.
-TRANSFER_CAP = 10        # Maximum number of snowballs that can be gifted or stolen.
+TRANSFER_CAP = 10  # Maximum number of snowballs that can be gifted or stolen.
 
 
-"""Snowball cooldown callbacks."""
 def collect_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.collect() command. 10 seconds by default."""
 
-    rate, per = 1.0, 15.0                           # Default cooldown
+    rate, per = 1.0, 15.0  # Default cooldown
     exempt = [ctx.bot.special_friends["aeroali"]]
 
     if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
         return None
-    elif ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+
+    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
         per = 1.0
     return commands.Cooldown(rate, per)
 
@@ -60,12 +58,13 @@ def collect_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
 def transfer_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.transfer() command. 60 seconds by default."""
 
-    rate, per = 1.0, 60.0                           # Default cooldown
+    rate, per = 1.0, 60.0  # Default cooldown
     exempt = [ctx.bot.special_friends["aeroali"]]
 
     if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):  # My user id
         return None
-    elif ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+
+    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
         per = 2.0
     return commands.Cooldown(rate, per)
 
@@ -73,12 +72,13 @@ def transfer_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
 def steal_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.steal() command. 90 seconds by default."""
 
-    rate, per = 1.0, 90.0                           # Default cooldown
+    rate, per = 1.0, 90.0  # Default cooldown
     exempt = [ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["Athena Hope"]]
 
     if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
         return None
-    elif ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+
+    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
         per = 2.0
     return commands.Cooldown(rate, per)
 
@@ -308,7 +308,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
+        stock_cap = SPECIAL_STOCK_CAP if (
+                    ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         giver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
@@ -350,7 +351,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
-    async def steal(self, ctx: BeiraContext, amount: int, *, victim: discord.Member) -> None:
+    async def steal(self, ctx: BeiraContext, amount: int, *, victim: discord.Member):
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
@@ -372,8 +373,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         # Set a limit on how many snowballs can be stolen at a time.
         if amount > TRANSFER_CAP:
             def_embed.description = "10 snowballs at once is the bulk stealing limit."
-            await ctx.send(embed=def_embed, ephemeral=True)
-            return
+            return await ctx.send(embed=def_embed, ephemeral=True)
 
         stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
 
@@ -385,14 +385,13 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if (victim_record is not None) and (victim_record["stock"] - amount < 0):
             def_embed.description = "They don't have that much to steal. Wait for them to collect a few more, or " \
                                     "pilfer a smaller number."
-            await ctx.send(embed=def_embed, ephemeral=True)
-            return
+            return await ctx.send(embed=def_embed, ephemeral=True)
 
-        elif (thief_record is not None) and (thief_record["stock"] + amount > stock_cap):
+        if (thief_record is not None) and (thief_record["stock"] + amount > stock_cap):
             def_embed.description = f"You enough snowballs; this transfer would push you past the stock cap of " \
                                     f"{stock_cap}. Use some of your balls before you decide to rob some hapless soul."
-            await ctx.send(embed=def_embed, ephemeral=True)
-            return
+            return await ctx.send(embed=def_embed, ephemeral=True)
+
 
         # Update the giver and receiver's records.
         await self.update_snowball_record(ctx.author, stock=amount)
@@ -634,7 +633,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
                               orange_star, blue_star, pink_star, orange_star, blue_star)
 
         # Assemble each entry's data.
-        snow_data = [(await self._get_entity_from_record(row), row['hits'], row['misses'], row['kos']) for row in records]
+        snow_data = [(await self._get_entity_from_record(row), row['hits'], row['misses'], row['kos']) for row in
+                     records]
 
         # Create the leaderboard.
         embed.add_leaderboard_fields(ldbd_content=snow_data, ldbd_emojis=ldbd_places_emojis, value_format="({}/{}/{})")

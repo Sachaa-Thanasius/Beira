@@ -59,8 +59,10 @@ class AoCWikiEmbed(DTEmbed):
         footer_icon_url = EMOJI_URL.format(jare_id) if (footer_icon_url is None) else footer_icon_url
 
         self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
-        self.set_footer(text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
-                        icon_url=footer_icon_url)
+        self.set_footer(
+            text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
+            icon_url=footer_icon_url
+        )
 
 
 class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
@@ -190,9 +192,8 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 failed_embed.description = "Error: Wiki Does Not Exist Or Is Not Indexed. Please try a different wiki name."
                 return failed_embed
 
-            else:
-                wiki_name = possible_results[0]
-                get_wiki_name = self.all_wikis.get(wiki_name)
+            wiki_name = possible_results[0]
+            get_wiki_name = self.all_wikis.get(wiki_name)
 
         # --------------------------------
         # Check if the wiki has any recorded pages.
@@ -213,17 +214,15 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             possible_results = [name for name in entries_list if wiki_query.lower() in name.lower()][:25]
 
             if len(possible_results) == 0:
-                encoded_wiki_query = quote(wiki_query)
-
+                encoded_query = quote(wiki_query)
                 final_embed.title = f"No pages found for '{wiki_query}'. Click here for search results."
                 final_embed.description = "Sorry, we couldn't find anything with this search term(s)."
-                final_embed.url = f"{self.all_wikis[wiki_name]['base_url']}/wiki/Special:Search?query={encoded_wiki_query}"
+                final_embed.url = f"{self.all_wikis[wiki_name]['base_url']}/wiki/Special:Search?query={encoded_query}"
 
                 return final_embed
 
-            else:
-                wiki_query = possible_results[0]
-                get_specific_wiki_page = get_wiki_pages.get(wiki_query)
+            wiki_query = possible_results[0]
+            get_specific_wiki_page = get_wiki_pages.get(wiki_query)
 
         wiki_page_link = urljoin(self.all_wikis[wiki_name]['base_url'], get_specific_wiki_page)
 

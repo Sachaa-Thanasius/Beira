@@ -12,6 +12,8 @@ from discord.utils import escape_markdown
 from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
+from utils.errors import BadSpotifyLink
+
 
 __all__ = ("format_track_embed", "SoundCloudPlaylist", "WavelinkSearchConverter")
 
@@ -74,6 +76,28 @@ class SoundCloudPlaylist(Playable, Playlist):
 
 
 class WavelinkSearchConverter(commands.Converter):
+    """Converts to a :class:`Playable` | :class:`spotify.SpotifyTrack` | list[:class:`Playable` |
+    :class:`spotify.SpotifyTrack`] | :class:`Playlist`.
+
+    The lookup strategy is as follows (in order):
+
+        1) Input is a YouTube video url or has ``ytsearch:`` as a prefix: Attempt lookup with :class:`wavelink.YouTubeTrack`.
+
+        2) Input is a YouTube playlist url or has ``ytpl:`` as a prefix: Attempt lookup with :class:`wavelink.YouTubePlaylist`.
+
+        3) Input is a YouTube Music url or has ``ytmsearch:`` as a prefix: Attempt lookup with :class:`wavelink.YouTubeMusicTrack`.
+
+        4) Input is a SoundCloud playlist url: Attempt lookup with :class:`SoundCloudPlaylist`.
+
+        5) Input is a SoundCloud track url or has ``ytmsearch:`` as a prefix: Attempt to lookup with :class:`wavelink.SoundCloudTrack`.
+
+        6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify:
+            a. Try conversion to playlist, album, then track.
+
+        7) Previous options didn't work.
+            a. Try lookup as direct url.
+            b. Search YouTube with the argument as the query.
+    """
     @classmethod
     async def convert(
             cls,
@@ -96,22 +120,6 @@ class WavelinkSearchConverter(commands.Converter):
 
         check = yarl.URL(argument)
 
-        """
-        Get the track(s) by checking in this order:
-
-        1) YouTube video
-        2) Youtube playlist
-        3) YouTube Music track
-        4) SoundCloud playlist
-        5) SoundCloud track
-        6) Spotify (converted to YouTube internally)
-            a. Unusable output
-            b. Playlist/Album
-            c. Track
-        7) Unknown
-            a. Direct url
-            b. Search YouTube with the argument as the query.
-        """
         if (check.host in ("youtube.com", "www.youtube.com") and check.query.get("v")) or argument.startswith("ytsearch:"):
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
         elif (check.host in ("youtube.com", "www.youtube.com") and check.query.get("list")) or argument.startswith("ytpl:"):
@@ -125,7 +133,7 @@ class WavelinkSearchConverter(commands.Converter):
         elif check.host in ("spotify.com", "open.spotify.com"):
             decoded = spotify.decode_url(argument)
             if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
-                raise commands.BadArgument("Invalid Spotify URL.")
+                raise BadSpotifyLink(argument)
             elif decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
                 tracks = [track async for track in spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)]
             else:
@@ -137,6 +145,6 @@ class WavelinkSearchConverter(commands.Converter):
                 tracks = await wavelink.YouTubeTrack.search(argument, node=vc.current_node)
 
         if not tracks:
-            raise wavelink.NoTracksError("Could not find any songs matching that query.")
+            raise wavelink.NoTracksError(f"Your search query {argument} returned no tracks.")
 
         return tracks

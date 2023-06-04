@@ -46,10 +46,10 @@ class AdminCog(commands.Cog, name="Administration"):
         """Get all timed out members on the server."""
 
         async with ctx.typing():
-            toed_members = filter(lambda m: m.is_timed_out(), ctx.guild.members)
+            timed_members = filter(lambda m: m.is_timed_out(), ctx.guild.members)
             embed = discord.Embed(
                 title=f"Members Timed Out in {ctx.guild.name}",
-                description="\n".join(f"{mem}: {format_dt(mem.timed_out_until, style='f')}" for mem in toed_members)
+                description="\n".join(f"{mem}: {format_dt(mem.timed_out_until, style='f')}" for mem in timed_members)
             )
             await ctx.send(embed=embed)
 

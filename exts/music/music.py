@@ -36,6 +36,8 @@ LOGGER = logging.getLogger(__name__)
 
 
 class MusicQueueView(PaginatedEmbedView):
+    """A paginated view for seeing the tracks in an embed-based music queue."""
+
     def format_page(self) -> discord.Embed:
         embed_page = PaginatedEmbed(color=0x149cdf, title="Music Queue")
 
@@ -60,6 +62,7 @@ class MusicQueueView(PaginatedEmbedView):
 
 
 class MusicCog(commands.Cog, name="Music"):
+    """A cog with audio-playing functionality."""
 
     def __init__(self, bot: Beira) -> None:
         self.bot = bot
@@ -107,6 +110,12 @@ class MusicCog(commands.Cog, name="Music"):
         LOGGER.info(f"Wavelink node {node.id} is ready!")
 
     @commands.Cog.listener()
+    async def on_wavelink_websocket_closed(self, payload: wavelink.WebsocketClosedPayload):
+        """Called when the websocket to the voice server is closed."""
+
+        LOGGER.info(f"{payload.player} - {payload.by_discord} - {payload.code} - {payload.reason}")
+
+    @commands.Cog.listener()
     async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
         """Called when the current track has finished playing."""
 
@@ -123,7 +132,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def music(self, ctx: BeiraContext) -> None:
         """Music-related commands."""
 
-        ...
+        pass
 
     @music.command()
     async def connect(self, ctx: BeiraContext) -> None:
