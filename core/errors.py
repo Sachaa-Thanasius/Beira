@@ -2,14 +2,18 @@
 errors.py: Custom errors used by the bot.
 """
 
-from __future__ import annotations
-
-import logging
-
 from discord.ext import commands
 
 
-LOGGER = logging.getLogger(__name__)
+__all__ = (
+    "CannotTargetSelf",
+    "NotOwnerOrFriend",
+    "NotAdmin",
+    "NotInBotVoiceChannel",
+    "UserIsBlocked",
+    "GuildIsBlocked",
+    "BadSpotifyLink",
+)
 
 
 class CannotTargetSelf(commands.BadArgument):
@@ -18,16 +22,12 @@ class CannotTargetSelf(commands.BadArgument):
     This inherits from :exc:`commands.BadArgument`.
     """
 
-    pass
-
 
 class NotOwnerOrFriend(commands.CheckFailure):
     """Exception raised when the message author is not the owner of the bot or on the special friends list.
 
     This inherits from :exc:`CheckFailure`.
     """
-
-    pass
 
 
 class NotAdmin(commands.CheckFailure):
@@ -36,16 +36,12 @@ class NotAdmin(commands.CheckFailure):
     This inherits from :exc:`commands.CheckFailure`.
     """
 
-    pass
-
 
 class NotInBotVoiceChannel(commands.CheckFailure):
     """Exception raised when the message author is not in the same voice channel as the bot in a context's guild.
 
     This inherits from :exc:`commands.CheckFailure`.
     """
-
-    pass
 
 
 class UserIsBlocked(commands.CheckFailure):
@@ -54,16 +50,12 @@ class UserIsBlocked(commands.CheckFailure):
     This inherits from :exc:`commands.CheckFailure`.
     """
 
-    pass
-
 
 class GuildIsBlocked(commands.CheckFailure):
     """Exception raised when the message guild is blocked from using the bot.
 
     This inherits from :exc:`commands.CheckFailure`.
     """
-
-    pass
 
 
 class BadSpotifyLink(commands.BadArgument):

@@ -1,0 +1,28 @@
+[project]
+name = "Beira"
+description = "An personal Discord bot."
+readme = "README.md"
+license = { file = "LICENSE" }
+requires-python = ">=3.10"
+authors = [
+    { name="Sachaa-Thanasius", email="i.like.ike101@gmail.com"}
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Sachaa-Thanasius/Beira"
+"Bug Tracker" = "https://github.com/Sachaa-Thanasius/Beira/issues"
+
+[tool.ruff]
+line-length = 120
+target-version = "py310"
+select = [
+    "F", "E", "I", "C90", "UP", "YTT", "ANN", "S", "BLE", "B", "A", "COM", "C4", "DTZ",
+    "EM", "ISC", "G", "INP", "PIE", "T20", "Q003", "RSE", "RET", "SIM", "TID", "PTH",
+    "ERA", "PD", "PLC", "PLE", "PLR", "PLW", "TRY", "NPY", "RUF"
+]
+ignore = ["ANN101", "G002", "TRY002", "S101", "PLR2004", "SIM105", "C90", "PD011"]
+unfixable = ["C90", "S101", "ERA"]
+
+[tool.ruff.isort]
+lines-after-imports = 2
+combine-as-imports = true

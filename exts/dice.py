@@ -4,26 +4,20 @@ dice.py: The extension that holds a die roll command and all the associated util
 
 from __future__ import annotations
 
-import random
 import logging
+import random
 import re
 import textwrap
 from io import StringIO
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import asteval
 import discord
 from attrs import define, field
+from discord import ui
 from discord.ext import commands
-from discord.ui import Button, Item, Modal, Select, TextInput, View
 
-from bot import BeiraContext
-
-
-if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+import core
 
 
 LOGGER = logging.getLogger(__name__)
@@ -50,6 +44,7 @@ class Die:
     emoji: discord.PartialEmoji
     color: discord.Colour
     label: str = field()
+
     @label.default
     def _label(self) -> str:
         return f"D{self.value}"
@@ -63,12 +58,15 @@ standard_dice: dict[int, Die] = {
     10: Die(10, discord.PartialEmoji(name="d10", animated=True, id=1109234530348437606), discord.Colour(0xa358b4)),
     12: Die(12, discord.PartialEmoji(name="d12", animated=True, id=1109234528431636672), discord.Colour(0xc26436)),
     20: Die(20, discord.PartialEmoji(name="d20", animated=True, id=1109234550707593346), discord.Colour(0xd43c54)),
-    100: Die(100, discord.PartialEmoji(name="d100", animated=True, id=1109960365967687841), discord.Colour(0xb40ea9))
+    100: Die(100, discord.PartialEmoji(name="d100", animated=True, id=1109960365967687841), discord.Colour(0xb40ea9)),
 }
 
 
 def replace_dice_in_expr(match: re.Match) -> str:
-    """Replace the dice in an expression, e.g. ``5d6`` in ``5d6 + 7``, with an expression containing the resulting rolls."""
+    """Replace the dice in an expression with an expression containing the resulting rolls.
+
+    Example: Replaces``5d6`` in ``5d6 + 7`` with ``(1, 5, 6, 3, 3)``.
+    """
 
     num = int(match.group(1)) if match.group(1) else 1
     limit = int(match.group(2))
@@ -97,7 +95,18 @@ def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
 
 
 def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
-    """Perform dice rolls based on a given expression with various dice, and return the filled in expression and final result."""
+    """Perform dice rolls based on a given expression with various dice.
+
+    Parameters
+    ----------
+    expression : :class:`str`
+        The expression to roll.
+
+    Returns
+    -------
+    normalized_expression, evaluation : tuple[:class:`str`, :class:`int`]
+        A tuple with filled in expression and final result.
+    """
 
     normalized_expression = re.sub(r"(\d*)d(\d+)", replace_dice_in_expr, expression)
     evaluation = int(AEVAL(normalized_expression))
@@ -121,7 +130,7 @@ class DiceEmbed(discord.Embed):
     modifier : :class:`int`, default=0
         The post-calculation modifier for the dice rolls.
     expression_info : tuple[:class:`str`, :class:`str`, :class:`str`], optional
-        A tuple containing the original expression, the expression filled with dice rolls, and the expressions' final result.
+        A tuple with the original expression, the expression filled with dice rolls, and the expressions' final result.
     """
 
     def __init__(
@@ -130,7 +139,7 @@ class DiceEmbed(discord.Embed):
             rolls_info: dict[int, list[int]] = None,
             modifier: int = 0,
             expression_info: tuple[str, str, int] = None,
-            **kwargs
+            **kwargs: Any,
     ) -> None:
 
         # Determine what type of description needs to be made: straight rolls, or custom expression.
@@ -169,13 +178,17 @@ class DiceEmbed(discord.Embed):
                     description.write(f"- \N{HEAVY PLUS SIGN} Modifier: **{modifier}**\n")
 
                 # Basically, only display the total separately if enough calculation was done to deem it necessary.
-                if (len(rolls_info) == 1 and (modifier or (len(next(iter(rolls_info.values()))) > 1))) or len(rolls_info) > 1:
+                if (len(rolls_info) == 1 and (modifier or (len(next(iter(rolls_info.values()))) > 1))) or len(
+                        rolls_info) > 1:
                     description.write(f"\nTotal: **{total}**")
 
                 kwargs["description"] = description.getvalue()
 
             kwargs["colour"] = discord.Colour.from_rgb(
-                *(sum(col) // len(col) for col in zip(*(standard_dice[val].color.to_rgb() for val in rolls_info.keys())))
+                *(
+                    sum(col) // len(col)
+                    for col in zip(*(standard_dice[val].color.to_rgb() for val in rolls_info), strict=True)
+                ),
             )
 
         elif expression_info:
@@ -196,10 +209,17 @@ class DiceEmbed(discord.Embed):
         super().__init__(**kwargs)
 
 
-class RerollButton(Button):
+class RerollButton(ui.Button):
     """A button subclass that redoes a roll based on input."""
 
-    def __init__(self, *, dice_info: dict[int, int] = None, modifier: int = 0, expression: str = None, **kwargs):
+    def __init__(
+            self,
+            *,
+            dice_info: dict[int, int] = None,
+            modifier: int = 0,
+            expression: str = None,
+            **kwargs: Any,
+    ) -> None:
         kwargs["label"] = kwargs.get("label", "\N{CLOCKWISE GAPPED CIRCLE ARROW}")
         kwargs["style"] = kwargs.get("style", discord.ButtonStyle.green)
         kwargs["custom_id"] = kwargs.get("custom_id", "dice:reroll_button")
@@ -208,7 +228,7 @@ class RerollButton(Button):
         self.modifier = modifier
         self.expression = expression
 
-    async def callback(self, interaction: discord.Interaction[Beira]) -> None:
+    async def callback(self, interaction: core.Interaction) -> None:
         if self.dice_info:
             rolls_info = roll_basic_dice(dice_info=self.dice_info)
             embed = DiceEmbed(rolls_info=rolls_info, modifier=self.modifier)
@@ -218,13 +238,13 @@ class RerollButton(Button):
         else:
             embed = DiceEmbed()
 
-        if not interaction.response.is_done():      # type: ignore
-            await interaction.response.send_message(embed=embed, view=self.view, ephemeral=True)    # type: ignore
+        if not interaction.response.is_done():  # type: ignore
+            await interaction.response.send_message(embed=embed, view=self.view, ephemeral=True)  # type: ignore
         else:
             await interaction.followup.send(embed=embed, view=self.view, ephemeral=True)
 
 
-class DiceButton(Button["DiceView"]):
+class DiceButton(ui.Button["DiceView"]):
     """A button subclass that specifically displays dice and acts as a die roller.
 
     Parameters
@@ -248,26 +268,25 @@ class DiceButton(Button["DiceView"]):
         self.response_colour = die.color
         self.value = die.value
 
-    async def callback(self, interaction: discord.Interaction[Beira]) -> None:
+    async def callback(self, interaction: core.Interaction) -> None:
         """Roll the selected die and display the result."""
 
-        # results = [random.randint(1, self.value) for _ in range(self.view.num_rolls)]
         dice_info = {self.value: self.view.num_rolls}
         results = roll_basic_dice(dice_info)
 
         embed = DiceEmbed(rolls_info=results, modifier=self.view.modifier, colour=self.response_colour)
-        view = View().add_item(RerollButton(dice_info=dice_info, modifier=self.view.modifier))
+        view = ui.View().add_item(RerollButton(dice_info=dice_info, modifier=self.view.modifier))
 
-        if not interaction.response.is_done():      # type: ignore
-            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)    # type: ignore
+        if not interaction.response.is_done():  # type: ignore
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)  # type: ignore
         else:
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 
-class DiceSelect(Select["DiceView"]):
+class DiceSelect(ui.Select["DiceView"]):
     """A dropdown specifically meant to handle rolling multiple dice."""
 
-    def __init__(self):
+    def __init__(self) -> None:
         custom_id = "dice:select"
         placeholder = "Choose multiple dice to roll..."
         options = [
@@ -275,25 +294,25 @@ class DiceSelect(Select["DiceView"]):
             for num, die in standard_dice.items()
         ]
         super().__init__(
-            custom_id=custom_id, placeholder=placeholder, min_values=1, max_values=len(standard_dice), options=options
+            custom_id=custom_id, placeholder=placeholder, min_values=1, max_values=len(standard_dice), options=options,
         )
 
-    async def callback(self, interaction: discord.Interaction[Beira]) -> None:
+    async def callback(self, interaction: core.Interaction) -> None:
         """Roll all selected dice and display the results to the user."""
 
         dice_info = {int(val): self.view.num_rolls for val in self.values}
         roll_info = roll_basic_dice(dice_info)
 
         embed = DiceEmbed(rolls_info=roll_info, modifier=self.view.modifier)
-        view = View().add_item(RerollButton(dice_info=dice_info, modifier=self.view.modifier))
+        view = ui.View().add_item(RerollButton(dice_info=dice_info, modifier=self.view.modifier))
 
-        if not interaction.response.is_done():      # type: ignore
-            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)    # type: ignore
+        if not interaction.response.is_done():  # type: ignore
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)  # type: ignore
         else:
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
 
-class DiceModifierModal(Modal):
+class DiceModifierModal(ui.Modal):
     """A modal for taking dice-related input, with default values related to getting a post-roll(s) modifier.
 
     Attributes
@@ -304,17 +323,17 @@ class DiceModifierModal(Modal):
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
-    modifier_input = TextInput(
+    modifier_input = ui.TextInput(
         label="Roll Modifier (Submit with nothing to reset)",
         placeholder="Enter modifier here...",
-        required=False
+        required=False,
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(title="Change Modifier", custom_id="dice:modifier_modal")
         self.interaction: discord.Interaction | None = None
 
-    async def on_submit(self, interaction: discord.Interaction[Beira], /) -> None:
+    async def on_submit(self, interaction: core.Interaction, /) -> None:
         """Store the interaction and ensure the input is an integer."""
 
         self.interaction = interaction
@@ -322,7 +341,7 @@ class DiceModifierModal(Modal):
             _ = int(value)
 
 
-class DiceExpressionModal(Modal):
+class DiceExpressionModal(ui.Modal):
     """A modal for taking a die calculation expression as input.
 
     Attributes
@@ -333,31 +352,26 @@ class DiceExpressionModal(Modal):
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
-    expression_input = TextInput(
+    expression_input = ui.TextInput(
         label="Dice Expression (Submit empty to reset)",
         style=discord.TextStyle.long,
         placeholder="Enter expression here...",
         max_length=1024,
-        required=False
+        required=False,
     )
 
-    def __init__(self):
+    def __init__(self) -> None:
         super().__init__(title="Enter Dice Expression", custom_id="dice:expression_modal")
         self.interaction: discord.Interaction | None = None
 
-    async def on_submit(self, interaction: discord.Interaction[Beira], /) -> None:
+    async def on_submit(self, interaction: core.Interaction, /) -> None:
         """Store the interaction."""
 
         self.interaction = interaction
 
 
-class DiceView(View):
+class DiceView(ui.View):
     """A view that acts as an interface for rolling dice via buttons, selects, and modals.
-
-    Parameters
-    ----------
-    **kwargs
-        Arbitrary keyword arguments for the superclass :class:`View`. See that class for more information.
 
     Attributes
     ----------
@@ -369,8 +383,8 @@ class DiceView(View):
         The custom dice expression from user input to be evaluated.
     """
 
-    def __init__(self, **kwargs) -> None:
-        super().__init__(**kwargs)
+    def __init__(self) -> None:
+        super().__init__(timeout=None)
         self.modifier = 0
         self.num_rolls = 1
         self.expression = ""
@@ -380,12 +394,13 @@ class DiceView(View):
 
         self.add_item(DiceSelect())
 
-    async def on_error(self, interaction: discord.Interaction[Beira], error: Exception, item: Item[Any], /) -> None:
+    async def on_error(self, interaction: core.Interaction, error: Exception, item: ui.Item[Any], /) -> None:
         error = getattr(error, "original", error)
         LOGGER.error("", exc_info=error)
 
-    @discord.ui.button(label="Modifier", style=discord.ButtonStyle.green, emoji="\N{HEAVY PLUS SIGN}", row=3)
-    async def set_modifier(self, interaction: discord.Interaction[Beira], button: Button) -> None:
+    @discord.ui.button(label="Modifier", custom_id="dice:modifier_button", style=discord.ButtonStyle.green,
+                       emoji="\N{HEAVY PLUS SIGN}", row=3)
+    async def set_modifier(self, interaction: core.Interaction, button: ui.Button) -> None:
         """Allow the user to set a modifier to add to the result of a roll or series of rolls.
 
         Applies to individual buttons and the select menu. Happens once at the end of multiple rolls.
@@ -395,7 +410,7 @@ class DiceView(View):
         if self.modifier != 0:
             modal.modifier_input.default = str(self.modifier)
 
-        await interaction.response.send_modal(modal)    # type: ignore
+        await interaction.response.send_modal(modal)  # type: ignore
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -409,10 +424,11 @@ class DiceView(View):
             button.label = f"Modifier: {int(modifier_value)}"
             self.modifier = int(modifier_value)
 
-        await modal.interaction.response.edit_message(view=self)    # type: ignore
+        await modal.interaction.response.edit_message(view=self)  # type: ignore
 
-    @discord.ui.button(label="# of Rolls", style=discord.ButtonStyle.green, emoji="\N{HEAVY MULTIPLICATION X}", row=3)
-    async def set_number(self, interaction: discord.Interaction[Beira], button: Button) -> None:
+    @discord.ui.button(label="# of Rolls", custom_id="dice:set_number_button", style=discord.ButtonStyle.green,
+                       emoji="\N{HEAVY MULTIPLICATION X}", row=3)
+    async def set_number(self, interaction: core.Interaction, button: ui.Button) -> None:
         """Allow the user to set the number of dice to roll at once.
 
         Applies to individual buttons and the select menu.
@@ -438,20 +454,21 @@ class DiceView(View):
             self.num_rolls = 1
         else:
             mod_int = int(modifier_value)
-            if mod_int < 1 or mod_int > 50:             # Set a floor and ceiling on the number.
+            if mod_int < 1 or mod_int > 50:  # Set a floor and ceiling on the number.
                 raise ValueError
             button.label = f"# of Rolls: {mod_int}"
             self.num_rolls = mod_int
 
-        await modal.interaction.response.edit_message(view=self)    # type: ignore
+        await modal.interaction.response.edit_message(view=self)  # type: ignore
 
-    @discord.ui.button(label="Custom Expression", style=discord.ButtonStyle.green, emoji="\N{ABACUS}", row=3)
-    async def set_expression(self, interaction: discord.Interaction[Beira], _: Button) -> None:
+    @discord.ui.button(label="Custom Expression", custom_id="dice:set_expression_button",
+                       style=discord.ButtonStyle.green, emoji="\N{ABACUS}", row=3)
+    async def set_expression(self, interaction: core.Interaction, _: ui.Button) -> None:
         """Allow the user to enter a custom dice expression to be evaluated for result."""
 
         # Create and send a modal for user input.
         modal = DiceExpressionModal()
-        if self.expression != "":
+        if not self.expression:
             modal.expression_input.default = self.expression
 
         await interaction.response.send_modal(modal)  # type: ignore
@@ -474,10 +491,11 @@ class DiceView(View):
             original_embed.remove_field(0).add_field(name="Loaded Expression:", value=self.expression)
 
         # Edit the original embed to display it.
-        await modal.interaction.response.edit_message(embed=original_embed, view=self)     # type: ignore
+        await modal.interaction.response.edit_message(embed=original_embed, view=self)  # type: ignore
 
-    @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", style=discord.ButtonStyle.green, row=3)
-    async def run_expression(self, interaction: discord.Interaction, _: Button) -> None:
+    @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", custom_id="dice:run_expression_button",
+                       style=discord.ButtonStyle.green, row=3)
+    async def run_expression(self, interaction: discord.Interaction, _: ui.Button) -> None:
         """Roll based on the entered custom expression and display the result."""
 
         send_kwargs = {"ephemeral": True}
@@ -485,7 +503,7 @@ class DiceView(View):
         if self.expression:
             filled_in_expression, result = roll_custom_dice_expression(self.expression)
             send_kwargs["embed"] = DiceEmbed(expression_info=(self.expression, filled_in_expression, result))
-            send_kwargs["view"] = View().add_item(RerollButton(expression=self.expression))
+            send_kwargs["view"] = ui.View().add_item(RerollButton(expression=self.expression))
         else:
             dice_select = discord.utils.get(self.children, custom_id="dice:select")
             if dice_select.values:
@@ -493,23 +511,23 @@ class DiceView(View):
                 roll_info = roll_basic_dice(dice_info)
 
                 send_kwargs["embed"] = DiceEmbed(rolls_info=roll_info, modifier=self.modifier)
-                send_kwargs["view"] = View().add_item(RerollButton(dice_info=dice_info, modifier=self.modifier))
+                send_kwargs["view"] = ui.View().add_item(RerollButton(dice_info=dice_info, modifier=self.modifier))
             else:
                 send_kwargs["embed"] = discord.Embed(description="\N{ABACUS} No expression to evaluate!")
 
-        if not interaction.response.is_done():      # type: ignore
-            await interaction.response.send_message(**send_kwargs)    # type: ignore
+        if not interaction.response.is_done():  # type: ignore
+            await interaction.response.send_message(**send_kwargs)  # type: ignore
         else:
             await interaction.followup.send(**send_kwargs)
 
 
 @commands.hybrid_command()
-async def roll(ctx: BeiraContext, expression: str | None = None) -> None:
+async def roll(ctx: core.Context, expression: str | None = None) -> None:
     """Send an interface for rolling different dice.
 
     Parameters
     ----------
-    ctx : :class:`BeiraContext`
+    ctx : :class:`core.Context`
         The invocation context.
     expression : :class:`str`, optional
         A custom dice expression to calculate. Optional.
@@ -518,21 +536,23 @@ async def roll(ctx: BeiraContext, expression: str | None = None) -> None:
     if not expression:
         embed = discord.Embed(
             title="Take a chance. Roll the dice!",
-            description="Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple dice "
-                        "simultaneously!\n"
-                        "Note: Maximum number of rolls at once is 50."
+            description="Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple "
+                        "dice simultaneously!\n"
+                        "Note: Maximum number of rolls at once is 50.",
         )
-        embed.set_thumbnail(url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif")
+        embed.set_thumbnail(
+            url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif")
         view = DiceView()
     else:
         filled_in_expression, result = roll_custom_dice_expression(expression)
         embed = DiceEmbed(expression_info=(expression, filled_in_expression, result))
-        view = View().add_item(RerollButton(expression=expression))
+        view = ui.View().add_item(RerollButton(expression=expression))
 
     await ctx.send(embed=embed, view=view)
 
 
-async def setup(bot: Beira) -> None:
-    """Add command to bot."""
+async def setup(bot: core.Beira) -> None:
+    """Add roll command and persistent dice view to bot."""
 
+    bot.add_view(DiceView())
     bot.add_command(roll)

@@ -6,23 +6,17 @@ Credit to Froopy and Danny for inspiration from their bots.
 
 from __future__ import annotations
 
-import unicodedata
 import logging
-from typing import TYPE_CHECKING
+import unicodedata
 
 import discord
 from discord import app_commands
 from discord.errors import DiscordException, Forbidden, HTTPException, NotFound
 from discord.ext import commands
 
-from bot import BeiraContext
-from .ai_generation.ai_utils import get_image
+import core
 
-
-if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+from .ai_generation import get_image
 
 
 LOGGER = logging.getLogger(__name__)
@@ -31,12 +25,9 @@ LOGGER = logging.getLogger(__name__)
 class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     """A cog with commands for performing actions with emojis and stickers."""
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.ctx_menu = app_commands.ContextMenu(
-            name="Add Sticker(s)",
-            callback=self.context_menu_sticker_add,
-        )
+        self.ctx_menu = app_commands.ContextMenu(name="Add Sticker(s)", callback=self.context_menu_sticker_add)
         self.bot.tree.add_command(self.ctx_menu)
 
     @property
@@ -48,7 +39,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
 
-    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """A local error handler for the emoji and sticker-related commands.
 
         Parameters
@@ -62,7 +53,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         embed = discord.Embed(title="Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, (commands.HybridCommandError, commands.CommandInvokeError)):
+        if isinstance(error, commands.HybridCommandError | commands.CommandInvokeError):
             error = error.original
             if isinstance(error, app_commands.CommandInvokeError):
                 error = error.original
@@ -81,12 +72,12 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send(embed=embed)
 
     @staticmethod
-    async def convert_str_to_emoji(ctx: BeiraContext, entity: str) -> discord.Emoji | discord.PartialEmoji | None:
+    async def convert_str_to_emoji(ctx: core.Context, entity: str) -> discord.Emoji | discord.PartialEmoji | None:
         """Attempt to convert a string to an emoji or partial emoji.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         entity : :class:`str`
             The string that might be an emoji or unicode character.
@@ -117,18 +108,16 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         return converted_emoji
 
     @commands.hybrid_group("emoji")
-    async def emoji_(self, ctx: BeiraContext) -> None:
+    async def emoji_(self, ctx: core.Context) -> None:
         """A group of emoji-related commands, like identifying emojis and adding them to a server."""
 
-        pass
-
     @emoji_.command("info")
-    async def emoji_info(self, ctx: BeiraContext, entity: str) -> None:
+    async def emoji_info(self, ctx: core.Context, entity: str) -> None:
         """Identify a particular emoji and see information about it.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         entity : :class:`str`
             The emoji to provide information about.
@@ -171,16 +160,16 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     @emoji_.command("add")
     async def emoji_add(
             self,
-            ctx: BeiraContext,
+            ctx: core.Context,
             name: str,
             entity: str | None = None,
             attachment: discord.Attachment | None = None
-    ):
+    ) -> None:
         """Add an emoji to the server, assuming you have the permissions to do that.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         name : :class:`str`
             The name of the emoji.
@@ -191,22 +180,25 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         """
 
         if not (entity or attachment):
-            return await ctx.send("You're missing an emoji, url, or attachment to add! Make sure you put the name first.")
+            await ctx.send("You're missing an emoji, url, or attachment to add! Make sure you put the name first.")
+            return
 
         if entity:
             converted_emoji = await self.convert_str_to_emoji(ctx, entity)
 
             # The given symbol isn't a discord emoji or recognizable as Unicode.
             if converted_emoji is None:
-                return await ctx.send("Unrecognizable symbol/emoji.")
+                await ctx.send("Unrecognizable symbol/emoji.")
+                return
 
             if isinstance(converted_emoji, discord.PartialEmoji) and converted_emoji.is_unicode_emoji():
                 # The string has a single Unicode symbol.
                 if len(entity) == 1:
-                    return await ctx.send("You can't steal Unicode characters/emojis.")
+                    await ctx.send("You can't steal Unicode characters/emojis.")
+                    return
 
                 # Attempt to read the input as an image url.
-                emoji_bytes = await get_image(ctx.session, entity)
+                emoji_bytes = await get_image(ctx.web_client, entity)
             else:
                 # Attempt to convert and read the input as an emoji normally.
                 emoji_bytes = await converted_emoji.read()
@@ -224,18 +216,16 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             await ctx.send("Something went wrong. The emoji could not be added.")
 
     @commands.hybrid_group()
-    async def sticker(self, ctx: BeiraContext) -> None:
+    async def sticker(self, ctx: core.Context) -> None:
         """A group of sticker-related commands, like adding them to a server."""
 
-        pass
-
     @sticker.command("info")
-    async def sticker_info(self, ctx: BeiraContext, sticker: str) -> None:
+    async def sticker_info(self, ctx: core.Context, sticker: str) -> None:
         """Identify a particular sticker and see information about it.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         sticker : :class:`discord.GuildSticker`
             The id or name of the sticker to provide information about.
@@ -261,7 +251,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
     @sticker.command("add")
     async def sticker_add(
             self,
-            ctx: BeiraContext,
+            ctx: core.Context,
             sticker: str | None = None,
             name: str | None = None,
             description: str | None = None,
@@ -273,7 +263,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         sticker : :class:`discord.GuildSticker`, optional
             The name or id of an existing sticker to steal. If filled, no other parameters are necessary.
@@ -317,7 +307,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send(f"Sticker successfully added: `{name}`.", stickers=[new_sticker])
 
     @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
-    async def context_menu_sticker_add(self, interaction: discord.Interaction[Beira], message: discord.Message) -> None:
+    async def context_menu_sticker_add(self, interaction: core.Interaction, message: discord.Message) -> None:
         """Context menu command for adding stickers from a message to the guild in context."""
 
         added_count = 0
@@ -348,7 +338,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             await interaction.response.send_message("No stickers in this message.", ephemeral=True)  # type: ignore
 
 
-async def setup(bot: Beira):
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(EmojiOperationsCog(bot))

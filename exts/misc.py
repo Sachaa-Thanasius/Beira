@@ -8,18 +8,11 @@ from __future__ import annotations
 
 import logging
 from time import perf_counter
-from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
 
-from bot import BeiraContext
-
-
-if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+import core
 
 
 LOGGER = logging.getLogger(__name__)
@@ -28,7 +21,7 @@ LOGGER = logging.getLogger(__name__)
 class MiscCog(commands.Cog, name="Misc"):
     """A cog with some basic commands, originally used for testing slash and hybrid command functionality."""
 
-    def __init__(self, bot: Beira) -> None:
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
 
     @property
@@ -37,7 +30,7 @@ class MiscCog(commands.Cog, name="Misc"):
 
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
 
-    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         # Just log the exception, whatever it is.
         error = getattr(error, "original", error)
         if ctx.interaction:
@@ -45,7 +38,7 @@ class MiscCog(commands.Cog, name="Misc"):
         LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()
-    async def about(self, ctx: BeiraContext) -> None:
+    async def about(self, ctx: core.Context) -> None:
         """See some basic information about the bot, including its source."""
 
         owner = self.bot.get_user(self.bot.owner_id)
@@ -67,18 +60,18 @@ class MiscCog(commands.Cog, name="Misc"):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    async def hello(self, ctx: BeiraContext) -> None:
+    async def hello(self, ctx: core.Context) -> None:
         """Get back a default "Hello, World!" response."""
 
         await ctx.send("Hello, World!")
 
     @commands.hybrid_command()
-    async def echo(self, ctx: BeiraContext, *, arg: str) -> None:
+    async def echo(self, ctx: core.Context, *, arg: str) -> None:
         """Echo back the user's input.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         arg : :class:`str`
             The user input.
@@ -87,12 +80,12 @@ class MiscCog(commands.Cog, name="Misc"):
         await ctx.send(arg)
 
     @commands.hybrid_command()
-    async def quote(self, ctx: BeiraContext, *, message: discord.Message) -> None:
+    async def quote(self, ctx: core.Context, *, message: discord.Message) -> None:
         """Display a message's contents, specified with a message link, message ID, or channel-message ID pair.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         message : :class:`discord.Message`
             The message to be quoted. It can be specified by a message link, message ID, or channel-message ID pair.
@@ -106,12 +99,12 @@ class MiscCog(commands.Cog, name="Misc"):
         await ctx.send(embed=quote_embed)
 
     @commands.hybrid_command(name="ping")
-    async def ping_(self, ctx: BeiraContext) -> None:
+    async def ping_(self, ctx: core.Context) -> None:
         """Display the time necessary for the bot to communicate with Discord.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         """
 
@@ -146,7 +139,7 @@ class MiscCog(commands.Cog, name="Misc"):
         await message.edit(embed=pong_embed)
 
 
-async def setup(bot: Beira) -> None:
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(MiscCog(bot))

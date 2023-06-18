@@ -1,18 +1,18 @@
 """
 story_search.py: This cog is meant to provide functionality for searching the text of some books.
 
-Currently supports most long-form ACI100 works and MJ Bradley's A Cadmean Victory Remastered.
+Currently supports most long-form ACI100 works and M J Bradley's A Cadmean Victory Remastered.
 """
 
 from __future__ import annotations
 
 import logging
+import random
 import re
 from bisect import bisect_left
 from copy import deepcopy
 from pathlib import Path
-from random import choice, randint
-from typing import TYPE_CHECKING, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import discord
 from attrs import asdict, define, field
@@ -20,17 +20,13 @@ from cattrs import Converter
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import MISSING
-from typing_extensions import Self
 
-from bot import BeiraContext
-from utils.embeds import EMOJI_URL, PaginatedEmbed
-from utils.pagination import PaginatedEmbedView
+import core
+from core.utils import EMOJI_URL, PaginatedEmbed, PaginatedEmbedView
 
 
 if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+    from typing_extensions import Self
 
 
 LOGGER = logging.getLogger(__name__)
@@ -63,7 +59,7 @@ class StoryQuoteEmbed(PaginatedEmbed):
         Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`. See that class for more info.
     """
 
-    def __init__(self, *, story_data: dict | None = MISSING, **kwargs) -> None:
+    def __init__(self, *, story_data: dict | None = MISSING, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
         if story_data is not MISSING:
@@ -82,7 +78,7 @@ class StoryQuoteEmbed(PaginatedEmbed):
             self.set_author(
                 name=story_data["story_full_name"],
                 url=story_data["story_link"],
-                icon_url=EMOJI_URL.format(str(story_data["emoji_id"]))
+                icon_url=EMOJI_URL.format(str(story_data["emoji_id"])),
             )
 
         return self
@@ -104,7 +100,7 @@ class StoryQuoteView(PaginatedEmbedView):
         The story's data and metadata, including full name, author name, and image representation.
     """
 
-    def __init__(self, *, story_data: dict, **kwargs) -> None:
+    def __init__(self, *, story_data: dict, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.story_data = story_data
 
@@ -119,14 +115,15 @@ class StoryQuoteView(PaginatedEmbedView):
         if self.total_pages == 0:
             embed_page.set_page_content(("No quotes found!", "N/A", "N/A")).set_page_footer(0, 0)
 
-        else:
-            if self.page_cache[self.current_page - 1] is None:
-                self.current_page_content = self.pages[self.current_page - 1][0]    # per_page value of 1 means parsing a list of length 1.
-                embed_page.set_page_content(self.current_page_content).set_page_footer(self.current_page, self.total_pages)
-                self.page_cache[self.current_page - 1] = embed_page
+        elif self.page_cache[self.current_page - 1] is None:
+            # per_page value of 1 means parsing a list of length 1.
+            self.current_page_content = self.pages[self.current_page - 1][0]
 
-            else:
-                return deepcopy(self.page_cache[self.current_page - 1])
+            embed_page.set_page_content(self.current_page_content).set_page_footer(self.current_page, self.total_pages)
+            self.page_cache[self.current_page - 1] = embed_page
+
+        else:
+            return deepcopy(self.page_cache[self.current_page - 1])
 
         return embed_page
 
@@ -147,7 +144,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     story_records: ClassVar[dict[str, StoryInfo]] = {}
 
-    def __init__(self, bot: Beira) -> None:
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.converter = Converter()
 
@@ -163,7 +160,9 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         # Load story metadata from DB.
         query = "SELECT * FROM story_information"
         temp_records = await self.bot.db_pool.fetch(query)
-        self.story_records.update(self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo]))
+        self.story_records.update(
+            self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo])
+        )
 
         # Load story text from markdown files.
         project_path = Path(__file__).resolve().parents[1]
@@ -172,7 +171,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                 await self.load_story_text(file)
 
     @classmethod
-    async def load_story_text(cls, filepath: Path):
+    async def load_story_text(cls, filepath: Path) -> None:
         """Load the story metadata and text."""
 
         # Compile all necessary regex patterns.
@@ -189,7 +188,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
             # Instantiate index lists, which act as a table of contents of sorts.
             stem = str(filepath.stem)[:-5]
-            temp_text = cls.story_records[stem].text = [line for line in story_file if line.strip() != ""]
+            temp_text = cls.story_records[stem].text = [line for line in story_file if line.strip()]
             temp_chap_index = cls.story_records[stem].chapter_index
             temp_coll_index = cls.story_records[stem].collection_index
 
@@ -205,10 +204,12 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                         else:
                             temp_chap_index.append(index)
 
-                    elif re.search(re_volume_heading, line):
-                        # Add to the index if it's empty or if the newest possible entry is unique.
-                        if (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]):
-                            temp_coll_index.append(index)
+                    # Add to the index if it's empty or if the newest possible entry is unique.
+                    elif (
+                            re.search(re_volume_heading, line) and
+                            (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]])
+                    ):
+                        temp_coll_index.append(index)
 
             else:
                 for index, line in enumerate(temp_text):
@@ -275,12 +276,10 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         actual_index = list_of_indices[max(i_of_index - 1, 0)] if (i_of_index is not None) else -1
 
         # Use that element as an index in the story text list to get a quote, whether it's a chapter, volume, etc.
-        value_from_index = cls.story_records[story].text[actual_index] if actual_index != -1 else "—————"
-
-        return value_from_index
+        return cls.story_records[story].text[actual_index] if actual_index != -1 else "—————"
 
     @commands.hybrid_command()
-    async def random_text(self, ctx: BeiraContext) -> None:
+    async def random_text(self, ctx: core.Context) -> None:
         """Display a random line from the story.
 
         Parameters
@@ -290,10 +289,10 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         """
 
         # Randomly choose an ACI100 story.
-        story = choice([key for key in self.story_records if key != "acvr"])
+        story = random.choice([key for key in self.story_records if key != "acvr"])
 
         # Randomly choose two paragraphs from the story.
-        b_range = randint(2, len(self.story_records[story].text) - 3)
+        b_range = random.randint(2, len(self.story_records[story].text) - 3)
         b_sample = self.story_records[story].text[b_range: (b_range + 2)]
 
         # Get the chapter and collection of the quote.
@@ -304,7 +303,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         embed = StoryQuoteEmbed(
             color=0xdb05db,
             story_data=asdict(self.story_records[story]),
-            page_content=(quote_year, quote_chapter, "".join(b_sample))
+            page_content=(quote_year, quote_chapter, "".join(b_sample)),
         ).set_footer(text="Randomly chosen quote from an ACI100 story.")
 
         await ctx.send(embed=embed)
@@ -316,7 +315,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         app_commands.Choice(name="Fabric of Fate", value="fof"),
         app_commands.Choice(name="Perversion of Purity", value="pop"),
     ])
-    async def search_text(self, ctx: BeiraContext, story: str, *, query: str) -> None:
+    async def search_text(self, ctx: core.Context, story: str, *, query: str) -> None:
         """Search the works of ACI100 for a word or phrase.
 
         Parameters
@@ -337,7 +336,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             view.message = message
 
     @commands.hybrid_command()
-    async def search_cadmean(self, ctx: BeiraContext, *, query: str) -> None:
+    async def search_cadmean(self, ctx: core.Context, *, query: str) -> None:
         """Search *A Cadmean Victory Remastered* by MJ Bradley for a word or phrase.
 
         Parameters
@@ -356,7 +355,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             view.message = message
 
 
-async def setup(bot: Beira) -> None:
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(StorySearchCog(bot))

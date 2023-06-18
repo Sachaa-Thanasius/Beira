@@ -12,7 +12,7 @@ from discord.utils import escape_markdown
 from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
-from utils.errors import BadSpotifyLink
+from core import BadSpotifyLink
 
 
 __all__ = ("format_track_embed", "SoundCloudPlaylist", "WavelinkSearchConverter")
@@ -98,11 +98,12 @@ class WavelinkSearchConverter(commands.Converter):
             a. Try lookup as direct url.
             b. Search YouTube with the argument as the query.
     """
+
     @classmethod
     async def convert(
             cls,
             ctx: commands.Context,
-            argument: str
+            argument: str,
     ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
         """Converter which searches for and returns the relevant track(s).
 
@@ -134,7 +135,7 @@ class WavelinkSearchConverter(commands.Converter):
             decoded = spotify.decode_url(argument)
             if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
                 raise BadSpotifyLink(argument)
-            elif decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
+            if decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
                 tracks = [track async for track in spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)]
             else:
                 tracks = await spotify.SpotifyTrack.search(argument, type=decoded["type"], node=vc.current_node)
@@ -145,6 +146,7 @@ class WavelinkSearchConverter(commands.Converter):
                 tracks = await wavelink.YouTubeTrack.search(argument, node=vc.current_node)
 
         if not tracks:
-            raise wavelink.NoTracksError(f"Your search query {argument} returned no tracks.")
+            msg = f"Your search query {argument} returned no tracks."
+            raise wavelink.NoTracksError(msg)
 
         return tracks

@@ -4,18 +4,20 @@ embeds.py: This class provides embeds for user-specific statistics separated int
 
 from __future__ import annotations
 
-import datetime
 import logging
-from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Callable
+from collections.abc import Callable, Sequence
+from datetime import datetime, timezone
+from typing import TYPE_CHECKING, Any
 
 from discord import Embed
 from discord.utils import MISSING
-from typing_extensions import Self
 
 
 if TYPE_CHECKING:
     from discord import Emoji
+    from typing_extensions import Self
+
+__all__ = ("EMOJI_URL", "DTEmbed", "PaginatedEmbed", "StatsEmbed")
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +30,7 @@ def field_range_tracking(func: Callable) -> Callable:
     Used primarily for the :class:`StatEmbed`, which has dedicated fields matching variables in here.
     """
 
-    def decorator(self, *args, **kwargs):
+    def decorator(self, *args: Any, **kwargs: Any):
 
         # Store the starting index of the stat fields.
         self.clear_stat_fields()
@@ -54,8 +56,8 @@ class DTEmbed(Embed):
     Inherits from :class:`Embed`.
     """
 
-    def __init__(self, **kwargs):
-        timestamp = datetime.datetime.now()
+    def __init__(self, **kwargs: Any) -> None:
+        timestamp = datetime.now(tz=timezone.utc).astimezone()
         super().__init__(timestamp=timestamp, **kwargs)
 
 
@@ -84,7 +86,7 @@ class PaginatedEmbed(Embed):
             page_content: tuple | None = MISSING,
             current_page: int | None = MISSING,
             max_pages: int | None = MISSING,
-            **kwargs
+            **kwargs: Any,
     ) -> None:
 
         super().__init__(**kwargs)
@@ -171,7 +173,7 @@ class StatsEmbed(DTEmbed):
             stat_values: Sequence[Any] | None = (),
             inline: bool = False,
             emoji_header_status: bool = False,
-            **kwargs
+            **kwargs: Any,
     ) -> None:
         input_color = kwargs.get("colour") if kwargs.get("colour") else kwargs.get("color")
         colour = input_color if input_color else 0x2f3136
@@ -183,7 +185,7 @@ class StatsEmbed(DTEmbed):
                 stat_emojis=stat_emojis,
                 stat_values=stat_values,
                 inline=inline,
-                emoji_header_status=emoji_header_status
+                emoji_header_status=emoji_header_status,
             )
 
     @field_range_tracking
@@ -194,7 +196,7 @@ class StatsEmbed(DTEmbed):
             stat_emojis: Sequence[Emoji | str],
             stat_values: Sequence[Any],
             inline: bool = False,
-            emoji_header_status: bool = False
+            emoji_header_status: bool = False,
     ) -> Self:
         """Add some stat fields to the embed object.
 
@@ -218,10 +220,10 @@ class StatsEmbed(DTEmbed):
         stat_emojis = self.lengthen_emoji_list(stat_names, stat_emojis)
 
         # Add the stat fields.
-        for name, emoji, value in zip(stat_names, stat_emojis, stat_values):
+        for name, emoji, value in zip(stat_names, stat_emojis, stat_values, strict=False):
             # Potentially change the emoji placement.
-            name = f"{emoji} | {name}" if emoji_header_status else f"{emoji} **|** {value}"
-            self.add_field(name=f"{name}", value=f"{value}", inline=inline)
+            fmt_name = f"{emoji} | {name}" if emoji_header_status else f"{emoji} **|** {value}"
+            self.add_field(name=f"{fmt_name}", value=f"{value}", inline=inline)
 
         return self
 
@@ -234,7 +236,7 @@ class StatsEmbed(DTEmbed):
             name_format: str = "| {}",
             value_format: str = "{}",
             inline: bool = False,
-            ranked: bool = True
+            ranked: bool = True,
     ) -> Self:
         """Add some leaderboard fields to the embed object.
 
@@ -260,11 +262,11 @@ class StatsEmbed(DTEmbed):
         ldbd_emojis = self.lengthen_emoji_list(ldbd_content, ldbd_emojis)
 
         # Add the leaderboard fields.
-        for rank, (content, emoji) in enumerate(zip(ldbd_content, ldbd_emojis)):
+        for rank, (content, emoji) in enumerate(zip(ldbd_content, ldbd_emojis, strict=False)):
             if ranked:
-                name = f"{str(emoji)} {rank + 1} " + name_format.format(str(content[0]))
+                name = f"{emoji!s} {rank + 1} " + name_format.format(str(content[0]))
             else:
-                name = f"{str(emoji)} " + name_format.format(str(content[0]))
+                name = f"{emoji!s} " + name_format.format(str(content[0]))
 
             self.add_field(name=name, value=value_format.format(*content[1:]), inline=inline)
 
@@ -319,15 +321,3 @@ class StatsEmbed(DTEmbed):
             emojis = ["" for _ in baseline_list]
 
         return emojis
-
-
-def discord_embed_factory(name: str = "default") -> DTEmbed:
-    """Factory method for instantiating a Discord embed or its subclasses."""
-
-    embed_types = {
-        "default": DTEmbed,
-        "Paginated": PaginatedEmbed,
-        "Stats": StatsEmbed
-    }
-
-    return embed_types[name]()

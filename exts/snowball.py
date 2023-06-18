@@ -12,6 +12,7 @@ from __future__ import annotations
 
 import json
 import logging
+import pathlib
 import random
 from typing import TYPE_CHECKING
 
@@ -19,17 +20,13 @@ import discord
 from discord import app_commands
 from discord.ext import commands
 
-from bot import BeiraContext
-from utils.checks import is_owner_or_friend
-from utils.db_utils import upsert_guilds, upsert_users
-from utils.embeds import StatsEmbed
-from utils.errors import CannotTargetSelf
+import core
+from core.utils import StatsEmbed, upsert_guilds, upsert_users
+
 
 if TYPE_CHECKING:
     from asyncpg import Record
-    from bot import Beira
-else:
-    Beira = commands.Bot
+
 
 LOGGER = logging.getLogger(__name__)
 
@@ -98,7 +95,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         from a json file before the bot connects to the Discord Gateway.
     """
 
-    def __init__(self, bot: Beira) -> None:
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.embed_data = {}
 
@@ -111,10 +108,10 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def cog_load(self) -> None:
         """Load the embed data for various snowball commands before the bot connects to the Discord Gateway."""
 
-        with open("data/snowball_embed_data.json", "r", encoding="utf-8") as data_file:
+        with pathlib.Path("data/snowball_embed_data.json").open(encoding="utf-8") as data_file:
             self.embed_data = json.load(data_file)
 
-    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """Handles errors that occur within this cog.
 
         For example, when using prefix commands, this will tell users if they are missing arguments. Other error cases
@@ -122,7 +119,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context where the error happened.
         error : :class:`Exception`
             The error that happened.
@@ -137,30 +134,30 @@ class SnowballCog(commands.Cog, name="Snowball"):
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
-        elif isinstance(error, CannotTargetSelf):
+        elif isinstance(error, core.CannotTargetSelf):
             embed.title = "No Targeting Yourself!"
             embed.description = "Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the face."
         else:
             embed.title = f"{ctx.command.name}: Unknown Command Error"
-            embed.description = "Maybe the snowballs are revolting. Maybe you hit a beehive. Regardless, there's " \
-                                "some kind of error. Please try again in a minute or two."
+            embed.description = (
+                "Maybe the snowballs are revolting. Maybe you hit a beehive. Regardless, there's some kind of error. "
+                "Please try again in a minute or two."
+            )
             LOGGER.exception("", exc_info=error)
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
     @commands.hybrid_group()
-    async def snow(self, ctx: BeiraContext) -> None:
+    async def snow(self, ctx: core.Context) -> None:
         """A group of snowball-related commands."""
 
-        pass
-
     @snow.command()
-    async def settings(self, ctx: BeiraContext) -> None:
+    async def settings(self, ctx: core.Context) -> None:
         """Show what the settings are for the snowballs.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         """
 
@@ -168,27 +165,27 @@ class SnowballCog(commands.Cog, name="Snowball"):
             color=0x5e9a40,
             title=f"{self.qualified_name} Settings",
             description="Below are the unchangeable settings for the bot's snowball hit rate, stock maximum, and more."
-                        " The ability to change these on a per-guild basis will be coming soon."
+                        " The ability to change these on a per-guild basis will be coming soon.",
         ).add_field(
             name=f"Odds = {ODDS}",
             value="The odds of landing a snowball on someone.",
-            inline=False
+            inline=False,
         ).add_field(
             name=f"Leaderboard Max = {LEADERBOARD_MAX}",
             value="The number of people to show on the leaderboard.",
-            inline=False
+            inline=False,
         ).add_field(
             name=f"Default Stock Cap = {DEFAULT_STOCK_CAP}",
             value="The maximum number of snowballs the average member can hold at once.",
-            inline=False
+            inline=False,
         ).add_field(
             name=f"Special Stock Cap = {SPECIAL_STOCK_CAP}",
             value="The maximum number of snowballs special members can hold at once.",
-            inline=False
+            inline=False,
         ).add_field(
             name=f"Transfer Cap = {TRANSFER_CAP}",
             value="The maximum number of snowballs that can be gifted or stolen at once.",
-            inline=False
+            inline=False,
         )
 
         await ctx.send(embed=embed)
@@ -196,12 +193,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     @commands.dynamic_cooldown(collect_cooldown, commands.cooldowns.BucketType.user)
-    async def collect(self, ctx: BeiraContext) -> None:
+    async def collect(self, ctx: core.Context) -> None:
         """Collects a snowball.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context where the command was called.
         """
 
@@ -217,13 +214,17 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         embed = discord.Embed(color=0x5e62d3)
         if record["stock"] < stock_limit:
-            embed.description = f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping" \
-                                f"some snowballs. You now have {record['stock']} of them—let 'em fly!"
+            embed.description = (
+                f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping"
+                f"some snowballs. You now have {record['stock']} of them—let 'em fly!"
+            )
             embed.set_image(url=random.choice(self.embed_data["collects"]["image_success"]))
 
         else:
-            embed.description = f"You've filled your armory to the brim with about {stock_limit} snowballs! Release " \
-                                f"some of your stores to make space for more."
+            embed.description = (
+                f"You've filled your armory to the brim with about {stock_limit} snowballs! Release "
+                f"some of your stores to make space for more."
+            )
             embed.set_image(url=self.embed_data["collects"]["image_failure"])
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
@@ -231,19 +232,20 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: BeiraContext, *, target: discord.Member) -> None:
+    async def throw(self, ctx: core.Context, *, target: discord.Member) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         target : :class:`discord.Member`
             The user to hit with a snowball.
         """
 
         if target == ctx.author:
-            raise CannotTargetSelf("You cannot target yourself with this argument.")
+            msg = "You cannot target yourself with this argument."
+            raise core.CannotTargetSelf(msg)
 
         message = ""
         embed = discord.Embed(color=0x60ff60)
@@ -285,12 +287,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(receiver="Who do you want to give some balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: BeiraContext, amount: int, *, receiver: discord.Member) -> None:
+    async def transfer(self, ctx: core.Context, amount: int, *, receiver: discord.Member) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         amount : :class:`int`
             The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
@@ -300,7 +302,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         if receiver == ctx.author:
-            raise CannotTargetSelf("You cannot target yourself with this argument.")
+            msg = "You cannot target yourself with this argument."
+            raise core.CannotTargetSelf(msg)
 
         # Set a limit on how many snowballs can be transferred at a time.
         if amount > TRANSFER_CAP:
@@ -308,8 +311,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        stock_cap = SPECIAL_STOCK_CAP if (
-                    ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
+        stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
         giver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
@@ -319,8 +321,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if (giver_record is not None) and (giver_record["stock"] - amount < 0):
             failed_embed = discord.Embed(
                 color=0x69ff69,
-                description="You don't have that many snowballs to give. Find a few more with /collect and you might be "
-                            "able give that many soon!"
+                description="You don't have that many snowballs to give. Find a few more with /collect and you might "
+                            "be able give that many soon!",
             )
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
@@ -329,7 +331,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             failed_embed = discord.Embed(
                 color=0x69ff69,
                 description=f"Your friend has enough snowballs; this transfer would push them past the stock cap of "
-                            f"{stock_cap}. If you think about it, with that many in hand, do they need yours too?"
+                            f"{stock_cap}. If you think about it, with that many in hand, do they need yours too?",
             )
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
@@ -341,22 +343,22 @@ class SnowballCog(commands.Cog, name="Snowball"):
         # Send notification message of successful transfer.
         success_embed = discord.Embed(
             color=0x69ff69,
-            description=f"Transfer successful! You've given {receiver.mention} {amount} of your snowballs!"
+            description=f"Transfer successful! You've given {receiver.mention} {amount} of your snowballs!",
         )
         message = f"{ctx.author.mention}, {receiver.mention}"
         await ctx.send(content=message, embed=success_embed, ephemeral=False)
 
     @snow.command()
     @commands.guild_only()
-    @is_owner_or_friend()
+    @core.is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
-    async def steal(self, ctx: BeiraContext, amount: int, *, victim: discord.Member):
+    async def steal(self, ctx: core.Context, amount: int, *, victim: discord.Member) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         amount : :class:`int`
             The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
@@ -366,14 +368,16 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         if victim == ctx.author:
-            raise CannotTargetSelf("You cannot target yourself with this argument.")
+            msg = "You cannot target yourself with this argument."
+            raise core.CannotTargetSelf(msg)
 
         def_embed = discord.Embed(color=0x69ff69)
 
         # Set a limit on how many snowballs can be stolen at a time.
         if amount > TRANSFER_CAP:
             def_embed.description = "10 snowballs at once is the bulk stealing limit."
-            return await ctx.send(embed=def_embed, ephemeral=True)
+            await ctx.send(embed=def_embed, ephemeral=True)
+            return
 
         stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
 
@@ -383,15 +387,20 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         # In case of failed steal, send one of these messages.
         if (victim_record is not None) and (victim_record["stock"] - amount < 0):
-            def_embed.description = "They don't have that much to steal. Wait for them to collect a few more, or " \
-                                    "pilfer a smaller number."
-            return await ctx.send(embed=def_embed, ephemeral=True)
+            def_embed.description = (
+                "They don't have that much to steal. Wait for them to collect a few more, or "
+                "pilfer a smaller number."
+            )
+            await ctx.send(embed=def_embed, ephemeral=True)
+            return
 
         if (thief_record is not None) and (thief_record["stock"] + amount > stock_cap):
-            def_embed.description = f"You enough snowballs; this transfer would push you past the stock cap of " \
-                                    f"{stock_cap}. Use some of your balls before you decide to rob some hapless soul."
-            return await ctx.send(embed=def_embed, ephemeral=True)
-
+            def_embed.description = (
+                f"You enough snowballs; this transfer would push you past the stock cap of "
+                f"{stock_cap}. Use some of your balls before you decide to rob some hapless soul."
+            )
+            await ctx.send(embed=def_embed, ephemeral=True)
+            return
 
         # Update the giver and receiver's records.
         await self.update_snowball_record(ctx.author, stock=amount)
@@ -405,12 +414,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.group(fallback="get")
     @commands.guild_only()
     @app_commands.describe(target="Look up a particular Snowball Sparrer's stats.")
-    async def stats(self, ctx: BeiraContext, *, target: discord.User = commands.Author) -> None:
+    async def stats(self, ctx: core.Context, *, target: discord.User = commands.Author) -> None:
         """See who's the best at shooting snow spheres.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         target : :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their stats are specifically from
@@ -448,12 +457,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @stats.command(name="global")
     @app_commands.describe(target="Look up a a player's stats as a summation across all servers.")
-    async def stats_global(self, ctx: BeiraContext, *, target: discord.User = commands.Author) -> None:
+    async def stats_global(self, ctx: core.Context, *, target: discord.User = commands.Author) -> None:
         """See who's the best across all Beira servers.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         target : :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their global stats are a
@@ -481,12 +490,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @snow.group(fallback="get")
     @commands.guild_only()
-    async def leaderboard(self, ctx: BeiraContext) -> None:
+    async def leaderboard(self, ctx: core.Context) -> None:
         """See who's dominating the Snowball Bot leaderboard in your server.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         """
 
@@ -503,23 +512,23 @@ class SnowballCog(commands.Cog, name="Snowball"):
         embed = StatsEmbed(
             color=0x2f3136,
             title=f"**Snowball Champions in {ctx.guild.name}**",
-            description="(Hits / Misses / KOs)\n——————————————"
+            description="(Hits / Misses / KOs)\n——————————————",
         ).set_thumbnail(url=ctx.guild.icon.url)
 
         if guild_ldbd is not None:
             await self._make_leaderboard_fields(embed, guild_ldbd)
         else:
-            embed.description += "\n***There are no scores at this time, as no users have interacted with the bot yet!***"
+            embed.description += "\n**There are no scores at this time, as no users have interacted with the bot yet!**"
 
         await ctx.send(embed=embed, ephemeral=False)
 
     @leaderboard.command(name="global")
-    async def leaderboard_global(self, ctx: BeiraContext) -> None:
+    async def leaderboard_global(self, ctx: core.Context) -> None:
         """See who's dominating the Global Snowball Bot leaderboard across all the servers.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         """
 
@@ -529,23 +538,23 @@ class SnowballCog(commands.Cog, name="Snowball"):
         embed = StatsEmbed(
             color=0x2f3136,
             title="**Global Snowball Champions**",
-            description="(Total Hits / Total Misses / Total KOs)\n——————————————"
+            description="(Total Hits / Total Misses / Total KOs)\n——————————————",
         ).set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if global_ldbd is not None:
             await self._make_leaderboard_fields(embed, global_ldbd)
         else:
-            embed.description += "\n***There was an issue connecting to the database. Please try again in a few minutes.***"
+            embed.description += "\n**There was an issue connecting to the database. Please try again in a few minutes.**"
 
         await ctx.send(embed=embed, ephemeral=False)
 
     @leaderboard.command(name="guilds")
-    async def leaderboard_guilds(self, ctx: BeiraContext) -> None:
+    async def leaderboard_guilds(self, ctx: core.Context) -> None:
         """See which guild is dominating the Snowball Bot leaderboard.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         """
 
@@ -555,23 +564,23 @@ class SnowballCog(commands.Cog, name="Snowball"):
         embed = StatsEmbed(
             color=0x2f3136,
             title="**Guild-Level Snowball Champions**",
-            description="(Total Hits / Total Misses / Total KOs)\n——————————————"
+            description="(Total Hits / Total Misses / Total KOs)\n——————————————",
         ).set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if guilds_only_ldbd is not None:
             await self._make_leaderboard_fields(embed, guilds_only_ldbd)
         else:
-            embed.description += "\n***There was an issue connecting to the database. Please try again in a few minutes.***"
+            embed.description += "\n**There was an issue connecting to the database. Please try again in a few minutes.**"
 
         await ctx.send(embed=embed, ephemeral=False)
 
     @snow.command()
-    async def sources(self, ctx: BeiraContext) -> None:
+    async def sources(self, ctx: core.Context) -> None:
         """Gives links and credit to the Snowsgiving 2021 Help Center article and to reference code.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         """
 
@@ -591,7 +600,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             hits: int = 0,
             misses: int = 0,
             kos: int = 0,
-            stock: int = 0
+            stock: int = 0,
     ) -> None:
         """Upserts a user's snowball stats based on the given stat parameters."""
 
@@ -614,7 +623,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
                     stock = snowball_stats.stock + $7;
         """
         await self.bot.db_pool.execute(
-            snowball_upsert_query, member.id, member.guild.id, hits, misses, kos, stock_insert, stock
+            snowball_upsert_query, member.id, member.guild.id, hits, misses, kos, stock_insert, stock,
         )
 
     async def _make_leaderboard_fields(self, embed: StatsEmbed, records: list[Record]) -> None:
@@ -647,7 +656,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         return entity
 
 
-async def setup(bot) -> None:
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(SnowballCog(bot))

@@ -4,27 +4,25 @@ checks.py: Custom checks used by the bot.
 
 from __future__ import annotations
 
-import logging
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord import app_commands
-from discord.app_commands.commands import Check
 from discord.ext import commands
 from discord.utils import maybe_coroutine
 
-from utils.errors import (
-    NotOwnerOrFriend,
-    NotAdmin,
-    NotInBotVoiceChannel,
-    UserIsBlocked,
-    GuildIsBlocked
-)
+from .errors import GuildIsBlocked, NotAdmin, NotInBotVoiceChannel, NotOwnerOrFriend, UserIsBlocked
 
 
-LOGGER = logging.getLogger(__name__)
+if TYPE_CHECKING:
+    from discord.app_commands.commands import Check as app_Check  # type: ignore
+    from discord.ext.commands._types import Check  # type: ignore
 
 
-def is_owner_or_friend():
+__all__ = ("is_owner_or_friend", "is_admin", "in_bot_vc", "in_aci100_guild", "is_blocked", "check_any")
+
+
+def is_owner_or_friend() -> Check[Any]:
     """A :func:`.check` that checks if the person invoking this command is the
     owner of the bot or on a special friends list.
 
@@ -36,13 +34,14 @@ def is_owner_or_friend():
 
     async def predicate(ctx: commands.Context) -> bool:
         if not (ctx.bot.owner_id == ctx.author.id or ctx.bot.is_special_friend(ctx.author)):
-            raise NotOwnerOrFriend("You do not own this bot, nor are you a friend of the owner.")
+            msg = "You do not own this bot, nor are you a friend of the owner."
+            raise NotOwnerOrFriend(msg)
         return True
 
     return commands.check(predicate)
 
 
-def is_admin():
+def is_admin() -> Check[Any]:
     """A :func:`.check` that checks if the person invoking this command is an
     administrator of the guild in the current context.
 
@@ -52,13 +51,14 @@ def is_admin():
 
     async def predicate(ctx: commands.Context) -> bool:
         if not (ctx.guild is not None and ctx.author.guild_permissions.administrator):
-            raise NotAdmin("Only someone with administrator permissions can do this.")
+            msg = "Only someone with administrator permissions can do this."
+            raise NotAdmin(msg)
         return True
 
     return commands.check(predicate)
 
 
-def in_bot_vc():
+def in_bot_vc() -> Check[Any]:
     """A :func:`.check` that checks if the person invoking this command is in
     the same voice channel as the bot within a guild.
 
@@ -73,13 +73,14 @@ def in_bot_vc():
                 ctx.author.guild_permissions.administrator or
                 (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel)
         ):
-            raise NotInBotVoiceChannel("You are not connected to the same voice channel as the bot.")
+            msg = "You are not connected to the same voice channel as the bot."
+            raise NotInBotVoiceChannel(msg)
         return True
 
     return commands.check(predicate)
 
 
-def in_aci100_guild():
+def in_aci100_guild() -> Check[Any]:
     """A :func:`.check` that checks if the person invoking this command is in
     the ACI100 guild.
 
@@ -88,13 +89,14 @@ def in_aci100_guild():
 
     async def predicate(ctx: commands.Context) -> bool:
         if ctx.guild.id != 602735169090224139:
-            raise commands.CheckFailure("This command isn't active in this guild.")
+            msg = "This command isn't active in this guild."
+            raise commands.CheckFailure(msg)
         return True
 
     return commands.check(predicate)
 
 
-def is_blocked():
+def is_blocked() -> Check[Any]:
     """A :func:`.check` that checks if the command is being invoked from a blocked user or guild.
 
     This check raises the exception :exc:`commands.CheckFailure`.
@@ -103,29 +105,32 @@ def is_blocked():
     async def predicate(ctx: commands.Context) -> bool:
         if ctx.bot.owner_id != ctx.author.id:
             if ctx.author.id in ctx.bot.blocked_entities_cache["users"]:
-                raise UserIsBlocked("This user is prohibited from using bot commands.")
+                msg = "This user is prohibited from using bot commands."
+                raise UserIsBlocked(msg)
             if ctx.guild and (ctx.guild.id in ctx.bot.blocked_entities_cache["guilds"]):
-                raise GuildIsBlocked("This guild is prohibited from using bot commands.")
+                msg = "This guild is prohibited from using bot commands."
+                raise GuildIsBlocked(msg)
         return True
 
     return commands.check(predicate)
 
 
-def check_any(*checks: Check) -> Check:
+def check_any(*checks: app_Check) -> app_Check:
     """An attempt at making a :func:`check_any` decorator for application commands.
 
     Parameters
     ----------
-    checks: :class:`Check`
+    checks: :class:`app_Check`
         An argument list of checks that have been decorated with :func:`app_commands.check` decorator.
 
     Returns
     -------
-    :class:`Check`
+    :class:`app_Check`
         A predicate that condenses all given checks with logical OR.
     """
 
-    async def predicate(interaction: discord.Interaction):
+    # TODO: Actually check if this works.
+    async def predicate(interaction: discord.Interaction) -> bool:
         errors = []
         for check in checks:
             try:

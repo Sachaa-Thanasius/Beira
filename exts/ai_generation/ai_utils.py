@@ -1,8 +1,10 @@
 import asyncio
 import logging
+from collections.abc import Generator
 from contextlib import asynccontextmanager
 from io import BytesIO
 from pathlib import Path
+from typing import Any
 
 import aiofiles
 import aiohttp
@@ -17,9 +19,8 @@ __all__ = (
     "create_completion",
     "create_image",
     "create_inspiration",
-    "create_morph"
+    "create_morph",
 )
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -28,7 +29,7 @@ INSPIROBOT_API_URL = "https://inspirobot.me/api"
 
 
 @asynccontextmanager
-async def temp_file_names(*extensions: str):
+async def temp_file_names(*extensions: str) -> Generator[tuple[Path, ...], Any, None]:
     """Create temporary filesystem paths to generated filenames in a temporary folder.
 
     Upon completion, the folder is removed.
@@ -61,13 +62,12 @@ async def get_image(session: aiohttp.ClientSession, url: str) -> bytes:
 
     Returns
     -------
-    image_bytes : :class:`bytes`
+    :class:`bytes`
         The image data.
     """
 
     async with session.get(url) as resp:
-        image_bytes = await resp.read()
-    return image_bytes
+        return await resp.read()
 
 
 def process_image(image_bytes: bytes) -> BytesIO:
@@ -99,7 +99,7 @@ async def create_completion(prompt: str) -> str:
         prompt=prompt,
         model="text-davinci-003",
         max_tokens=150,
-        temperature=0
+        temperature=0,
     )
     return completion_response.choices[0].text
 
@@ -134,15 +134,13 @@ async def create_inspiration(session: aiohttp.ClientSession) -> str:
 
     Returns
     -------
-    image_url : :class:`str`
+    :class:`str`
         The url for the generated poster.
     """
 
     async with session.get(url=INSPIROBOT_API_URL, params={"generate": "true"}) as response:
         response.raise_for_status()
-        image_url = await response.text()
-
-    return image_url
+        return await response.text()
 
 
 async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) -> BytesIO:
@@ -166,7 +164,6 @@ async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) ->
     """
 
     async with temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
-
         # Save the input images to temporary files.
         async with aiofiles.open(avatar_temp, "wb") as file:
             await file.write(before_img_buffer.getvalue())
@@ -180,7 +177,7 @@ async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) ->
             '-r', '0.3', '-stream_loop', '2', '-i', f'{ai_temp}',
             '-filter_complex',
             '[0][1]concat=n=2:v=1:a=0[v];[v]minterpolate=fps=24:scd=none,trim=3:7,setpts=PTS-STARTPTS',
-            '-pix_fmt', 'yuv420p', f'{mp4_temp}'
+            '-pix_fmt', 'yuv420p', f'{mp4_temp}',
         ]
         process1 = await asyncio.create_subprocess_exec(*cmd1_list)
         await process1.wait()

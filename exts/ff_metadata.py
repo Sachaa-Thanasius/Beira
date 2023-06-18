@@ -7,7 +7,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
-from typing import TYPE_CHECKING, Literal, Pattern
+from re import Pattern
+from typing import Any, Literal
 
 import AO3
 import atlas_api
@@ -15,14 +16,8 @@ import discord
 import fichub_api
 from discord.ext import commands
 
-from bot import BeiraContext
-from utils.embeds import DTEmbed
-
-
-if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+import core
+from core.utils import DTEmbed
 
 
 LOGGER = logging.getLogger(__name__)
@@ -207,7 +202,7 @@ class Ao3SeriesDropdownWrapper(discord.ui.View):
         Arbitrary keyword arguments, primarily for :class:`View`. See that class for more information.
     """
 
-    def __init__(self, author: discord.User | discord.Member, series: AO3.Series, **kwargs):
+    def __init__(self, author: discord.User | discord.Member, series: AO3.Series, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.author = author
         self.series = series
@@ -223,7 +218,9 @@ class Ao3SeriesDropdownWrapper(discord.ui.View):
             descr = work.summary
             if len(descr) > 100:
                 descr = descr[:97] + "..."
-            self.works_dropdown.add_option(label=f"{i}. {work.title}", value=i, description=descr, emoji="\N{OPEN BOOK}")
+            self.works_dropdown.add_option(
+                label=f"{i}. {work.title}", value=i, description=descr, emoji="\N{OPEN BOOK}"
+            )
 
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         check = (interaction.user is not None) and interaction.user.id in (self.author.id, interaction.client.owner_id)
@@ -246,7 +243,7 @@ class Ao3SeriesDropdownWrapper(discord.ui.View):
         error = getattr(error, "original", error)
         LOGGER.error("", exc_info=error)
 
-    def update_navigation_items(self):
+    def update_navigation_items(self) -> None:
         """Disable specific "page" switching components based on what page we're on, chosen by the user."""
 
         self.turn_to_previous.disabled = (self.choice == 0)
@@ -292,16 +289,18 @@ class Ao3SeriesDropdownWrapper(discord.ui.View):
 class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     """A cog with triggers for retrieving story metadata."""
 
-    def __init__(self, bot: Beira):
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.ao3_session: AO3.Session | None = None
         self.atlas_client = atlas_api.AtlasClient(
             auth=tuple(self.bot.config["atlas_fanfic"].values()),
-            session=self.bot.web_session
+            session=self.bot.web_client
         )
-        self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_session)
+        self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_client)
         self.allowed_channels: dict[int, set[int]] = {
-            self.bot.config["discord"]["guilds"]["prod"][0]: {722085126908936210, 774395652984537109, 695705014341074944},
+            self.bot.config["discord"]["guilds"]["prod"][0]: {
+                722085126908936210, 774395652984537109, 695705014341074944
+            },
             self.bot.config["discord"]["guilds"]["dev"][0]: {975459460560605204},
             self.bot.config["discord"]["guilds"]["dev"][1]: {1043702766113136680},
             1097976528832307271: {1098709842870411294}
@@ -315,9 +314,11 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
 
     async def cog_load(self) -> None:
         loop = self.bot.loop or asyncio.get_event_loop()
-        self.ao3_session = await loop.run_in_executor(None, AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"])
+        self.ao3_session = await loop.run_in_executor(
+            None, AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"]
+        )
 
-    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         # Just log the exception, whatever it is.
         error = getattr(error, "original", error)
         if ctx.interaction:
@@ -331,48 +332,46 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         Must be triggered in an allowed channel.
         """
 
-        # Listen to the allowed guilds.
-        if message.guild and self.allowed_channels.get(message.guild.id):
+        # Listen to the allows channels in the allowed guilds.
+        if (
+                message.guild and
+                self.allowed_channels.get(message.guild.id) and
+                message.channel.id in self.allowed_channels.get(message.guild.id, set())
+        ):
+            prod_id = self.bot.config["discord"]["guilds"]["prod"][0]
 
-            # Listen to the allowed channels.
-            if message.channel.id in self.allowed_channels.get(message.guild.id, set()):
-                prod_id = self.bot.config["discord"]["guilds"]["prod"][0]
+            # Make sure the message has a valid FFN or Ao3 link.
+            embed = None
+            if fic_id := atlas_api.extract_fic_id(message.content):
+                story_data = await self.atlas_client.get_story_metadata(fic_id)
+                embed = await create_atlas_ffn_embed(story_data)
+            elif (
+                    (match := re.search(LINK_PATTERNS["ao3_series"], message.content)) and
+                    message.guild.id != prod_id
+            ):
+                series_id = match.group(3)
+                story_data = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
+                embed = await create_ao3_series_embed(story_data)
+            elif (
+                    (match := re.search(LINK_PATTERNS["ao3_work"], message.content)) and
+                    message.guild.id != prod_id
+            ):
+                url = match.group(0)
+                story_data = await self.fichub_client.get_story_metadata(url)
+                embed = await create_fichub_embed(story_data)
 
-                # Make sure the message has a valid FFN or Ao3 link.
-                embed = None
-                if fic_id := atlas_api.extract_fic_id(message.content):
-                    story_data = await self.atlas_client.get_story_metadata(fic_id)
-                    embed = await create_atlas_ffn_embed(story_data)
-                elif (
-                        (match := re.search(LINK_PATTERNS["ao3_series"], message.content)) and
-                        message.guild.id != prod_id
-                ):
-                    series_id = match.group(3)
-                    story_data = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
-                    embed = await create_ao3_series_embed(story_data)
-                elif (
-                        (match := re.search(LINK_PATTERNS["ao3_work"], message.content)) and
-                        message.guild.id != prod_id
-                ):
-                    print("on-message: match found!")
-                    url = match.group(0)
-                    story_data = await self.fichub_client.get_story_metadata(url)
-                    print("on-message: story data got!")
-                    embed = await create_fichub_embed(story_data)
-                    print("on-message: embed created!")
-
-                if embed is not None:
-                    await message.reply(embed=embed)
+            if embed is not None:
+                await message.reply(embed=embed)
 
     @commands.command()
-    async def allow(self, ctx: BeiraContext, channels: Literal["all", "this"] | None = "this") -> None:
+    async def allow(self, ctx: core.Context, channels: Literal["all", "this"] | None = "this") -> None:
         """Set the bot to listen for Ao3/FFN links posted in this channel.
 
         If allowed, the bot will respond automatically with an informational embed.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         channels
             Whether the current channel or all guild channels should be affected.
@@ -390,14 +389,14 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         await ctx.send("Channel(s) allowed.")
 
     @commands.command()
-    async def disallow(self, ctx: BeiraContext, channels: Literal["all", "this"] | None = "this") -> None:
+    async def disallow(self, ctx: core.Context, channels: Literal["all", "this"] | None = "this") -> None:
         """Set the bot to not listen for Ao3/FFN links posted in this channel.
 
         If disallowed, the bot won't respond automatically with an informational embed.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         channels
             Whether the current channel or all guild channels should be affected.
@@ -416,12 +415,12 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         await ctx.send("Channel(s) disallowed.")
 
     @commands.command()
-    async def ao3(self, ctx: BeiraContext, *, name_or_url: str) -> None:
+    async def ao3(self, ctx: core.Context, *, name_or_url: str) -> None:
         """Search Archive of Our Own for a fic with a certain title.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         name_or_url : :class:`str`
             The search string for the story title, or the story url.
@@ -448,12 +447,12 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
                 kwargs["view"].message = message
 
     @commands.command()
-    async def ffn(self, ctx: BeiraContext, *, name_or_url: str) -> None:
+    async def ffn(self, ctx: core.Context, *, name_or_url: str) -> None:
         """Search FanFiction.Net for a fic with a certain title or url.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         name_or_url : :class:`str`
             The search string for the story title, or the story url.
@@ -502,11 +501,10 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
     async def search_other(self, url: str) -> fichub_api.Story | None:
         """More generically search for the metadata of other works based on a full url."""
 
-        story = await self.fichub_client.get_story_metadata(url)
-        return story
+        return await self.fichub_client.get_story_metadata(url)
 
 
-async def setup(bot: Beira):
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(FFMetadataCog(bot))

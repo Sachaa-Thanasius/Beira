@@ -1,5 +1,5 @@
 """
-db_utils.py: Utility functions for interacting with the database.
+db.py: Utility functions for interacting with the database.
 """
 
 from __future__ import annotations
@@ -12,7 +12,10 @@ import discord
 
 
 if TYPE_CHECKING:
-    from asyncpg import Pool, Connection
+    from asyncpg import Connection, Pool
+
+
+__all__ = ("pool_init", "upsert_users", "upsert_guilds")
 
 
 LOGGER = logging.getLogger(__name__)
@@ -24,7 +27,8 @@ async def pool_init(connection: Connection) -> None:
     await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
-async def upsert_users(db_pool: Pool | Connection, *users: discord.User | discord.Member | discord.Object | tuple) -> None:
+async def upsert_users(db_pool: Pool | Connection,
+                       *users: discord.User | discord.Member | discord.Object | tuple) -> None:
     """Upsert a Discord user in the appropriate database table.
 
     Parameters
@@ -44,7 +48,9 @@ async def upsert_users(db_pool: Pool | Connection, *users: discord.User | discor
     """
 
     # Format the users as minimal tuples.
-    values = [(user.id, False) if isinstance(user, (discord.User, discord.Member, discord.Object)) else user for user in users]
+    values = [
+        (user.id, False) if isinstance(user, discord.User | discord.Member | discord.Object) else user for user in users
+    ]
     await db_pool.executemany(upsert_query, values, timeout=60.0)
 
 
@@ -68,5 +74,5 @@ async def upsert_guilds(db_pool: Pool | Connection, *guilds: discord.Guild | dis
     """
 
     # Format the guilds as minimal tuples.
-    values = [(guild.id, False) if isinstance(guild, (discord.Guild, discord.Object)) else guild for guild in guilds]
+    values = [(guild.id, False) if isinstance(guild, discord.Guild | discord.Object) else guild for guild in guilds]
     await db_pool.executemany(upsert_query, values, timeout=60.0)

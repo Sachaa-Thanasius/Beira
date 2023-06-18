@@ -10,17 +10,22 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from collections.abc import Callable
+from collections.abc import Callable, Generator
 from contextlib import contextmanager
 from functools import wraps
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from time import perf_counter
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
-from discord.utils import _ColourFormatter as ColourFormatter
-from discord.utils import stream_supports_colour
-from typing_extensions import Self
+from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # It exists.
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+
+
+__all__ = ("CustomLogger", "benchmark")
 
 
 class RemoveNoise(logging.Filter):
@@ -149,14 +154,14 @@ def benchmark(func: Callable[..., Any], logger: logging.Logger) -> Callable[...,
     """
 
     @contextmanager
-    def benchmark_logic():
+    def benchmark_logic() -> Generator[Any, Any, None]:
         """Context manager that actually measures the function execution time."""
 
         start_time = perf_counter()
         yield
         end_time = perf_counter()
         run_time = end_time - start_time
-        logger.info(f"Execution of {func.__name__} took {run_time:.5f}s.")
+        logger.info("Execution of %s took %.5fs.", func.__name__, run_time)
 
     # Pick the wrapper based on whether the given function is sync or async.
     if asyncio.iscoroutinefunction(func):

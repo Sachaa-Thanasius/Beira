@@ -10,7 +10,7 @@ import itertools
 import logging
 import random
 from copy import deepcopy
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
 import discord
 import wavelink
@@ -18,18 +18,10 @@ from discord import app_commands
 from discord.ext import commands
 from wavelink.ext import spotify
 
-from bot import BeiraContext
-from utils.checks import in_bot_vc
-from utils.embeds import PaginatedEmbed
-from utils.errors import NotInBotVoiceChannel
-from utils.pagination import PaginatedEmbedView
-from .wavelink_utils import format_track_embed, SoundCloudPlaylist, WavelinkSearchConverter
+import core
+from core.utils import PaginatedEmbed, PaginatedEmbedView
 
-
-if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+from .wavelink_utils import SoundCloudPlaylist, WavelinkSearchConverter, format_track_embed
 
 
 LOGGER = logging.getLogger(__name__)
@@ -44,19 +36,18 @@ class MusicQueueView(PaginatedEmbedView):
         if self.total_pages == 0:
             embed_page.set_page_footer(0, 0).description = "The queue is empty."
 
-        else:
-            if self.page_cache[self.current_page - 1] is None:
-                # Expected page size of 10
-                self.current_page_content = self.pages[self.current_page - 1]
-                embed_page.description = "\n".join((
-                    f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song
-                    in enumerate(self.current_page_content))
-                )
-                embed_page.set_page_footer(self.current_page, self.total_pages)
+        elif self.page_cache[self.current_page - 1] is None:
+            # Expected page size of 10
+            self.current_page_content = self.pages[self.current_page - 1]
+            embed_page.description = "\n".join((
+                f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song
+                in enumerate(self.current_page_content))
+            )
+            embed_page.set_page_footer(self.current_page, self.total_pages)
 
-                self.page_cache[self.current_page - 1] = embed_page
-            else:
-                return deepcopy(self.page_cache[self.current_page - 1])
+            self.page_cache[self.current_page - 1] = embed_page
+        else:
+            return deepcopy(self.page_cache[self.current_page - 1])
 
         return embed_page
 
@@ -64,7 +55,7 @@ class MusicQueueView(PaginatedEmbedView):
 class MusicCog(commands.Cog, name="Music"):
     """A cog with audio-playing functionality."""
 
-    def __init__(self, bot: Beira) -> None:
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
 
     @property
@@ -83,20 +74,20 @@ class MusicCog(commands.Cog, name="Music"):
 
         await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
-    async def cog_command_error(self, ctx: BeiraContext, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """Catch errors from commands inside this cog."""
 
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, (commands.HybridCommandError, commands.CommandInvokeError)):
+        if isinstance(error, commands.HybridCommandError | commands.CommandInvokeError):
             error = error.original
             if isinstance(error, app_commands.CommandInvokeError):
                 error = error.original
 
         if isinstance(error, commands.MissingPermissions):
             embed.description = "You don't have permission to do this."
-        elif isinstance(error, NotInBotVoiceChannel):
+        elif isinstance(error, core.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
         else:
             LOGGER.exception(f"Exception: {error}", exc_info=error)
@@ -110,7 +101,7 @@ class MusicCog(commands.Cog, name="Music"):
         LOGGER.info(f"Wavelink node {node.id} is ready!")
 
     @commands.Cog.listener()
-    async def on_wavelink_websocket_closed(self, payload: wavelink.WebsocketClosedPayload):
+    async def on_wavelink_websocket_closed(self, payload: wavelink.WebsocketClosedPayload) -> None:
         """Called when the websocket to the voice server is closed."""
 
         LOGGER.info(f"{payload.player} - {payload.by_discord} - {payload.code} - {payload.reason}")
@@ -129,13 +120,11 @@ class MusicCog(commands.Cog, name="Music"):
             await payload.player.stop()
 
     @commands.hybrid_group()
-    async def music(self, ctx: BeiraContext) -> None:
+    async def music(self, ctx: core.Context) -> None:
         """Music-related commands."""
 
-        pass
-
     @music.command()
-    async def connect(self, ctx: BeiraContext) -> None:
+    async def connect(self, ctx: core.Context) -> None:
         """Join a voice channel."""
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
@@ -154,7 +143,7 @@ class MusicCog(commands.Cog, name="Music"):
             vc: wavelink.Player,
             tracks: wavelink.Playable | spotify.SpotifyTrack | list[wavelink.Playable | spotify.SpotifyTrack] | wavelink.Playlist,
             requester: discord.Member,
-            shuffle: bool
+            shuffle: bool,
     ) -> str:
         """Adds tracks to a queue even if they are contained in another object or structure.
 
@@ -163,7 +152,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         if (
                 (isinstance(tracks, list) and len(tracks) > 1) or
-                isinstance(tracks, (wavelink.YouTubePlaylist, SoundCloudPlaylist))
+                isinstance(tracks, wavelink.YouTubePlaylist | SoundCloudPlaylist)
         ):
             all_tracks = tracks if isinstance(tracks, list) else tracks.tracks
             if shuffle:
@@ -186,7 +175,7 @@ class MusicCog(commands.Cog, name="Music"):
         return notif_text
 
     @music.command()
-    async def play(self, ctx: BeiraContext, shuffle: bool = False, *, search: str) -> None:
+    async def play(self, ctx: core.Context, shuffle: bool = False, *, search: str) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
@@ -220,8 +209,8 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.send(text)
 
     @music.command()
-    @in_bot_vc()
-    async def pause(self, ctx: BeiraContext) -> None:
+    @core.in_bot_vc()
+    async def pause(self, ctx: core.Context) -> None:
         """Pause the audio."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -234,8 +223,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("Paused playback.")
 
     @music.command()
-    @in_bot_vc()
-    async def resume(self, ctx: BeiraContext) -> None:
+    @core.in_bot_vc()
+    async def resume(self, ctx: core.Context) -> None:
         """Resume the audio if paused."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -245,8 +234,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("Resumed playback.")
 
     @music.command(aliases=["disconnect"])
-    @in_bot_vc()
-    async def stop(self, ctx: BeiraContext) -> None:
+    @core.in_bot_vc()
+    async def stop(self, ctx: core.Context) -> None:
         """Stop playback and disconnect the bot from voice."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -255,7 +244,7 @@ class MusicCog(commands.Cog, name="Music"):
         await ctx.send("Disconnected from voice channel.")
 
     @music.command()
-    async def current(self, ctx: BeiraContext) -> None:
+    async def current(self, ctx: core.Context) -> None:
         """Display the current track."""
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
@@ -263,12 +252,14 @@ class MusicCog(commands.Cog, name="Music"):
         if vc.current:
             current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
         else:
-            current_embed = discord.Embed(color=0x149cdf, title="Now Playing", description="Nothing is playing currently.")
+            current_embed = discord.Embed(
+                color=0x149cdf, title="Now Playing", description="Nothing is playing currently."
+            )
 
         await ctx.send(embed=current_embed)
 
     @music.group(fallback="get")
-    async def queue(self, ctx: BeiraContext) -> None:
+    async def queue(self, ctx: core.Context) -> None:
         """Music queue-related commands. By default, this displays everything in the queue.
 
         Use `play` to add things to the queue.
@@ -287,8 +278,8 @@ class MusicCog(commands.Cog, name="Music"):
         view.message = message
 
     @queue.command()
-    @in_bot_vc()
-    async def remove(self, ctx: BeiraContext, entry: int) -> None:
+    @core.in_bot_vc()
+    async def remove(self, ctx: core.Context, entry: int) -> None:
         """Remove a track from the queue by position.
 
         Parameters
@@ -308,8 +299,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Removed {entry} from the queue.")
 
     @queue.command()
-    @in_bot_vc()
-    async def clear(self, ctx: BeiraContext) -> None:
+    @core.in_bot_vc()
+    async def clear(self, ctx: core.Context) -> None:
         """Empty the queue."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
@@ -321,8 +312,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("The queue is already empty.")
 
     @music.command()
-    @in_bot_vc()
-    async def move(self, ctx: BeiraContext, before: int, after: int) -> None:
+    @core.in_bot_vc()
+    async def move(self, ctx: core.Context, before: int, after: int) -> None:
         """Move a song from one spot to another within the queue.
 
         Parameters
@@ -347,8 +338,8 @@ class MusicCog(commands.Cog, name="Music"):
             del vc.queue[before]
 
     @music.command()
-    @in_bot_vc()
-    async def skip(self, ctx: BeiraContext, index: int = 1) -> None:
+    @core.in_bot_vc()
+    async def skip(self, ctx: core.Context, index: int = 1) -> None:
         """Skip to the numbered track in the queue. If no number is given, skip to the next track.
 
         Parameters
@@ -374,20 +365,20 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Skipped to the song at position {index}", ephemeral=True)
 
     @music.command()
-    @in_bot_vc()
-    async def shuffle(self, ctx: BeiraContext) -> None:
+    @core.in_bot_vc()
+    async def shuffle(self, ctx: core.Context) -> None:
         """Shuffle the tracks in the queue."""
 
         vc: wavelink.Player = ctx.voice_client  # type: ignore
         if not vc.queue.is_empty:
-            random.shuffle(vc.queue._queue)
+            vc.queue.shuffle()
             await ctx.send("Shuffled the queue.")
         else:
             await ctx.send("There's nothing in the queue to shuffle right now.")
 
     @music.command()
-    @in_bot_vc()
-    async def loop(self, ctx: BeiraContext, loop: Literal["All Tracks", "Current Track", "Off"] = "Off") -> None:
+    @core.in_bot_vc()
+    async def loop(self, ctx: core.Context, loop: Literal["All Tracks", "Current Track", "Off"] = "Off") -> None:
         """Loop the current track(s).
 
         Parameters
@@ -412,8 +403,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("Reset the looping settings.")
 
     @music.command()
-    @in_bot_vc()
-    async def seek(self, ctx: BeiraContext, *, position: str) -> None:
+    @core.in_bot_vc()
+    async def seek(self, ctx: core.Context, *, position: str) -> None:
         """Seek to a particular position in the current track, provided with a `hours:minutes:seconds` string.
 
         Parameters
@@ -427,7 +418,9 @@ class MusicCog(commands.Cog, name="Music"):
         vc: wavelink.Player = ctx.voice_client  # type: ignore
 
         if vc.current.is_seekable:
-            pos_time = int(sum(x * float(t) for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")))) * 1000)
+            pos_time = int(sum(
+                x * float(t) for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")), strict=False)
+            ) * 1000)
             if pos_time > vc.current.duration or pos_time < 0:
                 await ctx.send("Invalid position to seek.")
             else:
@@ -437,8 +430,8 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("This track doesn't allow seeking, sorry.")
 
     @music.command()
-    @in_bot_vc()
-    async def volume(self, ctx: BeiraContext, volume: int | None = None) -> None:
+    @core.in_bot_vc()
+    async def volume(self, ctx: core.Context, volume: int | None = None) -> None:
         """Show the player's volume. If given a number, you can change it as well, with 1000 as the limit.
 
         Parameters
@@ -460,7 +453,7 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Changed volume to {volume}.")
 
     @play.before_invoke
-    async def ensure_voice(self, ctx: BeiraContext) -> None:
+    async def ensure_voice(self, ctx: core.Context) -> None:
         """Ensures that the voice client automatically connects the right channel."""
 
         vc: wavelink.Player | None = ctx.voice_client  # type: ignore
@@ -470,4 +463,5 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.author.voice.channel.connect(cls=wavelink.Player)  # type: ignore
             else:
                 await ctx.send("You are not connected to a voice channel.")
-                raise commands.CommandError("Author not connected to a voice channel.")
+                msg = "Author not connected to a voice channel."
+                raise commands.CommandError(msg)

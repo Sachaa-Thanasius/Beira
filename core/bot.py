@@ -6,41 +6,22 @@ bot.py: The main bot initializer and starter.
 from __future__ import annotations
 
 import logging
-import asyncio
+from typing import Any
 
 import aiohttp
 import asyncpg
 import discord
+import jishaku  # noqa: F401 # Imported as a bot extension
 from discord.ext import commands
 
-import config
 from exts import EXTENSIONS
-from utils.checks import is_blocked
-from utils.custom_logging import CustomLogger
-from utils.db_utils import pool_init
+
+from .checks import is_blocked
+from .config import CONFIG
+from .context import Context
 
 
-CONFIG = config.config()
-LOGGER = logging.getLogger("bot.Beira")
-
-
-class BeiraContext(commands.Context):
-    """A custom context subclass for Beira.
-
-    Currently only further specifies the bot type and provides easier access to the bot's web session.
-    """
-
-    bot: Beira
-
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
-        self.error_handled = False
-
-    @property
-    def session(self) -> aiohttp.ClientSession:
-        """:class:`aiohttp.ClientSession`: Returns the asynchronous http session used by the bot for external needs."""
-
-        return self.bot.web_session
+LOGGER = logging.getLogger(__name__)
 
 
 class Beira(commands.Bot):
@@ -52,35 +33,26 @@ class Beira(commands.Bot):
         Variable length argument list, primarily for :class:`commands.Bot`.
     db_pool : :class:`asyncpg.Pool`
         A connection pool for a PostgreSQL database.
-    web_session : :class:`aiohttp.ClientSession`
+    web_client : :class:`aiohttp.ClientSession`
         An HTTP session for making async HTTP requests.
     initial_extensions : list[:class:`str`], optional
         A list of extension names that the bot will initially load.
-    testing_guild_ids : list[:class:`int`], optional
-        A list of guild ids for guilds that are used for developing the bot and testing it.
-    test_mode : :class:`bool`, default=False
-        True if the bot is in testing mode, otherwise False. This causes commands to sync with testing guilds on
-        startup.
     **kwargs
         Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.
     """
 
     def __init__(
             self,
-            *args,
+            *args: Any,
             db_pool: asyncpg.Pool,
-            web_session: aiohttp.ClientSession,
-            initial_extensions: list[str] = None,
-            testing_guild_ids: list[int] = None,
-            test_mode: bool = False,
-            **kwargs
+            web_client: aiohttp.ClientSession,
+            initial_extensions: list[str] | None = None,
+            **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
-        self.web_session = web_session
+        self.web_client = web_client
         self.initial_extensions = initial_extensions
-        self.testing_guild_ids = testing_guild_ids
-        self.test_mode = test_mode
         self._config = CONFIG
 
         # Things to load before connecting to the Gateway.
@@ -99,12 +71,6 @@ class Beira(commands.Bot):
         """dict: All configuration information from the config.json file."""
 
         return self._config
-
-    def reload_config(self) -> None:
-        """Reload the bot's view of the config.json information."""
-
-        new_config = config.config()
-        self._config = new_config
 
     async def _load_blocked_entities(self) -> None:
         """Load all blocked users and guilds from the bot database."""
@@ -134,6 +100,8 @@ class Beira(commands.Bot):
         If a list of initial ones isn't provided, all extensions are loaded by default.
         """
 
+        await self.load_extension("jishaku")
+
         exts_to_load = self.initial_extensions or EXTENSIONS
         for extension in exts_to_load:
             try:
@@ -161,7 +129,7 @@ class Beira(commands.Bot):
             "cop": self.get_emoji(856969710952644609),
             "fof": self.get_emoji(856969711241396254),
             "pop": self.get_emoji(856969710486814730),
-            "mr_jare": self.get_emoji(1061029880059400262)
+            "mr_jare": self.get_emoji(1061029880059400262),
         })
 
     def _load_special_friends(self) -> None:
@@ -195,13 +163,15 @@ class Beira(commands.Bot):
         if not self.prefix_cache:
             await self._load_guild_prefixes()
 
-        loaded_prefixes = self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
-        return loaded_prefixes
+        return self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
 
-    async def get_context(self, origin: discord.Message | discord.Interaction, /, cls=BeiraContext) -> BeiraContext:
-        return await super().get_context(origin, cls=cls)
+    async def get_context(
+            self, origin: discord.Message | discord.Interaction, /,
+            cls: type[commands.Context[commands.Bot]] | None = None,
+    ) -> Context:
+        return await super().get_context(origin, cls=Context)
 
-    def is_special_friend(self, user: discord.abc.User, /):
+    def is_special_friend(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
         this bot's owner.
 
@@ -221,12 +191,12 @@ class Beira(commands.Bot):
 
         if len(self.special_friends) > 0:
             return user.id in self.special_friends.values()
-        else:
-            self._load_special_friends()
-            if len(self.special_friends) > 0:
-                return user.id in self.special_friends.values()
-            else:
-                return False
+
+        self._load_special_friends()
+        if len(self.special_friends) > 0:
+            return user.id in self.special_friends.values()
+
+        return False
 
     def is_ali(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali.
@@ -247,71 +217,9 @@ class Beira(commands.Bot):
 
         if len(self.special_friends) > 0:
             return user.id == self.special_friends["aeroali"]
-        else:
-            self._load_special_friends()
-            if len(self.special_friends) > 0:
-                return user.id == self.special_friends["aeroali"]
-            else:
-                return False
 
+        self._load_special_friends()
+        if len(self.special_friends) > 0:
+            return user.id == self.special_friends["aeroali"]
 
-async def main() -> None:
-    """Starts an instance of the bot."""
-
-    # Set the bot's basic starting parameters.
-    default_intents = discord.Intents.default()
-    default_intents.members = True
-    default_intents.message_content = True
-    default_prefix = CONFIG["discord"]["default_prefix"]
-    testing_guilds = CONFIG["discord"]["guilds"]["dev"]
-    testing = False
-    init_exts = [
-        "exts._dev",
-        "exts._jishaku",
-        "exts.admin",
-        "exts.ai_generation",
-        "exts.bot_stats",
-        "exts.custom_notifications",
-        "exts.dice",
-        "exts.emoji_ops",
-        "exts.fandom_wiki",
-        "exts.ff_metadata",
-        "exts.help",
-        "exts.lol",
-        "exts.misc",
-        "exts.music",
-        "exts.patreon",
-        "exts.pin_archive",
-        "exts.snowball",
-        "exts.starkid",
-        "exts.story_search"
-    ]
-
-    # Initialize a connection to a PostgreSQL database, an asynchronous web session, and a custom logger setup.
-    session = aiohttp.ClientSession()
-    pool = asyncpg.create_pool(dsn=CONFIG["db"]["postgres_url"], command_timeout=30, init=pool_init)
-    custom_logger = CustomLogger()
-
-    # Initialize the bot.
-    bot = Beira(
-        command_prefix=default_prefix,
-        intents=default_intents,
-        db_pool=pool,
-        web_session=session,
-        initial_extensions=init_exts,
-        testing_guild_ids=testing_guilds,
-        test_mode=testing
-    )
-
-    # Run everything in a context manager to account for async objects.
-    async with session, pool, bot, custom_logger:
-        try:
-            await bot.start(CONFIG["discord"]["token"])
-        except Exception:
-            await bot.close()
-
-    await asyncio.sleep(1)
-
-
-if __name__ == "__main__":
-    asyncio.run(main())
+        return False

@@ -9,7 +9,6 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
 from urllib.parse import quote, urljoin
 
 import discord
@@ -17,14 +16,8 @@ from arsenic import browsers, errors, get_session, services
 from bs4 import BeautifulSoup
 from discord.ext import commands
 
-from bot import BeiraContext
-from utils.embeds import StatsEmbed
-
-
-if TYPE_CHECKING:
-    from bot import Beira
-else:
-    Beira = commands.Bot
+import core
+from core.utils import StatsEmbed
 
 
 LOGGER = logging.getLogger(__name__)
@@ -43,7 +36,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
     """
 
     # Create the webdriver.
-    with open(GECKODRIVER_LOGS, mode='a', encoding="utf-8") as log_file:
+    with GECKODRIVER_LOGS.open(mode='a', encoding="utf-8") as log_file:
         service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)
         browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
@@ -61,13 +54,13 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 class UpdateOPGGView(discord.ui.View):
     """A small view that adds an update button for OP.GG stats."""
 
-    def __init__(self, bot: Beira, summoner_name_list: list[str]) -> None:
+    def __init__(self, bot: core.Beira, summoner_name_list: list[str]) -> None:
         super().__init__(timeout=180)
         self.bot = bot
         self.summoner_name_list = summoner_name_list
 
     @discord.ui.button(label="Update", style=discord.ButtonStyle.blurple)
-    async def update(self, interaction: discord.Interaction[Beira], button: discord.ui.Button) -> None:
+    async def update(self, interaction: core.Interaction, button: discord.ui.Button) -> None:
         """Update the information in the given leaderboard."""
 
         # Change the button to show the update is in progress.
@@ -103,7 +96,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
     Credit to Ralph for the main code; I'm just testing it out to see how it would work in Discord.
     """
 
-    def __init__(self, bot: Beira) -> None:
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.default_summoners_list = [
             "Real Iron IV",
@@ -128,16 +121,16 @@ class LoLCog(commands.Cog, name="League of Legends"):
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
     @commands.hybrid_group()
-    async def lol(self, ctx: BeiraContext) -> None:
+    async def lol(self, ctx: core.Context) -> None:
         """A group of League of Legends-related commands."""
 
     @lol.command("stats")
-    async def lol_stats(self, ctx: BeiraContext, summoner_name: str) -> None:
+    async def lol_stats(self, ctx: core.Context, summoner_name: str) -> None:
         """Gets the League of Legends stats for a summoner.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         summoner_name : :class:`str`
             The summoner name, or username, of the League of Legends player being queried.
@@ -158,12 +151,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
         await ctx.send(embed=embed)
 
     @lol.command("leaderboard")
-    async def lol_leaderboard(self, ctx: BeiraContext, *, summoner_names: str | None = None) -> None:
+    async def lol_leaderboard(self, ctx: core.Context, *, summoner_names: str | None = None) -> None:
         """Get the League of Legends ranked stats for a group of summoners and display them.
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         summoner_names : list[:class:`str`]
             A string of summoner names to create a leaderboard from. Separate these by spaces.
@@ -177,11 +170,10 @@ class LoLCog(commands.Cog, name="League of Legends"):
                 summoner_name_list = list(set(summoner_name_list))
             else:
                 summoner_name_list = self.default_summoners_list
+        elif summoner_names is not None:
+            summoner_name_list = summoner_names.split()
         else:
-            if summoner_names is not None:
-                summoner_name_list = summoner_names.split()
-            else:
-                summoner_name_list = []
+            summoner_name_list = []
 
         # Get the information for every user and construct the leaderboard embed.
         embed: StatsEmbed = await self.create_lol_leaderboard(summoner_name_list)
@@ -240,7 +232,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         url = urljoin(self.req_site, adjusted_name)
 
         try:
-            async with self.bot.web_session.get(url, headers=self.req_headers) as response:
+            async with self.bot.web_client.get(url, headers=self.req_headers) as response:
                 text = await response.text()
 
             # Parse the summoner information for winrate and tier (referred to later as rank).
@@ -256,7 +248,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         return summoner_name, winrate, rank
 
 
-async def setup(bot: Beira):
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     await bot.add_cog(LoLCog(bot))

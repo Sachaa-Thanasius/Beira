@@ -9,3 +9,4 @@ venv/
 *.log
 config.json
 table_insertions.sql
+.ruff_cache
