@@ -23,7 +23,7 @@ LOGGER = logging.getLogger(__name__)
 # List for cogs that you don't want to be reloaded, using dot-style notation (e.g. "exts.cogs.snowball").
 IGNORE_EXTENSIONS = []
 
-# Preload the guild-only commands decorator.
+# Preload the guild-only slash commands decorator.
 only_dev_guilds = app_commands.guilds(*core.CONFIG["discord"]["guilds"]["dev"])
 
 

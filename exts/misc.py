@@ -7,6 +7,9 @@ Side note: This is the cog with the ``ping`` command.
 from __future__ import annotations
 
 import logging
+import math
+import re
+from io import StringIO
 from time import perf_counter
 
 import discord
@@ -16,6 +19,49 @@ import core
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+def meowify_text(text: str) -> str:
+    return re.sub(r"\w+", meowify_word, text)
+
+
+def meowify_word(match: re.Match) -> str:
+    """Turn a word into a version of 'meow' based on its length."""
+
+    word = match.group(0)
+
+    if len(word) == 1:
+        return capitalize_meow("m", word)
+    if len(word) == 2:
+        return capitalize_meow("me", word)
+    if len(word) == 3:
+        return capitalize_meow("mew", word)
+    if len(word) == 4:
+        return capitalize_meow("meow", word)
+
+    with StringIO() as temp:
+        temp.write("m")
+        temp.write("e" * math.floor((len(word) - 2) / 2))
+        temp.write("o" * math.ceil((len(word) - 2) / 2))
+        temp.write("w")
+        return temp.getvalue()
+
+
+def capitalize_meow(word: str, reference: str) -> str:
+    """Capitalize the meow-ified version of a word based on the original word's capitalization."""
+
+    with StringIO() as new_word:
+        # All-or-nothing processing.
+        if reference.isupper():
+            return word.upper()
+        if reference.islower():
+            return word.lower()
+
+        # Char-by-char processing.
+        for cw, cr in zip(word, reference, strict=True):
+            new_word.write(cw.upper() if cr.isupper() else cw)
+
+        return new_word.getvalue()
 
 
 class MiscCog(commands.Cog, name="Misc"):
@@ -137,6 +183,21 @@ class MiscCog(commands.Cog, name="Misc"):
         )
 
         await message.edit(embed=pong_embed)
+
+    @commands.hybrid_command()
+    async def meowify(self, ctx: core.Context, *, text: str) -> None:
+        """Meowify some text.
+
+        Parameters
+        ----------
+        ctx : :class:`core.Context`
+            The invocation context.
+        text : :class:`str`
+            The text to convert into meows.
+        """
+
+        async with ctx.typing():
+            await ctx.reply(meowify_text(text))
 
 
 async def setup(bot: core.Beira) -> None:

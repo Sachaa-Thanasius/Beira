@@ -1,5 +1,7 @@
 """
 dice.py: The extension that holds a die roll command and all the associated utility classes.
+
+TODO: Consider adding more elements from https://wiki.roll20.net/Dice_Reference.
 """
 
 from __future__ import annotations
