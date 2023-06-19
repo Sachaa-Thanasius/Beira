@@ -20,7 +20,7 @@ select = [
     "EM", "ISC", "G", "INP", "PIE", "T20", "Q003", "RSE", "RET", "SIM", "TID", "PTH",
     "ERA", "PD", "PLC", "PLE", "PLR", "PLW", "TRY", "NPY", "RUF"
 ]
-ignore = ["ANN101", "G002", "TRY002", "S101", "PLR2004", "SIM105", "C90", "PD011"]
+ignore = ["ANN101", "G002", "TRY002", "S101", "PLR2004", "SIM105", "C90", "PD011", "S311"]
 unfixable = ["C90", "S101", "ERA"]
 
 [tool.ruff.isort]

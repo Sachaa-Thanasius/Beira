@@ -7,7 +7,7 @@ Side note: This is the cog with the ``ping`` command.
 from __future__ import annotations
 
 import logging
-import math
+import random
 import re
 from io import StringIO
 from time import perf_counter
@@ -19,32 +19,6 @@ import core
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-def meowify_text(text: str) -> str:
-    return re.sub(r"\w+", meowify_word, text)
-
-
-def meowify_word(match: re.Match) -> str:
-    """Turn a word into a version of 'meow' based on its length."""
-
-    word = match.group(0)
-
-    if len(word) == 1:
-        return capitalize_meow("m", word)
-    if len(word) == 2:
-        return capitalize_meow("me", word)
-    if len(word) == 3:
-        return capitalize_meow("mew", word)
-    if len(word) == 4:
-        return capitalize_meow("meow", word)
-
-    with StringIO() as temp:
-        temp.write("m")
-        temp.write("e" * math.floor((len(word) - 2) / 2))
-        temp.write("o" * math.ceil((len(word) - 2) / 2))
-        temp.write("w")
-        return temp.getvalue()
 
 
 def capitalize_meow(word: str, reference: str) -> str:
@@ -62,6 +36,33 @@ def capitalize_meow(word: str, reference: str) -> str:
             new_word.write(cw.upper() if cr.isupper() else cw)
 
         return new_word.getvalue()
+
+
+def meowify_word(match: re.Match) -> str:
+    """Turn a word into a version of 'meow' based on its length."""
+
+    word = match.group(0)
+
+    # Base cases.
+    if len(word) == 1:
+        return capitalize_meow("m", word)
+    if len(word) == 2:
+        return capitalize_meow("me", word)
+    if len(word) == 3:
+        return capitalize_meow("mew", word)
+    if len(word) == 4:
+        return capitalize_meow("meow", word)
+
+    # Words with more than 5 characters will have random variance.
+    internal_len = len(word) - 2
+    e_len = random.randint(1, internal_len)
+    o_len = internal_len - e_len
+    temp = "m" + "e" * e_len + "o" * o_len + "w"
+    return capitalize_meow(temp, word)
+
+
+def meowify_text(text: str) -> str:
+    return re.sub(r"\w+", meowify_word, text)
 
 
 class MiscCog(commands.Cog, name="Misc"):
