@@ -284,7 +284,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context where the command was called.
         """
 
@@ -320,7 +320,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         story : :class:`str`
             The acronym or abbreviation of a story's title. Currently, there are only four choices.
@@ -341,7 +341,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         query : :class:`str`
             The string to search for in the story.

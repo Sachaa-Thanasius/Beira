@@ -180,7 +180,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         shuffle : :class:`bool`, default=False
             Whether the playlist or list of tracks retrieved from this search should be shuffled before being played
@@ -284,7 +284,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         entry : :class:`int`
             The track's position.
@@ -318,7 +318,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         before : :class:`int`
             The index of the song you want moved.
@@ -342,9 +342,10 @@ class MusicCog(commands.Cog, name="Music"):
     async def skip(self, ctx: core.Context, index: int = 1) -> None:
         """Skip to the numbered track in the queue. If no number is given, skip to the next track.
 
+        TODO: Make a Queue subclass to avoid editing the internal deque directly. See https://wavelink.dev/en/latest/wavelink.html#queues.
         Parameters
         ----------
-        ctx: :class:`BeiraContext`
+        ctx: :class:`core.Context`
             The invocation context.
         index : :class:`int`
             The place in the queue to skip to.
@@ -383,7 +384,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         loop : Literal["All Tracks", "Current Track", "Off"]
             The loop settings. "All Tracks" loops everything in the queue, "Current Track" loops the playing track, and
@@ -409,7 +410,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         position : :class:`str`
             The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
@@ -436,7 +437,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`BeiraContext`
+        ctx : :class:`core.Context`
             The invocation context.
         volume : :class:`int`, optional
             The volume to change to, with a maximum of 1000.
