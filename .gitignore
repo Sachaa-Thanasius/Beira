@@ -8,5 +8,5 @@ venv/
 *.pyc
 *.log
 config.json
-table_insertions.sql
+database/table_insertions.sql
 .ruff_cache
