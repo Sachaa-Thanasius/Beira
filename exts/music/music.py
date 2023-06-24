@@ -6,7 +6,6 @@ with Wavelink + Lavalink.
 from __future__ import annotations
 
 import logging
-import random
 from copy import deepcopy
 from typing import Literal
 
@@ -145,7 +144,6 @@ class MusicCog(commands.Cog, name="Music"):
             vc: SkippablePlayer,
             tracks: wavelink.Playable | spotify.SpotifyTrack | list[wavelink.Playable | spotify.SpotifyTrack] | wavelink.Playlist,
             requester: discord.Member,
-            shuffle: bool,
     ) -> str:
         """Adds tracks to a queue even if they are contained in another object or structure.
 
@@ -157,14 +155,11 @@ class MusicCog(commands.Cog, name="Music"):
                 isinstance(tracks, wavelink.YouTubePlaylist | SoundCloudPlaylist)
         ):
             all_tracks = tracks if isinstance(tracks, list) else tracks.tracks
-            if shuffle:
-                random.shuffle(all_tracks)
-
             for track in all_tracks:
                 track.requester = requester
 
             vc.queue.extend(all_tracks)
-            notif_text = f"{'Shuffled and added' if shuffle else 'Added'} `{len(all_tracks)}` tracks to the queue."
+            notif_text = f"Added `{len(all_tracks)}` tracks to the queue."
         elif isinstance(tracks, list):
             tracks[0].requester = requester
             await vc.queue.put_wait(tracks[0])
@@ -177,16 +172,13 @@ class MusicCog(commands.Cog, name="Music"):
         return notif_text
 
     @music.command()
-    async def play(self, ctx: core.Context, shuffle: bool = False, *, search: str) -> None:
+    async def play(self, ctx: core.Context, *, search: str) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
         ----------
         ctx : :class:`core.Context`
             The invocation context.
-        shuffle : :class:`bool`, default=False
-            Whether the playlist or list of tracks retrieved from this search should be shuffled before being played
-            and/or queued. Defaults to False.
         search : :class:`str`
             A url or search query.
         """
@@ -196,7 +188,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         async with ctx.typing():
             tracks = await WavelinkSearchConverter().convert(ctx, search)
-            text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
+            text = await self._add_tracks_to_queue(vc, tracks, ctx.author)
             await ctx.send(text)
 
             if not vc.is_playing():
@@ -359,7 +351,7 @@ class MusicCog(commands.Cog, name="Music"):
                 vc.queue.remove_before_index(index - 1)     # TODO: Test this.
             vc.queue.loop = False
             await vc.stop()
-            await ctx.send(f"Skipped to the song at position {index}", ephemeral=True)
+            await ctx.send(f"Skipped to the song at position {index}")
 
     @music.command()
     @core.in_bot_vc()

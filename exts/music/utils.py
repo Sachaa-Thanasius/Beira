@@ -43,8 +43,8 @@ async def format_track_embed(embed: discord.Embed, track: Playable | spotify.Spo
 
     embed.description += f"`[0:00-{end_time}]`"
 
-    if getattr(track, "requester", None):
-        embed.description += f"\n\nRequested by: {track.requester.mention}"
+    if requester := getattr(track, "requester", None):
+        embed.description += f"\n\nRequested by: {requester.mention}"
 
     if isinstance(track, wavelink.YouTubeTrack):
         embed.set_thumbnail(url=(track.thumbnail or await track.fetch_thumbnail()))
@@ -113,41 +113,11 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
     def type(self) -> discord.AppCommandOptionType:
         return discord.AppCommandOptionType.string
 
-    async def transform(
-            self,
-            interaction: Interaction,
-            value: str,
-            /,
-    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        vc: SkippablePlayer | None = interaction.guild.voice_client
-        return await self._convert(vc, value)
-
-    async def convert(
-            self,
-            ctx: Context,
-            argument: str,
-    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        """Converter which searches for and returns the relevant track(s).
-
-        Used as a type hint in a discord.py command.
-
-        Raises
-        ------
-        UnusableSpotifyLink
-            If a Spotify link is unusable by Wavelink.
-        wavelink.NoTracksError
-            If nothing could be found with the given input, even with YouTube search.
-        """
-
-        vc: SkippablePlayer | None = ctx.voice_client
-        return await self._convert(vc, argument)
-
     @staticmethod
     async def _convert(
             vc: SkippablePlayer | None,
             argument: str,
     ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        # Note: Attempted to use match case and it was slower.
         check = yarl.URL(argument)
         if (check.host in ("youtube.com", "www.youtube.com") and "v" in check.query) or check.scheme == "ytsearch:":
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
@@ -181,3 +151,20 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
             raise wavelink.NoTracksError(msg)
 
         return tracks
+
+    async def transform(
+            self,
+            interaction: Interaction,
+            value: str,
+            /,
+    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
+        vc: SkippablePlayer | None = interaction.guild.voice_client
+        return await self._convert(vc, value)
+
+    async def convert(
+            self,
+            ctx: Context,
+            argument: str,
+    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
+        vc: SkippablePlayer | None = ctx.voice_client
+        return await self._convert(vc, argument)
