@@ -161,7 +161,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         query = "SELECT * FROM story_information"
         temp_records = await self.bot.db_pool.fetch(query)
         self.story_records.update(
-            self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo])
+            self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo]),
         )
 
         # Load story text from markdown files.

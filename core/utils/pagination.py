@@ -13,6 +13,7 @@ from typing import Any
 import discord
 from discord import ui
 
+
 __all__ = ("PageNumEntryModal", "PaginatedEmbedView")
 
 LOGGER = logging.getLogger(__name__)

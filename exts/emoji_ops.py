@@ -163,7 +163,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             ctx: core.Context,
             name: str,
             entity: str | None = None,
-            attachment: discord.Attachment | None = None
+            attachment: discord.Attachment | None = None,
     ) -> None:
         """Add an emoji to the server, assuming you have the permissions to do that.
 
@@ -257,7 +257,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             description: str | None = None,
             emoji: str | None = None,
             attachment: discord.Attachment | None = None,
-            reason: str | None = None
+            reason: str | None = None,
     ) -> None:
         """Add a sticker to the server, assuming you have the permissions to do that.
 
@@ -288,7 +288,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
                 description=sticker.description,
                 emoji=sticker.emoji,
                 file=file,
-                reason=reason
+                reason=reason,
             )
         else:
             if None in (name, attachment):
@@ -301,7 +301,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
                 description=description or name,
                 emoji=emoji or "\N{NINJA}",
                 file=file,
-                reason=reason or "Added with Beira."
+                reason=reason or "Added with Beira.",
             )
 
         await ctx.send(f"Sticker successfully added: `{name}`.", stickers=[new_sticker])
@@ -321,7 +321,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
                         description=f"{sticker.name} description.",
                         emoji="\N{NINJA}",
                         file=sticker_file,
-                        reason="Added with Beira."
+                        reason="Added with Beira.",
                     )
                     added_count += 1
                     errors.append("")

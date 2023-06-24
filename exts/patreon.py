@@ -199,7 +199,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
             "tier_info": "Use the select menu below to explore the different tiers that ACI100 has on Patreon and what "
                          "benefits they come with.",
             "discord_guild": temp_guild.id,
-            "tier_emoji": discord.PartialEmoji.from_str("<:icons_info:880113401207095346>")
+            "tier_emoji": discord.PartialEmoji.from_str("<:icons_info:880113401207095346>"),
         }
         self.patreon_tiers_info.insert(0, menu_info)
 
@@ -236,7 +236,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         # Get campaign data.
         async with self.bot.web_client.get(
             CAMPAIGN_BASE,
-            headers={"Authorization": f"Bearer {self.access_token}"}
+            headers={"Authorization": f"Bearer {self.access_token}"},
         ) as response:
             campaigns = await response.json()
             campaign_id = campaigns["data"][0]["id"]
@@ -250,7 +250,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
             async with self.bot.web_client.get(
                 urljoin(CAMPAIGN_BASE,
                         f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
-                headers={"Authorization": f"Bearer {self.access_token}"}
+                headers={"Authorization": f"Bearer {self.access_token}"},
             ) as resp:
 
                 # Print an error if it exists.
@@ -280,8 +280,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                             PatreonMember(
                                 user_id,
                                 int(discord_info["user_id"]),
-                                member["relationships"]["currently_entitled_tiers"]
-                            )
+                                member["relationships"]["currently_entitled_tiers"],
+                            ),
                         )
 
                 # Get page info.

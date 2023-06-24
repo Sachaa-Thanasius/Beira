@@ -64,7 +64,7 @@ class HelpCogModal(discord.ui.Modal):
     """
 
     input_page_num = discord.ui.TextInput(
-        label="Page or Cog Name", placeholder="Enter page number or cog name here...", required=True, min_length=1
+        label="Page or Cog Name", placeholder="Enter page number or cog name here...", required=True, min_length=1,
     )
 
     def __init__(self, page_limit: int, names: list[str]) -> None:
@@ -199,7 +199,7 @@ class BeiraHelpCommand(commands.HelpCommand):
     async def send_bot_help(
             self,
             mapping: Mapping[commands.Cog | None, list[commands.Command[Any, ..., Any]]],
-            /
+            /,
     ) -> None:
         pages_content = []
         for cog, cmds in mapping.items():

@@ -57,6 +57,7 @@ StoryWebsiteStore: dict[str, StoryWebsite] = {
         "SB",
         re.compile(r"forums\.spacebattles\.com/threads/\S*"),
         "https://forums.spacebattles.com/data/svg/2/1/1682578744/2022_favicon_192x192.png",
+        # Potential image: https://forums.spacebattles.com/data/svg/2/1/1686867453/2022FinalLogo_pride.svg
     ),
     "SV": StoryWebsite(
         "Sufficient Velocity",

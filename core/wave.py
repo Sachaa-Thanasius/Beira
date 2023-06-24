@@ -1,7 +1,18 @@
-from typing import Any
+from typing import Any, TypeAlias
 
 import wavelink
-from discord.abc import MessageableChannel
+from discord.channel import (
+    DMChannel,
+    GroupChannel,
+    PartialMessageable,
+    StageChannel,
+    TextChannel,
+    VoiceChannel,
+)
+from discord.threads import Thread
+
+
+MessageableChannel: TypeAlias = TextChannel | VoiceChannel | StageChannel | Thread | DMChannel | PartialMessageable | GroupChannel
 
 
 __all__ = ("SkippableQueue", "SkippablePlayer")

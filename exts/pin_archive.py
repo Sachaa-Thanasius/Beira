@@ -47,7 +47,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
     async def on_guild_channel_pins_update(
             self,
             channel: discord.abc.GuildChannel | discord.Thread,
-            last_pin: datetime.datetime | None = None
+            last_pin: datetime.datetime | None = None,
     ) -> None:
         """Listen to pin events and display them."""
 

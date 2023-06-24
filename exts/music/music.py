@@ -40,7 +40,7 @@ class MusicQueueView(PaginatedEmbedView):
             self.current_page_content = self.pages[self.current_page - 1]
             embed_page.description = "\n".join((
                 f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song
-                in enumerate(self.current_page_content))
+                in enumerate(self.current_page_content)),
             )
             embed_page.set_page_footer(self.current_page, self.total_pages)
 
@@ -88,6 +88,8 @@ class MusicCog(commands.Cog, name="Music"):
             embed.description = "You don't have permission to do this."
         elif isinstance(error, core.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
+        elif isinstance(error, core.UnusableSpotifyLink):
+            embed.description = "This Spotify link could not be processed."
         else:
             LOGGER.exception(f"Exception: {error}", exc_info=error)
 
@@ -253,7 +255,7 @@ class MusicCog(commands.Cog, name="Music"):
             current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
         else:
             current_embed = discord.Embed(
-                color=0x149cdf, title="Now Playing", description="Nothing is playing currently."
+                color=0x149cdf, title="Now Playing", description="Nothing is playing currently.",
             )
 
         await ctx.send(embed=current_embed)

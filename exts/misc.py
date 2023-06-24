@@ -98,7 +98,7 @@ class MiscCog(commands.Cog, name="Misc"):
                             f"**Channels:** {len(list(self.bot.get_all_channels())):,d}\n"
                             f"**Servers:** {len(self.bot.guilds):,d}\n"
                             f"**Commands:** {len(self.bot.commands):,d}",
-                timestamp=discord.utils.utcnow()
+                timestamp=discord.utils.utcnow(),
             )
             .set_author(name=f"Made by {owner}", icon_url=owner.display_avatar.url)
             .set_thumbnail(url=self.bot.user.display_avatar.url)

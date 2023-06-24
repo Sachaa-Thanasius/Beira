@@ -80,7 +80,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
                     for ranking in results.rankings
                     if (valid_member := query_guild.get_member(int(ranking.user_id)))
                 ],
-                dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")]
+                dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")],
             )
 
             graph_bytes = await self.bot.loop.run_in_executor(None, self.process_data, data)
@@ -94,8 +94,8 @@ class TatsuCog(commands.Cog, name="Tatsu"):
         fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
         ax.scatter(
             data["r"], data["g"], data["b"], c=np.dstack(
-                (np.divide(data["r"], 255), np.divide(data["g"], 255), np.divide(data["b"], 255))
-            )
+                (np.divide(data["r"], 255), np.divide(data["g"], 255), np.divide(data["b"], 255)),
+            ),
         )
         buff = BytesIO()
         plt.savefig(buff, format="png")
@@ -116,11 +116,8 @@ class TatsuCog(commands.Cog, name="Tatsu"):
             query_guild = self.bot.get_guild(query_id)
             data = np.array(
                 [(*role.color.to_rgb(), role.name) for role in query_guild.roles],
-                dtype=[("r", "i4"), ("g", "i4"), ("b", "i4"), ("name", "U36")]
+                dtype=[("r", "i4"), ("g", "i4"), ("b", "i4"), ("name", "U36")],
             )
-            print(np.dstack(
-                (np.divide(data["r"], 255), np.divide(data["g"], 255), np.divide(data["b"], 255))
-            ))
             graph_bytes = await self.bot.loop.run_in_executor(None, self.process_data_3d, data)
             graph_file = discord.File(graph_bytes, "graph.png")
             await ctx.send(file=graph_file)

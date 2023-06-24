@@ -117,7 +117,7 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
             self,
             interaction: Interaction,
             value: str,
-            /
+            /,
     ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
         vc: SkippablePlayer | None = interaction.guild.voice_client
         return await self._convert(vc, value)
@@ -147,26 +147,27 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
             vc: SkippablePlayer | None,
             argument: str,
     ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        # vc: SkippablePlayer | None = ctx.voice_client
-
+        # Note: Attempted to use match case and it was slower.
         check = yarl.URL(argument)
-        # TODO: Switch to match-case pattern matching.
-        if (check.host in ("youtube.com", "www.youtube.com") and check.query.get("v")) or argument.startswith("ytsearch:"):
+        if (check.host in ("youtube.com", "www.youtube.com") and "v" in check.query) or check.scheme == "ytsearch:":
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
-        elif (check.host in ("youtube.com", "www.youtube.com") and check.query.get("list")) or argument.startswith("ytpl:"):
+        elif (check.host in ("youtube.com", "www.youtube.com") and "list" in check.query) or check.scheme == "ytpl:":
             tracks = await vc.current_node.get_playlist(cls=wavelink.YouTubePlaylist, query=argument)
-        elif check.host == "music.youtube.com" or argument.startswith("ytmsearch:"):
+        elif check.host == "music.youtube.com" or check.scheme == "ytmsearch:":
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeMusicTrack, query=argument)
         elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.path:
             tracks = await vc.current_node.get_playlist(cls=SoundCloudPlaylist, query=argument)
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") or argument.startswith("scsearch:"):
+        elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch:":
             tracks = await vc.current_node.get_tracks(cls=wavelink.SoundCloudTrack, query=argument)
         elif check.host in ("spotify.com", "open.spotify.com"):
             decoded = spotify.decode_url(argument)
             if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
                 raise UnusableSpotifyLink(argument)
             if decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
-                tracks = [track async for track in spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)]
+                tracks = [
+                    track async for track in
+                    spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)
+                ]
             else:
                 tracks = await spotify.SpotifyTrack.search(argument, type=decoded["type"], node=vc.current_node)
         else:

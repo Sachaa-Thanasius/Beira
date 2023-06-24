@@ -104,14 +104,14 @@ class LoLCog(commands.Cog, name="League of Legends"):
             "SleepyLunatic",
             "Law of Shurima",
             "HowaryByyi",
-            "ogyrfr"
+            "ogyrfr",
         ]
         self.req_site = "https://www.op.gg/summoners/na/"
         self.req_headers = {
             'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
                           'AppleWebKit/537.36 (KHTML, like Gecko) '
                           'Chrome/39.0.2171.95 '
-                          'Safari/537.36'
+                          'Safari/537.36',
         }
 
     @property
@@ -208,7 +208,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
             title="League of Legends Leaderboard",
             description="If players are missing, they either don't exist or aren't ranked.\n"
                         "(Winrate \|| Rank)\n"
-                        "―――――――――――"
+                        "―――――――――――",
         )
         if leaderboard:
             embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format="({} \|| {})")

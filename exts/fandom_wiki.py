@@ -44,7 +44,7 @@ class AoCWikiEmbed(DTEmbed):
             self,
             author_icon_url: str | None = None,
             footer_icon_url: str | None = None,
-            **kwargs: Any
+            **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -56,7 +56,7 @@ class AoCWikiEmbed(DTEmbed):
         self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
         self.set_footer(
             text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
-            icon_url=footer_icon_url
+            icon_url=footer_icon_url,
         )
 
 

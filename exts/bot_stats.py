@@ -64,7 +64,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             ctx.prefix,
             ctx.command.qualified_name,
             (ctx.interaction is not None),
-            ctx.command_failed
+            ctx.command_failed,
         )
 
         query = """
@@ -118,7 +118,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             time_period: Literal["today", "last month", "last year", "all time"] = "all time",
             command: str = None,
             guilds: bool = False,
-            universal: bool = False
+            universal: bool = False,
     ) -> None:
         """Retrieve statistics about bot command usage.
 
@@ -158,7 +158,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             time_period: int = 0,
             command: str | None = None,
             guild: discord.Guild | None = None,
-            universal: bool = False
+            universal: bool = False,
     ) -> list:
         """Queries the database for command usage."""
 
