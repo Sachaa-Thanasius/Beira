@@ -194,21 +194,17 @@ class MusicCog(commands.Cog, name="Music"):
         vc: SkippablePlayer = ctx.voice_client
         vc.chan_ctx = ctx.channel
 
-        tracks = await WavelinkSearchConverter.convert(ctx, search)
-
         async with ctx.typing():
-            if vc.queue.is_empty and not vc.is_playing():
-                text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
-                await ctx.send(text)
+            tracks = await WavelinkSearchConverter().convert(ctx, search)
+            text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
+            await ctx.send(text)
 
+            if not vc.is_playing():
                 first_track = vc.queue.get()
                 await vc.play(first_track)
 
                 embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), first_track)
                 await ctx.send(embed=embed)
-            else:
-                text = await self._add_tracks_to_queue(vc, tracks, ctx.author, shuffle)
-                await ctx.send(text)
 
     @music.command()
     @core.in_bot_vc()
