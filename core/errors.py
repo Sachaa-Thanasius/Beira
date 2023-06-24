@@ -12,7 +12,7 @@ __all__ = (
     "NotInBotVoiceChannel",
     "UserIsBlocked",
     "GuildIsBlocked",
-    "BadSpotifyLink",
+    "UnusableSpotifyLink",
 )
 
 
@@ -58,7 +58,7 @@ class GuildIsBlocked(commands.CheckFailure):
     """
 
 
-class BadSpotifyLink(commands.BadArgument):
+class UnusableSpotifyLink(commands.BadArgument):
     """Exception raised when the Spotify link is not valid.
 
     This inherits from :exc:`commands.BadArgument`.

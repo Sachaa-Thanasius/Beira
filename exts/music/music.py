@@ -5,8 +5,6 @@ with Wavelink + Lavalink.
 
 from __future__ import annotations
 
-import collections
-import itertools
 import logging
 import random
 from copy import deepcopy
@@ -20,8 +18,9 @@ from wavelink.ext import spotify
 
 import core
 from core.utils import PaginatedEmbed, PaginatedEmbedView
+from core.wave import SkippablePlayer
 
-from .wavelink_utils import SoundCloudPlaylist, WavelinkSearchConverter, format_track_embed
+from .utils import SoundCloudPlaylist, WavelinkSearchConverter, format_track_embed
 
 
 LOGGER = logging.getLogger(__name__)
@@ -110,14 +109,15 @@ class MusicCog(commands.Cog, name="Music"):
     async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
         """Called when the current track has finished playing."""
 
-        if payload.player.is_connected() and not payload.player.queue.is_empty:
-            new_track = await payload.player.queue.get_wait()
-            await payload.player.play(new_track)
+        player: SkippablePlayer = payload.player    # type: ignore
+        if player.is_connected() and not player.queue.is_empty:
+            new_track = await player.queue.get_wait()
+            await player.play(new_track)
 
             current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), new_track)
-            await payload.player.chan_ctx.send(embed=current_embed)
+            await player.chan_ctx.send(embed=current_embed)
         else:
-            await payload.player.stop()
+            await player.stop()
 
     @commands.hybrid_group()
     async def music(self, ctx: core.Context) -> None:
@@ -127,7 +127,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def connect(self, ctx: core.Context) -> None:
         """Join a voice channel."""
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer | None = ctx.voice_client
 
         if vc is not None and ctx.author.voice is not None:
             await vc.move_to(ctx.channel)
@@ -135,12 +135,12 @@ class MusicCog(commands.Cog, name="Music"):
         elif ctx.author.voice is None:
             await ctx.send("Please join a voice channel and try again.")
         else:
-            await ctx.author.voice.channel.connect(cls=wavelink.Player)  # type: ignore
+            await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @staticmethod
     async def _add_tracks_to_queue(
-            vc: wavelink.Player,
+            vc: SkippablePlayer,
             tracks: wavelink.Playable | spotify.SpotifyTrack | list[wavelink.Playable | spotify.SpotifyTrack] | wavelink.Playlist,
             requester: discord.Member,
             shuffle: bool,
@@ -189,7 +189,7 @@ class MusicCog(commands.Cog, name="Music"):
             A url or search query.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
         vc.chan_ctx = ctx.channel
 
         tracks = await WavelinkSearchConverter.convert(ctx, search)
@@ -213,7 +213,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def pause(self, ctx: core.Context) -> None:
         """Pause the audio."""
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if vc.is_paused():
             await vc.resume()
@@ -227,7 +227,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def resume(self, ctx: core.Context) -> None:
         """Resume the audio if paused."""
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if vc.is_paused():
             await vc.resume()
@@ -238,7 +238,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def stop(self, ctx: core.Context) -> None:
         """Stop playback and disconnect the bot from voice."""
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         await vc.disconnect()
         await ctx.send("Disconnected from voice channel.")
@@ -247,7 +247,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def current(self, ctx: core.Context) -> None:
         """Display the current track."""
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer | None = ctx.voice_client
 
         if vc.current:
             current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
@@ -265,7 +265,7 @@ class MusicCog(commands.Cog, name="Music"):
         Use `play` to add things to the queue.
         """
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer | None = ctx.voice_client
 
         queue_embeds = []
         if vc.current:
@@ -290,7 +290,7 @@ class MusicCog(commands.Cog, name="Music"):
             The track's position.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if entry > vc.queue.count or entry < 1:
             await ctx.send("That track does not exist and cannot be removed.")
@@ -303,7 +303,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def clear(self, ctx: core.Context) -> None:
         """Empty the queue."""
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if not vc.queue.is_empty:
             vc.queue.clear()
@@ -326,7 +326,7 @@ class MusicCog(commands.Cog, name="Music"):
             The index you want to move it to.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         for num in (before, after):
             if num > len(vc.queue) or num < 1:
@@ -342,7 +342,6 @@ class MusicCog(commands.Cog, name="Music"):
     async def skip(self, ctx: core.Context, index: int = 1) -> None:
         """Skip to the numbered track in the queue. If no number is given, skip to the next track.
 
-        TODO: Make a Queue subclass to avoid editing the internal deque directly. See https://wavelink.dev/en/latest/wavelink.html#queues.
         Parameters
         ----------
         ctx: :class:`core.Context`
@@ -351,7 +350,7 @@ class MusicCog(commands.Cog, name="Music"):
             The place in the queue to skip to.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if vc.queue.is_empty:
             await ctx.send("The queue is empty and can't be skipped into.")
@@ -359,8 +358,7 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("Please enter a valid queue index.")
         else:
             if index > 1:
-                temp = itertools.islice(vc.queue._queue, index - 1, vc.queue.count)
-                vc.queue._queue = collections.deque(temp)
+                vc.queue.remove_before_index(index - 1)     # TODO: Test this.
             vc.queue.loop = False
             await vc.stop()
             await ctx.send(f"Skipped to the song at position {index}", ephemeral=True)
@@ -370,7 +368,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def shuffle(self, ctx: core.Context) -> None:
         """Shuffle the tracks in the queue."""
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
         if not vc.queue.is_empty:
             vc.queue.shuffle()
             await ctx.send("Shuffled the queue.")
@@ -391,7 +389,7 @@ class MusicCog(commands.Cog, name="Music"):
             "Off" resets all looping.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if loop == "All Tracks":
             vc.queue.loop, vc.queue.loop_all = False, True
@@ -416,7 +414,7 @@ class MusicCog(commands.Cog, name="Music"):
             The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
         """
 
-        vc: wavelink.Player = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer = ctx.voice_client
 
         if vc.current.is_seekable:
             pos_time = int(sum(
@@ -443,7 +441,7 @@ class MusicCog(commands.Cog, name="Music"):
             The volume to change to, with a maximum of 1000.
         """
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer | None = ctx.voice_client
 
         if vc is None:
             await ctx.send("Not currently playing anything.")
@@ -457,11 +455,11 @@ class MusicCog(commands.Cog, name="Music"):
     async def ensure_voice(self, ctx: core.Context) -> None:
         """Ensures that the voice client automatically connects the right channel."""
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer | None = ctx.voice_client
 
         if vc is None:
             if ctx.author.voice:
-                await ctx.author.voice.channel.connect(cls=wavelink.Player)  # type: ignore
+                await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 msg = "Author not connected to a voice channel."

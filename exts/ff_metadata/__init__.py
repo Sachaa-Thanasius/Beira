@@ -2,8 +2,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from .music import MusicCog
-from .utils import *
+from .ff_metadata import FFMetadataCog
 
 
 if TYPE_CHECKING:
@@ -13,4 +12,4 @@ if TYPE_CHECKING:
 async def setup(bot: Beira) -> None:
     """Connects cog to bot."""
 
-    await bot.add_cog(MusicCog(bot))
+    await bot.add_cog(FFMetadataCog(bot))

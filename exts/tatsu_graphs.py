@@ -36,7 +36,10 @@ class TatsuCog(commands.Cog, name="Tatsu"):
         await self.tatsu_client.close()
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
-        LOGGER.error("", exc_info=error)
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        LOGGER.exception("", exc_info=error)
 
     @staticmethod
     def process_data(data: np.ndarray) -> BytesIO:
@@ -47,10 +50,10 @@ class TatsuCog(commands.Cog, name="Tatsu"):
 
         # Plot the data with matplotlib.
         fig, ax = plt.subplots()
-        ax.scatter(data["rank"], data["score_rate"], c=colors)
+        ax.scatter(data["rank"], data["score_rate"], c=colors, s=1.5)
         ax.set_xlabel("Current Rank")
         ax.set_ylabel("Average Score Per Day")
-        ax.set_title("The Average Points per Day Earned\nby the Top 25 Active Server Members")
+        ax.set_title("The Average Points per Day Earned\nby the Top 500 Active Server Members")
 
         buff = BytesIO()
         plt.savefig(buff, format="png")
@@ -59,19 +62,18 @@ class TatsuCog(commands.Cog, name="Tatsu"):
 
     @commands.command()
     @commands.is_owner()
-    async def graph(self, ctx: commands.Context, guild_id: int | None = None) -> None:
+    async def graph(self, ctx: core.Context, guild_id: int | None = None) -> None:
         async with ctx.typing():
-            now = discord.utils.utcnow()
-
             # Check that there's a guild ID to work with.
             query_id = guild_id or ctx.guild.id
             if not query_id:
                 await ctx.send("You must do this in a guild or provide a valid guild ID.")
                 return
 
+            now = discord.utils.utcnow()
             query_guild = self.bot.get_guild(query_id)
 
-            results = await self.tatsu_client.get_guild_rankings(query_id, "all", end=25)
+            results = await self.tatsu_client.get_guild_rankings(query_id, "all", end=500)
             data = np.array(
                 [
                     ((ranking.score / (now - valid_member.joined_at).days), ranking.user_id, ranking.rank)
@@ -82,6 +84,44 @@ class TatsuCog(commands.Cog, name="Tatsu"):
             )
 
             graph_bytes = await self.bot.loop.run_in_executor(None, self.process_data, data)
+            graph_file = discord.File(graph_bytes, "graph.png")
+            await ctx.send(file=graph_file)
+
+    @staticmethod
+    def process_data_3d(data: np.ndarray) -> BytesIO:
+        plt.style.use("_mpl-gallery")
+
+        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        ax.scatter(
+            data["r"], data["g"], data["b"], c=np.dstack(
+                (np.divide(data["r"], 255), np.divide(data["g"], 255), np.divide(data["b"], 255))
+            )
+        )
+        buff = BytesIO()
+        plt.savefig(buff, format="png")
+        buff.seek(0)
+        plt.style.use("default")
+        return buff
+
+    @commands.command()
+    @commands.is_owner()
+    async def graph_roles(self, ctx: core.Context, guild_id: int | None = None) -> None:
+        async with ctx.typing():
+            # Check that there's a guild ID to work with.
+            query_id = guild_id or ctx.guild.id
+            if not query_id:
+                await ctx.send("You must do this in a guild or provide a valid guild ID.")
+                return
+
+            query_guild = self.bot.get_guild(query_id)
+            data = np.array(
+                [(*role.color.to_rgb(), role.name) for role in query_guild.roles],
+                dtype=[("r", "i4"), ("g", "i4"), ("b", "i4"), ("name", "U36")]
+            )
+            print(np.dstack(
+                (np.divide(data["r"], 255), np.divide(data["g"], 255), np.divide(data["b"], 255))
+            ))
+            graph_bytes = await self.bot.loop.run_in_executor(None, self.process_data_3d, data)
             graph_file = discord.File(graph_bytes, "graph.png")
             await ctx.send(file=graph_file)
 

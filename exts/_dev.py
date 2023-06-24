@@ -455,6 +455,15 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     async def test_pre(self, ctx: core.Context) -> None:
         """Test prefix command."""
 
+        await ctx.send("Test prefix command.")
+
+    @commands.hybrid_command()
+    @only_dev_guilds
+    async def test_hy(self, ctx: core.Context) -> None:
+        """Test hybrid command."""
+
+        await ctx.send("Test hybrid command.")
+
         image_urls = [
             "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-for-PC-620x388.jpg",
             "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-Free-Download-620x388.jpg",
@@ -473,13 +482,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         embeds.extend(embed.copy().set_image(url=image_url) for image_url in image_urls[1:])
 
         await ctx.send(embeds=embeds)
-
-    @commands.hybrid_command()
-    @only_dev_guilds
-    async def test_hy(self, ctx: core.Context) -> None:
-        """Test hybrid command."""
-
-        await ctx.send("Test hybrid command.")
 
     @app_commands.command()
     @only_dev_guilds

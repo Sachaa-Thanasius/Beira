@@ -1,18 +1,26 @@
 """
-wavelink_utils.py: A bunch of utility functions and classes for Wavelink.
+utils.py: A bunch of utility functions and classes for Wavelink.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import discord
 import wavelink
 import yarl
+from discord import app_commands
 from discord.ext import commands
 from discord.utils import escape_markdown
 from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
-from core import BadSpotifyLink
+from core import UnusableSpotifyLink
+
+
+if TYPE_CHECKING:
+    from core import Context, Interaction
+    from core.wave import SkippablePlayer
 
 
 __all__ = ("format_track_embed", "SoundCloudPlaylist", "WavelinkSearchConverter")
@@ -53,11 +61,9 @@ class SoundCloudPlaylist(Playable, Playlist):
         The name of the playlist.
     tracks: list[:class:`wavelink.SoundCloudTrack`]
         The list of :class:`wavelink.SoundCloudTrack` in the playlist.
-    selected_track: Optional[int]
+    selected_track: :class:`int`, optional
         The selected track in the playlist. This could be ``None``.
     """
-
-    # PREFIX: str = "scpl:"         # Not sure SoundCloud playlists have a specific prefix within Lavalink.
 
     def __init__(self, data: dict) -> None:
         self.tracks: list[wavelink.SoundCloudTrack] = []
@@ -75,21 +81,25 @@ class SoundCloudPlaylist(Playable, Playlist):
         return self.name
 
 
-class WavelinkSearchConverter(commands.Converter):
+class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
     """Converts to a :class:`Playable` | :class:`spotify.SpotifyTrack` | list[:class:`Playable` |
     :class:`spotify.SpotifyTrack`] | :class:`Playlist`.
 
     The lookup strategy is as follows (in order):
 
-        1) Input is a YouTube video url or has ``ytsearch:`` as a prefix: Attempt lookup with :class:`wavelink.YouTubeTrack`.
+        1) Input is a YouTube video url or has ``ytsearch:`` as a prefix: Attempt lookup with
+           :class:`wavelink.YouTubeTrack`.
 
-        2) Input is a YouTube playlist url or has ``ytpl:`` as a prefix: Attempt lookup with :class:`wavelink.YouTubePlaylist`.
+        2) Input is a YouTube playlist url or has ``ytpl:`` as a prefix: Attempt lookup with
+           :class:`wavelink.YouTubePlaylist`.
 
-        3) Input is a YouTube Music url or has ``ytmsearch:`` as a prefix: Attempt lookup with :class:`wavelink.YouTubeMusicTrack`.
+        3) Input is a YouTube Music url or has ``ytmsearch:`` as a prefix: Attempt lookup with
+           :class:`wavelink.YouTubeMusicTrack`.
 
         4) Input is a SoundCloud playlist url: Attempt lookup with :class:`SoundCloudPlaylist`.
 
-        5) Input is a SoundCloud track url or has ``ytmsearch:`` as a prefix: Attempt to lookup with :class:`wavelink.SoundCloudTrack`.
+        5) Input is a SoundCloud track url or has ``scsearch:`` as a prefix: Attempt to lookup with
+           :class:`wavelink.SoundCloudTrack`.
 
         6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify:
             a. Try conversion to playlist, album, then track.
@@ -99,10 +109,22 @@ class WavelinkSearchConverter(commands.Converter):
             b. Search YouTube with the argument as the query.
     """
 
-    @classmethod
+    @property
+    def type(self) -> discord.AppCommandOptionType:
+        return discord.AppCommandOptionType.string
+
+    async def transform(
+            self,
+            interaction: Interaction,
+            value: str,
+            /
+    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
+        vc: SkippablePlayer | None = interaction.guild.voice_client
+        return await self._convert(vc, value)
+
     async def convert(
-            cls,
-            ctx: commands.Context,
+            self,
+            ctx: Context,
             argument: str,
     ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
         """Converter which searches for and returns the relevant track(s).
@@ -111,16 +133,24 @@ class WavelinkSearchConverter(commands.Converter):
 
         Raises
         ------
-        commands.BadArgument
-            If a Spotify link is invalid.
+        UnusableSpotifyLink
+            If a Spotify link is unusable by Wavelink.
         wavelink.NoTracksError
             If nothing could be found with the given input, even with YouTube search.
         """
 
-        vc: wavelink.Player | None = ctx.voice_client  # type: ignore
+        vc: SkippablePlayer | None = ctx.voice_client
+        return await self._convert(vc, argument)
+
+    @staticmethod
+    async def _convert(
+            vc: SkippablePlayer | None,
+            argument: str,
+    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
+        # vc: SkippablePlayer | None = ctx.voice_client
 
         check = yarl.URL(argument)
-
+        # TODO: Switch to match-case pattern matching.
         if (check.host in ("youtube.com", "www.youtube.com") and check.query.get("v")) or argument.startswith("ytsearch:"):
             tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
         elif (check.host in ("youtube.com", "www.youtube.com") and check.query.get("list")) or argument.startswith("ytpl:"):
@@ -134,7 +164,7 @@ class WavelinkSearchConverter(commands.Converter):
         elif check.host in ("spotify.com", "open.spotify.com"):
             decoded = spotify.decode_url(argument)
             if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
-                raise BadSpotifyLink(argument)
+                raise UnusableSpotifyLink(argument)
             if decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
                 tracks = [track async for track in spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)]
             else:

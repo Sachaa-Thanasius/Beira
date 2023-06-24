@@ -6,6 +6,8 @@ import aiohttp
 import discord
 from discord.ext import commands
 
+from .wave import SkippablePlayer
+
 
 if TYPE_CHECKING:
     from .bot import Beira
@@ -16,12 +18,10 @@ Interaction: TypeAlias = discord.Interaction["Beira"]
 
 
 class Context(commands.Context):
-    """A custom context subclass for Beira.
-
-    Currently only further specifies the bot type and provides easier access to the bot's web session.
-    """
+    """A custom context subclass for Beira."""
 
     bot: Beira
+    voice_client: SkippablePlayer | None
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

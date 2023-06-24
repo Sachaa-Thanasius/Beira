@@ -5,7 +5,7 @@ from typing import TYPE_CHECKING
 import openai
 
 from .ai_generation import AIGenerationCog
-from .ai_utils import *
+from .utils import *
 
 
 if TYPE_CHECKING:

@@ -18,7 +18,7 @@ from PIL import Image
 
 import core
 
-from .ai_utils import create_completion, create_image, create_inspiration, create_morph, get_image, process_image
+from .utils import create_completion, create_image, create_inspiration, create_morph, get_image, process_image
 
 
 LOGGER = logging.getLogger(__name__)
