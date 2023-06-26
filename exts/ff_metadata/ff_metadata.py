@@ -1,9 +1,5 @@
 """
 ff_metadata.py: A cog with triggers for retrieving story metadata.
-
-TODO: Set up database table for autoreply settings with fanfic info using this language -
-Set the bot to listen for Ao3/FFN links posted in this channel.
-If allowed, the bot will respond automatically with an informational embed.
 """
 
 from __future__ import annotations
@@ -35,7 +31,7 @@ from .utils import (
 LOGGER = logging.getLogger(__name__)
 
 
-class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
+class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_name="ff"):
     """A cog with triggers for retrieving story metadata."""
 
     def __init__(self, bot: core.Beira) -> None:
@@ -46,14 +42,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             session=self.bot.web_client,
         )
         self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_client)
-        self.allowed_channels: dict[int, set[int]] = {
-            self.bot.config["discord"]["guilds"]["prod"][0]: {
-                722085126908936210, 774395652984537109, 695705014341074944,
-            },
-            self.bot.config["discord"]["guilds"]["dev"][0]: {975459460560605204},
-            self.bot.config["discord"]["guilds"]["dev"][1]: {1043702766113136680},
-            1097976528832307271: {1098709842870411294},
-        }
+        self.allowed_channels: dict[int, set[int]] = {}
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -66,6 +55,12 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         self.ao3_session = await loop.run_in_executor(
             None, AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"],
         )
+
+        # Load a cache of channels to autorespond in.
+        query = """SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;"""
+        records = await self.bot.db_pool.fetch(query)
+        for record in records:
+            self.allowed_channels.setdefault(record["guild_id"], set()).add(record["channel_id"])
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         # Just log the exception, whatever it is.
@@ -81,6 +76,9 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
         Must be triggered in an allowed channel.
         """
 
+        if message.author == self.bot.user:
+            return
+
         # Listen to the allows channels in the allowed guilds.
         if (
                 message.guild and
@@ -90,31 +88,122 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             aci100_id = self.bot.config["discord"]["guilds"]["prod"][0]
 
             # Make sure the message has a valid FFN or Ao3 link.
-            for match_obj in re.finditer(STORY_WEBSITE_REGEX, message.content):
-                embed: discord.Embed | None = None
+            if re.search(STORY_WEBSITE_REGEX, message.content):
+                # Only show typing indicator on valid messages.
+                async with message.channel.typing():
+                    # Send an embed for every valid link.
+                    for match_obj in re.finditer(STORY_WEBSITE_REGEX, message.content):
+                        embed: discord.Embed | None = None
 
-                if match_obj.lastgroup == "FFN":
-                    story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
-                    embed = await create_atlas_ffn_embed(story_data)
+                        if match_obj.lastgroup == "FFN":
+                            story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
+                            LOGGER.info("FFN info: %s", story_data)
+                            embed = await create_atlas_ffn_embed(story_data)
 
-                elif match_obj.lastgroup == "AO3" and message.guild.id != aci100_id:
-                    if match_obj.group("type") == "series":
-                        story_data = await self.bot.loop.run_in_executor(
-                            None, AO3.Series, match_obj.group("ao3_id"), self.ao3_session,
-                        )
-                        embed = await create_ao3_series_embed(story_data)
-                    elif match_obj.group("type") == "works":
-                        story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
-                        embed = await create_fichub_embed(story_data)
+                        elif match_obj.lastgroup == "AO3" and message.guild.id != aci100_id:
+                            if match_obj.group("type") == "series":
+                                story_data = await self.bot.loop.run_in_executor(
+                                    None, AO3.Series, match_obj.group("ao3_id"), self.ao3_session,
+                                )
+                                LOGGER.info("Ao3 series info: %s", story_data)
+                                embed = await create_ao3_series_embed(story_data)
+                            elif match_obj.group("type") == "works":
+                                story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
+                                LOGGER.info("Ao3 work info: %s", story_data)
+                                embed = await create_fichub_embed(story_data)
 
-                elif match_obj.lastgroup is not None:
-                    story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
-                    embed = await create_fichub_embed(story_data)
+                        elif match_obj.lastgroup is not None:
+                            story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
+                            LOGGER.info("Other info: %s", story_data)
+                            embed = await create_fichub_embed(story_data)
 
-                if embed:
-                    await message.channel.send(embed=embed)
+                        if embed:
+                            await message.channel.send(embed=embed)
 
-    @commands.command()
+    @commands.hybrid_group(fallback="get")
+    async def autoresponse(self, ctx: core.Context) -> None:
+        """Autoresponse-related commands for automatically responding to fanfiction links in certain channels.
+
+        By default, display the channels in the server set to autorespond.
+        """
+
+        async with ctx.typing():
+            embed = discord.Embed(
+                title="Autoresponse Channels for Fanfic Links",
+                description="\n".join(f"<#{channel}>" for channel in self.allowed_channels.get(ctx.guild.id, set())),
+            )
+            await ctx.send(embed=embed)
+
+    @autoresponse.command("add")
+    async def autoresponse_add(self, ctx: core.Context, channels: commands.Greedy[discord.abc.GuildChannel]) -> None:
+        """Set the bot to listen for Ao3/FFN/other ff site links posted in the given channels.
+
+        If allowed, the bot will respond automatically with an informational embed.
+
+        Parameters
+        ----------
+        ctx : :class:`core.Context`
+            The invocation context.
+        channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+            A list of channels to add, separated by spaces.
+        """
+
+        command = """
+            INSERT INTO fanfic_autoresponse_settings (guild_id, channel_id)
+            VALUES ($1, $2)
+            ON CONFLICT (guild_id, channel_id) DO NOTHING
+            RETURNING channel_id;
+        """
+        query = """SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"""
+
+        async with ctx.typing():
+            # Update the database.
+            async with self.bot.db_pool.acquire() as con:
+                await con.executemany(command, [(ctx.guild.id, channel.id) for channel in channels])
+                records = await con.fetch(query, ctx.guild.id)
+
+            # Update the cache.
+            self.allowed_channels.setdefault(ctx.guild.id, set()).update(record["channel_id"] for record in records)
+            embed = discord.Embed(
+                title="Adjusted Autoresponse Channels for Fanfic Links",
+                description="\n".join(f"<#{record[0]}>" for record in records),
+            )
+            await ctx.send(embed=embed)
+
+    @autoresponse.command("remove")
+    async def autoresponse_remove(self, ctx: core.Context, channels: commands.Greedy[discord.abc.GuildChannel]) -> None:
+        """Set the bot to not listen for Ao3/FFN/other ff site links posted in the given channels.
+
+        The bot will no longer automatically respond to links with information embeds.
+
+        Parameters
+        ----------
+        ctx : :class:`core.Context`
+            The invocation context.
+        channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+            A list of channels to remove, separated by spaces.
+        """
+
+        command = """DELETE FROM fanfic_autoresponse_settings WHERE channel_id = $1;"""
+        query = """SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"""
+
+        async with ctx.typing():
+            # Update the database.
+            async with self.bot.db_pool.acquire() as con:
+                await con.executemany(command, [(channel.id,) for channel in channels])
+                records = await con.fetch(query, ctx.guild.id)
+
+            # Update the cache.
+            self.allowed_channels.setdefault(ctx.guild.id, set()).intersection_update(
+                record["channel_id"] for record in records
+            )
+            embed = discord.Embed(
+                title="Adjusted Autoresponse Channels for Fanfic Links",
+                description="\n".join(f"<#{record[0]}>" for record in records),
+            )
+            await ctx.send(embed=embed)
+
+    @commands.hybrid_command()
     async def ao3(self, ctx: core.Context, *, name_or_url: str) -> None:
         """Search Archive of Our Own for a fic with a certain title.
 
@@ -146,7 +235,7 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             if "view" in kwargs:
                 kwargs["view"].message = message
 
-    @commands.command()
+    @commands.hybrid_command()
     async def ffn(self, ctx: core.Context, *, name_or_url: str) -> None:
         """Search FanFiction.Net for a fic with a certain title or url.
 
@@ -182,21 +271,6 @@ class FFMetadataCog(commands.Cog, name="Fanfiction Metadata Search"):
             search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
             await self.bot.loop.run_in_executor(None, search.update)
             story = search.results[0] if len(search.results) > 0 else None
-
-        """
-        if result := re.search(LINK_PATTERNS["ao3_work"], name_or_url):
-            url = result.group(0)
-            story = await self.fichub_client.get_story_metadata(url)
-            # work_id = result.group(3)
-            # work = await self.bot.loop.run_in_executor(None, AO3.Work, work_id, self.ao3_session, True, False)
-        elif result := re.search(LINK_PATTERNS["ao3_series"], name_or_url):
-            series_id = result.group(3)
-            story = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
-        else:
-            search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
-            await self.bot.loop.run_in_executor(None, search.update)
-            story = search.results[0] if len(search.results) > 0 else None
-        """
 
         return story
 

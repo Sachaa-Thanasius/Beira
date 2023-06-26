@@ -74,13 +74,13 @@ StoryWebsiteStore: dict[str, StoryWebsite] = {
     "SIYE": StoryWebsite(
         "Sink Into Your Eyes",
         "SIYE",
-        re.compile(r"(?:www\.|)siye\.co\.uk/siye/viewstory\.php\?sid=\d+"),
+        re.compile(r"(?:www\.|)siye\.co\.uk/(?:siye/|)viewstory\.php\?sid=\d+"),
         "https://www.siye.co.uk/siye/favicon.ico",
     ),
 }
 
 STORY_WEBSITE_REGEX = re.compile(
-    "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()),
+    r"(?:http://|https://|)" + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()),
 )
 
 
@@ -202,8 +202,9 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
     # Get site-specific information, since FicHub works for multiple websites.
     icon_url = next(
-        (value.icon_url for value in StoryWebsiteStore.values() if re.match(value.story_regex, story.url)), None,
+        (value.icon_url for value in StoryWebsiteStore.values() if re.search(value.story_regex, story.url)), None,
     )
+
     if "fanfiction.net" in story.url:
         stats_names = ("reviews", "favorites", "follows")
         stats = " • ".join(f"**{stat_name.capitalize()}:** {story.stats[stat_name]:,d}" for stat_name in stats_names)
