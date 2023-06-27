@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS members (
 
 
 CREATE TABLE IF NOT EXISTS guild_prefixes (
-    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id),
     prefix      TEXT    NOT NULL    CHECK(LENGTH(prefix) > 0 AND LENGTH(prefix) < 16),
     PRIMARY KEY (guild_id, prefix)
 );
@@ -102,8 +102,7 @@ CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
 
 CREATE TABLE IF NOT EXISTS snowball_settings (
     guild_id            BIGINT  PRIMARY KEY     REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    hit_odds            REAL    NOT NULL        DEFAULT 0.6     CHECK (hit_odds >= 0.0 and hit_odds <= 1.0),
+    hit_odds            REAL    NOT NULL        DEFAULT 0.6         CHECK (hit_odds >= 0.0 and hit_odds <= 1.0),
     stock_cap           INT     NOT NULL        DEFAULT 100,
-    special_stock_cap   INT     NOT NULL        DEFAULT 200,
     transfer_cap        INT     NOT NULL        DEFAULT 10
 );

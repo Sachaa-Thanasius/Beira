@@ -24,8 +24,7 @@ import core
 from core.utils import StatsEmbed, upsert_guilds, upsert_users
 
 
-if TYPE_CHECKING:
-    from asyncpg import Record
+from asyncpg import Record
 
 
 LOGGER = logging.getLogger(__name__)
@@ -145,7 +144,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             )
             LOGGER.exception("", exc_info=error)
 
-        await ctx.send(embed=embed, ephemeral=True, delete_after=10)
+        await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_group()
     async def snow(self, ctx: core.Context) -> None:
@@ -161,13 +160,16 @@ class SnowballCog(commands.Cog, name="Snowball"):
             The invocation context.
         """
 
+        query = """SELECT * FROM snowball_settings WHERE guild_id = $1;"""
+        record = await self.bot.db_pool.fetchrow(query, ctx.guild.id)
+
         embed = discord.Embed(
             color=0x5e9a40,
             title=f"{self.qualified_name} Settings",
             description="Below are the unchangeable settings for the bot's snowball hit rate, stock maximum, and more."
                         " The ability to change these on a per-guild basis will be coming soon.",
         ).add_field(
-            name=f"Odds = {ODDS}",
+            name=f"Odds = {record['hit_odds']}",
             value="The odds of landing a snowball on someone.",
             inline=False,
         ).add_field(
@@ -175,15 +177,15 @@ class SnowballCog(commands.Cog, name="Snowball"):
             value="The number of people to show on the leaderboard.",
             inline=False,
         ).add_field(
-            name=f"Default Stock Cap = {DEFAULT_STOCK_CAP}",
+            name=f"Default Stock Cap = {record['stock_cap']}",
             value="The maximum number of snowballs the average member can hold at once.",
             inline=False,
         ).add_field(
-            name=f"Special Stock Cap = {SPECIAL_STOCK_CAP}",
+            name=f"Special Stock Cap = {2 * record['stock_cap']}",
             value="The maximum number of snowballs special members can hold at once.",
             inline=False,
         ).add_field(
-            name=f"Transfer Cap = {TRANSFER_CAP}",
+            name=f"Transfer Cap = {record['transfer_cap']}",
             value="The maximum number of snowballs that can be gifted or stolen at once.",
             inline=False,
         )

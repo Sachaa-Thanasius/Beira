@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import Literal
+from typing import TYPE_CHECKING, Literal
 
 import discord
 from discord.app_commands import Choice
@@ -15,6 +15,10 @@ from discord.utils import utcnow
 
 import core
 from core.utils import StatsEmbed, upsert_guilds, upsert_users
+
+
+if TYPE_CHECKING:
+    from asyncpg import Record
 
 
 LOGGER = logging.getLogger(__name__)
@@ -136,22 +140,26 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             Whether to look at users among all guilds. Defaults to False.
         """
 
-        periods = {"today": 1, "last month": 30, "last year": 365}
-        actual_time_pd = periods.get(time_period, 0)
+        async with ctx.typing():
+            periods = {"today": 1, "last month": 30, "last year": 365}
+            actual_time_pd = periods.get(time_period, 0)
 
-        guild = None if guilds else ctx.guild
+            guild = None if guilds else ctx.guild
 
-        records = await self.get_usage(actual_time_pd, command, guild, universal)
+            records = await self.get_usage(actual_time_pd, command, guild, universal)
 
-        ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
-        ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
-        embed = StatsEmbed(color=0x193d2c, title="Commands Leaderboard", description="―――――――――――")
-        if records:
-            embed.add_leaderboard_fields(ldbd_content=records, ldbd_emojis=ldbd_emojis)
-        else:
-            embed.description += "\nNo records found."
+            ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
+            ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
+            embed = StatsEmbed(color=0x193d2c, title="Commands Leaderboard", description="―――――――――――")
+            if records:
+                record_tuples = tuple(
+                    (user if (user := self.bot.get_user(record[0])) else record[0], record[1]) for record in records
+                )
+                embed.add_leaderboard_fields(ldbd_content=record_tuples, ldbd_emojis=ldbd_emojis)
+            else:
+                embed.description += "\nNo records found."
 
-        await ctx.reply(embed=embed)
+            await ctx.reply(embed=embed)
 
     async def get_usage(
             self,
@@ -159,7 +167,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             command: str | None = None,
             guild: discord.Guild | None = None,
             universal: bool = False,
-    ) -> list:
+    ) -> list[Record]:
         """Queries the database for command usage."""
 
         query_args = ()         # Holds the query args as objects.

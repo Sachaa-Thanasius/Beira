@@ -47,7 +47,6 @@ class SkippablePlayer(wavelink.Player):
 
     @property
     def chan_ctx(self) -> MessageableChannel | None:
-        """:class:`discord.abc.MessageableChannel`: The channel with the command that created this player."""
         """:class:`MessageableChannel`: The channel with the command that created this player."""
 
         return self._chan_ctx

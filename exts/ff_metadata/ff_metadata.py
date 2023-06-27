@@ -51,12 +51,13 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         return discord.PartialEmoji(name="\N{BAR CHART}")
 
     async def cog_load(self) -> None:
+        # Log into Ao3.
         loop = self.bot.loop or asyncio.get_event_loop()
         self.ao3_session = await loop.run_in_executor(
             None, AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"],
         )
 
-        # Load a cache of channels to autorespond in.
+        # Load a cache of channels to auto-respond in.
         query = """SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;"""
         records = await self.bot.db_pool.fetch(query)
         for record in records:
@@ -69,8 +70,8 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             error = getattr(error, "original", error)
         LOGGER.exception("", exc_info=error)
 
-    @commands.Cog.listener()
-    async def on_message(self, message: discord.Message) -> None:
+    @commands.Cog.listener("on_message")
+    async def on_posted_fanfic_link(self, message: discord.Message) -> None:
         """Send informational embeds about a story if the user sends a FanFiction.Net link.
 
         Must be triggered in an allowed channel.
@@ -97,7 +98,6 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
                         if match_obj.lastgroup == "FFN":
                             story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
-                            LOGGER.info("FFN info: %s", story_data)
                             embed = await create_atlas_ffn_embed(story_data)
 
                         elif match_obj.lastgroup == "AO3" and message.guild.id != aci100_id:
@@ -105,16 +105,13 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                                 story_data = await self.bot.loop.run_in_executor(
                                     None, AO3.Series, match_obj.group("ao3_id"), self.ao3_session,
                                 )
-                                LOGGER.info("Ao3 series info: %s", story_data)
                                 embed = await create_ao3_series_embed(story_data)
                             elif match_obj.group("type") == "works":
                                 story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
-                                LOGGER.info("Ao3 work info: %s", story_data)
                                 embed = await create_fichub_embed(story_data)
 
                         elif match_obj.lastgroup is not None:
                             story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
-                            LOGGER.info("Other info: %s", story_data)
                             embed = await create_fichub_embed(story_data)
 
                         if embed:
