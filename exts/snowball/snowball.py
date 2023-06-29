@@ -14,8 +14,8 @@ import json
 import logging
 import pathlib
 import random
-from typing import TYPE_CHECKING
 
+import asyncpg
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -23,60 +23,17 @@ from discord.ext import commands
 import core
 from core.utils import StatsEmbed, upsert_guilds, upsert_users
 
-
-from asyncpg import Record
+from .utils import SnowballSettings, SnowballSettingsButtonWrapper, collect_cooldown, steal_cooldown, transfer_cooldown
 
 
 LOGGER = logging.getLogger(__name__)
 
 """Snowball constants"""
-ODDS = 0.67  # Chance of hitting someone with a snowball.
+ODDS = 0.6  # Chance of hitting someone with a snowball.
 LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
 DEFAULT_STOCK_CAP = 100  # Maximum number of snowballs one can hold in their inventory, barring exceptions.
 SPECIAL_STOCK_CAP = 200  # Maximum number of snowballs for self and friends.
 TRANSFER_CAP = 10  # Maximum number of snowballs that can be gifted or stolen.
-
-
-def collect_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
-    """Sets cooldown for SnowballCog.collect() command. 10 seconds by default."""
-
-    rate, per = 1.0, 15.0  # Default cooldown
-    exempt = [ctx.bot.special_friends["aeroali"]]
-
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
-        return None
-
-    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
-        per = 1.0
-    return commands.Cooldown(rate, per)
-
-
-def transfer_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
-    """Sets cooldown for SnowballCog.transfer() command. 60 seconds by default."""
-
-    rate, per = 1.0, 60.0  # Default cooldown
-    exempt = [ctx.bot.special_friends["aeroali"]]
-
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):  # My user id
-        return None
-
-    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
-        per = 2.0
-    return commands.Cooldown(rate, per)
-
-
-def steal_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
-    """Sets cooldown for SnowballCog.steal() command. 90 seconds by default."""
-
-    rate, per = 1.0, 90.0  # Default cooldown
-    exempt = [ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["Athena Hope"]]
-
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
-        return None
-
-    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
-        per = 2.0
-    return commands.Cooldown(rate, per)
 
 
 class SnowballCog(commands.Cog, name="Snowball"):
@@ -152,7 +109,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @snow.command()
     async def settings(self, ctx: core.Context) -> None:
-        """Show what the settings are for the snowballs.
+        """Show what the settings are for the snowballs in this server.
 
         Parameters
         ----------
@@ -160,16 +117,15 @@ class SnowballCog(commands.Cog, name="Snowball"):
             The invocation context.
         """
 
-        query = """SELECT * FROM snowball_settings WHERE guild_id = $1;"""
-        record = await self.bot.db_pool.fetchrow(query, ctx.guild.id)
+        guild_settings = await SnowballSettings.from_database(self.bot.db_pool, ctx.guild.id)
 
-        embed = discord.Embed(
+        kwargs = {}
+        kwargs["embed"] = discord.Embed(
             color=0x5e9a40,
-            title=f"{self.qualified_name} Settings",
-            description="Below are the unchangeable settings for the bot's snowball hit rate, stock maximum, and more."
-                        " The ability to change these on a per-guild basis will be coming soon.",
+            title=f"{self.qualified_name} Settings in {ctx.guild.name}",
+            description="Below are the settings for the bot's snowball hit rate, stock maximum, and more.",
         ).add_field(
-            name=f"Odds = {record['hit_odds']}",
+            name=f"Odds = {guild_settings.hit_odds}",
             value="The odds of landing a snowball on someone.",
             inline=False,
         ).add_field(
@@ -177,20 +133,20 @@ class SnowballCog(commands.Cog, name="Snowball"):
             value="The number of people to show on the leaderboard.",
             inline=False,
         ).add_field(
-            name=f"Default Stock Cap = {record['stock_cap']}",
+            name=f"Default Stock Cap = {guild_settings.stock_cap}",
             value="The maximum number of snowballs the average member can hold at once.",
             inline=False,
         ).add_field(
-            name=f"Special Stock Cap = {2 * record['stock_cap']}",
-            value="The maximum number of snowballs special members can hold at once.",
-            inline=False,
-        ).add_field(
-            name=f"Transfer Cap = {record['transfer_cap']}",
+            name=f"Transfer Cap = {guild_settings.transfer_cap}",
             value="The maximum number of snowballs that can be gifted or stolen at once.",
             inline=False,
         )
+        if await self.bot.is_owner(ctx.author) or core.is_admin().predicate(ctx):
+            kwargs["view"] = SnowballSettingsButtonWrapper(guild_settings)
 
-        await ctx.send(embed=embed)
+        message = await ctx.send(**kwargs)
+        if "view" in kwargs:
+            kwargs["view"].message = message
 
     @snow.command()
     @commands.guild_only()
@@ -354,7 +310,10 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.guild_only()
     @core.is_owner_or_friend()
     @commands.dynamic_cooldown(steal_cooldown, commands.cooldowns.BucketType.user)
-    @app_commands.describe(victim="Who do you want to pilfer some balls from? No more than 10 at a time.")
+    @app_commands.describe(
+        amount="How much do you want to steal? (No more than 10 at a time)",
+        victim="Who do you want to pilfer some balls from?",
+    )
     async def steal(self, ctx: core.Context, amount: int, *, victim: discord.Member) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
@@ -439,7 +398,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             ) as t
             WHERE user_id = $2;
         """
-        record: Record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, target.id)
+        record: asyncpg.Record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
@@ -472,7 +431,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         query = "SELECT rank, hits, misses, kos, stock FROM global_rank_view WHERE user_id = $1;"
-        record: Record = await self.bot.db_pool.fetchrow(query, target.id)
+        record: asyncpg.Record = await self.bot.db_pool.fetchrow(query, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
@@ -628,7 +587,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             snowball_upsert_query, member.id, member.guild.id, hits, misses, kos, stock_insert, stock,
         )
 
-    async def _make_leaderboard_fields(self, embed: StatsEmbed, records: list[Record]) -> None:
+    async def _make_leaderboard_fields(self, embed: StatsEmbed, records: list[asyncpg.Record]) -> None:
         """Edits a leaderboard embed by adding information about its members through fields.
 
         This can handle ranks of either guilds or users, but not a mix of both.
@@ -644,21 +603,16 @@ class SnowballCog(commands.Cog, name="Snowball"):
                               orange_star, blue_star, pink_star, orange_star, blue_star)
 
         # Assemble each entry's data.
-        snow_data = [(await self._get_entity_from_record(row), row['hits'], row['misses'], row['kos']) for row in
-                     records]
+        snow_data = [
+            (await self._get_entity_from_record(row), row['hits'], row['misses'], row['kos']) for row in records
+        ]
 
         # Create the leaderboard.
         embed.add_leaderboard_fields(ldbd_content=snow_data, ldbd_emojis=ldbd_places_emojis, value_format="({}/{}/{})")
 
-    async def _get_entity_from_record(self, record: Record) -> discord.Guild | discord.User | None:
+    async def _get_entity_from_record(self, record: asyncpg.Record) -> discord.Guild | discord.User | None:
         if "guild_id" in record:
             entity = self.bot.get_guild(record["guild_id"])
         else:
             entity = self.bot.get_user(record["user_id"])
         return entity
-
-
-async def setup(bot: core.Beira) -> None:
-    """Connects cog to bot."""
-
-    await bot.add_cog(SnowballCog(bot))

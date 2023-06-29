@@ -42,7 +42,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             session=self.bot.web_client,
         )
         self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_client)
-        self.allowed_channels: dict[int, set[int]] = {}
+        self.allowed_channels_cache: dict[int, set[int]] = {}
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -61,7 +61,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         query = """SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;"""
         records = await self.bot.db_pool.fetch(query)
         for record in records:
-            self.allowed_channels.setdefault(record["guild_id"], set()).add(record["channel_id"])
+            self.allowed_channels_cache.setdefault(record["guild_id"], set()).add(record["channel_id"])
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         # Just log the exception, whatever it is.
@@ -83,8 +83,8 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         # Listen to the allows channels in the allowed guilds.
         if (
                 message.guild and
-                self.allowed_channels.get(message.guild.id) and
-                message.channel.id in self.allowed_channels.get(message.guild.id, set())
+                self.allowed_channels_cache.get(message.guild.id) and
+                message.channel.id in self.allowed_channels_cache.get(message.guild.id, set())
         ):
             aci100_id = self.bot.config["discord"]["guilds"]["prod"][0]
 
@@ -127,7 +127,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         async with ctx.typing():
             embed = discord.Embed(
                 title="Autoresponse Channels for Fanfic Links",
-                description="\n".join(f"<#{channel}>" for channel in self.allowed_channels.get(ctx.guild.id, set())),
+                description="\n".join(
+                    f"<#{channel}>" for channel in self.allowed_channels_cache.get(ctx.guild.id, set())
+                ),
             )
             await ctx.send(embed=embed)
 
@@ -160,7 +162,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 records = await con.fetch(query, ctx.guild.id)
 
             # Update the cache.
-            self.allowed_channels.setdefault(ctx.guild.id, set()).update(record["channel_id"] for record in records)
+            self.allowed_channels_cache.setdefault(ctx.guild.id, set()).update(record["channel_id"] for record in records)
             embed = discord.Embed(
                 title="Adjusted Autoresponse Channels for Fanfic Links",
                 description="\n".join(f"<#{record[0]}>" for record in records),
@@ -191,7 +193,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 records = await con.fetch(query, ctx.guild.id)
 
             # Update the cache.
-            self.allowed_channels.setdefault(ctx.guild.id, set()).intersection_update(
+            self.allowed_channels_cache.setdefault(ctx.guild.id, set()).intersection_update(
                 record["channel_id"] for record in records
             )
             embed = discord.Embed(

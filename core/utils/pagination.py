@@ -211,7 +211,7 @@ class PaginatedEmbedView(ui.View):
 
         await self.update_page(interaction, self.current_page - 1)
 
-    @discord.ui.button(label="📖", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
+    @discord.ui.button(label="🕮", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
     async def enter_page(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Sends a modal that a user to enter their own page number into."""
 

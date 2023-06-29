@@ -1,21 +1,44 @@
-from typing import Any, TypeAlias
+from __future__ import annotations
+
+from typing import TYPE_CHECKING, Any
 
 import wavelink
-from discord.channel import (
-    DMChannel,
-    GroupChannel,
-    PartialMessageable,
-    StageChannel,
-    TextChannel,
-    VoiceChannel,
-)
-from discord.threads import Thread
 
 
-MessageableChannel: TypeAlias = TextChannel | VoiceChannel | StageChannel | Thread | DMChannel | PartialMessageable | GroupChannel
+if TYPE_CHECKING:
+    from discord.abc import MessageableChannel
 
 
-__all__ = ("SkippableQueue", "SkippablePlayer")
+__all__ = ("SoundCloudPlaylist", "SkippableQueue", "SkippablePlayer")
+
+
+class SoundCloudPlaylist(wavelink.Playable, wavelink.Playlist):
+    """Represents a Lavalink SoundCloud playlist object.
+
+    Attributes
+    ----------
+    name : str
+        The name of the playlist.
+    tracks : list[:class:`wavelink.SoundCloudTrack`]
+        The list of :class:`wavelink.SoundCloudTrack` in the playlist.
+    selected_track : :class:`int`, optional
+        The selected track in the playlist. This could be ``None``.
+    """
+
+    def __init__(self, data: dict) -> None:
+        self.tracks: list[wavelink.SoundCloudTrack] = []
+        self.name: str = data["playlistInfo"]["name"]
+
+        self.selected_track: int | None = data["playlistInfo"].get("selectedTrack")
+        if self.selected_track is not None:
+            self.selected_track = int(self.selected_track)
+
+        for track_data in data["tracks"]:
+            track = wavelink.SoundCloudTrack(track_data)
+            self.tracks.append(track)
+
+    def __str__(self) -> str:
+        return self.name
 
 
 class SkippableQueue(wavelink.Queue):
@@ -38,6 +61,7 @@ class SkippablePlayer(wavelink.Player):
     ----------
     queue : :class:`SkippableQueue`
         A version of :class:`wavelink.Queue` that can be skipped into.
+    chan_ctx
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:

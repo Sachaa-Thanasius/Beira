@@ -17,9 +17,9 @@ from wavelink.ext import spotify
 
 import core
 from core.utils import PaginatedEmbed, PaginatedEmbedView
-from core.wave import SkippablePlayer
+from core.wave import SkippablePlayer, SoundCloudPlaylist
 
-from .utils import SoundCloudPlaylist, WavelinkSearchConverter, format_track_embed
+from .utils import WavelinkSearchConverter, format_track_embed
 
 
 LOGGER = logging.getLogger(__name__)

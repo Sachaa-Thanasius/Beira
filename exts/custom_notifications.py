@@ -42,9 +42,10 @@ class CustomNotificationsCog(commands.Cog):
         self.aci_guild_id: int = self.bot.config["discord"]["guilds"]["prod"][0]
         self.aci_webhk_url: str = self.bot.config["discord"]["webhooks"][0]
         self.aci_delete_channel = 975459460560605204  # 799077440139034654 # Actual
-        self.aci_levelled_roles: list[int] = [694616299476877382, 694615984438509636, 694615108323639377,
-                                              694615102237835324, 747520979735019572]
-        self.aci_mod_role: int = 780904973004570654    # [940801230001815552, 767264911453585408] # Mine and Athena's roles
+        self.aci_levelled_roles: list[int] = [
+            694616299476877382, 694615984438509636, 694615108323639377, 694615102237835324, 747520979735019572
+        ]
+        self.aci_mod_role: int = 780904973004570654
 
     @commands.Cog.listener("on_member_update")
     async def on_levelled_role_member_update(self, before: discord.Member, after: discord.Member) -> None:
@@ -64,7 +65,11 @@ class CustomNotificationsCog(commands.Cog):
             new_leveled_roles = [
                 role for role in after.roles if (role not in before.roles) and (role.id in self.aci_levelled_roles)
             ]
-            if new_leveled_roles:
+            # Ensure the user didn't just rejoin either.
+            # - Technically, at 8 points every two minutes, it's possible to hit RC in 20h 50m, so 21 hours will be the
+            #   limit.
+            recently_rejoined = (after.joined_at - discord.utils.utcnow()).total_seconds() < (60 * 60 * 21)
+            if new_leveled_roles and not recently_rejoined:
                 # Send a message notifying holders of some other role(s) about this new role acquisition.
                 role_names = [role.name for role in new_leveled_roles]
                 content = f"<@&{self.aci_mod_role}>, {after.mention} was given the `{role_names}` role(s)."

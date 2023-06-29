@@ -16,6 +16,7 @@ from wavelink import Playable, Playlist
 from wavelink.ext import spotify
 
 from core import UnusableSpotifyLink
+from core.wave import SoundCloudPlaylist
 
 
 if TYPE_CHECKING:
@@ -23,7 +24,7 @@ if TYPE_CHECKING:
     from core.wave import SkippablePlayer
 
 
-__all__ = ("format_track_embed", "SoundCloudPlaylist", "WavelinkSearchConverter")
+__all__ = ("format_track_embed", "WavelinkSearchConverter")
 
 
 async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
@@ -50,35 +51,6 @@ async def format_track_embed(embed: discord.Embed, track: Playable | spotify.Spo
         embed.set_thumbnail(url=(track.thumbnail or await track.fetch_thumbnail()))
 
     return embed
-
-
-class SoundCloudPlaylist(Playable, Playlist):
-    """Represents a Lavalink SoundCloud playlist object.
-
-    Attributes
-    ----------
-    name: str
-        The name of the playlist.
-    tracks: list[:class:`wavelink.SoundCloudTrack`]
-        The list of :class:`wavelink.SoundCloudTrack` in the playlist.
-    selected_track: :class:`int`, optional
-        The selected track in the playlist. This could be ``None``.
-    """
-
-    def __init__(self, data: dict) -> None:
-        self.tracks: list[wavelink.SoundCloudTrack] = []
-        self.name: str = data["playlistInfo"]["name"]
-
-        self.selected_track: int | None = data["playlistInfo"].get("selectedTrack")
-        if self.selected_track is not None:
-            self.selected_track = int(self.selected_track)
-
-        for track_data in data["tracks"]:
-            track = wavelink.SoundCloudTrack(track_data)
-            self.tracks.append(track)
-
-    def __str__(self) -> str:
-        return self.name
 
 
 class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
