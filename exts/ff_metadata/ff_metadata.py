@@ -101,17 +101,16 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                             embed = await create_atlas_ffn_embed(story_data)
 
                         elif match_obj.lastgroup == "AO3" and message.guild.id != aci100_id:
-                            if match_obj.group("type") == "series":
-                                story_data = await self.bot.loop.run_in_executor(
-                                    None, AO3.Series, match_obj.group("ao3_id"), self.ao3_session,
-                                )
-                                embed = await create_ao3_series_embed(story_data)
-                            elif match_obj.group("type") == "works":
-                                story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
+                            story_data = await self.search_ao3(match_obj.group(0))
+                            if isinstance(story_data, fichub_api.Story):
                                 embed = await create_fichub_embed(story_data)
+                            elif isinstance(story_data, AO3.Work):
+                                embed = await create_ao3_work_embed(story_data)
+                            elif isinstance(story_data, AO3.Series):
+                                embed = await create_ao3_series_embed(story_data)
 
                         elif match_obj.lastgroup is not None:
-                            story_data = await self.fichub_client.get_story_metadata(match_obj.group(0))
+                            story_data = await self.search_other(match_obj.group(0))
                             embed = await create_fichub_embed(story_data)
 
                         if embed:

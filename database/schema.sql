@@ -94,11 +94,13 @@ CREATE TABLE IF NOT EXISTS patreon_creators (
     PRIMARY KEY (creator_name, tier_name)
 );
 
+
 CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
     guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
     channel_id  BIGINT  NOT NULL,
     PRIMARY KEY (guild_id, channel_id)
 );
+
 
 CREATE TABLE IF NOT EXISTS snowball_settings (
     guild_id            BIGINT  PRIMARY KEY     REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,

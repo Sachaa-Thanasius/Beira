@@ -16,10 +16,45 @@ from discord.ext import commands
 
 import core
 
-from .ai_generation import get_image
+from .ai_generation.utils import get_image
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+class GuildStickerFlags(commands.FlagConverter):
+    """Command parameter flags for a sticker's payload.
+
+    Attributes
+    ----------
+    name : :class:`str`, optional
+        The name of the sticker. Must be at least 2 characters.
+    description : :class:`str`, optional
+        The description for the sticker.
+    emoji : :class:`str`, optional
+        The name of a unicode emoji that represents the sticker's expression.
+    attachment : :class:`discord.Attachment`, optional
+        An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work.
+    reason : :class:`str`, optional
+        The reason for the sticker's existence to put in the audit log. Not needed usually.
+    """
+
+    name: str | None = commands.flag(description="The name of the sticker. Must be at least 2 characters.")
+    description: str | None = commands.flag(
+        default="Added with Beira command.",
+        description="The description for the sticker."
+    )
+    emoji: str | None = commands.flag(
+        default="\N{NINJA}",
+        description="The name of a unicode emoji that represents the sticker's expression."
+    )
+    attachment: discord.Attachment | None = commands.flag(
+        description="An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work."
+    )
+    reason: str | None = commands.flag(
+        default="Added with Beira command.",
+        description="The reason for the sticker's existence to put in the audit log. Not needed usually."
+    )
 
 
 class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
@@ -249,62 +284,52 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send(embed=embed, ephemeral=True)
 
     @sticker.command("add")
+    @commands.has_guild_permissions(manage_emojis_and_stickers=True)    # Check if one of these is redundant.
+    @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
     async def sticker_add(
             self,
             ctx: core.Context,
             sticker: str | None = None,
-            name: str | None = None,
-            description: str | None = None,
-            emoji: str | None = None,
-            attachment: discord.Attachment | None = None,
-            reason: str | None = None,
+            *,
+            sticker_flags: GuildStickerFlags
     ) -> None:
         """Add a sticker to the server, assuming you have the permissions to do that.
 
         Parameters
         ----------
+
         ctx : :class:`core.Context`
             The invocation context.
         sticker : :class:`discord.GuildSticker`, optional
             The name or id of an existing sticker to steal. If filled, no other parameters are necessary.
-        name : :class:`str`, optional
-            The name of the sticker. Must be at least 2 characters.
-        description : :class:`str`, optional
-            The description for the sticker.
-        emoji : :class:`str`, optional
-            The name of a unicode emoji that represents the sticker's expression.
-        attachment : :class:`discord.Attachment`, optional
-            An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work.
-        reason : :class:`str`, optional
-            The reason for the sticker's existence to put in the audit log. Not necessary in most circumstances.
+        sticker_flags : :class:`GuildStickerFlags`
+            Flags for a sticker's payload.
         """
 
-        sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
-
         if sticker:
-            file = await sticker.to_file()
+            sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
+
             new_sticker = await ctx.guild.create_sticker(
                 name=sticker.name,
                 description=sticker.description,
                 emoji=sticker.emoji,
-                file=file,
-                reason=reason,
+                file=await sticker.to_file(),
+                reason=sticker_flags.reason,
             )
         else:
-            if None in (name, attachment):
+            if None in (sticker_flags.name, sticker_flags.attachment):
                 await ctx.send("You're missing an element! The name and attachment are required at the very least.")
                 return
 
-            file = await attachment.to_file()
             new_sticker = await ctx.guild.create_sticker(
-                name=name,
-                description=description or name,
-                emoji=emoji or "\N{NINJA}",
-                file=file,
-                reason=reason or "Added with Beira.",
+                name=sticker_flags.name,
+                description=sticker_flags.description,
+                emoji=sticker_flags.emoji,
+                file=await sticker_flags.attachment.to_file(),
+                reason=sticker_flags.reason
             )
 
-        await ctx.send(f"Sticker successfully added: `{name}`.", stickers=[new_sticker])
+        await ctx.send(f"Sticker successfully added: `{new_sticker.name}`.", stickers=[new_sticker])
 
     @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
     async def context_menu_sticker_add(self, interaction: core.Interaction, message: discord.Message) -> None:

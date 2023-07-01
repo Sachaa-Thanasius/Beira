@@ -1,5 +1,6 @@
 """
 bot_stats.py: A cog for tracking different bot metrics.
+TODO: Fix commands not being logged properly in DMs.
 """
 
 from __future__ import annotations
@@ -46,7 +47,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """Stores records of command uses in the database after some processing."""
 
         # Make sure all possible involved users and guilds are in the database before using their ids as foreign keys.
-        user_info, guild_info = [ctx.author], [ctx.guild]
+        user_info = [ctx.author]
+        guild_info = [ctx.guild] if ctx.guild else None
 
         for arg in (ctx.args + list(ctx.kwargs.values())):
             if isinstance(arg, discord.User | discord.Member):
@@ -61,7 +63,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         # Assemble the record to upsert.
         cmd = (
-            ctx.guild.id,
+            (ctx.guild.id if ctx.guild else 0),
             ctx.channel.id,
             ctx.author.id,
             utcnow(),

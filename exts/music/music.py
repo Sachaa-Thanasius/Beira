@@ -6,7 +6,6 @@ with Wavelink.
 from __future__ import annotations
 
 import logging
-from copy import deepcopy
 from typing import Literal
 
 import discord
@@ -16,38 +15,12 @@ from discord.ext import commands
 from wavelink.ext import spotify
 
 import core
-from core.utils import PaginatedEmbed, PaginatedEmbedView
-from core.wave import SkippablePlayer, SoundCloudPlaylist
+from core.wave import SkippablePlayer
 
-from .utils import WavelinkSearchConverter, format_track_embed
+from .utils import MusicQueueView, WavelinkSearchConverter, format_track_embed, generate_tracks_add_notification
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-class MusicQueueView(PaginatedEmbedView):
-    """A paginated view for seeing the tracks in an embed-based music queue."""
-
-    def format_page(self) -> discord.Embed:
-        embed_page = PaginatedEmbed(color=0x149cdf, title="Music Queue")
-
-        if self.total_pages == 0:
-            embed_page.set_page_footer(0, 0).description = "The queue is empty."
-
-        elif self.page_cache[self.current_page - 1] is None:
-            # Expected page size of 10
-            self.current_page_content = self.pages[self.current_page - 1]
-            embed_page.description = "\n".join((
-                f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song
-                in enumerate(self.current_page_content)),
-            )
-            embed_page.set_page_footer(self.current_page, self.total_pages)
-
-            self.page_cache[self.current_page - 1] = embed_page
-        else:
-            return deepcopy(self.page_cache[self.current_page - 1])
-
-        return embed_page
 
 
 class MusicCog(commands.Cog, name="Music"):
@@ -131,45 +104,19 @@ class MusicCog(commands.Cog, name="Music"):
         vc: SkippablePlayer | None = ctx.voice_client
 
         if vc is not None and ctx.author.voice is not None:
-            await vc.move_to(ctx.channel)
-            await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
+            if vc.channel != ctx.author.voice.channel:
+                if ctx.author.guild_permissions.administrator:
+                    await vc.move_to(ctx.channel)
+                    await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
+                else:
+                    await ctx.send("Voice player is currently being used in another channel.")
+            else:
+                await ctx.send("Voice player already connected to this voice channel.")
         elif ctx.author.voice is None:
             await ctx.send("Please join a voice channel and try again.")
         else:
             await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
-
-    @staticmethod
-    async def _add_tracks_to_queue(
-            vc: SkippablePlayer,
-            tracks: wavelink.Playable | spotify.SpotifyTrack | list[wavelink.Playable | spotify.SpotifyTrack] | wavelink.Playlist,
-            requester: discord.Member,
-    ) -> str:
-        """Adds tracks to a queue even if they are contained in another object or structure.
-
-        Also, it returns the appropriate notification string.
-        """
-
-        if (
-                (isinstance(tracks, list) and len(tracks) > 1) or
-                isinstance(tracks, wavelink.YouTubePlaylist | SoundCloudPlaylist)
-        ):
-            all_tracks = tracks if isinstance(tracks, list) else tracks.tracks
-            for track in all_tracks:
-                track.requester = requester
-
-            vc.queue.extend(all_tracks)
-            notif_text = f"Added `{len(all_tracks)}` tracks to the queue."
-        elif isinstance(tracks, list):
-            tracks[0].requester = requester
-            await vc.queue.put_wait(tracks[0])
-            notif_text = f"Added `{tracks[0].title}` to the queue."
-        else:
-            tracks.requester = requester
-            await vc.queue.put_wait(tracks)
-            notif_text = f"Added `{tracks.title}` to the queue."
-
-        return notif_text
 
     @music.command()
     async def play(self, ctx: core.Context, *, search: str) -> None:
@@ -188,8 +135,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         async with ctx.typing():
             tracks = await WavelinkSearchConverter().convert(ctx, search)
-            text = await self._add_tracks_to_queue(vc, tracks, ctx.author)
-            await ctx.send(text)
+            await vc.queue.put_all_wait(tracks, ctx.author.mention)
+            notif_text = generate_tracks_add_notification(tracks)
+            await ctx.send(notif_text)
 
             if not vc.is_playing():
                 first_track = vc.queue.get()
@@ -348,7 +296,7 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send("Please enter a valid queue index.")
         else:
             if index > 1:
-                vc.queue.remove_before_index(index - 1)     # TODO: Test this.
+                vc.queue.remove_before_index(index - 1)
             vc.queue.loop = False
             await vc.stop()
             await ctx.send(f"Skipped to the song at position {index}")

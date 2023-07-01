@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING
 
 from .ff_metadata import FFMetadataCog
-from .utils import *
 
 
 if TYPE_CHECKING:

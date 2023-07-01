@@ -108,6 +108,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """A group of snowball-related commands."""
 
     @snow.command()
+    @commands.guild_only()
     async def settings(self, ctx: core.Context) -> None:
         """Show what the settings are for the snowballs in this server.
 
@@ -567,7 +568,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         stock_insert = stock
 
-        # Upsert the relevant users and guilds to the database before adding a snowball record..
+        # Upsert the relevant users and guilds to the database before adding a snowball record.
         await upsert_users(self.bot.db_pool, member)
         await upsert_guilds(self.bot.db_pool, member.guild)
 

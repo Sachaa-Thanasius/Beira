@@ -4,6 +4,7 @@ utils.py: A bunch of utility functions and classes for Wavelink.
 
 from __future__ import annotations
 
+from copy import deepcopy
 from typing import TYPE_CHECKING
 
 import discord
@@ -12,45 +13,42 @@ import yarl
 from discord import app_commands
 from discord.ext import commands
 from discord.utils import escape_markdown
-from wavelink import Playable, Playlist
+from wavelink import Playable
 from wavelink.ext import spotify
 
-from core import UnusableSpotifyLink
-from core.wave import SoundCloudPlaylist
+from core.utils import PaginatedEmbed, PaginatedEmbedView
 
 
 if TYPE_CHECKING:
     from core import Context, Interaction
-    from core.wave import SkippablePlayer
 
 
-__all__ = ("format_track_embed", "WavelinkSearchConverter")
+__all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
 
 
-async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
-    """Modify an embed to show information about a Wavelink track."""
+class MusicQueueView(PaginatedEmbedView):
+    """A paginated view for seeing the tracks in an embed-based music queue."""
 
-    duration = track.duration // 1000
-    if duration > 3600:
-        end_time = f"{duration // 3600}:{(duration % 3600) // 60:02}:{duration % 60:02}"
-    else:
-        end_time = "{}:{:02}".format(*divmod(duration, 60))
+    def format_page(self) -> discord.Embed:
+        embed_page = PaginatedEmbed(color=0x149cdf, title="Music Queue")
 
-    embed.description = f"[{escape_markdown(track.title)}]({track.uri})\n"
-    if isinstance(track, Playable):
-        embed.description += f"{escape_markdown(track.author)}\n"
-    elif isinstance(track, spotify.SpotifyTrack):
-        embed.description += f"{escape_markdown(', '.join(track.artists))}\n"
+        if self.total_pages == 0:
+            embed_page.set_page_footer(0, 0).description = "The queue is empty."
 
-    embed.description += f"`[0:00-{end_time}]`"
+        elif self.page_cache[self.current_page - 1] is None:
+            # Expected page size of 10
+            self.current_page_content = self.pages[self.current_page - 1]
+            embed_page.description = "\n".join((
+                f"{(i + 1) + (self.current_page - 1) * 10}. {song}" for i, song
+                in enumerate(self.current_page_content)),
+            )
+            embed_page.set_page_footer(self.current_page, self.total_pages)
 
-    if requester := getattr(track, "requester", None):
-        embed.description += f"\n\nRequested by: {requester.mention}"
+            self.page_cache[self.current_page - 1] = embed_page
+        else:
+            return deepcopy(self.page_cache[self.current_page - 1])
 
-    if isinstance(track, wavelink.YouTubeTrack):
-        embed.set_thumbnail(url=(track.thumbnail or await track.fetch_thumbnail()))
-
-    return embed
+        return embed_page
 
 
 class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
@@ -87,36 +85,31 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
     @staticmethod
     async def _convert(
-            vc: SkippablePlayer | None,
             argument: str,
-    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
+    ) -> Playable | list[Playable | spotify.SpotifyTrack]:
+
         check = yarl.URL(argument)
-        if (check.host in ("youtube.com", "www.youtube.com") and "v" in check.query) or check.scheme == "ytsearch:":
-            tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeTrack, query=argument)
+
+        if (
+                not check.host or
+                (check.host in ("youtube.com", "www.youtube.com") and "v" in check.query) or
+                check.scheme == "ytsearch:"
+        ):
+            tracks = await wavelink.YouTubeTrack.search(argument)
+            if not isinstance(tracks, wavelink.YouTubePlaylist):
+                tracks = tracks[0]
         elif (check.host in ("youtube.com", "www.youtube.com") and "list" in check.query) or check.scheme == "ytpl:":
-            tracks = await vc.current_node.get_playlist(cls=wavelink.YouTubePlaylist, query=argument)
+            tracks = await wavelink.YouTubePlaylist.search(argument)
         elif check.host == "music.youtube.com" or check.scheme == "ytmsearch:":
-            tracks = await vc.current_node.get_tracks(cls=wavelink.YouTubeMusicTrack, query=argument)
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.path:
-            tracks = await vc.current_node.get_playlist(cls=SoundCloudPlaylist, query=argument)
+            tracks = (await wavelink.YouTubeMusicTrack.search(argument))[0]
+        elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.parts:
+            tracks = await wavelink.SoundCloudPlaylist.search(argument)
         elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch:":
-            tracks = await vc.current_node.get_tracks(cls=wavelink.SoundCloudTrack, query=argument)
+            tracks = (await wavelink.SoundCloudTrack.search(argument))[0]
         elif check.host in ("spotify.com", "open.spotify.com"):
-            decoded = spotify.decode_url(argument)
-            if not decoded or decoded["type"] is spotify.SpotifySearchType.unusable:
-                raise UnusableSpotifyLink(argument)
-            if decoded["type"] in (spotify.SpotifySearchType.playlist, spotify.SpotifySearchType.album):
-                tracks = [
-                    track async for track in
-                    spotify.SpotifyTrack.iterator(query=argument, type=decoded["type"], node=vc.current_node)
-                ]
-            else:
-                tracks = await spotify.SpotifyTrack.search(argument, type=decoded["type"], node=vc.current_node)
+            tracks = await spotify.SpotifyTrack.search(argument)
         else:
-            try:
-                tracks = await vc.current_node.get_tracks(cls=wavelink.GenericTrack, query=argument)
-            except ValueError:
-                tracks = await wavelink.YouTubeTrack.search(argument, node=vc.current_node)
+            tracks = await wavelink.GenericTrack.search(argument)
 
         if not tracks:
             msg = f"Your search query {argument} returned no tracks."
@@ -124,19 +117,60 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
         return tracks
 
+    async def convert(
+            self,
+            ctx: Context,
+            argument: str,
+    ) -> Playable | list[Playable | spotify.SpotifyTrack]:
+        return await self._convert(argument)
+
     async def transform(
             self,
             interaction: Interaction,
             value: str,
             /,
-    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        vc: SkippablePlayer | None = interaction.guild.voice_client
-        return await self._convert(vc, value)
+    ) -> Playable | list[Playable | spotify.SpotifyTrack]:
+        return await self._convert(value)
 
-    async def convert(
-            self,
-            ctx: Context,
-            argument: str,
-    ) -> Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack] | Playlist:
-        vc: SkippablePlayer | None = ctx.voice_client
-        return await self._convert(vc, argument)
+
+async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
+    """Modify an embed to show information about a Wavelink track."""
+
+    duration = track.duration // 1000
+    if duration > 3600:
+        end_time = f"{duration // 3600}:{(duration % 3600) // 60:02}:{duration % 60:02}"
+    else:
+        end_time = "{}:{:02}".format(*divmod(duration, 60))
+
+    embed.description = f"[{escape_markdown(track.title)}]({track.uri})\n"
+    if isinstance(track, Playable):
+        embed.description += f"{escape_markdown(track.author)}\n"
+    elif isinstance(track, spotify.SpotifyTrack):
+        embed.description += f"{escape_markdown(', '.join(track.artists))}\n"
+
+    embed.description += f"`[0:00-{end_time}]`"
+
+    if requester := getattr(track, "requester", None):
+        embed.description += f"\n\nRequested by: {requester}"
+
+    if isinstance(track, wavelink.YouTubeTrack):
+        thumbnail = await track.fetch_thumbnail()
+        embed.set_thumbnail(url=thumbnail)
+
+    return embed
+
+
+def generate_tracks_add_notification(tracks: Playable | list[Playable | spotify.SpotifyTrack]) -> str:
+    """Adds tracks to a queue even if they are contained in another object or structure.
+
+    Also, it returns the appropriate notification string.
+    """
+
+    if isinstance(tracks, wavelink.YouTubePlaylist | wavelink.SoundCloudPlaylist):
+        return f"Added {len(tracks.tracks)} tracks from the `{tracks.name}` playlist to the queue."
+    if isinstance(tracks, list) and len(tracks) > 1:
+        return f"Added `{len(tracks)}` tracks to the queue"
+    if isinstance(tracks, list):
+        return f"Added `{tracks[0].title}` to the queue."
+
+    return f"Added `{tracks.title}` to the queue."

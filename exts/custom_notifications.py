@@ -68,7 +68,7 @@ class CustomNotificationsCog(commands.Cog):
             # Ensure the user didn't just rejoin either.
             # - Technically, at 8 points every two minutes, it's possible to hit RC in 20h 50m, so 21 hours will be the
             #   limit.
-            recently_rejoined = (after.joined_at - discord.utils.utcnow()).total_seconds() < (60 * 60 * 21)
+            recently_rejoined = (discord.utils.utcnow() - after.joined_at).total_seconds() < (60 * 60 * 21)
             if new_leveled_roles and not recently_rejoined:
                 # Send a message notifying holders of some other role(s) about this new role acquisition.
                 role_names = [role.name for role in new_leveled_roles]
