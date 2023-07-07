@@ -97,6 +97,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def music(self, ctx: core.Context) -> None:
         """Music-related commands."""
 
+        await ctx.send_help(ctx.command)
+
     @music.command()
     async def connect(self, ctx: core.Context) -> None:
         """Join a voice channel."""

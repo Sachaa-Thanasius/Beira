@@ -43,6 +43,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         )
         self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_client)
         self.allowed_channels_cache: dict[int, set[int]] = {}
+        self.aci100_id: int = self.bot.config["discord"]["guilds"]["prod"][0]
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -72,49 +73,59 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     @commands.Cog.listener("on_message")
     async def on_posted_fanfic_link(self, message: discord.Message) -> None:
-        """Send informational embeds about a story if the user sends a FanFiction.Net link.
+        """Send informational embeds about a story if the user sends a fanfiction link.
 
         Must be triggered in an allowed channel.
         """
 
-        if message.author == self.bot.user:
+        if (message.author == self.bot.user) or (not message.guild):
             return
+
+        # Listen to the allowed channels in the allowed guilds for valid fanfic links.
+        if (
+                (channels_cache := self.allowed_channels_cache.get(message.guild.id, set())) and
+                (message.channel.id in channels_cache) and
+                re.search(STORY_WEBSITE_REGEX, message.content)
+        ):
+            # Only show typing indicator on valid messages.
+            async with message.channel.typing():
+                # Send an embed for every valid link.
+                for match_obj in re.finditer(STORY_WEBSITE_REGEX, message.content):
+                    embed: discord.Embed | None = None
+
+                    if match_obj.lastgroup == "FFN":
+                        story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
+                        embed = await create_atlas_ffn_embed(story_data)
+
+                    elif match_obj.lastgroup == "AO3" and (message.guild.id != self.aci100_id):
+                        story_data = await self.search_ao3(match_obj.group(0))
+                        if isinstance(story_data, fichub_api.Story):
+                            embed = await create_fichub_embed(story_data)
+                        elif isinstance(story_data, AO3.Work):
+                            embed = await create_ao3_work_embed(story_data)
+                        elif isinstance(story_data, AO3.Series):
+                            embed = await create_ao3_series_embed(story_data)
+
+                    elif match_obj.lastgroup and (match_obj.lastgroup != "AO3"):
+                        story_data = await self.search_other(match_obj.group(0))
+                        embed = await create_fichub_embed(story_data)
+
+                    if embed:
+                        await message.channel.send(embed=embed)
+
+    @commands.Cog.listener("on_message")
+    async def on_fanficfinder_nothing_found_message(self, message: discord.Message) -> None:
+
+        fanficfinder_id = 779772534040166450
 
         # Listen to the allows channels in the allowed guilds.
         if (
                 message.guild and
-                self.allowed_channels_cache.get(message.guild.id) and
-                message.channel.id in self.allowed_channels_cache.get(message.guild.id, set())
+                (message.guild.id == self.aci100_id) and
+                (message.author.id == fanficfinder_id) and
+                "fanfiction not found" in message.embeds[0].description.lower()
         ):
-            aci100_id = self.bot.config["discord"]["guilds"]["prod"][0]
-
-            # Make sure the message has a valid FFN or Ao3 link.
-            if re.search(STORY_WEBSITE_REGEX, message.content):
-                # Only show typing indicator on valid messages.
-                async with message.channel.typing():
-                    # Send an embed for every valid link.
-                    for match_obj in re.finditer(STORY_WEBSITE_REGEX, message.content):
-                        embed: discord.Embed | None = None
-
-                        if match_obj.lastgroup == "FFN":
-                            story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
-                            embed = await create_atlas_ffn_embed(story_data)
-
-                        elif match_obj.lastgroup == "AO3" and message.guild.id != aci100_id:
-                            story_data = await self.search_ao3(match_obj.group(0))
-                            if isinstance(story_data, fichub_api.Story):
-                                embed = await create_fichub_embed(story_data)
-                            elif isinstance(story_data, AO3.Work):
-                                embed = await create_ao3_work_embed(story_data)
-                            elif isinstance(story_data, AO3.Series):
-                                embed = await create_ao3_series_embed(story_data)
-
-                        elif match_obj.lastgroup is not None:
-                            story_data = await self.search_other(match_obj.group(0))
-                            embed = await create_fichub_embed(story_data)
-
-                        if embed:
-                            await message.channel.send(embed=embed)
+            await message.delete()
 
     @commands.hybrid_group(fallback="get")
     async def autoresponse(self, ctx: core.Context) -> None:
@@ -149,8 +160,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         command = """
             INSERT INTO fanfic_autoresponse_settings (guild_id, channel_id)
             VALUES ($1, $2)
-            ON CONFLICT (guild_id, channel_id) DO NOTHING
-            RETURNING channel_id;
+            ON CONFLICT (guild_id, channel_id) DO NOTHING;
         """
         query = """SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"""
 
@@ -161,7 +171,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 records = await con.fetch(query, ctx.guild.id)
 
             # Update the cache.
-            self.allowed_channels_cache.setdefault(ctx.guild.id, set()).update(record["channel_id"] for record in records)
+            self.allowed_channels_cache.setdefault(ctx.guild.id, set()).update(record[0] for record in records)
             embed = discord.Embed(
                 title="Adjusted Autoresponse Channels for Fanfic Links",
                 description="\n".join(f"<#{record[0]}>" for record in records),
@@ -261,22 +271,43 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         if match := re.match(StoryWebsiteStore["AO3"].story_regex, name_or_url):
             if match.group("type") == "series":
                 series_id = match.group("id")
-                story = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
+                story_data = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
             else:
-                url = match.group(0)
-                story = await self.fichub_client.get_story_metadata(url)
+                try:
+                    url = match.group(0)
+                    story_data = await self.fichub_client.get_story_metadata(url)
+                except Exception as err:
+                    msg = "Retrieval with Fichub client failed. Trying Armindo Flores's AO3 library now."
+                    LOGGER.warning(msg, exc_info=err)
+                    try:
+                        work_id = match.group("id")
+                        story_data = await self.bot.loop.run_in_executor(None, AO3.Work, work_id, True, False)
+                    except Exception as err:
+                        msg = "Retrieval with Fichub client and AO3 library failed. Returning None."
+                        LOGGER.warning(msg, exc_info=err)
+                        story_data = None
         else:
             search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
             await self.bot.loop.run_in_executor(None, search.update)
-            story = search.results[0] if len(search.results) > 0 else None
+            story_data = search.results[0] if len(search.results) > 0 else None
 
-        return story
+        return story_data
 
     async def search_ffn(self, name_or_url: str) -> atlas_api.FFNStory | None:
         """More generically search FFN for works based on a partial title or full url."""
 
         if fic_id := atlas_api.extract_fic_id(name_or_url):
-            story_data = await self.atlas_client.get_story_metadata(fic_id)
+            try:
+                story_data = await self.atlas_client.get_story_metadata(fic_id)
+            except atlas_api.AtlasException as err:
+                msg = "Retrieval with Atlas client failed. Trying FicHub now."
+                LOGGER.warning(msg, exc_info=err)
+                try:
+                    story_data = await self.fichub_client.get_story_metadata(name_or_url)
+                except Exception as err:
+                    msg = "Retrieval with Atlas and Fichub clients failed. Returning None."
+                    LOGGER.warning(msg, exc_info=err)
+                    story_data = None
         else:
             results = await self.atlas_client.get_bulk_metadata(title_ilike=f"%{name_or_url}%", limit=1)
             story_data = results[0] if results else None

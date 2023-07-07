@@ -48,9 +48,7 @@ async def upsert_users(db_pool: Pool | Connection,
     """
 
     # Format the users as minimal tuples.
-    values = [
-        (user.id, False) if isinstance(user, discord.User | discord.Member | discord.Object) else user for user in users
-    ]
+    values = [(user.id, False) if not isinstance(user, tuple) else user for user in users]
     await db_pool.executemany(upsert_query, values, timeout=60.0)
 
 
@@ -74,5 +72,5 @@ async def upsert_guilds(db_pool: Pool | Connection, *guilds: discord.Guild | dis
     """
 
     # Format the guilds as minimal tuples.
-    values = [(guild.id, False) if isinstance(guild, discord.Guild | discord.Object) else guild for guild in guilds]
+    values = [(guild.id, False) if not isinstance(guild, tuple) else guild for guild in guilds]
     await db_pool.executemany(upsert_query, values, timeout=60.0)

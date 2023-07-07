@@ -7,6 +7,7 @@ Work in progress to make the view portion functional for M J Bradley.
 from __future__ import annotations
 
 import logging
+import textwrap
 from copy import deepcopy
 from typing import TYPE_CHECKING, Any
 from urllib.parse import urljoin
@@ -47,7 +48,7 @@ class PatreonTierSelectView(discord.ui.View):
         options = []
         for i, tier in enumerate(self.tiers):
             label = f"{tier['tier_name']} - ${tier['tier_value']}" if i != 0 else tier["tier_name"]
-            descr = tier["tier_info"][:97] + "..."
+            descr = textwrap.shorten(tier["tier_info"], 100, placeholder="...")
             options.append(discord.SelectOption(label=label, value=str(i), description=descr, emoji=tier["tier_emoji"]))
 
         return options

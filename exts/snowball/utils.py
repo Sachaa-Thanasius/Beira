@@ -50,7 +50,7 @@ def transfer_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
     rate, per = 1.0, 60.0  # Default cooldown
     exempt = [ctx.bot.special_friends["aeroali"]]
 
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):  # My user id
+    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
         return None
 
     if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
@@ -96,8 +96,8 @@ class SnowballSettings(NamedTuple):
     transfer_cap: int = 10
 
     @classmethod
-    async def from_database(cls: type[Self], conn: asyncpg.Pool | asyncpg.Connection, guild_id: int) -> type[Self]:
-        """Get a record from the snowball settings table."""
+    async def from_database(cls: type[Self], conn: asyncpg.Pool | asyncpg.Connection, guild_id: int) -> Self:
+        """Query a snowball settings database record for a guild."""
 
         query = """SELECT * FROM snowball_settings WHERE guild_id = $1;"""
         record = await conn.fetchrow(query, guild_id)
@@ -106,7 +106,7 @@ class SnowballSettings(NamedTuple):
         return cls(guild_id)
 
     async def update_record(self, conn: asyncpg.Pool | asyncpg.Connection) -> None:
-        """Upsert the data from this structure into the snowball settings database."""
+        """Upsert these snowball settings into the database."""
 
         query = """
             INSERT INTO snowball_settings (guild_id, hit_odds, stock_cap, transfer_cap)
@@ -143,6 +143,9 @@ class SnowballSettingsModal(ui.Modal):
     """
 
     def __init__(self, default_settings: SnowballSettings) -> None:
+        super().__init__(title="This Guild's Snowball Settings")
+
+        # Create the items.
         self.hit_odds_input = ui.TextInput(
             label="The chance of hitting a person (0.0–1.0)",
             placeholder=f"Current: {default_settings.hit_odds:.2}",
@@ -161,10 +164,12 @@ class SnowballSettingsModal(ui.Modal):
             default=str(default_settings.transfer_cap),
             required=False,
         )
-        super().__init__(title="This Guild's Snowball Settings")
-        self.add_item(self.hit_odds_input)
-        self.add_item(self.stock_cap_input)
-        self.add_item(self.transfer_cap_input)
+
+        # Add the items.
+        for item in (self.hit_odds_input, self.stock_cap_input, self.transfer_cap_input):
+            self.add_item(item)
+
+        # Save the settings.
         self.default_settings: SnowballSettings = default_settings
         self.new_settings: SnowballSettings | None = None
 
@@ -173,27 +178,30 @@ class SnowballSettingsModal(ui.Modal):
 
         guild_id = self.default_settings.guild_id
 
-        # Get the new settings values and verify that they can be the right types.
+        # Get the new settings values and verify that they are be the right types.
         new_odds_val = self.default_settings.hit_odds
-        if self.hit_odds_input.value:
-            try:
-                new_odds_val = float(self.hit_odds_input.value)
-            except ValueError:
-                pass
+        try:
+            temp = float(self.hit_odds_input.value)
+            if 0.0 <= temp <= 1.0:
+                new_odds_val = temp
+        except ValueError:
+            pass
 
         new_stock_val = self.default_settings.stock_cap
-        if self.stock_cap_input.value:
-            try:
-                new_stock_val = int(self.stock_cap_input.value)
-            except ValueError:
-                pass
+        try:
+            temp = int(self.stock_cap_input.value)
+            if temp >= 0:
+                new_stock_val = temp
+        except ValueError:
+            pass
 
         new_transfer_val = self.default_settings.transfer_cap
-        if self.transfer_cap_input.value:
-            try:
-                new_transfer_val = int(self.transfer_cap_input.value)
-            except ValueError:
-                pass
+        try:
+            temp = int(self.transfer_cap_input.value)
+            if temp >= 0:
+                new_transfer_val = temp
+        except ValueError:
+            pass
 
         # Update the record in the database if there's been a change.
         self.new_settings = SnowballSettings(guild_id, new_odds_val, new_stock_val, new_transfer_val)
@@ -241,8 +249,10 @@ class SnowballSettingsButtonWrapper(ui.View):
             await interaction.response.send_message("You can't change that unless you're a guild admin.")
         return check
 
-    @ui.button(label="Change", emoji="⚙")
+    @ui.button(label="Update", emoji="⚙")
     async def change_settings_button(self, interaction: core.Interaction, _: ui.Button) -> None:
+        """Send a modal that allows the user to edit the snowball settings for this guild."""
+
         # Get inputs from a modal.
         modal = SnowballSettingsModal(self.settings)
         await interaction.response.send_modal(modal)    # type: ignore
@@ -255,21 +265,22 @@ class SnowballSettingsButtonWrapper(ui.View):
         self.settings = modal.new_settings
 
         # Edit the embed with the settings information.
+        # Note: Dependent on embed layout.
         info_embed = self.message.embeds[0]
         info_embed.set_field_at(
             0,
             name=f"Odds = {self.settings.hit_odds}",
             value=info_embed.fields[0].value,
-            inline=info_embed.fields[0].inline
+            inline=info_embed.fields[0].inline,
         ).set_field_at(
             2,
             name=f"Default Stock Cap = {self.settings.stock_cap}",
             value=info_embed.fields[2].value,
-            inline=info_embed.fields[2].inline
+            inline=info_embed.fields[2].inline,
         ).set_field_at(
             3,
             name=f"Transfer Cap = {self.settings.transfer_cap}",
             value=info_embed.fields[3].value,
-            inline=info_embed.fields[3].inline
+            inline=info_embed.fields[3].inline,
         )
         await interaction.edit_original_response(embed=info_embed)

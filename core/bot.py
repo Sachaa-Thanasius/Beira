@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 """
 bot.py: The main bot initializer and starter.
 """
@@ -6,6 +5,7 @@ bot.py: The main bot initializer and starter.
 from __future__ import annotations
 
 import logging
+import time
 from typing import Any
 
 import aiohttp
@@ -105,8 +105,10 @@ class Beira(commands.Bot):
         exts_to_load = self.initial_extensions or EXTENSIONS
         for extension in exts_to_load:
             try:
+                start_time = time.perf_counter()
                 await self.load_extension(extension)
-                LOGGER.info(f"Loaded extension: {extension}")
+                end_time = time.perf_counter()
+                LOGGER.info(f"Loaded extension: {extension} -- Time: {end_time - start_time:.5}")
             except discord.ext.commands.ExtensionError as err:
                 LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
@@ -166,7 +168,10 @@ class Beira(commands.Bot):
         return self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
 
     async def get_context(
-            self, origin: discord.Message | discord.Interaction, /,
+            self,
+            origin: discord.Message | discord.Interaction,
+            /,
+            *,
             cls: type[commands.Context[commands.Bot]] | None = None,
     ) -> Context:
         return await super().get_context(origin, cls=Context)

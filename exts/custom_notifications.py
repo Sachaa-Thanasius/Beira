@@ -43,7 +43,7 @@ class CustomNotificationsCog(commands.Cog):
         self.aci_webhk_url: str = self.bot.config["discord"]["webhooks"][0]
         self.aci_delete_channel = 975459460560605204  # 799077440139034654 # Actual
         self.aci_levelled_roles: list[int] = [
-            694616299476877382, 694615984438509636, 694615108323639377, 694615102237835324, 747520979735019572
+            694616299476877382, 694615984438509636, 694615108323639377, 694615102237835324, 747520979735019572,
         ]
         self.aci_mod_role: int = 780904973004570654
 

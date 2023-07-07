@@ -106,6 +106,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     async def openai(self, ctx: core.Context) -> None:
         """A group of commands using OpenAI's API. Includes morphing, image generation, and text generation."""
 
+        await ctx.send_help(ctx.command)
+
     @openai.command(name="pigeonify")
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     async def morph_athena(self, ctx: core.Context, target: discord.User | None = None) -> None:

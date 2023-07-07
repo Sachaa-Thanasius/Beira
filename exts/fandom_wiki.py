@@ -8,6 +8,7 @@ from __future__ import annotations
 import json
 import logging
 import pathlib
+import textwrap
 from typing import Any
 from urllib.parse import quote, urljoin
 
@@ -228,9 +229,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         summary, thumbnail = await self._process_fandom_page(wiki_page_link)
 
         if summary:
-            if len(summary) > 4096:
-                summary = summary[:4093] + "..."
-            final_embed.description = summary
+            final_embed.description = textwrap.shorten(summary, 4096, placeholder="...")
 
         if thumbnail:
             final_embed.set_thumbnail(url=thumbnail)

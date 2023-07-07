@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import random
 import re
+import textwrap
 from bisect import bisect_left
 from copy import deepcopy
 from pathlib import Path
@@ -27,7 +28,6 @@ from core.utils import EMOJI_URL, PaginatedEmbed, PaginatedEmbedView
 
 if TYPE_CHECKING:
     from typing_extensions import Self
-
 
 LOGGER = logging.getLogger(__name__)
 
@@ -216,10 +216,12 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                     if re.search(re_chap_title, line):
                         temp_chap_index.append(index)
 
-                    elif re.search(re_coll_title, line):
-                        if (len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]):
-                            temp_coll_index.append(index)
-            
+                    elif (
+                            re.search(re_coll_title, line) and
+                            ((len(temp_coll_index) == 0) or (line != temp_text[temp_coll_index[-1]]))
+                    ):
+                        temp_coll_index.append(index)
+
         LOGGER.info(f"Loaded file: {filepath.stem}")
 
     @classmethod
@@ -246,8 +248,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                 quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
 
                 # Fit the paragraphs in the space of a Discord embed field.
-                if len(quote) > 1024:
-                    quote = quote[0:1020] + "..."
+                quote = textwrap.shorten(quote, 1024, placeholder="...")
 
                 # Get the "collection" and "chapter" text lines using binary search.
                 quote_collection = cls._binary_search_text(story, cls.story_records[story].collection_index, index)

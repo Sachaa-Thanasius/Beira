@@ -38,7 +38,7 @@ class SkippableQueue(wavelink.Queue):
     async def put_all_wait(
             self,
             item: Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack],
-            requester: str | None = None
+            requester: str | None = None,
     ) -> None:
         """Put anything in the queue, so long as it's "playable", and optionally indicate who queued it.
 

@@ -28,31 +28,6 @@ CREATE TABLE IF NOT EXISTS guild_prefixes (
 );
 
 
-CREATE TABLE IF NOT EXISTS snowball_stats (
-    user_id     BIGINT  NOT NULL,
-    guild_id    BIGINT  NOT NULL,
-    hits        INT     NOT NULL                    DEFAULT 0           CHECK(hits >= 0),
-    misses      INT     NOT NULL                    DEFAULT 0           CHECK(misses >= 0),
-    kos         INT     NOT NULL                    DEFAULT 0           CHECK(kos >= 0),
-    stock       INT     NOT NULL                    DEFAULT 0           CHECK(stock >= 0 AND stock <= 100),
-    FOREIGN KEY (guild_id, user_id) REFERENCES members(guild_id, user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    PRIMARY KEY(user_id, guild_id)
-);
-
-CREATE VIEW global_rank_view AS
-SELECT      user_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
-            DENSE_RANK() over (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, user_id DESC) AS rank
-FROM        snowball_stats
-GROUP BY    user_id
-ORDER BY    rank;
-
-CREATE VIEW guilds_only_rank_view AS
-SELECT      guild_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
-            DENSE_RANK() OVER (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, guild_id DESC) AS guild_rank
-FROM        snowball_stats
-GROUP BY    guild_id;
-
-
 CREATE TABLE IF NOT EXISTS commands (
     id              SERIAL                      PRIMARY KEY,
     guild_id        BIGINT                      REFERENCES guilds(guild_id)   ON DELETE CASCADE,
@@ -102,9 +77,48 @@ CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
 );
 
 
+CREATE TABLE IF NOT EXISTS snowball_stats (
+    user_id     BIGINT  NOT NULL,
+    guild_id    BIGINT  NOT NULL,
+    hits        INT     NOT NULL                    DEFAULT 0           CHECK(hits >= 0),
+    misses      INT     NOT NULL                    DEFAULT 0           CHECK(misses >= 0),
+    kos         INT     NOT NULL                    DEFAULT 0           CHECK(kos >= 0),
+    stock       INT     NOT NULL                    DEFAULT 0           CHECK(stock >= 0 AND stock <= 100),
+    FOREIGN KEY (guild_id, user_id) REFERENCES members(guild_id, user_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    PRIMARY KEY(user_id, guild_id)
+);
+
+CREATE VIEW global_rank_view AS
+SELECT      user_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
+            DENSE_RANK() over (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, user_id DESC) AS rank
+FROM        snowball_stats
+GROUP BY    user_id
+ORDER BY    rank;
+
+CREATE VIEW guilds_only_rank_view AS
+SELECT      guild_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
+            DENSE_RANK() OVER (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, guild_id DESC) AS guild_rank
+FROM        snowball_stats
+GROUP BY    guild_id;
+
+
 CREATE TABLE IF NOT EXISTS snowball_settings (
     guild_id            BIGINT  PRIMARY KEY     REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
     hit_odds            REAL    NOT NULL        DEFAULT 0.6         CHECK (hit_odds >= 0.0 and hit_odds <= 1.0),
     stock_cap           INT     NOT NULL        DEFAULT 100,
     transfer_cap        INT     NOT NULL        DEFAULT 10
 );
+
+
+CREATE TABLE IF NOT EXISTS todos (
+    todo_id             SERIAL                      PRIMARY KEY,
+    user_id             BIGINT                      REFERENCES users(user_id),
+    todo_content        TEXT                        NOT NULL,
+    todo_created_at     TIMESTAMP WITH TIME ZONE    DEFAULT (NOW() AT TIME ZONE 'utc'),
+    todo_due_date       TIMESTAMP WITH TIME ZONE,
+    todo_completed_at   TIMESTAMP WITH TIME ZONE
+);
+
+CREATE INDEX IF NOT EXISTS todos_user_id_idx on todos(user_id);
+CREATE INDEX IF NOT EXISTS todos_completed_at_idx on todos(todo_completed_at);
+CREATE INDEX IF NOT EXISTS todos_due_date_idx on todos(todo_due_date);

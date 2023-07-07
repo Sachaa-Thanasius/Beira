@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import re
+import textwrap
 from typing import Any
 
 import AO3
@@ -96,9 +97,9 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     # Format the relevant information.
     updated = work.date_updated.strftime('%B %d, %Y') + (" (Complete)" if work.complete else "")
     author_names = ", ".join(str(author.username) for author in work.authors)
-    fandoms = (", ".join(work.fandoms[:3]) + "...") if len(work.fandoms) > 3 else ", ".join(work.fandoms)
-    categories = (", ".join(work.categories[:3]) + "...") if len(work.categories) > 3 else ", ".join(work.categories)
-    characters = (", ".join(work.characters[:3]) + "...") if len(work.characters) > 3 else ", ".join(work.characters)
+    fandoms = textwrap.shorten(", ".join(work.fandoms), 100, placeholder="...")
+    categories = textwrap.shorten(", ".join(work.categories), 100, placeholder="...")
+    characters = textwrap.shorten(", ".join(work.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
     stats = " • ".join((f"**Comments:** {work.comments:,d}", f"**Kudos:** {work.kudos:,d}", f"**Bookmarks:** {work.bookmarks:,d}", f"**Hits:** {work.hits:,d}"))
 
@@ -114,10 +115,7 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    if len(work.summary) > (6000 - len(ao3_embed)):
-        ao3_embed.description = work.summary[:(6000 - len(ao3_embed) - 4)] + "..."
-    else:
-        ao3_embed.description = work.summary
+    ao3_embed.description = textwrap.shorten(work.summary, 6000 - len(ao3_embed), placeholder="...")
     return ao3_embed
 
 
@@ -145,10 +143,8 @@ async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    if len(series.description) > (6000 - len(ao3_embed)):
-        ao3_embed.description = series.description[:(6000 - len(ao3_embed) - 5)] + "...\n\n" + ao3_embed.description
-    else:
-        ao3_embed.description = series.description + "\n\n" + ao3_embed.description
+    series_descr = textwrap.shorten(series.description, 6000 - len(ao3_embed), placeholder="...\n\n")
+    ao3_embed.description = series_descr + ao3_embed.description
     return ao3_embed
 
 
@@ -161,9 +157,9 @@ async def create_atlas_ffn_embed(story: atlas_api.FFNStory) -> DTEmbed:
     # Format the relevant information.
     update_date = story.updated if story.updated else story.published
     updated = update_date.strftime("%B %d, %Y") + (" (Complete)" if story.is_complete else "")
-    fandoms = (", ".join(story.fandoms[:3]) + "...") if len(story.fandoms) > 3 else ", ".join(story.fandoms)
-    genres = ("/".join(story.genres[:3]) + "...") if len(story.genres) > 3 else "/".join(story.genres)
-    characters = (", ".join(story.characters[:3]) + "...") if len(story.characters) > 3 else ", ".join(story.characters)
+    fandoms = textwrap.shorten(", ".join(story.fandoms), 100, placeholder="...")
+    genres = textwrap.shorten("/".join(story.genres), 100, placeholder="...")
+    characters = textwrap.shorten(", ".join(story.characters), 100, placeholder="...")
     details = " • ".join((fandoms, genres, characters))
     stats = f"**Reviews:** {story.reviews:,d} • **Faves:** {story.favorites:,d} • **Follows:** {story.follows:,d}"
 
@@ -179,10 +175,7 @@ async def create_atlas_ffn_embed(story: atlas_api.FFNStory) -> DTEmbed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    if (6000 - len(ffn_embed)) < len(story.description):
-        ffn_embed.description = story.description[:(6000 - len(ffn_embed) - 4)] + "..."
-    else:
-        ffn_embed.description = story.description
+    ffn_embed.description = textwrap.shorten(story.description, 6000 - len(ffn_embed), placeholder="...")
     return ffn_embed
 
 
@@ -194,10 +187,10 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
     # Format the relevant information.
     updated = story.updated.strftime("%B %d, %Y")
-    fandoms = (", ".join(story.fandoms[:3]) + "...") if len(story.fandoms) > 3 else ", ".join(story.fandoms)
+    fandoms = textwrap.shorten(", ".join(story.fandoms), 100, placeholder="...")
     categories_list = story.more_meta.get("category", [])
-    categories = (", ".join(categories_list[:3]) + "...") if len(categories_list) > 3 else ", ".join(categories_list)
-    characters = (", ".join(story.characters[:3]) + "...") if len(story.characters) > 3 else ", ".join(story.characters)
+    categories = textwrap.shorten(", ".join(categories_list), 100, placeholder="...")
+    characters = textwrap.shorten(", ".join(story.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
 
     # Get site-specific information, since FicHub works for multiple websites.
@@ -226,10 +219,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    if (6000 - len(story_embed)) < len(story.description):
-        story_embed.description = story.description[:(6000 - len(story_embed) - 4)] + "..."
-    else:
-        story_embed.description = story.description
+    story_embed.description = textwrap.shorten(story.description, 6000 - len(story_embed), placeholder="...")
     return story_embed
 
 
@@ -265,15 +255,11 @@ class Ao3SeriesView(discord.ui.View):
         self.choice = 0
 
         # Load the options in the dropdown.
-        descr = series.description
-        if len(descr) > 100:
-            descr = descr[:97] + "..."
+        descr = textwrap.shorten(series.description, 100, placeholder="...")
         self.works_dropdown.add_option(label=series.name, value=0, description=descr, emoji="\N{BOOKS}")
 
         for i, work in enumerate(series.work_list, start=1):
-            descr = work.summary
-            if len(descr) > 100:
-                descr = descr[:97] + "..."
+            descr = textwrap.shorten(work.summary, 100, placeholder="...")
             self.works_dropdown.add_option(
                 label=f"{i}. {work.title}", value=i, description=descr, emoji="\N{OPEN BOOK}",
             )

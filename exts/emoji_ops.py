@@ -42,22 +42,22 @@ class GuildStickerFlags(commands.FlagConverter):
     name: str | None = commands.flag(description="The name of the sticker. Must be at least 2 characters.")
     description: str | None = commands.flag(
         default="Added with Beira command.",
-        description="The description for the sticker."
+        description="The description for the sticker.",
     )
     emoji: str | None = commands.flag(
         default="\N{NINJA}",
-        description="The name of a unicode emoji that represents the sticker's expression."
+        description="The name of a unicode emoji that represents the sticker's expression.",
     )
     attachment: discord.Attachment | None = commands.flag(
-        description="An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work."
+        description="An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work.",
     )
     reason: str | None = commands.flag(
         default="Added with Beira command.",
-        description="The reason for the sticker's existence to put in the audit log. Not needed usually."
+        description="The reason for the sticker's existence to put in the audit log. Not needed usually.",
     )
 
 
-class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
+class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     """A cog with commands for performing actions with emojis and stickers."""
 
     def __init__(self, bot: core.Beira) -> None:
@@ -266,19 +266,31 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             The id or name of the sticker to provide information about.
         """
 
-        sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
+        try:
+            conv_sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
+        except commands.GuildStickerNotFound:
+            try:
+                conv_sticker = await self.bot.fetch_sticker(int(sticker))
+            except (ValueError, HTTPException, NotFound):
+                embed = discord.Embed(title="Error", description="That is not a valid sticker name or ID, sorry!")
+                await ctx.send(embed=embed)
+                return
 
         try:
-            guild = sticker.guild or await self.bot.fetch_guild(sticker.guild_id)
+            guild = conv_sticker.guild or await self.bot.fetch_guild(conv_sticker.guild_id)
         except (discord.Forbidden, discord.HTTPException):
             guild = None
 
         embed = (
             discord.Embed(color=0xffcc4d, title="Sticker Information")
-            .add_field(name=f"`{sticker.name} — {sticker.id}`", value=(sticker.description or ""), inline=False)
-            .add_field(name="Emoji", value=sticker.emoji)
-            .add_field(name="Guild Source", value=guild.name if guild else sticker.guild_id)
-            .set_image(url=sticker.url)
+            .add_field(
+                name=f"`{conv_sticker.name} — {conv_sticker.id}`",
+                value=(conv_sticker.description or ""),
+                inline=False,
+            )
+            .add_field(name="Emoji", value=conv_sticker.emoji)
+            .add_field(name="Guild Source", value=guild.name if guild else conv_sticker.guild_id)
+            .set_image(url=conv_sticker.url)
         )
 
         await ctx.send(embed=embed, ephemeral=True)
@@ -291,7 +303,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
             ctx: core.Context,
             sticker: str | None = None,
             *,
-            sticker_flags: GuildStickerFlags
+            sticker_flags: GuildStickerFlags,
     ) -> None:
         """Add a sticker to the server, assuming you have the permissions to do that.
 
@@ -326,7 +338,7 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
                 description=sticker_flags.description,
                 emoji=sticker_flags.emoji,
                 file=await sticker_flags.attachment.to_file(),
-                reason=sticker_flags.reason
+                reason=sticker_flags.reason,
             )
 
         await ctx.send(f"Sticker successfully added: `{new_sticker.name}`.", stickers=[new_sticker])
@@ -366,4 +378,4 @@ class EmojiOperationsCog(commands.Cog, name="Emoji Operations"):
 async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
-    await bot.add_cog(EmojiOperationsCog(bot))
+    await bot.add_cog(EmojiOpsCog(bot))
