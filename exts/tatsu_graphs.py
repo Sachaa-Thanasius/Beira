@@ -32,6 +32,12 @@ class TatsuCog(commands.Cog, name="Tatsu"):
         self.bot = bot
         self.tatsu_client = tatsu.Client(self.API_KEY)
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
+        return discord.PartialEmoji(name="tatsu", id=1127359299954430062)
+
     async def cog_unload(self) -> None:
         await self.tatsu_client.close()
 

@@ -47,6 +47,12 @@ class CustomNotificationsCog(commands.Cog):
         ]
         self.aci_mod_role: int = 780904973004570654
 
+    @property
+    def cog_emoji(self) -> discord.PartialEmoji:
+        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+
+        return discord.PartialEmoji(name="\N{EAR}")
+
     @commands.Cog.listener("on_member_update")
     async def on_levelled_role_member_update(self, before: discord.Member, after: discord.Member) -> None:
         """Listener that sends a notification if members of the ACI100 server earn certain roles.

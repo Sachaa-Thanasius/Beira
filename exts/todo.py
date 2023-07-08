@@ -280,7 +280,7 @@ class TodoView(ui.View):
             *args: Any,
             author: discord.User | discord.Member,
             todo_record: TodoRecord,
-            **kwargs: Any
+            **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.message: discord.Message | None = None
@@ -350,7 +350,7 @@ class TodoListView(PaginatedEmbedView):
         self.current_page_content = self.todo_record = kwargs["all_pages_content"][0]
         self.remove_item(self.enter_page)
         self.add_item(TodoCompleteButton(
-            self.todo_record["todo_completed_at"], row=1, custom_id="todo_view:complete_button"
+            self.todo_record["todo_completed_at"], row=1, custom_id="todo_view:complete_button",
         ))
         self.add_item(TodoEditButton(row=1, custom_id="todo_view:edit_button"))
         self.add_item(TodoDeleteButton(row=1, custom_id="todo_view:delete_button"))
