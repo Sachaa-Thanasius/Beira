@@ -93,12 +93,13 @@ class PaginatedEmbedView(ui.View):
 
     def __init__(
             self,
-            *,
+            *args: Any,
             author: discord.User | discord.Member,
             all_pages_content: list[Any],
             per_page: int = 1,
+            **kwargs: Any,
     ) -> None:
-        super().__init__(timeout=60.0)
+        super().__init__(*args, **kwargs)
         self.message = None
         self.author = author
 

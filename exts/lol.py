@@ -13,7 +13,7 @@ from urllib.parse import quote, urljoin
 
 import discord
 from arsenic import browsers, errors, get_session, services
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup  # TODO: Look into switching to lxml.
 from discord.ext import commands
 
 import core
@@ -123,6 +123,8 @@ class LoLCog(commands.Cog, name="League of Legends"):
     @commands.hybrid_group()
     async def lol(self, ctx: core.Context) -> None:
         """A group of League of Legends-related commands."""
+
+        await ctx.send_help(ctx.command)
 
     @lol.command("stats")
     async def lol_stats(self, ctx: core.Context, summoner_name: str) -> None:

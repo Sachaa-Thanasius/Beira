@@ -1,7 +1,7 @@
 """
 pin_archive.py: A cog that allows pins to overflow into a text channel.
 
-Currently, nothing more than a stub.
+TODO: Implement beyond a stub.
 """
 
 from __future__ import annotations

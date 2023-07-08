@@ -49,7 +49,7 @@ class SkippableQueue(wavelink.Queue):
         item : :class:`Playable` | :class:`spotify.SpotifyTrack` | list[:class:`Playable` | :class:`spotify.SpotifyTrack`]
             The track or collection of tracks to add to the queue.
         requester : :class:`str`, optional
-            The user who queued this up. Not necessary.
+            A string representing the user who queued this up. Optional.
         """
 
         if not isinstance(item, list):

@@ -92,13 +92,16 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
         if (
                 not check.host or
-                (check.host in ("youtube.com", "www.youtube.com") and "v" in check.query) or
+                (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "v" in check.query) or
                 check.scheme == "ytsearch:"
         ):
             tracks = await wavelink.YouTubeTrack.search(argument)
             if not isinstance(tracks, wavelink.YouTubePlaylist):
                 tracks = tracks[0]
-        elif (check.host in ("youtube.com", "www.youtube.com") and "list" in check.query) or check.scheme == "ytpl:":
+        elif (
+                (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "list" in check.query) or
+                check.scheme == "ytpl:"
+        ):
             tracks = await wavelink.YouTubePlaylist.search(argument)
         elif check.host == "music.youtube.com" or check.scheme == "ytmsearch:":
             tracks = (await wavelink.YouTubeMusicTrack.search(argument))[0]
@@ -117,11 +120,7 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
         return tracks
 
-    async def convert(
-            self,
-            ctx: Context,
-            argument: str,
-    ) -> Playable | list[Playable | spotify.SpotifyTrack]:
+    async def convert(self, ctx: Context, argument: str) -> Playable | list[Playable | spotify.SpotifyTrack]:
         return await self._convert(argument)
 
     async def transform(
@@ -142,11 +141,11 @@ async def format_track_embed(embed: discord.Embed, track: Playable | spotify.Spo
     else:
         end_time = "{}:{:02}".format(*divmod(duration, 60))
 
-    embed.description = f"[{escape_markdown(track.title)}]({track.uri})\n"
+    embed.description = f"[{escape_markdown(track.title, as_needed=True)}]({track.uri})\n"
     if isinstance(track, Playable):
-        embed.description += f"{escape_markdown(track.author)}\n"
+        embed.description += f"{escape_markdown(track.author, as_needed=True)}\n"
     elif isinstance(track, spotify.SpotifyTrack):
-        embed.description += f"{escape_markdown(', '.join(track.artists))}\n"
+        embed.description += f"{escape_markdown(', '.join(track.artists), as_needed=True)}\n"
 
     embed.description += f"`[0:00-{end_time}]`"
 

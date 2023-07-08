@@ -236,7 +236,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         return final_embed
 
-    async def _process_fandom_page(self, url: str) -> (str, str):
+    async def _process_fandom_page(self, url: str) -> tuple[str, str | None]:
         """Extract the summary and image from a Fandom page."""
 
         async with self.bot.web_client.get(url) as response:

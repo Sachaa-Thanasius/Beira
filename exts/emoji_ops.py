@@ -146,6 +146,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     async def emoji_(self, ctx: core.Context) -> None:
         """A group of emoji-related commands, like identifying emojis and adding them to a server."""
 
+        await ctx.send_help(ctx.command)
+
     @emoji_.command("info")
     async def emoji_info(self, ctx: core.Context, entity: str) -> None:
         """Identify a particular emoji and see information about it.
@@ -253,6 +255,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     @commands.hybrid_group()
     async def sticker(self, ctx: core.Context) -> None:
         """A group of sticker-related commands, like adding them to a server."""
+
+        await ctx.send_help(ctx.command)
 
     @sticker.command("info")
     async def sticker_info(self, ctx: core.Context, sticker: str) -> None:

@@ -1,6 +1,8 @@
 """
 snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
 
+TODO: Implement checking of stock caps and whatnot based on guild.
+
 References
 ----------
 Rules and code inspiration.
@@ -107,6 +109,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def snow(self, ctx: core.Context) -> None:
         """A group of snowball-related commands."""
 
+        await ctx.send(ctx.command)
+
     @snow.command()
     @commands.guild_only()
     async def settings(self, ctx: core.Context) -> None:
@@ -124,7 +128,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         kwargs["embed"] = discord.Embed(
             color=0x5e9a40,
             title=f"{self.qualified_name} Settings in {ctx.guild.name}",
-            description="Below are the settings for the bot's snowball hit rate, stock maximum, and more.",
+            description="Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings can "
+                        "be added on a per-guild basis, but currently don't have any effect. Fix coming soon.",
         ).add_field(
             name=f"Odds = {guild_settings.hit_odds}",
             value="The odds of landing a snowball on someone.",
