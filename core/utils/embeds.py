@@ -4,6 +4,7 @@ embeds.py: This class provides embeds for user-specific statistics separated int
 
 from __future__ import annotations
 
+import itertools
 import logging
 from collections.abc import Callable, Sequence
 from datetime import datetime, timezone
@@ -175,8 +176,7 @@ class StatsEmbed(DTEmbed):
             emoji_header_status: bool = False,
             **kwargs: Any,
     ) -> None:
-        input_color = kwargs.get("colour") if kwargs.get("colour") else kwargs.get("color")
-        colour = input_color if input_color else 0x2f3136
+        colour = kwargs.pop("colour", kwargs.pop("color", 0x2f3136))
         super().__init__(colour=colour, **kwargs)
 
         if stat_names or stat_emojis or stat_values:
@@ -216,14 +216,20 @@ class StatsEmbed(DTEmbed):
             Whether the emojis should adorn the names or the values of each field.
         """
 
-        # Make sure there are at least as many emojis as there are name entries, even if they are empty strings.
-        stat_emojis = self.lengthen_emoji_list(stat_names, stat_emojis)
+        # Make sure there is at least one "emoji" in the list, even if it's just an empty string.
+        if not stat_emojis:
+            stat_emojis = [""]
 
         # Add the stat fields.
-        for name, emoji, value in zip(stat_names, stat_emojis, stat_values, strict=False):
-            # Potentially change the emoji placement.
-            fmt_name = f"{emoji} | {name}" if emoji_header_status else f"{emoji} **|** {value}"
-            self.add_field(name=f"{fmt_name}", value=f"{value}", inline=inline)
+        # - The emojis will be cycled over.
+        for name, emoji, value in zip(stat_names, itertools.cycle(stat_emojis), stat_values, strict=False):
+            field_name, field_value = str(name), str(value)
+            if emoji_header_status:
+                field_name = f"{emoji} | {field_name}"
+            else:
+                field_value = f"{emoji} **|** {field_value}"
+
+            self.add_field(name=field_name, value=field_value, inline=inline)
 
         return self
 
@@ -258,15 +264,17 @@ class StatsEmbed(DTEmbed):
             Whether the stats should be ranked in descending order.
         """
 
-        # Make sure there are at least as many emojis as there are content entries, even if they are empty strings.
-        ldbd_emojis = self.lengthen_emoji_list(ldbd_content, ldbd_emojis)
+        # Make sure there's at least one "emoji" in the list, even if it's just an empty string.
+        if not ldbd_emojis:
+            ldbd_emojis = [""]
 
         # Add the leaderboard fields.
-        for rank, (content, emoji) in enumerate(zip(ldbd_content, ldbd_emojis, strict=False)):
+        # - The emojis will be cycled over.
+        for rank, (content, emoji) in enumerate(zip(ldbd_content, itertools.cycle(ldbd_emojis), strict=False)):
             if ranked:
-                name = f"{emoji!s} {rank + 1} " + name_format.format(str(content[0]))
+                name = f"{emoji} {rank + 1} " + name_format.format(str(content[0]))
             else:
-                name = f"{emoji!s} " + name_format.format(str(content[0]))
+                name = f"{emoji} " + name_format.format(str(content[0]))
 
             self.add_field(name=name, value=value_format.format(*content[1:]), inline=inline)
 
@@ -294,30 +302,3 @@ class StatsEmbed(DTEmbed):
             pass
 
         return self
-
-    @staticmethod
-    def lengthen_emoji_list(baseline_list: Sequence[Any], emojis: Sequence[Emoji | str]) -> Sequence[Emoji | str]:
-        """Makes sure there are at least as many emojis in the emoji list as there are in the baseline list.
-
-        Fills out part of the emoji list with repetitions of previous elements if need be.
-
-        Parameters
-        ----------
-        baseline_list : Sequence[Any]
-            The list to compare the emojis list against in terms of length.
-        emojis : Sequence[:class:`Emoji` | :class:`str`]
-            The list of emojis or string substitutes.
-
-        Returns
-        -------
-        emojis : Sequence[:class:`Emoji` | :class:`str`]
-            The modified list of emojis, if it needed modifying. Otherwise, the original emojis list.
-        """
-
-        if 0 < len(emojis) < len(baseline_list):
-            emojis = [emojis[i % len(emojis)] for i in range(len(baseline_list))]
-
-        elif len(emojis) == 0:
-            emojis = ["" for _ in baseline_list]
-
-        return emojis
