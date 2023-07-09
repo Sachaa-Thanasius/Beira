@@ -120,5 +120,5 @@ CREATE TABLE IF NOT EXISTS todos (
 );
 
 CREATE INDEX IF NOT EXISTS todos_user_id_idx on todos(user_id);
-CREATE INDEX IF NOT EXISTS todos_completed_at_idx on todos(todo_completed_at);
 CREATE INDEX IF NOT EXISTS todos_due_date_idx on todos(todo_due_date);
+CREATE INDEX IF NOT EXISTS todos_completed_at_idx on todos(todo_completed_at);

@@ -5,7 +5,6 @@ db.py: Utility functions for interacting with the database.
 from __future__ import annotations
 
 import json
-import logging
 from typing import TYPE_CHECKING
 
 import discord
@@ -18,24 +17,20 @@ if TYPE_CHECKING:
 __all__ = ("pool_init", "upsert_users", "upsert_guilds")
 
 
-LOGGER = logging.getLogger(__name__)
-
-
 async def pool_init(connection: Connection) -> None:
     """Sets up codecs for Postgres connection."""
 
     await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
-async def upsert_users(db_pool: Pool | Connection,
-                       *users: discord.User | discord.Member | discord.Object | tuple) -> None:
+async def upsert_users(db_pool: Pool | Connection, *users: discord.abc.User | discord.Object | tuple) -> None:
     """Upsert a Discord user in the appropriate database table.
 
     Parameters
     ----------
     db_pool : :class:`asyncpg.Pool`
         The connection pool used to interact to the database.
-    users : tuple[:class:`discord.User` | :class:`discord.Member` | :class:`discord.Object` | tuple]
+    users : tuple[:class:`discord.abc.User` | :class:`discord.Object` | tuple]
         One or more users, members, discord objects, or tuples of user ids and blocked statuses, to use for upsertion.
     """
 

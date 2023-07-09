@@ -30,7 +30,7 @@ def field_range_tracking(func: Callable) -> Callable:
     Used primarily for the :class:`StatEmbed`, which has dedicated fields matching variables in here.
     """
 
-    def decorator(self, *args: Any, **kwargs: Any):
+    def decorator(self: Any, *args: Any, **kwargs: Any) -> Any:
 
         # Store the starting index of the stat fields.
         self.clear_stat_fields()
