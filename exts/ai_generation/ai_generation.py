@@ -52,7 +52,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         return discord.PartialEmoji(name="\N{ROBOT FACE}")
 
     async def cog_load(self) -> None:
-        openai.aiosession.set(self.bot.web_client)
+        openai.aiosession.set(self.bot.web_session)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """Handles any errors within this cog."""
@@ -96,7 +96,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             file_size = avatar_image.size
 
         ai_url = await create_image(prompt, file_size)
-        ai_bytes = await get_image(self.bot.web_client, ai_url)
+        ai_bytes = await get_image(self.bot.web_session, ai_url)
         ai_buffer = await self.bot.loop.run_in_executor(None, process_image, ai_bytes)
         gif_buffer = await create_morph(avatar_buffer, ai_buffer)
 
@@ -215,7 +215,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             if generation_type == "image":
                 log_start_time = perf_counter()
                 ai_url = await create_image(prompt, (512, 512))
-                ai_bytes = await get_image(ctx.web_client, ai_url)
+                ai_bytes = await get_image(ctx.session, ai_url)
                 ai_buffer = await self.bot.loop.run_in_executor(None, process_image, ai_bytes)
                 creation_time = perf_counter() - log_start_time
 
@@ -256,7 +256,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """Generate a random inspirational poster with InspiroBot."""
 
         async with ctx.typing():
-            image_url = await create_inspiration(ctx.web_client)
+            image_url = await create_inspiration(ctx.session)
             embed = (
                 discord.Embed(color=0xe04206)
                 .set_image(url=image_url)

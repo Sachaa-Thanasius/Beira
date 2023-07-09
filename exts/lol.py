@@ -234,7 +234,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         url = urljoin(self.req_site, adjusted_name)
 
         try:
-            async with self.bot.web_client.get(url, headers=self.req_headers) as response:
+            async with self.bot.web_session.get(url, headers=self.req_headers) as response:
                 text = await response.text()
 
             # Parse the summoner information for winrate and tier (referred to later as rank).

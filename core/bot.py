@@ -33,7 +33,7 @@ class Beira(commands.Bot):
         Variable length argument list, primarily for :class:`commands.Bot`.
     db_pool : :class:`asyncpg.Pool`
         A connection pool for a PostgreSQL database.
-    web_client : :class:`aiohttp.ClientSession`
+    web_session : :class:`aiohttp.ClientSession`
         An HTTP session for making async HTTP requests.
     initial_extensions : list[:class:`str`], optional
         A list of extension names that the bot will initially load.
@@ -45,13 +45,13 @@ class Beira(commands.Bot):
             self,
             *args: Any,
             db_pool: asyncpg.Pool,
-            web_client: aiohttp.ClientSession,
+            web_session: aiohttp.ClientSession,
             initial_extensions: list[str] | None = None,
             **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
-        self.web_client = web_client
+        self.web_session = web_session
         self.initial_extensions = initial_extensions
         self._config = CONFIG
 

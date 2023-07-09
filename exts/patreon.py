@@ -235,7 +235,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         """Get all active patrons from Patreon's API."""
 
         # Get campaign data.
-        async with self.bot.web_client.get(
+        async with self.bot.web_session.get(
             CAMPAIGN_BASE,
             headers={"Authorization": f"Bearer {self.access_token}"},
         ) as response:
@@ -248,7 +248,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         print(f"Campaign: {campaigns['data'][0]}")
 
         while True:
-            async with self.bot.web_client.get(
+            async with self.bot.web_session.get(
                 urljoin(CAMPAIGN_BASE,
                         f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
                 headers={"Authorization": f"Bearer {self.access_token}"},

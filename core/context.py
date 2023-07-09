@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, TypeAlias
 
-import aiohttp
 import discord
 from discord.ext import commands
 
@@ -10,6 +9,9 @@ from .wave import SkippablePlayer
 
 
 if TYPE_CHECKING:
+    from aiohttp import ClientSession
+    from asyncpg import Pool
+
     from .bot import Beira
 
 __all__ = ("Context", "Interaction")
@@ -28,7 +30,13 @@ class Context(commands.Context):
         self.error_handled = False
 
     @property
-    def web_client(self) -> aiohttp.ClientSession:
-        """:class:`aiohttp.ClientSession`: Returns the asynchronous http session used by the bot for external needs."""
+    def session(self) -> ClientSession:
+        """:class:`ClientSession`: Returns the asynchronous http session used by the bot for http requests."""
 
-        return self.bot.web_client
+        return self.bot.web_session
+
+    @property
+    def db(self) -> Pool:
+        """:class:`Pool`: Returns the asynchronous connection pool used by the bot for database management."""
+
+        return self.bot.db_pool

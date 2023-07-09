@@ -619,6 +619,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def _get_entity_from_record(self, record: asyncpg.Record) -> discord.Guild | discord.User | None:
         if "guild_id" in record:
             entity = self.bot.get_guild(record["guild_id"])
-        else:
+        elif "user_id" in record:
             entity = self.bot.get_user(record["user_id"])
+        else:
+            entity = None
         return entity

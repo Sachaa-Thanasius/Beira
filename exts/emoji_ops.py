@@ -235,7 +235,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                     return
 
                 # Attempt to read the input as an image url.
-                emoji_bytes = await get_image(ctx.web_client, entity)
+                emoji_bytes = await get_image(ctx.session, entity)
             else:
                 # Attempt to convert and read the input as an emoji normally.
                 emoji_bytes = await converted_emoji.read()

@@ -109,7 +109,7 @@ class TodoModal(ui.Modal):
         self.stop()
 
 
-class TodoCompleteButton(ui.Button["TodoView"]):
+class TodoCompleteButton(ui.Button):
     """A Discord button that marks to-do items in the parent view as (in)complete, and changes visually as a result.
 
     Interacts with kwargs for default styling on initialization.
@@ -148,7 +148,7 @@ class TodoCompleteButton(ui.Button["TodoView"]):
         await interaction.followup.send(f"Todo task marked as {completion_status}!", ephemeral=True)  # type: ignore
 
 
-class TodoEditButton(ui.Button["TodoView"]):
+class TodoEditButton(ui.Button):
     """A Discord button sends modals for editing the content of the parent view's to-do item.
 
     Interacts with kwargs for default styling on initialization.
@@ -182,7 +182,7 @@ class TodoEditButton(ui.Button["TodoView"]):
             await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)  # type: ignore
 
 
-class TodoDeleteButton(ui.Button["TodoView"]):
+class TodoDeleteButton(ui.Button):
     """A Discord button that allows users to delete a to-do item.
 
     Interacts with kwargs for default styling on initialization.

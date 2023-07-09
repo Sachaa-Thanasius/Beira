@@ -111,7 +111,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             for url in wiki_data["pages_directory"]:
                 directory_url = urljoin(wiki_data['base_url'], url)
 
-                async with self.bot.web_client.get(directory_url) as response:
+                async with self.bot.web_session.get(directory_url) as response:
                     text = await response.text()
                     soup = BeautifulSoup(text, "html.parser")
                     content = soup.find("div", class_="mw-allpages-body")
@@ -239,7 +239,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     async def _process_fandom_page(self, url: str) -> tuple[str, str | None]:
         """Extract the summary and image from a Fandom page."""
 
-        async with self.bot.web_client.get(url) as response:
+        async with self.bot.web_session.get(url) as response:
             char_summary, char_thumbnail = None, None
 
             # Extract the main content.

@@ -62,7 +62,7 @@ class CustomNotificationsCog(commands.Cog):
             2) Boost the server and earn the premium subscriber, or "Server Booster", role.
         """
 
-        role_log_wbhk = discord.Webhook.from_url(self.aci_webhk_url, session=self.bot.web_client)
+        role_log_wbhk = discord.Webhook.from_url(self.aci_webhk_url, session=self.bot.web_session)
 
         # Check if the update is in the right server.
         if before.guild.id == self.aci_guild_id:
