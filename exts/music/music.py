@@ -60,8 +60,6 @@ class MusicCog(commands.Cog, name="Music"):
             embed.description = "You don't have permission to do this."
         elif isinstance(error, core.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
-        elif isinstance(error, core.UnusableSpotifyLink):
-            embed.description = "This Spotify link could not be processed."
         else:
             LOGGER.exception(f"Exception: {error}", exc_info=error)
 

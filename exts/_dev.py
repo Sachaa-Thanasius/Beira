@@ -5,7 +5,6 @@ _dev.py: A cog that implements commands for reloading and syncing extensions and
 from __future__ import annotations
 
 import logging
-import textwrap
 
 import discord
 from asyncpg.exceptions import PostgresConnectionError, PostgresError, PostgresWarning
@@ -148,10 +147,10 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             # Update the cache.
             embeds = []
             if users:
-                self.bot.blocked_entities_cache["users"] = self.bot.blocked_entities_cache["users"].difference(user.id for user in users)
+                self.bot.blocked_entities_cache["users"].difference_update(user.id for user in users)
                 embeds.append(discord.Embed(title="Users", description='\n'.join(str(user) for user in users)))
             if guilds:
-                self.bot.blocked_entities_cache["guilds"] = self.bot.blocked_entities_cache["guilds"].difference(guild.id for guild in guilds)
+                self.bot.blocked_entities_cache["guilds"].difference_update(guild.id for guild in guilds)
                 embeds.append(discord.Embed(title="Guilds", description='\n'.join(str(guild) for guild in guilds)))
 
             # Display the results.
@@ -328,9 +327,18 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     @app_commands.choices(spec=[
         app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
         app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
-        app_commands.Choice(name="[^] —— Clear all commands from the current guild target and sync, thereby removing guild commands.", value="^"),
-        app_commands.Choice(name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.", value="-"),
-        app_commands.Choice(name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", value="+"),
+        app_commands.Choice(
+            name="[^] —— Clear all commands from the current guild target and sync, thereby removing guild commands.",
+            value="^",
+        ),
+        app_commands.Choice(
+            name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.",
+            value="-",
+        ),
+        app_commands.Choice(
+            name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.",
+            value="+",
+        ),
     ])
     async def sync_(
             self,
@@ -430,11 +438,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         # Respond to the error.
         if isinstance(error, app_commands.CommandSyncFailure):
-            embed.description = textwrap.dedent(
-                """\
-                Syncing the commands failed due to a user related error, typically because the command has invalid data. \
-                This is equivalent to an HTTP status code of 400.
-                """,
+            embed.description = (
+                "Syncing the commands failed due to a user related error, typically because the command has invalid "
+                "data. This is equivalent to an HTTP status code of 400."
             )
             LOGGER.error("", exc_info=error)
         elif isinstance(error, discord.Forbidden):
@@ -494,4 +500,5 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
-    await bot.add_cog(DevCog(bot))  # , guilds=[discord.Object(guild_id) for guild_id in CONFIG["discord"]["guilds"]["dev"]])
+    # , guilds=[discord.Object(guild_id) for guild_id in CONFIG["discord"]["guilds"]["dev"]])
+    await bot.add_cog(DevCog(bot))

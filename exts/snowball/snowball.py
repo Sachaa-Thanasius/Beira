@@ -94,7 +94,10 @@ class SnowballCog(commands.Cog, name="Snowball"):
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
         elif isinstance(error, core.CannotTargetSelf):
             embed.title = "No Targeting Yourself!"
-            embed.description = "Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the face."
+            embed.description = (
+                "Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the "
+                "face."
+            )
         else:
             embed.title = f"{ctx.command.name}: Unknown Command Error"
             embed.description = (
@@ -114,18 +117,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     async def settings(self, ctx: core.Context) -> None:
-        """Show what the settings are for the snowballs in this server.
+        """Show what the settings are for the snowballs in this server."""
 
-        Parameters
-        ----------
-        ctx : :class:`core.Context`
-            The invocation context.
-        """
+        guild_settings = await SnowballSettings.from_database(ctx.db, ctx.guild.id)
 
-        guild_settings = await SnowballSettings.from_database(self.bot.db_pool, ctx.guild.id)
-
-        kwargs = {}
-        kwargs["embed"] = discord.Embed(
+        send_kwargs = {}
+        send_kwargs["embed"] = discord.Embed(
             color=0x5e9a40,
             title=f"{self.qualified_name} Settings in {ctx.guild.name}",
             description="Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings can "
@@ -148,11 +145,11 @@ class SnowballCog(commands.Cog, name="Snowball"):
             inline=False,
         )
         if await self.bot.is_owner(ctx.author) or core.is_admin().predicate(ctx):
-            kwargs["view"] = SnowballSettingsButtonWrapper(guild_settings)
+            send_kwargs["view"] = SnowballSettingsButtonWrapper(guild_settings)
 
-        message = await ctx.send(**kwargs)
-        if "view" in kwargs:
-            kwargs["view"].message = message
+        message = await ctx.send(**send_kwargs)
+        if "view" in send_kwargs:
+            send_kwargs["view"].message = message
 
     @snow.command()
     @commands.guild_only()
@@ -169,7 +166,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         await self.update_snowball_record(ctx.author, stock=1)
 
         query = "SELECT stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
-        record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
+        record = await ctx.db.fetchrow(query, ctx.guild.id, ctx.author.id)
 
         if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
             stock_limit = SPECIAL_STOCK_CAP
@@ -216,7 +213,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         ephemeral = False
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
-        record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
+        record = await ctx.db.fetchrow(query, ctx.guild.id, ctx.author.id)
 
         # The user has to be in the database and have collected at least one snowball before they can throw one.
         if (record is not None) and (record["stock"] > 0):
@@ -275,11 +272,16 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=failed_embed, ephemeral=True)
             return
 
-        stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
+        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
+            stock_cap = SPECIAL_STOCK_CAP
+        else:
+            stock_cap = DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
-        giver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
-        receiver_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, receiver.id)
+        async with ctx.db.acquire() as conn:
+            async with conn.transaction():
+                giver_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
+                receiver_record = await conn.fetchrow(query, ctx.guild.id, receiver.id)
 
         # In case of failed transfer, send one of these messages.
         if (giver_record is not None) and (giver_record["stock"] - amount < 0):
@@ -346,11 +348,17 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=def_embed, ephemeral=True)
             return
 
-        stock_cap = SPECIAL_STOCK_CAP if (ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author)) else DEFAULT_STOCK_CAP
+        if ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author):
+            stock_cap = SPECIAL_STOCK_CAP
+        else:
+            stock_cap = DEFAULT_STOCK_CAP
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
-        thief_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, ctx.author.id)
-        victim_record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, victim.id)
+
+        async with ctx.db.acquire() as conn:
+            async with conn.transaction():
+                thief_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
+                victim_record = await conn.fetchrow(query, ctx.guild.id, victim.id)
 
         # In case of failed steal, send one of these messages.
         if (victim_record is not None) and (victim_record["stock"] - amount < 0):
@@ -404,7 +412,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             ) as t
             WHERE user_id = $2;
         """
-        record: asyncpg.Record = await self.bot.db_pool.fetchrow(query, ctx.guild.id, target.id)
+        record: asyncpg.Record = await ctx.db.fetchrow(query, ctx.guild.id, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
@@ -437,7 +445,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         query = "SELECT rank, hits, misses, kos, stock FROM global_rank_view WHERE user_id = $1;"
-        record: asyncpg.Record = await self.bot.db_pool.fetchrow(query, target.id)
+        record: asyncpg.Record = await ctx.db.fetchrow(query, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
@@ -474,7 +482,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             ORDER BY rank
             LIMIT $2;
          """
-        guild_ldbd = await self.bot.db_pool.fetch(query, ctx.guild.id, LEADERBOARD_MAX)
+        guild_ldbd = await ctx.db.fetch(query, ctx.guild.id, LEADERBOARD_MAX)
 
         embed = StatsEmbed(
             color=0x2f3136,
@@ -500,7 +508,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         query = "SELECT * FROM global_rank_view LIMIT $1;"
-        global_ldbd = await self.bot.db_pool.fetch(query, LEADERBOARD_MAX)
+        global_ldbd = await ctx.db.fetch(query, LEADERBOARD_MAX)
 
         embed = StatsEmbed(
             color=0x2f3136,
@@ -511,7 +519,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if global_ldbd is not None:
             await self._make_leaderboard_fields(embed, global_ldbd)
         else:
-            embed.description += "\n**There was an issue connecting to the database. Please try again in a few minutes.**"
+            embed.description += "\n**There was an issue connecting to the database. Please try again later.**"
 
         await ctx.send(embed=embed, ephemeral=False)
 
@@ -526,7 +534,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         query = "SELECT * FROM guilds_only_rank_view LIMIT $1;"
-        guilds_only_ldbd = await self.bot.db_pool.fetch(query, LEADERBOARD_MAX)
+        guilds_only_ldbd = await ctx.db.fetch(query, LEADERBOARD_MAX)
 
         embed = StatsEmbed(
             color=0x2f3136,
@@ -537,7 +545,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if guilds_only_ldbd is not None:
             await self._make_leaderboard_fields(embed, guilds_only_ldbd)
         else:
-            embed.description += "\n**There was an issue connecting to the database. Please try again in a few minutes.**"
+            embed.description += "\n**There was an issue connecting to the database. Please try again later.**"
 
         await ctx.send(embed=embed, ephemeral=False)
 

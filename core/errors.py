@@ -12,7 +12,6 @@ __all__ = (
     "NotInBotVoiceChannel",
     "UserIsBlocked",
     "GuildIsBlocked",
-    "UnusableSpotifyLink",
 )
 
 
@@ -56,19 +55,3 @@ class GuildIsBlocked(commands.CheckFailure):
 
     This inherits from :exc:`commands.CheckFailure`.
     """
-
-
-class UnusableSpotifyLink(commands.BadArgument):
-    """Exception raised when the Spotify link is not valid.
-
-    This inherits from :exc:`commands.BadArgument`.
-
-    Attributes
-    -----------
-    argument: :class:`str`
-        The url supplied by the caller that was not valid.
-    """
-
-    def __init__(self, argument: str) -> None:
-        self.argument: str = argument
-        super().__init__(f'Spotify link "{argument}" is invalid.')

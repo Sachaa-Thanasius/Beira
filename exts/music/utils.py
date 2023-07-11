@@ -21,6 +21,7 @@ from core.utils import PaginatedEmbed, PaginatedEmbedView
 
 if TYPE_CHECKING:
     from core import Context, Interaction
+    from core.wave import AnyPlayable
 
 
 __all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
@@ -84,9 +85,7 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
         return discord.AppCommandOptionType.string
 
     @staticmethod
-    async def _convert(
-            argument: str,
-    ) -> Playable | list[Playable | spotify.SpotifyTrack]:
+    async def _convert(argument: str) -> AnyPlayable | list[AnyPlayable]:
 
         check = yarl.URL(argument)
 
@@ -120,19 +119,14 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
         return tracks
 
-    async def convert(self, ctx: Context, argument: str) -> Playable | list[Playable | spotify.SpotifyTrack]:
+    async def convert(self, ctx: Context, argument: str) -> AnyPlayable | list[AnyPlayable]:
         return await self._convert(argument)
 
-    async def transform(
-            self,
-            interaction: Interaction,
-            value: str,
-            /,
-    ) -> Playable | list[Playable | spotify.SpotifyTrack]:
+    async def transform(self, interaction: Interaction, value: str, /) -> AnyPlayable | list[AnyPlayable]:
         return await self._convert(value)
 
 
-async def format_track_embed(embed: discord.Embed, track: Playable | spotify.SpotifyTrack) -> discord.Embed:
+async def format_track_embed(embed: discord.Embed, track: AnyPlayable) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 
     duration = track.duration // 1000
@@ -141,11 +135,17 @@ async def format_track_embed(embed: discord.Embed, track: Playable | spotify.Spo
     else:
         end_time = "{}:{:02}".format(*divmod(duration, 60))
 
-    embed.description = f"[{escape_markdown(track.title, as_needed=True)}]({track.uri})\n"
     if isinstance(track, Playable):
-        embed.description += f"{escape_markdown(track.author, as_needed=True)}\n"
+        embed.description = (
+            f"[{escape_markdown(track.title, as_needed=True)}]({track.uri})\n"
+            f"{escape_markdown(track.author, as_needed=True)}\n"
+        )
     elif isinstance(track, spotify.SpotifyTrack):
-        embed.description += f"{escape_markdown(', '.join(track.artists), as_needed=True)}\n"
+        embed.description = (
+            f"[{escape_markdown(track.title, as_needed=True)}]"
+            f"(https://open.spotify.com/track/{track.uri.rpartition(':')[2]})\n"
+            f"{escape_markdown(', '.join(track.artists), as_needed=True)}\n"
+        )
 
     embed.description += f"`[0:00-{end_time}]`"
 

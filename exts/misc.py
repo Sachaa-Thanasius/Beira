@@ -13,6 +13,7 @@ from io import StringIO
 from time import perf_counter
 
 import discord
+from discord import app_commands
 from discord.ext import commands
 
 import core
@@ -70,6 +71,8 @@ class MiscCog(commands.Cog, name="Misc"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
+        self.ctx_menu = app_commands.ContextMenu(name="Meowify", callback=self.context_menu_meowify)
+        self.bot.tree.add_command(self.ctx_menu)
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -199,6 +202,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         async with ctx.typing():
             await ctx.reply(meowify_text(text))
+
+    async def context_menu_meowify(self, interaction: core.Interaction, message: discord.Message) -> None:
+        await interaction.response.send_message(meowify_text(message.content), ephemeral=True)  # type: ignore
 
 
 async def setup(bot: core.Beira) -> None:

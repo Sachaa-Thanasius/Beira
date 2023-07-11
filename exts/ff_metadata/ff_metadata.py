@@ -52,11 +52,15 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         return discord.PartialEmoji(name="\N{BAR CHART}")
 
     async def cog_load(self) -> None:
-        # Log into Ao3.
-        loop = self.bot.loop or asyncio.get_event_loop()
-        self.ao3_session = await loop.run_in_executor(
-            None, AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"],
-        )
+        # Log into Ao3 for a backup method.
+        try:
+            self.ao3_session = await asyncio.to_thread(
+                AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"],
+            )
+        except Exception as err:
+            LOGGER.error("", exc_info=err)
+            # Fuck accessing Ao3 normally. Just set it to none and go without backup.
+            self.ao3_session = None
 
         # Load a cache of channels to auto-respond in.
         query = """SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;"""
@@ -97,7 +101,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                         story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
                         embed = await create_atlas_ffn_embed(story_data)
 
-                    elif match_obj.lastgroup == "AO3" and (message.guild.id != self.aci100_id):
+                    elif match_obj.lastgroup == "AO3": # and (message.guild.id != self.aci100_id):
                         story_data = await self.search_ao3(match_obj.group(0))
                         if isinstance(story_data, fichub_api.Story):
                             embed = await create_fichub_embed(story_data)

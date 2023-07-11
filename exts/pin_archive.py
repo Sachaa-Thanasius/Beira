@@ -66,7 +66,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
 
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
         all_pins = await channel.pins()
-        print(all_pins)
+        LOGGER.info(str(all_pins))
 
     @commands.command()
     async def set_mode(self, ctx: core.Context, mode: Literal["latest", "oldest"] = "oldest") -> None:

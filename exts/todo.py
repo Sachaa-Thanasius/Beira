@@ -179,7 +179,7 @@ class TodoEditButton(ui.Button):
             await self.view.update_todo(modal.interaction, updated_todo_item)
             await modal.interaction.followup.send("Todo item edited.", ephemeral=True)  # type: ignore
         else:
-            await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)  # type: ignore
+            await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)
 
 
 class TodoDeleteButton(ui.Button):

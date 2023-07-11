@@ -81,7 +81,9 @@ StoryWebsiteStore: dict[str, StoryWebsite] = {
 }
 
 STORY_WEBSITE_REGEX = re.compile(
-    r"(?:http://|https://|)" + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()),
+    r"(?:http://|https://|)" + "|".join(
+        f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()
+    ),
 )
 
 
@@ -101,7 +103,12 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     categories = textwrap.shorten(", ".join(work.categories), 100, placeholder="...")
     characters = textwrap.shorten(", ".join(work.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
-    stats = " • ".join((f"**Comments:** {work.comments:,d}", f"**Kudos:** {work.kudos:,d}", f"**Bookmarks:** {work.bookmarks:,d}", f"**Hits:** {work.hits:,d}"))
+    stats = " • ".join((
+        f"**Comments:** {work.comments:,d}",
+        f"**Kudos:** {work.kudos:,d}",
+        f"**Bookmarks:** {work.bookmarks:,d}",
+        f"**Hits:** {work.hits:,d}",
+    ))
 
     # Add the info in the embed appropriately.
     ao3_embed = (
@@ -267,7 +274,7 @@ class Ao3SeriesView(discord.ui.View):
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         check = (interaction.user is not None) and interaction.user.id in (self.author.id, interaction.client.owner_id)
         if not check:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)  # type: ignore
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
         return check
 
     async def on_timeout(self) -> None:

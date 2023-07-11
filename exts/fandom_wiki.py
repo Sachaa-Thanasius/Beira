@@ -149,7 +149,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         return [app_commands.Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
 
     @wiki.autocomplete("search_term")
-    async def wiki_search_term_autocomplete(self, interaction: core.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    async def wiki_search_term_autocomplete(
+            self,
+            interaction: core.Interaction,
+            current: str,
+    ) -> list[app_commands.Choice[str]]:
         """Autocomplete callback for the names of different wiki pages.
 
         Defaults to searching through the AoC wiki if the given wiki name is invalid.
@@ -183,7 +187,10 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             possible_results = [name for name in entries_list if wiki_name.lower() in name.lower()][:25]
 
             if len(possible_results) == 0:
-                failed_embed.description = "Error: Wiki Does Not Exist Or Is Not Indexed. Please try a different wiki name."
+                failed_embed.description = (
+                    "Error: Wiki Does Not Exist Or Is Not Indexed. "
+                    "Please try a different wiki name."
+                )
                 return failed_embed
 
             wiki_name = possible_results[0]

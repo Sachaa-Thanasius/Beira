@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+import logging
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import wavelink
 from wavelink import Playable
@@ -10,9 +11,12 @@ from wavelink.ext import spotify
 if TYPE_CHECKING:
     from discord.abc import MessageableChannel
 
+    AnyPlayable: TypeAlias = Playable | spotify.SpotifyTrack
+
 
 __all__ = ("SkippableQueue", "SkippablePlayer")
 
+LOGGER = logging.getLogger(__name__)
 
 # TODO:
 #   - Check which queue methods don't work with adding a playlist subclass.
@@ -35,18 +39,14 @@ class SkippableQueue(wavelink.Queue):
             except IndexError:
                 break
 
-    async def put_all_wait(
-            self,
-            item: Playable | spotify.SpotifyTrack | list[Playable | spotify.SpotifyTrack],
-            requester: str | None = None,
-    ) -> None:
+    async def put_all_wait(self, item: AnyPlayable | list[AnyPlayable], requester: str | None = None) -> None:
         """Put anything in the queue, so long as it's "playable", and optionally indicate who queued it.
 
         This can include some playlist subclasses.
 
         Parameters
         ----------
-        item : :class:`Playable` | :class:`spotify.SpotifyTrack` | list[:class:`Playable` | :class:`spotify.SpotifyTrack`]
+        item : :class:`AnyPlayable` | list[:class:`AnyPlayable`]
             The track or collection of tracks to add to the queue.
         requester : :class:`str`, optional
             A string representing the user who queued this up. Optional.
@@ -57,7 +57,7 @@ class SkippableQueue(wavelink.Queue):
             await self.put_wait(item)
         else:
             for sub_item in item:
-                item.requester = requester
+                sub_item.requester = requester
                 await self.put_wait(sub_item)
 
 

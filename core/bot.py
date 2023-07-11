@@ -21,6 +21,8 @@ from .config import CONFIG
 from .context import Context
 
 
+__all__ = ("Beira",)
+
 LOGGER = logging.getLogger(__name__)
 
 

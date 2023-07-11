@@ -234,40 +234,39 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     async def get_current_actual_patrons(self) -> None:
         """Get all active patrons from Patreon's API."""
 
+        headers = {"Authorization": f"Bearer {self.access_token}"}
+
         # Get campaign data.
-        async with self.bot.web_session.get(
-            CAMPAIGN_BASE,
-            headers={"Authorization": f"Bearer {self.access_token}"},
-        ) as response:
+        async with self.bot.web_session.get(CAMPAIGN_BASE, headers=headers) as response:
             campaigns = await response.json()
             campaign_id = campaigns["data"][0]["id"]
 
         # Get data from individual members of the campaign.
         cursor = ""
         members = []
-        print(f"Campaign: {campaigns['data'][0]}")
+        LOGGER.info(f"Campaign: {campaigns['data'][0]}")
 
         while True:
             async with self.bot.web_session.get(
                 urljoin(CAMPAIGN_BASE,
                         f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
-                headers={"Authorization": f"Bearer {self.access_token}"},
+                headers=headers,
             ) as resp:
 
                 # Print an error if it exists.
                 if not resp.ok:
                     text = await resp.text()
-                    print(f"Resp not okay: {text}")
+                    LOGGER.info(f"Resp not okay: {text}")
                     resp.raise_for_status()
 
                 # Get the user's data.
                 resp_json = await resp.json()
-                print(f"Resp json: {resp_json}")
+                LOGGER.info(f"Resp json: {resp_json}")
                 for member in resp_json["data"]:
                     user_id = member["relationships"]["user"]["data"]["id"]
-                    print(f"User ID: {user_id}")
+                    LOGGER.info(f"User ID: {user_id}")
                     user: dict = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])
-                    print(f"User: {user}")
+                    LOGGER.info(f"User: {user}")
 
                     assert user is not None
 
@@ -292,7 +291,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
                 cursor = cursors["next"]
                 total = pagination_info["total"]
-                print(f"{total=}")
+                LOGGER.info(f"{total=}")
 
         not_ok_members = []
         for discord_id in self.patrons_on_discord:
@@ -300,7 +299,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
             if member is None:
                 not_ok_members.append(discord_id)
 
-        print(f"Remaining: {not_ok_members}")
+        LOGGER.info(f"Remaining: {not_ok_members}")
 
 
 async def setup(bot: core.Beira) -> None:

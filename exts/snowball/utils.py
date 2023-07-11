@@ -147,7 +147,7 @@ class SnowballSettingsModal(ui.Modal):
 
         # Create the items.
         self.hit_odds_input = ui.TextInput(
-            label="The chance of hitting a person (0.0–1.0)",
+            label="The chance of hitting a person (0.0-1.0)",
             placeholder=f"Current: {default_settings.hit_odds:.2}",
             default=f"{default_settings.hit_odds:.2}",
             required=False,

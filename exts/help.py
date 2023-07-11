@@ -139,10 +139,11 @@ class HelpBotView(PaginatedEmbedView):
         if modal_timed_out or self.is_finished():
             return
 
+        temp_value = modal.input_page_num.value
         try:
-            temp_new_page = int(modal.input_page_num.value)
+            temp_new_page = int(temp_value)
         except ValueError:
-            temp_new_page = next(i for i, name in enumerate(cog_names) if modal.input_page_num.value.lower() in name.lower()) + 1
+            temp_new_page = next(i for i, name in enumerate(cog_names) if temp_value.lower() in name.lower()) + 1
             if not temp_new_page:
                 return
 

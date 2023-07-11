@@ -7,9 +7,9 @@ from __future__ import annotations
 import itertools
 import logging
 from collections.abc import Callable, Sequence
-from datetime import datetime, timezone
 from typing import TYPE_CHECKING, Any
 
+import discord.utils
 from discord import Embed
 from discord.utils import MISSING
 
@@ -58,8 +58,8 @@ class DTEmbed(Embed):
     """
 
     def __init__(self, **kwargs: Any) -> None:
-        timestamp = datetime.now(tz=timezone.utc).astimezone()
-        super().__init__(timestamp=timestamp, **kwargs)
+        kwargs["timestamp"] = discord.utils.utcnow()
+        super().__init__(**kwargs)
 
 
 class PaginatedEmbed(Embed):
