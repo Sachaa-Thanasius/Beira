@@ -275,7 +275,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         if match := re.match(StoryWebsiteStore["AO3"].story_regex, name_or_url):
             if match.group("type") == "series":
                 series_id = match.group("id")
-                story_data = await self.bot.loop.run_in_executor(None, AO3.Series, series_id, self.ao3_session)
+                story_data = await asyncio.to_thread(AO3.Series, series_id, self.ao3_session, True)
             else:
                 try:
                     url = match.group(0)
@@ -285,14 +285,14 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                     LOGGER.warning(msg, exc_info=err)
                     try:
                         work_id = match.group("id")
-                        story_data = await self.bot.loop.run_in_executor(None, AO3.Work, work_id, True, False)
+                        story_data = await asyncio.to_thread(AO3.Work, work_id, True, False)
                     except Exception as err:
                         msg = "Retrieval with Fichub client and AO3 library failed. Returning None."
                         LOGGER.warning(msg, exc_info=err)
                         story_data = None
         else:
             search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
-            await self.bot.loop.run_in_executor(None, search.update)
+            await asyncio.to_thread(search.update)
             story_data = search.results[0] if len(search.results) > 0 else None
 
         return story_data

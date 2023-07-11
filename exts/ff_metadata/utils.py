@@ -94,7 +94,7 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     """
 
     author: AO3.User = work.authors[0]
-    await asyncio.get_event_loop().run_in_executor(None, author.reload)
+    await asyncio.to_thread(author.reload)
 
     # Format the relevant information.
     updated = work.date_updated.strftime('%B %d, %Y') + (" (Complete)" if work.complete else "")
@@ -133,7 +133,7 @@ async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
     """
 
     author: AO3.User = series.creators[0]
-    await asyncio.get_event_loop().run_in_executor(None, author.reload)
+    await asyncio.to_thread(author.reload)
 
     # Format the relevant information.
     updated = series.series_updated.strftime('%B %d, %Y') + (" (Complete)" if series.complete else "")

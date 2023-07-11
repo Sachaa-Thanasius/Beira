@@ -572,6 +572,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def update_snowball_record(
             self,
             member: discord.Member,
+            *,
             hits: int = 0,
             misses: int = 0,
             kos: int = 0,

@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import datetime
 import logging
-from typing import Literal
+from typing import Literal, TypeAlias
 
 import discord
 from discord.ext import commands
@@ -18,7 +18,8 @@ import core
 
 LOGGER = logging.getLogger(__name__)
 
-MessageableGuildChannel = discord.TextChannel | discord.VoiceChannel | discord.Thread
+# MessageableGuildChannel: TypeAlias = discord.TextChannel | discord.VoiceChannel | discord.Thread
+PinnableGuildChannel: TypeAlias = discord.abc.GuildChannel | discord.Thread
 
 
 class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": True}):
@@ -43,25 +44,21 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
         original = commands.is_owner().predicate
         return await original(ctx)
 
-    @commands.Cog.listener()
-    async def on_guild_channel_pins_update(
-            self,
-            channel: discord.abc.GuildChannel | discord.Thread,
-            last_pin: datetime.datetime | None = None,
-    ) -> None:
-        """Listen to pin events and display them."""
+    @commands.Cog.listener("on_guild_channel_pins_update")
+    async def on_pins_update(self, channel: PinnableGuildChannel, last_pin: datetime.datetime | None = None) -> None:
+        """Listen to guild-level pin events and display them."""
 
         LOGGER.info(f"on_guild_channel_pins_update(): {channel.guild}, {channel}, {last_pin}")
 
     # Commands
     @commands.command()
-    async def set_archive_channel(self, ctx: core.Context, channel: MessageableGuildChannel) -> None:
+    async def set_archive_channel(self, ctx: core.Context, channel: PinnableGuildChannel) -> None:
         """Set the archive channel."""
 
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def get_pins(self, ctx: core.Context, channel: MessageableGuildChannel) -> None:
+    async def get_pins(self, ctx: core.Context, channel: PinnableGuildChannel) -> None:
         """Print all pins in a guild channel."""
 
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")

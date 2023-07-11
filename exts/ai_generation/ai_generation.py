@@ -5,6 +5,7 @@ and morphs.
 
 from __future__ import annotations
 
+import asyncio
 import logging
 from io import BytesIO
 from pathlib import Path
@@ -97,7 +98,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         ai_url = await create_image(prompt, file_size)
         ai_bytes = await get_image(self.bot.web_session, ai_url)
-        ai_buffer = await self.bot.loop.run_in_executor(None, process_image, ai_bytes)
+        ai_buffer = await asyncio.to_thread(process_image, ai_bytes)
         gif_buffer = await create_morph(avatar_buffer, ai_buffer)
 
         return ai_url, gif_buffer
@@ -216,7 +217,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 log_start_time = perf_counter()
                 ai_url = await create_image(prompt, (512, 512))
                 ai_bytes = await get_image(ctx.session, ai_url)
-                ai_buffer = await self.bot.loop.run_in_executor(None, process_image, ai_bytes)
+                ai_buffer = await asyncio.to_thread(process_image, ai_bytes)
                 creation_time = perf_counter() - log_start_time
 
                 # Send the generated text in an embed.

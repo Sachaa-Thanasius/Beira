@@ -6,7 +6,7 @@ References
 https://dev.tatsu.gg/
 https://github.com/Sachaa-Thanasius/Tatsu
 """
-
+import asyncio
 import logging
 from io import BytesIO
 from typing import ClassVar
@@ -89,7 +89,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
                 dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")],
             )
 
-            graph_bytes = await self.bot.loop.run_in_executor(None, self.process_data, data)
+            graph_bytes = await asyncio.to_thread(self.process_data, data)
             graph_file = discord.File(graph_bytes, "graph.png")
             await ctx.send(file=graph_file)
 
@@ -124,7 +124,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
                 [(*role.color.to_rgb(), role.name) for role in query_guild.roles],
                 dtype=[("r", "i4"), ("g", "i4"), ("b", "i4"), ("name", "U36")],
             )
-            graph_bytes = await self.bot.loop.run_in_executor(None, self.process_data_3d, data)
+            graph_bytes = await asyncio.to_thread(self.process_data_3d, data)
             graph_file = discord.File(graph_bytes, "graph.png")
             await ctx.send(file=graph_file)
 

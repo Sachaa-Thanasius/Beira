@@ -53,26 +53,25 @@ class MusicQueueView(PaginatedEmbedView):
 
 
 class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
-    """Converts to a :class:`Playable` | :class:`spotify.SpotifyTrack` | list[:class:`Playable` |
-    :class:`spotify.SpotifyTrack`] | :class:`Playlist`.
+    """Converts to a :class:`AnyPlayable` or a list[:class:`AnyPlayable`].
 
     The lookup strategy is as follows (in order):
 
-        1) Input is a YouTube video url or has ``ytsearch:`` as a prefix: Attempt lookup with
+        1) Input is a YouTube video url or has ``ytsearch:`` as a prefix — Attempt lookup with
            :class:`wavelink.YouTubeTrack`.
 
-        2) Input is a YouTube playlist url or has ``ytpl:`` as a prefix: Attempt lookup with
+        2) Input is a YouTube playlist url or has ``ytpl:`` as a prefix — Attempt lookup with
            :class:`wavelink.YouTubePlaylist`.
 
-        3) Input is a YouTube Music url or has ``ytmsearch:`` as a prefix: Attempt lookup with
+        3) Input is a YouTube Music url or has ``ytmsearch:`` as a prefix — Attempt lookup with
            :class:`wavelink.YouTubeMusicTrack`.
 
         4) Input is a SoundCloud playlist url: Attempt lookup with :class:`SoundCloudPlaylist`.
 
-        5) Input is a SoundCloud track url or has ``scsearch:`` as a prefix: Attempt to lookup with
+        5) Input is a SoundCloud track url or has ``scsearch:`` as a prefix — Attempt to lookup with
            :class:`wavelink.SoundCloudTrack`.
 
-        6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify:
+        6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify —
             a. Try conversion to playlist, album, then track.
 
         7) Previous options didn't work.
@@ -81,11 +80,11 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
     """
 
     @property
-    def type(self) -> discord.AppCommandOptionType:
+    def type(self) -> discord.AppCommandOptionType:     # noqa: A003
         return discord.AppCommandOptionType.string
 
-    @staticmethod
-    async def _convert(argument: str) -> AnyPlayable | list[AnyPlayable]:
+    async def _convert(self, argument: str) -> AnyPlayable | list[AnyPlayable]:
+        """Attempt to convert a string into a Wavelink track or list of tracks."""
 
         check = yarl.URL(argument)
 
@@ -159,7 +158,7 @@ async def format_track_embed(embed: discord.Embed, track: AnyPlayable) -> discor
     return embed
 
 
-def generate_tracks_add_notification(tracks: Playable | list[Playable | spotify.SpotifyTrack]) -> str:
+def generate_tracks_add_notification(tracks: AnyPlayable | list[AnyPlayable]) -> str:
     """Adds tracks to a queue even if they are contained in another object or structure.
 
     Also, it returns the appropriate notification string.
