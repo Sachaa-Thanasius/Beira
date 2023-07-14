@@ -112,7 +112,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def snow(self, ctx: core.Context) -> None:
         """A group of snowball-related commands."""
 
-        await ctx.send(ctx.command)
+        await ctx.send_help(ctx.command)
 
     @snow.command()
     @commands.guild_only()

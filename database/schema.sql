@@ -89,17 +89,17 @@ CREATE TABLE IF NOT EXISTS snowball_stats (
 );
 
 CREATE VIEW global_rank_view AS
-SELECT      user_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
-            DENSE_RANK() over (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, user_id DESC) AS rank
-FROM        snowball_stats
-GROUP BY    user_id
-ORDER BY    rank;
+    SELECT      user_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
+                DENSE_RANK() over (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, user_id DESC) AS rank
+    FROM        snowball_stats
+    GROUP BY    user_id
+    ORDER BY    rank;
 
 CREATE VIEW guilds_only_rank_view AS
-SELECT      guild_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
-            DENSE_RANK() OVER (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, guild_id DESC) AS guild_rank
-FROM        snowball_stats
-GROUP BY    guild_id;
+    SELECT      guild_id, SUM(hits) as hits, SUM(misses) as misses, SUM(kos) as kos, SUM(stock) as stock,
+                DENSE_RANK() OVER (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, guild_id DESC) AS guild_rank
+    FROM        snowball_stats
+    GROUP BY    guild_id;
 
 
 CREATE TABLE IF NOT EXISTS snowball_settings (
@@ -122,3 +122,26 @@ CREATE TABLE IF NOT EXISTS todos (
 CREATE INDEX IF NOT EXISTS todos_user_id_idx on todos(user_id);
 CREATE INDEX IF NOT EXISTS todos_due_date_idx on todos(todo_due_date);
 CREATE INDEX IF NOT EXISTS todos_completed_at_idx on todos(todo_completed_at);
+
+
+CREATE TABLE IF NOT EXISTS pin_archive_settings (
+    guild_id                    BIGINT      PRIMARY KEY        REFERENCES guilds(guild_id),
+    pin_channel_id              BIGINT      NOT NULL,
+    pin_mode                    INT         NOT NULL,
+    pin_send_all                BOOLEAN     DEFAULT FALSE
+);
+
+
+CREATE TABLE IF NOT EXISTS pin_archive_blacklisted_channels (
+    guild_id                    BIGINT  NOT NULL     REFERENCES guilds(guild_id),
+    blacklisted_channel         BIGINT  UNIQUE       NOT NULL,
+    PRIMARY KEY (guild_id, blacklisted_channel)
+);
+
+CREATE VIEW pin_archive_settings_overall AS
+    SELECT  pas.guild_id,
+            pas.pin_channel_id as channel_id,
+            pas.pin_mode as mode,
+            pas.pin_send_all as send_all,
+            pabc.blacklisted_channel as blacklisted
+    FROM    pin_archive_settings pas JOIN pin_archive_blacklisted_channels pabc on pas.guild_id = pabc.guild_id;

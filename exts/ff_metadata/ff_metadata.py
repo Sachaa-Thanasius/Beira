@@ -101,7 +101,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                         story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
                         embed = await create_atlas_ffn_embed(story_data)
 
-                    elif match_obj.lastgroup == "AO3": # and (message.guild.id != self.aci100_id):
+                    elif match_obj.lastgroup == "AO3" and (message.guild.id != self.aci100_id):
                         story_data = await self.search_ao3(match_obj.group(0))
                         if isinstance(story_data, fichub_api.Story):
                             embed = await create_fichub_embed(story_data)
@@ -272,10 +272,14 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
     async def search_ao3(self, name_or_url: str) -> AO3.Work | AO3.Series | fichub_api.Story | None:
         """More generically search Ao3 for works based on a partial title or full url."""
 
-        if match := re.match(StoryWebsiteStore["AO3"].story_regex, name_or_url):
+        if match := re.search(StoryWebsiteStore["AO3"].story_regex, name_or_url):
             if match.group("type") == "series":
-                series_id = match.group("id")
-                story_data = await asyncio.to_thread(AO3.Series, series_id, self.ao3_session, True)
+                try:
+                    series_id = match.group("ao3_id")
+                    story_data = await asyncio.to_thread(AO3.Series, series_id, self.ao3_session, True)
+                except Exception as err:
+                    LOGGER.error("", exc_info=err)
+                    story_data = None
             else:
                 try:
                     url = match.group(0)
@@ -284,7 +288,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                     msg = "Retrieval with Fichub client failed. Trying Armindo Flores's AO3 library now."
                     LOGGER.warning(msg, exc_info=err)
                     try:
-                        work_id = match.group("id")
+                        work_id = match.group("ao3_id")
                         story_data = await asyncio.to_thread(AO3.Work, work_id, True, False)
                     except Exception as err:
                         msg = "Retrieval with Fichub client and AO3 library failed. Returning None."
