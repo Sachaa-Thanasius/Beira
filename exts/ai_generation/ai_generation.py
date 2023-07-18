@@ -65,7 +65,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             embed.title = "OpenAI Response Error"
             embed.description = "There's a connection issue with OpenAI's API. Please try again in a minute or two."
-            ctx.command.reset_cooldown(ctx)
+            ctx.command.reset_cooldown(ctx)  # type: ignore
 
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
@@ -78,7 +78,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         await ctx.send(embed=embed, ephemeral=True, delete_after=10)
 
-    async def morph_user(self, target: discord.User, prompt: str) -> (str, BytesIO):
+    async def morph_user(self, target: discord.User, prompt: str) -> tuple[str, BytesIO]:
         """Does the morph process.
 
         Parameters
@@ -123,11 +123,12 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """
 
         async with ctx.typing():
-            target = target or self.bot.get_user(self.bot.special_friends["Athena Hope"])
+            default_target: discord.User = self.bot.get_user(self.bot.special_friends["Athena Hope"])   # type: ignore
+            act_target = target or default_target
             prompt = "an anxious, dumb, insane, crazy-looking cartoon pigeon"
 
             log_start_time = perf_counter()
-            ai_img_url, result_gif = await self.morph_user(target, prompt)
+            ai_img_url, result_gif = await self.morph_user(act_target, prompt)
             log_end_time = perf_counter()
 
             morph_time = log_end_time - log_start_time
@@ -135,7 +136,9 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename="pigeonlord.gif")
             embed = (
-                discord.Embed(color=0x5d6e7f, title=f"{target.display_name}'s True Form", description="***Behold!***")
+                discord.Embed(
+                    color=0x5d6e7f, title=f"{act_target.display_name}'s True Form", description="***Behold!***",
+                )
                 .set_image(url="attachment://pigeonlord.gif")
                 .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
             )
@@ -143,9 +146,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             sent_message = await ctx.send(embed=embed, file=gif_file)
 
             # Create two download buttons.
-            buttons_view = DownloadButtonView(
-                ("Download Morph", sent_message.embeds[0].image.url), ("Download Final Image", ai_img_url),
-            )
+            morph_url = sent_message.embeds[0].image.url or " "
+            buttons_view = DownloadButtonView(("Download Morph", morph_url), ("Download Final Image", ai_img_url))
             await sent_message.edit(view=buttons_view)
 
     @openai.command(name="morph")
@@ -184,9 +186,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             sent_message = await ctx.send(embed=embed, file=gif_file)
 
             # Create two download buttons.
-            buttons_view = DownloadButtonView(
-                ("Download Morph", sent_message.embeds[0].image.url), ("Download Final Image", ai_img_url),
-            )
+            morph_url = sent_message.embeds[0].image.url or " "
+            buttons_view = DownloadButtonView(("Download Morph", morph_url), ("Download Final Image", ai_img_url))
             await sent_message.edit(view=buttons_view)
 
     @openai.command()
@@ -231,7 +232,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 sent_message = await ctx.send(embed=embed, file=ai_img_file)
 
                 # Create a download button.
-                await sent_message.edit(view=DownloadButtonView(("Download Image", sent_message.embeds[0].image.url)))
+                image_url = sent_message.embeds[0].image.url or " "
+                await sent_message.edit(view=DownloadButtonView(("Download Image", image_url)))
 
             elif generation_type == "text":
                 log_start_time = perf_counter()

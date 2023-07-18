@@ -46,9 +46,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
     async def track_command_use(self, ctx: core.Context) -> None:
         """Stores records of command uses in the database after some processing."""
 
+        assert ctx.command is not None
+
         # Make sure all possible involved users and guilds are in the database before using their ids as foreign keys.
         user_info = [ctx.author]
-        guild_info = [ctx.guild] if ctx.guild else None
+        guild_info = [ctx.guild] if ctx.guild else []
 
         for arg in (ctx.args + list(ctx.kwargs.values())):
             if isinstance(arg, discord.User | discord.Member):
@@ -122,7 +124,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             ctx: core.Context,
             *,
             time_period: Literal["today", "last month", "last year", "all time"] = "all time",
-            command: str = None,
+            command: str | None = None,
             guilds: bool = False,
             universal: bool = False,
     ) -> None:

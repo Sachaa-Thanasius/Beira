@@ -494,7 +494,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     async def test_sl(self, interaction: core.Interaction) -> None:
         """Test app command."""
 
-        await interaction.response.send_message("Test app command.")        # type: ignore
+        await interaction.response.send_message("Test app command.")
 
 
 async def setup(bot: core.Beira) -> None:

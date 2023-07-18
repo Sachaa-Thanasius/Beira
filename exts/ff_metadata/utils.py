@@ -1,8 +1,10 @@
+from __future__ import annotations
+
 import asyncio
 import logging
 import re
 import textwrap
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import AO3
 import atlas_api
@@ -11,6 +13,10 @@ import fichub_api
 from attrs import define
 
 from core.utils import DTEmbed
+
+
+if TYPE_CHECKING:
+    from core import Interaction
 
 
 __all__ = (
@@ -151,7 +157,7 @@ async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
 
     # Use the remaining space in the embed for the truncated description.
     series_descr = textwrap.shorten(series.description, 6000 - len(ao3_embed), placeholder="...\n\n")
-    ao3_embed.description = series_descr + ao3_embed.description
+    ao3_embed.description = series_descr + (ao3_embed.description or "")
     return ao3_embed
 
 
@@ -263,15 +269,15 @@ class Ao3SeriesView(discord.ui.View):
 
         # Load the options in the dropdown.
         descr = textwrap.shorten(series.description, 100, placeholder="...")
-        self.works_dropdown.add_option(label=series.name, value=0, description=descr, emoji="\N{BOOKS}")
+        self.works_dropdown.add_option(label=series.name, value="0", description=descr, emoji="\N{BOOKS}")
 
         for i, work in enumerate(series.work_list, start=1):
             descr = textwrap.shorten(work.summary, 100, placeholder="...")
             self.works_dropdown.add_option(
-                label=f"{i}. {work.title}", value=i, description=descr, emoji="\N{OPEN BOOK}",
+                label=f"{i}. {work.title}", value=str(i), description=descr, emoji="\N{OPEN BOOK}",
             )
 
-    async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
+    async def interaction_check(self, interaction: Interaction, /) -> bool:
         check = (interaction.user is not None) and interaction.user.id in (self.author.id, interaction.client.owner_id)
         if not check:
             await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
@@ -288,7 +294,7 @@ class Ao3SeriesView(discord.ui.View):
 
         self.stop()
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item, /) -> None:
+    async def on_error(self, interaction: Interaction, error: Exception, item: discord.ui.Item, /) -> None:
         error = getattr(error, "original", error)
         LOGGER.error("", exc_info=error)
 
@@ -307,27 +313,27 @@ class Ao3SeriesView(discord.ui.View):
             embed_page = await create_ao3_work_embed(self.series.work_list[self.choice - 1])
         return embed_page
 
-    async def update_page(self, interaction: discord.Interaction) -> None:
+    async def update_page(self, interaction: Interaction) -> None:
         result_embed = await self.format_page()
         self.update_navigation_items()
-        await interaction.response.edit_message(embed=result_embed, view=self)  # type: ignore
+        await interaction.response.edit_message(embed=result_embed, view=self)
 
     @discord.ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
-    async def works_dropdown(self, interaction: discord.Interaction, select: discord.ui.Select) -> None:
+    async def works_dropdown(self, interaction: Interaction, select: discord.ui.Select) -> None:
         """A dropdown of works within a series to display more information about those as embed "pages"."""
 
         self.choice = int(select.values[0])
         await self.update_page(interaction)
 
     @discord.ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
-    async def turn_to_previous(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def turn_to_previous(self, interaction: Interaction, _: discord.ui.Button) -> None:
         """A button to turn back a page between embeds."""
 
         self.choice -= 1
         await self.update_page(interaction)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)
-    async def turn_to_next(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def turn_to_next(self, interaction: Interaction, _: discord.ui.Button) -> None:
         """A button to turn forward a page between embeds."""
 
         self.choice += 1

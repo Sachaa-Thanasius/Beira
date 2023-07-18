@@ -71,27 +71,27 @@ class TatsuCog(commands.Cog, name="Tatsu"):
     async def graph(self, ctx: core.Context, guild_id: int | None = None) -> None:
         async with ctx.typing():
             # Check that there's a guild ID to work with.
-            query_id = guild_id or ctx.guild.id
+            query_id = guild_id or (ctx.guild.id if ctx.guild else None)
             if not query_id:
                 await ctx.send("You must do this in a guild or provide a valid guild ID.")
                 return
 
             now = discord.utils.utcnow()
-            query_guild = self.bot.get_guild(query_id)
 
-            results = await self.tatsu_client.get_guild_rankings(query_id, "all", end=500)
-            data = np.array(
-                [
-                    ((ranking.score / (now - valid_member.joined_at).days), ranking.user_id, ranking.rank)
-                    for ranking in results.rankings
-                    if (valid_member := query_guild.get_member(int(ranking.user_id)))
-                ],
-                dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")],
-            )
+            if query_guild := self.bot.get_guild(query_id):
+                results = await self.tatsu_client.get_guild_rankings(query_id, "all", end=500)
+                data = np.array(
+                    [
+                        ((ranking.score / (now - valid_member.joined_at).days), ranking.user_id, ranking.rank)
+                        for ranking in results.rankings
+                        if (valid_member := query_guild.get_member(int(ranking.user_id)))
+                    ],
+                    dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")],
+                )
 
-            graph_bytes = await asyncio.to_thread(self.process_data, data)
-            graph_file = discord.File(graph_bytes, "graph.png")
-            await ctx.send(file=graph_file)
+                graph_bytes = await asyncio.to_thread(self.process_data, data)
+                graph_file = discord.File(graph_bytes, "graph.png")
+                await ctx.send(file=graph_file)
 
     @staticmethod
     def process_data_3d(data: np.ndarray) -> BytesIO:
@@ -114,19 +114,19 @@ class TatsuCog(commands.Cog, name="Tatsu"):
     async def graph_roles(self, ctx: core.Context, guild_id: int | None = None) -> None:
         async with ctx.typing():
             # Check that there's a guild ID to work with.
-            query_id = guild_id or ctx.guild.id
+            query_id = guild_id or (ctx.guild.id if ctx.guild else None)
             if not query_id:
                 await ctx.send("You must do this in a guild or provide a valid guild ID.")
                 return
 
-            query_guild = self.bot.get_guild(query_id)
-            data = np.array(
-                [(*role.color.to_rgb(), role.name) for role in query_guild.roles],
-                dtype=[("r", "i4"), ("g", "i4"), ("b", "i4"), ("name", "U36")],
-            )
-            graph_bytes = await asyncio.to_thread(self.process_data_3d, data)
-            graph_file = discord.File(graph_bytes, "graph.png")
-            await ctx.send(file=graph_file)
+            if query_guild := self.bot.get_guild(query_id):
+                data = np.array(
+                    [(*role.color.to_rgb(), role.name) for role in query_guild.roles],
+                    dtype=[("r", "i4"), ("g", "i4"), ("b", "i4"), ("name", "U36")],
+                )
+                graph_bytes = await asyncio.to_thread(self.process_data_3d, data)
+                graph_file = discord.File(graph_bytes, "graph.png")
+                await ctx.send(file=graph_file)
 
 
 async def setup(bot: core.Beira) -> None:

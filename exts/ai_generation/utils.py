@@ -1,10 +1,9 @@
 import asyncio
 import logging
-from collections.abc import Generator
+from collections.abc import AsyncGenerator
 from contextlib import asynccontextmanager
 from io import BytesIO
 from pathlib import Path
-from typing import Any
 
 import aiofiles
 import aiohttp
@@ -29,7 +28,7 @@ INSPIROBOT_API_URL = "https://inspirobot.me/api"
 
 
 @asynccontextmanager
-async def temp_file_names(*extensions: str) -> Generator[tuple[Path, ...], Any, None]:
+async def temp_file_names(*extensions: str) -> AsyncGenerator[tuple[Path, ...], None]:
     """Create temporary filesystem paths to generated filenames in a temporary folder.
 
     Upon completion, the folder is removed.
@@ -101,7 +100,7 @@ async def create_completion(prompt: str) -> str:
         max_tokens=150,
         temperature=0,
     )
-    return completion_response.choices[0].text
+    return completion_response.choices[0].text  # type: ignore
 
 
 async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
@@ -121,7 +120,7 @@ async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
     """
 
     image_response = await openai.Image.acreate(prompt=prompt, n=1, size=f"{size[0]}x{size[1]}")
-    return image_response.data[0].url
+    return image_response.data[0].url  # type: ignore
 
 
 async def create_inspiration(session: aiohttp.ClientSession) -> str:

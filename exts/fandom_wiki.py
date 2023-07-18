@@ -180,7 +180,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         failed_embed = discord.Embed(title="Wiki Unavailable")
 
         # Check if the wiki name is valid.
-        get_wiki_name: dict = self.all_wikis.get(wiki_name)
+        get_wiki_name: dict | None = self.all_wikis.get(wiki_name)
 
         if get_wiki_name is None:
             entries_list = self.all_wikis.keys()
@@ -198,7 +198,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         # --------------------------------
         # Check if the wiki has any recorded pages.
-        get_wiki_pages: dict = get_wiki_name.get("all_pages")
+        get_wiki_pages: dict | None = get_wiki_name.get("all_pages")
 
         if get_wiki_pages is None:
             failed_embed.description = "Error: No Pages on Record for This Wiki. It is unavailable at this time."

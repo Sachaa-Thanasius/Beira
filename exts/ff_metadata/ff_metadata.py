@@ -58,7 +58,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"],
             )
         except Exception as err:
-            LOGGER.error("", exc_info=err)
+            LOGGER.error("Couldn't log in to Ao3 during cog load.", exc_info=err)
             # Fuck accessing Ao3 normally. Just set it to none and go without backup.
             self.ao3_session = None
 
@@ -98,7 +98,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                     embed: discord.Embed | None = None
 
                     if match_obj.lastgroup == "FFN":
-                        story_data = await self.atlas_client.get_story_metadata(match_obj.group("ffn_id"))
+                        story_data = await self.atlas_client.get_story_metadata(int(match_obj.group("ffn_id")))
                         embed = await create_atlas_ffn_embed(story_data)
 
                     elif match_obj.lastgroup == "AO3" and (message.guild.id != self.aci100_id):
@@ -111,8 +111,8 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                             embed = await create_ao3_series_embed(story_data)
 
                     elif match_obj.lastgroup and (match_obj.lastgroup != "AO3"):
-                        story_data = await self.search_other(match_obj.group(0))
-                        embed = await create_fichub_embed(story_data)
+                        story_data = await self.search_other(match_obj.group(0))                        
+                        embed = await create_fichub_embed(story_data) if story_data else None
 
                     if embed:
                         await message.channel.send(embed=embed)
@@ -122,17 +122,20 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         fanficfinder_id = 779772534040166450
 
-        # Listen to the allows channels in the allowed guilds.
+        # Listen to the allowed channels in the allowed guilds.
         if (
                 message.guild and
                 (message.guild.id == self.aci100_id) and
                 (message.author.id == fanficfinder_id) and
-                "fanfiction not found" in message.embeds[0].description.lower()
+                (embed := message.embeds[0]) is not None and
+                embed.description is not None and
+                "fanfiction not found" in embed.description.lower()
         ):
             await message.delete()
 
     @commands.hybrid_group(fallback="get")
-    async def autoresponse(self, ctx: core.Context) -> None:
+    @commands.guild_only()
+    async def autoresponse(self, ctx: core.GuildContext) -> None:
         """Autoresponse-related commands for automatically responding to fanfiction links in certain channels.
 
         By default, display the channels in the server set to autorespond.
@@ -148,14 +151,19 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             await ctx.send(embed=embed)
 
     @autoresponse.command("add")
-    async def autoresponse_add(self, ctx: core.Context, channels: commands.Greedy[discord.abc.GuildChannel]) -> None:
+    async def autoresponse_add(
+            self,
+            ctx: core.GuildContext,
+            *,
+            channels: commands.Greedy[discord.abc.GuildChannel],
+    ) -> None:
         """Set the bot to listen for Ao3/FFN/other ff site links posted in the given channels.
 
         If allowed, the bot will respond automatically with an informational embed.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
             A list of channels to add, separated by spaces.
@@ -183,14 +191,19 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             await ctx.send(embed=embed)
 
     @autoresponse.command("remove")
-    async def autoresponse_remove(self, ctx: core.Context, channels: commands.Greedy[discord.abc.GuildChannel]) -> None:
+    async def autoresponse_remove(
+            self,
+            ctx: core.GuildContext,
+            *,
+            channels: commands.Greedy[discord.abc.GuildChannel],
+    ) -> None:
         """Set the bot to not listen for Ao3/FFN/other ff site links posted in the given channels.
 
         The bot will no longer automatically respond to links with information embeds.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
             A list of channels to remove, separated by spaces.
@@ -260,8 +273,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         """
 
         async with ctx.typing():
-            if story_data := await self.search_ffn(name_or_url):
+            story_data = await self.search_ffn(name_or_url)
+            if isinstance(story_data, atlas_api.FFNStory):
                 ffn_embed = await create_atlas_ffn_embed(story_data)
+            elif isinstance(story_data, fichub_api.Story):
+                ffn_embed = await create_fichub_embed(story_data)
             else:
                 ffn_embed = DTEmbed(
                     title="No Results",
@@ -297,11 +313,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         else:
             search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
             await asyncio.to_thread(search.update)
-            story_data = search.results[0] if len(search.results) > 0 else None
+            story_data = search.results[0] if len(search.results) > 0 else None  # type: ignore
 
         return story_data
 
-    async def search_ffn(self, name_or_url: str) -> atlas_api.FFNStory | None:
+    async def search_ffn(self, name_or_url: str) -> atlas_api.FFNStory | fichub_api.Story | None:
         """More generically search FFN for works based on a partial title or full url."""
 
         if fic_id := atlas_api.extract_fic_id(name_or_url):

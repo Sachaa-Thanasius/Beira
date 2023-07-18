@@ -4,6 +4,7 @@ checks.py: Custom checks used by the bot.
 
 from __future__ import annotations
 
+from collections.abc import Callable
 from typing import TYPE_CHECKING, Any
 
 import discord
@@ -15,8 +16,10 @@ from .errors import GuildIsBlocked, NotAdmin, NotInBotVoiceChannel, NotOwnerOrFr
 
 
 if TYPE_CHECKING:
-    from discord.app_commands.commands import Check as app_Check  # type: ignore
-    from discord.ext.commands._types import Check  # type: ignore
+    from discord.app_commands.commands import Check as app_Check
+    from discord.ext.commands._types import Check
+
+    from core import Context, GuildContext
 
 
 __all__ = ("is_owner_or_friend", "is_admin", "in_bot_vc", "in_aci100_guild", "is_blocked", "check_any")
@@ -32,8 +35,8 @@ def is_owner_or_friend() -> Check[Any]:
     from :exc:`commands.CheckFailure`.
     """
 
-    async def predicate(ctx: commands.Context) -> bool:
-        if not (ctx.bot.owner_id == ctx.author.id or ctx.bot.is_special_friend(ctx.author)):
+    async def predicate(ctx: Context) -> bool:
+        if not (await ctx.bot.is_owner(ctx.author) or ctx.bot.is_special_friend(ctx.author)):
             msg = "You do not own this bot, nor are you a friend of the owner."
             raise NotOwnerOrFriend(msg)
         return True
@@ -49,7 +52,7 @@ def is_admin() -> Check[Any]:
     from :exc:`commands.CheckFailure`.
     """
 
-    async def predicate(ctx: commands.Context) -> bool:
+    async def predicate(ctx: GuildContext) -> bool:
         if not (ctx.guild is not None and ctx.author.guild_permissions.administrator):
             msg = "Only someone with administrator permissions can do this."
             raise NotAdmin(msg)
@@ -66,7 +69,7 @@ def in_bot_vc() -> Check[Any]:
     from :exc:`commands.CheckFailure`.
     """
 
-    async def predicate(ctx: commands.Context) -> bool:
+    async def predicate(ctx: GuildContext) -> bool:
         vc: discord.VoiceProtocol | None = ctx.voice_client
 
         if not (
@@ -87,7 +90,7 @@ def in_aci100_guild() -> Check[Any]:
     This check raises the exception :exc:`commands.CheckFailure`.
     """
 
-    async def predicate(ctx: commands.Context) -> bool:
+    async def predicate(ctx: GuildContext) -> bool:
         if ctx.guild.id != 602735169090224139:
             msg = "This command isn't active in this guild."
             raise commands.CheckFailure(msg)
@@ -102,8 +105,8 @@ def is_blocked() -> Check[Any]:
     This check raises the exception :exc:`commands.CheckFailure`.
     """
 
-    async def predicate(ctx: commands.Context) -> bool:
-        if ctx.bot.owner_id != ctx.author.id:
+    async def predicate(ctx: Context) -> bool:
+        if not (await ctx.bot.is_owner(ctx.author)):
             if ctx.author.id in ctx.bot.blocked_entities_cache["users"]:
                 msg = "This user is prohibited from using bot commands."
                 raise UserIsBlocked(msg)
@@ -115,7 +118,7 @@ def is_blocked() -> Check[Any]:
     return commands.check(predicate)
 
 
-def check_any(*checks: app_Check) -> app_Check:
+def check_any(*checks: app_Check) -> Callable:
     """An attempt at making a :func:`check_any` decorator for application commands.
 
     Parameters

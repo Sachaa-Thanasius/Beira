@@ -204,7 +204,7 @@ class MiscCog(commands.Cog, name="Misc"):
             await ctx.reply(meowify_text(text))
 
     async def context_menu_meowify(self, interaction: core.Interaction, message: discord.Message) -> None:
-        await interaction.response.send_message(meowify_text(message.content), ephemeral=True)  # type: ignore
+        await interaction.response.send_message(meowify_text(message.content), ephemeral=True)
 
 
 async def setup(bot: core.Beira) -> None:

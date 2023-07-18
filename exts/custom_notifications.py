@@ -125,7 +125,7 @@ class CustomNotificationsCog(commands.Cog):
                 extra.extend(att.url for att in message.attachments)
 
             # Send the log message(s).
-            delete_log_channel = self.bot.get_channel(self.aci_delete_channel)
+            delete_log_channel: discord.TextChannel = self.bot.get_channel(self.aci_delete_channel)     # type: ignore
             await delete_log_channel.send(embed=embed)
             if extra:
                 content = "\n".join(extra)

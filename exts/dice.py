@@ -45,7 +45,7 @@ class Die:
     value: int
     emoji: discord.PartialEmoji
     color: discord.Colour
-    label: str = field()
+    label: str = field(init=False)
 
     @label.default
     def _label(self) -> str:
@@ -111,7 +111,7 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
     """
 
     normalized_expression = re.sub(r"(\d*)d(\d+)", replace_dice_in_expr, expression)
-    evaluation = int(AEVAL(normalized_expression))
+    evaluation = int(AEVAL(normalized_expression))  # type: ignore
 
     # Error handling.
     if len(AEVAL.error) > 0:
@@ -138,9 +138,9 @@ class DiceEmbed(discord.Embed):
     def __init__(
             self,
             *,
-            rolls_info: dict[int, list[int]] = None,
+            rolls_info: dict[int, list[int]] | None = None,
             modifier: int = 0,
-            expression_info: tuple[str, str, int] = None,
+            expression_info: tuple[str, str, int] | None = None,
             **kwargs: Any,
     ) -> None:
 
@@ -217,9 +217,9 @@ class RerollButton(ui.Button):
     def __init__(
             self,
             *,
-            dice_info: dict[int, int] = None,
+            dice_info: dict[int, int] | None = None,
             modifier: int = 0,
-            expression: str = None,
+            expression: str | None = None,
             **kwargs: Any,
     ) -> None:
         kwargs["label"] = kwargs.get("label", "\N{CLOCKWISE GAPPED CIRCLE ARROW}")
@@ -231,6 +231,8 @@ class RerollButton(ui.Button):
         self.expression = expression
 
     async def callback(self, interaction: core.Interaction) -> None:
+
+        assert self.view is not None
         if self.dice_info:
             rolls_info = roll_basic_dice(dice_info=self.dice_info)
             embed = DiceEmbed(rolls_info=rolls_info, modifier=self.modifier)
@@ -240,8 +242,8 @@ class RerollButton(ui.Button):
         else:
             embed = DiceEmbed()
 
-        if not interaction.response.is_done():  # type: ignore
-            await interaction.response.send_message(embed=embed, view=self.view, ephemeral=True)  # type: ignore
+        if not interaction.response.is_done():
+            await interaction.response.send_message(embed=embed, view=self.view, ephemeral=True)
         else:
             await interaction.followup.send(embed=embed, view=self.view, ephemeral=True)
 
@@ -273,14 +275,15 @@ class DiceButton(ui.Button["DiceView"]):
     async def callback(self, interaction: core.Interaction) -> None:
         """Roll the selected die and display the result."""
 
+        assert self.view is not None
         dice_info = {self.value: self.view.num_rolls}
         results = roll_basic_dice(dice_info)
 
         embed = DiceEmbed(rolls_info=results, modifier=self.view.modifier, colour=self.response_colour)
         view = ui.View().add_item(RerollButton(dice_info=dice_info, modifier=self.view.modifier))
 
-        if not interaction.response.is_done():  # type: ignore
-            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)  # type: ignore
+        if not interaction.response.is_done():
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
         else:
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
@@ -302,14 +305,15 @@ class DiceSelect(ui.Select["DiceView"]):
     async def callback(self, interaction: core.Interaction) -> None:
         """Roll all selected dice and display the results to the user."""
 
+        assert self.view is not None
         dice_info = {int(val): self.view.num_rolls for val in self.values}
         roll_info = roll_basic_dice(dice_info)
 
         embed = DiceEmbed(rolls_info=roll_info, modifier=self.view.modifier)
         view = ui.View().add_item(RerollButton(dice_info=dice_info, modifier=self.view.modifier))
 
-        if not interaction.response.is_done():  # type: ignore
-            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)  # type: ignore
+        if not interaction.response.is_done():
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
         else:
             await interaction.followup.send(embed=embed, view=view, ephemeral=True)
 
@@ -412,7 +416,7 @@ class DiceView(ui.View):
         if self.modifier != 0:
             modal.modifier_input.default = str(self.modifier)
 
-        await interaction.response.send_modal(modal)  # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -428,7 +432,7 @@ class DiceView(ui.View):
 
         await modal.interaction.response.edit_message(view=self)  # type: ignore
 
-    @discord.ui.button(label="# of Rolls", custom_id="dice:set_number_button", style=discord.ButtonStyle.green,
+    @discord.ui.button(label="# of Rolls", custom_id="dice:set_num_button", style=discord.ButtonStyle.green,
                        emoji="\N{HEAVY MULTIPLICATION X}", row=3)
     async def set_number(self, interaction: core.Interaction, button: ui.Button) -> None:
         """Allow the user to set the number of dice to roll at once.
@@ -443,7 +447,7 @@ class DiceView(ui.View):
         if self.num_rolls != 1:
             modal.modifier_input.default = str(self.num_rolls)
 
-        await interaction.response.send_modal(modal)  # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -463,7 +467,7 @@ class DiceView(ui.View):
 
         await modal.interaction.response.edit_message(view=self)  # type: ignore
 
-    @discord.ui.button(label="Custom Expression", custom_id="dice:set_expression_button",
+    @discord.ui.button(label="Custom Expression", custom_id="dice:set_expr_button",
                        style=discord.ButtonStyle.green, emoji="\N{ABACUS}", row=3)
     async def set_expression(self, interaction: core.Interaction, _: ui.Button) -> None:
         """Allow the user to enter a custom dice expression to be evaluated for result."""
@@ -473,7 +477,7 @@ class DiceView(ui.View):
         if not self.expression:
             modal.expression_input.default = self.expression
 
-        await interaction.response.send_modal(modal)  # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -495,19 +499,19 @@ class DiceView(ui.View):
         # Edit the original embed to display it.
         await modal.interaction.response.edit_message(embed=original_embed, view=self)  # type: ignore
 
-    @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", custom_id="dice:run_expression_button",
+    @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", custom_id="dice:run_expr_button",
                        style=discord.ButtonStyle.green, row=3)
     async def run_expression(self, interaction: discord.Interaction, _: ui.Button) -> None:
         """Roll based on the entered custom expression and display the result."""
 
-        send_kwargs = {"ephemeral": True}
+        send_kwargs: dict[str, Any] = {"ephemeral": True}
 
         if self.expression:
             filled_in_expression, result = roll_custom_dice_expression(self.expression)
             send_kwargs["embed"] = DiceEmbed(expression_info=(self.expression, filled_in_expression, result))
             send_kwargs["view"] = ui.View().add_item(RerollButton(expression=self.expression))
         else:
-            dice_select = discord.utils.get(self.children, custom_id="dice:select")
+            dice_select: DiceSelect = discord.utils.get(self.children, custom_id="dice:select")  # type: ignore
             if dice_select.values:
                 dice_info = {int(val): self.num_rolls for val in dice_select.values}
                 roll_info = roll_basic_dice(dice_info)
@@ -517,8 +521,8 @@ class DiceView(ui.View):
             else:
                 send_kwargs["embed"] = discord.Embed(description="\N{ABACUS} No expression to evaluate!")
 
-        if not interaction.response.is_done():  # type: ignore
-            await interaction.response.send_message(**send_kwargs)  # type: ignore
+        if not interaction.response.is_done():
+            await interaction.response.send_message(**send_kwargs)
         else:
             await interaction.followup.send(**send_kwargs)
 

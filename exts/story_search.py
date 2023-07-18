@@ -41,7 +41,7 @@ class StoryInfo:
     author_name: str
     story_link: str
     emoji_id: int
-    template_embed: StoryQuoteEmbed = None
+    template_embed: StoryQuoteEmbed | None = None
     text: list[str] = field(factory=list)
     chapter_index: list[int] = field(factory=list)
     collection_index: list[int] = field(factory=list)
@@ -200,7 +200,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                     # Prologue: A Quest for Europa is split among two lines and needs special parsing logic.
                     if re.search(re_acvr_chap_title, line):
                         if "*A Quest for Europa*" in line:
-                            temp_chap_index[0] += " A Quest for Europa"
+                            temp_text[temp_chap_index[0]] += " A Quest for Europa"
                         else:
                             temp_chap_index.append(index)
 

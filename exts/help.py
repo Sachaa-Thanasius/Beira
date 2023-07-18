@@ -133,7 +133,7 @@ class HelpBotView(PaginatedEmbedView):
         # Get page number from a modal.
         cog_names = [cog_tuple[0][0] for cog_tuple in self.pages]
         modal = HelpCogModal(self.total_pages, cog_names)
-        await interaction.response.send_modal(modal)  # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -150,7 +150,8 @@ class HelpBotView(PaginatedEmbedView):
         if self.current_page == temp_new_page:
             return
 
-        await self.update_page(modal.interaction, temp_new_page)
+        if modal.interaction:
+            await self.update_page(modal.interaction, temp_new_page)
 
 
 class HelpCogView(PaginatedEmbedView):
@@ -287,7 +288,7 @@ class BeiraHelpCommand(commands.HelpCommand):
 
         return f'{self.context.clean_prefix}{command.qualified_name} {command.signature}'
 
-    async def format_cog_pages(self, cog: commands.Cog, page_size: int) -> list[tuple, ...]:
+    async def format_cog_pages(self, cog: commands.Cog, page_size: int) -> list[tuple]:
         """Format information about cogs into pages for an embed-based view."""
 
         pages_content = []
@@ -338,7 +339,7 @@ class HelpCog(commands.Cog, name="Help"):
         else:
             await ctx.send_help()
 
-        await interaction.response.send_message(content="Help dialogue sent!", ephemeral=True)  # type: ignore
+        await interaction.response.send_message(content="Help dialogue sent!", ephemeral=True)
 
     @help_.autocomplete("command")
     async def command_autocomplete(self, interaction: core.Interaction, current: str) -> list[app_commands.Choice[str]]:

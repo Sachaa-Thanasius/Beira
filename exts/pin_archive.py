@@ -56,11 +56,12 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
 
         return discord.PartialEmoji(name="\N{PUSHPIN}")
 
-    async def cog_check(self, ctx: commands.Context) -> bool:
+    async def cog_check(self, ctx: core.Context) -> bool:
         """Set up bot owner check as universal within the cog."""
 
         original = commands.is_owner().predicate
-        return await original(ctx)
+        guild_only = commands.guild_only().predicate
+        return await original(ctx) and await guild_only(ctx)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         error = getattr(error, "original", error)
@@ -76,38 +77,35 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
 
     # Commands
     @commands.command()
-    async def set_archive_channel(self, ctx: core.Context, channel: PinnableGuildChannel) -> None:
+    async def set_archive_channel(self, ctx: core.GuildContext, channel: PinnableGuildChannel) -> None:
         """Set the archive channel."""
 
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def get_pins(self, ctx: core.Context, channel: PinnableGuildChannel | None = None) -> None:
+    async def get_pins(self, ctx: core.GuildContext, channel: PinnableGuildChannel = commands.CurrentChannel) -> None:
         """Print all pins in a guild channel."""
 
-        if channel is None:
-            channel = ctx.channel
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
         all_pins = await channel.pins()
         LOGGER.info(str(all_pins))
 
     @commands.command()
-    async def activate(self, ctx: core.Context) -> None:
+    async def activate(self, ctx: core.GuildContext) -> None:
         """Start the pin archiving process."""
 
         LOGGER.info(f"activate(): {ctx.author}, {ctx.guild}")
 
     @commands.group("pin", invoke_without_command=True)
-    async def pin_(self, ctx: core.Context) -> None:
+    async def pin_(self, ctx: core.GuildContext) -> None:
         """Commands for setting up and maintaining a pin archive for your server."""
 
         await ctx.send_help(ctx.command)
 
     @pin_.command("blacklist")
-    @commands.guild_only()
     async def pin_blacklist(
             self,
-            ctx: core.Context,
+            ctx: core.GuildContext,
             *,
             channels: commands.Greedy[discord.abc.GuildChannel] = None,
     ) -> None:
@@ -146,8 +144,12 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
             await ctx.send(msg)
 
     @pin_.command("whitelist")
-    @commands.guild_only()
-    async def pin_whitelist(self, ctx: core.Context, *, channels: commands.Greedy[discord.abc.GuildChannel]) -> None:
+    async def pin_whitelist(
+            self,
+            ctx: core.GuildContext,
+            *,
+            channels: commands.Greedy[discord.abc.GuildChannel],
+    ) -> None:
         """Remove channels from a blacklist so that pins from them are archived.
 
         If the channels weren't in the blacklist, nothing happens.
@@ -169,7 +171,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
         await ctx.send(f"Removed channels from the pin blacklist:\n{channels_str}")
 
     @pin_.command("setup")
-    async def pin_setup(self, ctx: core.Context, *, pin_flags: PinArchiveSettings) -> None:
+    async def pin_setup(self, ctx: core.GuildContext, *, pin_flags: PinArchiveSettings) -> None:
         """Set up the pin archive settings in one go."""
 
         # Get the arguments from the flags.

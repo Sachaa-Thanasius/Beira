@@ -24,53 +24,53 @@ __all__ = (
 )
 
 
-def collect_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
+def collect_cooldown(ctx: core.GuildContext) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.collect() command. 10 seconds by default.
 
     Bot owner and friends get less time.
     """
 
     rate, per = 1.0, 15.0  # Default cooldown
-    exempt = [ctx.bot.special_friends["aeroali"]]
+    exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
 
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
+    if ctx.author.id in exempt:
         return None
 
-    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+    if ctx.guild.id in ctx.bot.config["discord"]["guilds"]["dev"]:  # Testing server ids
         per = 1.0
     return commands.Cooldown(rate, per)
 
 
-def transfer_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
+def transfer_cooldown(ctx: core.GuildContext) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.transfer() command. 60 seconds by default.
 
     Bot owner and friends get less time.
     """
 
     rate, per = 1.0, 60.0  # Default cooldown
-    exempt = [ctx.bot.special_friends["aeroali"]]
+    exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
 
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
+    if ctx.author.id in exempt:
         return None
 
-    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+    if ctx.guild.id in ctx.bot.config["discord"]["guilds"]["dev"]:  # Testing server ids
         per = 2.0
     return commands.Cooldown(rate, per)
 
 
-def steal_cooldown(ctx: commands.Context) -> commands.Cooldown | None:
+def steal_cooldown(ctx: core.GuildContext) -> commands.Cooldown | None:
     """Sets cooldown for SnowballCog.steal() command. 90 seconds by default.
 
     Bot owner and friends get less time.
     """
 
     rate, per = 1.0, 90.0  # Default cooldown
-    exempt = [ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["Athena Hope"]]
+    exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["Athena Hope"]]
 
-    if (ctx.author.id == ctx.bot.owner_id) or (ctx.author.id in exempt):
+    if ctx.author.id in exempt:
         return None
 
-    if ctx.guild.id in ctx.bot.testing_guild_ids:  # Testing server ids
+    if ctx.guild.id in ctx.bot.config["discord"]["guilds"]["dev"]:  # Testing server ids
         per = 2.0
     return commands.Cooldown(rate, per)
 
@@ -207,7 +207,7 @@ class SnowballSettingsModal(ui.Modal):
         self.new_settings = SnowballSettings(guild_id, new_odds_val, new_stock_val, new_transfer_val)
         if self.new_settings != self.default_settings:
             await self.new_settings.update_record(interaction.client.db_pool)
-            await interaction.response.send_message("Settings updated!")    # type: ignore
+            await interaction.response.send_message("Settings updated!")
 
 
 class SnowballSettingsButtonWrapper(ui.View):
@@ -228,7 +228,7 @@ class SnowballSettingsButtonWrapper(ui.View):
 
     def __init__(self, guild_settings: SnowballSettings) -> None:
         super().__init__()
-        self.settings = guild_settings
+        self.settings: SnowballSettings = guild_settings
         self.message: discord.Message | None = None
 
     async def on_timeout(self) -> None:
@@ -237,13 +237,15 @@ class SnowballSettingsButtonWrapper(ui.View):
         for item in self.children:
             item.disabled = True
 
-        await self.message.edit(view=self)
+        if self.message:
+            await self.message.edit(view=self)
 
     async def interaction_check(self, interaction: core.Interaction, /) -> bool:
         # Ensure users are only server administrators or bot owners.
+
         check = bool(
             interaction.guild and
-            (interaction.user.guild_permissions.administrator or await interaction.client.is_owner(interaction.user)),
+            (interaction.user.guild_permissions.administrator or interaction.client.owner_id == interaction.user.id),
         )
         if not check:
             await interaction.response.send_message("You can't change that unless you're a guild admin.")
@@ -255,32 +257,34 @@ class SnowballSettingsButtonWrapper(ui.View):
 
         # Get inputs from a modal.
         modal = SnowballSettingsModal(self.settings)
-        await interaction.response.send_modal(modal)    # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
             return
 
         # Update the known settings.
-        self.settings = modal.new_settings
+        if modal.new_settings is not None and modal.new_settings != self.settings:
+            self.settings = modal.new_settings
 
-        # Edit the embed with the settings information.
-        # Note: Dependent on embed layout.
-        info_embed = self.message.embeds[0]
-        info_embed.set_field_at(
-            0,
-            name=f"Odds = {self.settings.hit_odds}",
-            value=info_embed.fields[0].value,
-            inline=info_embed.fields[0].inline,
-        ).set_field_at(
-            2,
-            name=f"Default Stock Cap = {self.settings.stock_cap}",
-            value=info_embed.fields[2].value,
-            inline=info_embed.fields[2].inline,
-        ).set_field_at(
-            3,
-            name=f"Transfer Cap = {self.settings.transfer_cap}",
-            value=info_embed.fields[3].value,
-            inline=info_embed.fields[3].inline,
-        )
-        await interaction.edit_original_response(embed=info_embed)
+            # Edit the embed with the settings information.
+            # Note: Dependent on embed layout.
+            if self.message:
+                info_embed = self.message.embeds[0]
+                info_embed.set_field_at(
+                    0,
+                    name=f"Odds = {self.settings.hit_odds}",
+                    value=info_embed.fields[0].value,
+                    inline=info_embed.fields[0].inline,
+                ).set_field_at(
+                    2,
+                    name=f"Default Stock Cap = {self.settings.stock_cap}",
+                    value=info_embed.fields[2].value,
+                    inline=info_embed.fields[2].inline,
+                ).set_field_at(
+                    3,
+                    name=f"Transfer Cap = {self.settings.transfer_cap}",
+                    value=info_embed.fields[3].value,
+                    inline=info_embed.fields[3].inline,
+                )
+                await interaction.edit_original_response(embed=info_embed)

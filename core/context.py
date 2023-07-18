@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
     from .bot import Beira
 
-__all__ = ("Context", "Interaction")
+__all__ = ("Context", "GuildContext", "Interaction")
 
 Interaction: TypeAlias = discord.Interaction["Beira"]
 
@@ -40,3 +40,10 @@ class Context(commands.Context):
         """:class:`Pool`: Returns the asynchronous connection pool used by the bot for database management."""
 
         return self.bot.db_pool
+
+
+class GuildContext(Context):
+    author: discord.Member
+    guild: discord.Guild
+    channel: discord.TextChannel | discord.VoiceChannel | discord.StageChannel | discord.Thread
+    me: discord.Member

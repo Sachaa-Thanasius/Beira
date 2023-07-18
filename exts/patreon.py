@@ -42,7 +42,9 @@ class PatreonTierSelectView(discord.ui.View):
     async def on_timeout(self) -> None:
         for child in self.children:
             child.disabled = True
-        await self.message.edit(view=self)
+        
+        if self.message:
+            await self.message.edit(view=self)
 
     def _set_select_options(self) -> list[discord.SelectOption]:
         options = []
@@ -108,7 +110,7 @@ class PatreonTierSelectView(discord.ui.View):
     async def select_tier(self, interaction: discord.Interaction, select: discord.ui.Select) -> None:
         """Dropdown that displays all the Patreon tiers and provides them as choices to navigate to."""
 
-        await interaction.response.defer()  # type: ignore
+        await interaction.response.defer()
         self.current_tier = int(select.values[0])
         self.update_page_buttons()
         embed = self.format_page()
@@ -118,7 +120,7 @@ class PatreonTierSelectView(discord.ui.View):
     async def show_previous_tier(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Button that displays the previous tier's information."""
 
-        await interaction.response.defer()  # type: ignore
+        await interaction.response.defer()
         self._increment_current_tier(-1)
         self.update_page_buttons()
         embed = self.format_page()
@@ -128,7 +130,7 @@ class PatreonTierSelectView(discord.ui.View):
     async def show_next_tier(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Button that displays the next tier's information."""
 
-        await interaction.response.defer()  # type: ignore
+        await interaction.response.defer()
         self._increment_current_tier(1)
         self.update_page_buttons()
         embed = self.format_page()
@@ -153,7 +155,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.access_token = self.bot.config["patreon"]["creator_access_token"]
-        self.patrons_on_discord = None
+        # self.patrons_on_discord = None
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -189,7 +191,10 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         records: list[Record] = await self.bot.db_pool.fetch(query)
 
         self.patreon_tiers_info = [dict(record) for record in records]
-        temp_guild = self.bot.get_guild(self.patreon_tiers_info[0]["discord_guild"])
+        temp_guild = (
+            self.bot.get_guild(self.patreon_tiers_info[0]["discord_guild"]) or 
+            await self.bot.fetch_guild(self.patreon_tiers_info[0]["discord_guild"])
+        )
         for tier in self.patreon_tiers_info:
             tier["tier_role"] = temp_guild.get_role(tier["tier_role"])
             tier["tier_emoji"] = discord.PartialEmoji.from_str(tier["tier_emoji"])

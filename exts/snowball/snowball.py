@@ -88,7 +88,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if isinstance(error, commands.MissingRequiredArgument):
             embed.title = "Missing Parameter!"
             embed.description = "This command needs a target."
-            ctx.command.reset_cooldown(ctx)
+            ctx.command.reset_cooldown(ctx)  # type: ignore
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
@@ -99,7 +99,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
                 "face."
             )
         else:
-            embed.title = f"{ctx.command.name}: Unknown Command Error"
+            embed.title = f"{ctx.command.name}: Unknown Command Error"  # type: ignore
             embed.description = (
                 "Maybe the snowballs are revolting. Maybe you hit a beehive. Regardless, there's some kind of error. "
                 "Please try again in a minute or two."
@@ -116,7 +116,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @snow.command()
     @commands.guild_only()
-    async def settings(self, ctx: core.Context) -> None:
+    async def settings(self, ctx: core.GuildContext) -> None:
         """Show what the settings are for the snowballs in this server."""
 
         guild_settings = await SnowballSettings.from_database(ctx.db, ctx.guild.id)
@@ -144,7 +144,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
             value="The maximum number of snowballs that can be gifted or stolen at once.",
             inline=False,
         )
-        if await self.bot.is_owner(ctx.author) or core.is_admin().predicate(ctx):
+        
+        if ctx.author.id == self.bot.owner_id or core.is_admin().predicate(ctx):
             send_kwargs["view"] = SnowballSettingsButtonWrapper(guild_settings)
 
         message = await ctx.send(**send_kwargs)
@@ -154,12 +155,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.command()
     @commands.guild_only()
     @commands.dynamic_cooldown(collect_cooldown, commands.cooldowns.BucketType.user)
-    async def collect(self, ctx: core.Context) -> None:
+    async def collect(self, ctx: core.GuildContext) -> None:
         """Collects a snowball.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context where the command was called.
         """
 
@@ -174,31 +175,32 @@ class SnowballCog(commands.Cog, name="Snowball"):
             stock_limit = DEFAULT_STOCK_CAP
 
         embed = discord.Embed(color=0x5e62d3)
-        if record["stock"] < stock_limit:
-            embed.description = (
-                f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping"
-                f"some snowballs. You now have {record['stock']} of them—let 'em fly!"
-            )
-            embed.set_image(url=random.choice(self.embed_data["collects"]["image_success"]))
+        if record:
+            if record["stock"] < stock_limit:
+                embed.description = (
+                    f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping"
+                    f"some snowballs. You now have {record['stock']} of them—let 'em fly!"
+                )
+                embed.set_image(url=random.choice(self.embed_data["collects"]["image_success"]))
 
-        else:
-            embed.description = (
-                f"You've filled your armory to the brim with about {stock_limit} snowballs! Release "
-                f"some of your stores to make space for more."
-            )
-            embed.set_image(url=self.embed_data["collects"]["image_failure"])
+            else:
+                embed.description = (
+                    f"You've filled your armory to the brim with about {stock_limit} snowballs! Release "
+                    f"some of your stores to make space for more."
+                )
+                embed.set_image(url=self.embed_data["collects"]["image_failure"])
 
-        await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
+            await ctx.send(embed=embed, ephemeral=True, delete_after=60.0)
 
     @snow.command()
     @commands.guild_only()
     @app_commands.describe(target="Who do you want to throw a snowball at?")
-    async def throw(self, ctx: core.Context, *, target: discord.Member) -> None:
+    async def throw(self, ctx: core.GuildContext, *, target: discord.Member) -> None:
         """Start a snowball fight with another server member.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         target : :class:`discord.Member`
             The user to hit with a snowball.
@@ -248,12 +250,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.guild_only()
     @commands.dynamic_cooldown(transfer_cooldown, commands.cooldowns.BucketType.user)
     @app_commands.describe(receiver="Who do you want to give some balls? You can't transfer more than 10 at a time.")
-    async def transfer(self, ctx: core.Context, amount: int, *, receiver: discord.Member) -> None:
+    async def transfer(self, ctx: core.GuildContext, amount: int, *, receiver: discord.Member) -> None:
         """Give another server member some of your snowballs, though no more than 10 at a time.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         amount : :class:`int`
             The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
@@ -322,12 +324,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
         amount="How much do you want to steal? (No more than 10 at a time)",
         victim="Who do you want to pilfer some balls from?",
     )
-    async def steal(self, ctx: core.Context, amount: int, *, victim: discord.Member) -> None:
+    async def steal(self, ctx: core.GuildContext, amount: int, *, victim: discord.Member) -> None:
         """Steal snowballs from another server member, though no more than 10 at a time.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         amount : :class:`int`
             The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
@@ -389,12 +391,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @snow.group(fallback="get")
     @commands.guild_only()
     @app_commands.describe(target="Look up a particular Snowball Sparrer's stats.")
-    async def stats(self, ctx: core.Context, *, target: discord.User = commands.Author) -> None:
+    async def stats(self, ctx: core.GuildContext, *, target: discord.User = commands.Author) -> None:
         """See who's the best at shooting snow spheres.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         target : :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their stats are specifically from
@@ -412,13 +414,13 @@ class SnowballCog(commands.Cog, name="Snowball"):
             ) as t
             WHERE user_id = $2;
         """
-        record: asyncpg.Record = await ctx.db.fetchrow(query, ctx.guild.id, target.id)
+        record = await ctx.db.fetchrow(query, ctx.guild.id, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
             title = f"**Player Statistics for {target}**"
             headers = ["Rank", "Direct Hits", "Total Misses", "KOs", "Total Snowballs Collected"]
-            emojis = [self.bot.emojis_stock["snowsgive_phi"]]
+            emojis = [self.bot.emojis_stock["snowsgive_phi"] or ""]
 
             embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
             embed.set_thumbnail(url=target.display_avatar.url)
@@ -445,13 +447,13 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         query = "SELECT rank, hits, misses, kos, stock FROM global_rank_view WHERE user_id = $1;"
-        record: asyncpg.Record = await ctx.db.fetchrow(query, target.id)
+        record = await ctx.db.fetchrow(query, target.id)
 
         # Create and send the stats embed only if the user has a record.
         if record is not None:
             title = f"**Global Player Statistics for {target}**"  # Formerly 0x2f3171
             headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
-            emojis = [self.bot.emojis_stock["snowsgive_phi"]]
+            emojis = [self.bot.emojis_stock["snowsgive_phi"] or ""]
 
             embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
             embed.set_thumbnail(url=target.display_avatar.url)
@@ -465,12 +467,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @snow.group(fallback="get")
     @commands.guild_only()
-    async def leaderboard(self, ctx: core.Context) -> None:
+    async def leaderboard(self, ctx: core.GuildContext) -> None:
         """See who's dominating the Snowball Bot leaderboard in your server.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         """
 
@@ -488,7 +490,10 @@ class SnowballCog(commands.Cog, name="Snowball"):
             color=0x2f3136,
             title=f"**Snowball Champions in {ctx.guild.name}**",
             description="(Hits / Misses / KOs)\n——————————————",
-        ).set_thumbnail(url=ctx.guild.icon.url)
+        )
+
+        if ctx.guild.icon:
+            embed.set_thumbnail(url=ctx.guild.icon.url)
 
         if guild_ldbd is not None:
             await self._make_leaderboard_fields(embed, guild_ldbd)
@@ -609,9 +614,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         # Create temporary, more concise references for a few emojis.
-        orange_star = self.bot.emojis_stock["orange_star"]
-        blue_star = self.bot.emojis_stock["blue_star"]
-        pink_star = self.bot.emojis_stock["pink_star"]
+        orange_star = self.bot.emojis_stock["orange_star"] or ""
+        blue_star = self.bot.emojis_stock["blue_star"] or ""
+        pink_star = self.bot.emojis_stock["pink_star"] or ""
 
         # Create a list of emojis to accompany the leaderboard members.
         ldbd_places_emojis = ("\N{GLOWING STAR}", "\N{WHITE MEDIUM STAR}", orange_star, blue_star, pink_star,

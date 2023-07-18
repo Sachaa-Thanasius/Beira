@@ -11,7 +11,7 @@ from typing import Any
 import aiohttp
 import asyncpg
 import discord
-import jishaku  # noqa: F401 # Imported as a bot extension
+import jishaku  # type: ignore # noqa: F401 # Imported as a bot extension
 from discord.ext import commands
 
 from exts import EXTENSIONS
@@ -62,7 +62,7 @@ class Beira(commands.Bot):
         self.blocked_entities_cache: dict[str, set] = {}
 
         # Things to load right after connecting to the Gateway for easy future retrieval.
-        self.emojis_stock: dict[str, discord.Emoji] = {}
+        self.emojis_stock: dict[str, discord.Emoji | None] = {}
         self.special_friends: dict[str, int] = {}
 
         # Add a global check for blocked members.
@@ -111,7 +111,7 @@ class Beira(commands.Bot):
                 await self.load_extension(extension)
                 end_time = time.perf_counter()
                 LOGGER.info(f"Loaded extension: {extension} -- Time: {end_time - start_time:.5}")
-            except discord.ext.commands.ExtensionError as err:
+            except commands.ExtensionError as err:
                 LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
     def _load_emoji_stock(self) -> None:
@@ -139,11 +139,12 @@ class Beira(commands.Bot):
     def _load_special_friends(self) -> None:
         friends_ids: list[int] = self.config["discord"]["friend_ids"]
         for user_id in friends_ids:
-            self.special_friends[self.get_user(user_id).name] = user_id
+            if user_obj := self.get_user(user_id):
+                self.special_friends[user_obj.name] = user_id
 
     async def load_cache(self) -> None:
         """Loads some variables once on startup after the bot has connected to the Discord Gateway."""
-
+        
         await self.wait_until_ready()
         self._load_emoji_stock()
         self._load_special_friends()
@@ -152,6 +153,7 @@ class Beira(commands.Bot):
     async def on_ready(self) -> None:
         """Display that the bot is ready."""
 
+        assert self.user
         LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
 
     async def setup_hook(self) -> None:
@@ -174,9 +176,9 @@ class Beira(commands.Bot):
             origin: discord.Message | discord.Interaction,
             /,
             *,
-            cls: type[commands.Context[commands.Bot]] | None = None,
+            cls: type[Context] = Context,
     ) -> Context:
-        return await super().get_context(origin, cls=Context)
+        return await super().get_context(origin, cls=cls)
 
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of

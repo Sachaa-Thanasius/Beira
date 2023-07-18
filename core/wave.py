@@ -53,11 +53,11 @@ class SkippableQueue(wavelink.Queue):
         """
 
         if not isinstance(item, list):
-            item.requester = requester
+            item.requester = requester  # type: ignore
             await self.put_wait(item)
         else:
             for sub_item in item:
-                sub_item.requester = requester
+                sub_item.requester = requester  # type: ignore
                 await self.put_wait(sub_item)
 
 

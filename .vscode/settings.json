@@ -1,0 +1,13 @@
+{
+    "sqltools.connections": [
+        {
+            "previewLimit": 50,
+            "server": "192.168.0.23",
+            "port": 5432,
+            "driver": "PostgreSQL",
+            "name": "Beira DB",
+            "username": "thanos",
+            "database": "discord_beira_db"
+        }
+    ]
+}

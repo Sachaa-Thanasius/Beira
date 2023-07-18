@@ -11,9 +11,10 @@ import logging
 from pathlib import Path
 from urllib.parse import quote, urljoin
 
+import aiohttp
 import discord
+import lxml.html as lh
 from arsenic import browsers, errors, get_session, services
-from bs4 import BeautifulSoup  # TODO: Look into switching to lxml.
 from discord.ext import commands
 
 import core
@@ -24,6 +25,8 @@ LOGGER = logging.getLogger(__name__)
 
 GECKODRIVER = Path(__file__).parents[1].joinpath("drivers/geckodriver/geckodriver.exe")
 GECKODRIVER_LOGS = Path(__file__).parents[1].joinpath("logs/geckodriver.log")
+
+PERSONAL_GUILD = 107584745809944576
 
 
 async def update_op_gg_profiles(urls: list[str]) -> None:
@@ -37,7 +40,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 
     # Create the webdriver.
     with GECKODRIVER_LOGS.open(mode='a', encoding="utf-8") as log_file:
-        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)
+        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)  # type: ignore
         browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
         async with get_session(service, browser) as session:
@@ -68,7 +71,7 @@ class UpdateOPGGView(discord.ui.View):
         button.label = "Updating..."
         button.disabled = True
 
-        await interaction.response.edit_message(view=self)  # type: ignore
+        await interaction.response.edit_message(view=self)
 
         # Only activate for bot owner.
         if interaction.user.id == self.bot.owner_id:
@@ -165,7 +168,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         """
 
         # Append a default list of summoners if the command was called in a certain private guild.
-        if ctx.guild.id == 107584745809944576:
+        if ctx.guild and (ctx.guild.id == PERSONAL_GUILD):
             if summoner_names is not None:
                 summoner_name_list = summoner_names.split()
                 summoner_name_list.extend(self.default_summoners_list)
@@ -209,11 +212,11 @@ class LoLCog(commands.Cog, name="League of Legends"):
             color=0x193d2c,
             title="League of Legends Leaderboard",
             description="If players are missing, they either don't exist or aren't ranked.\n"
-                        "(Winrate \|| Rank)\n"
-                        "―――――――――――",
+                        r"(Winrate \|| Rank)"
+                        "\n―――――――――――",
         )
         if leaderboard:
-            embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format="({} \|| {})")
+            embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format=r"({} \|| {})")
         return embed
 
     async def check_lol_stats(self, summoner_name: str) -> tuple[str, str, str]:
@@ -235,13 +238,16 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         try:
             async with self.bot.web_session.get(url, headers=self.req_headers) as response:
-                text = await response.text()
+                content = await response.text()
 
             # Parse the summoner information for winrate and tier (referred to later as rank).
-            soup = BeautifulSoup(text, "html.parser")
-            winrate = soup.find("div", class_="ratio").text.removeprefix('Win Rate ')
-            rank = soup.find("div", class_="tier").text.capitalize()
-        except AttributeError:
+            tree = lh.fromstring(content)
+            winrate = "".join(tree.xpath("//div[@class='ratio']/text()")).removeprefix('Win Rate ')
+            rank = "".join(tree.xpath("//div[@class='tier']/text()")).capitalize()
+            if not (winrate and rank):
+                msg = "Nothing found."
+                raise AttributeError(msg)
+        except (AttributeError, aiohttp.ClientError):
             # Thrown if the summoner has no games in ranked or no data at all.
             summoner_name, winrate, rank = "None", "None", "None"
 

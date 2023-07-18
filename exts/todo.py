@@ -1,3 +1,7 @@
+"""
+todo.py: A module/cog for handling todo lists made in Discord and stored in a database.
+"""
+
 from __future__ import annotations
 
 import datetime
@@ -26,7 +30,7 @@ class TodoRecord(asyncpg.Record):
     Includes methods for updating the records and returning the new version when applicable.
     """
 
-    async def update_completion(self, conn: asyncpg.Pool | asyncpg.Connection) -> Self:
+    async def update_completion(self, conn: asyncpg.Pool | asyncpg.Connection) -> Self | None:
         """Adds or removes a completion date from the record in the database, giving back the new version of the record.
 
         This function returns a new instance of the class.
@@ -41,7 +45,7 @@ class TodoRecord(asyncpg.Record):
         new_date = discord.utils.utcnow() if self["todo_completed_at"] is None else None
         return await conn.fetchrow(command, new_date, self["todo_id"], record_class=type(self))
 
-    async def edit(self, conn: asyncpg.Pool | asyncpg.Connection, updated_content: str) -> Self:
+    async def edit(self, conn: asyncpg.Pool | asyncpg.Connection, updated_content: str) -> Self | None:
         """Changes the to-do content of the record, giving back the new version of the record.
 
         This function returns a new instance of the class.
@@ -145,7 +149,7 @@ class TodoCompleteButton(ui.Button):
 
         # Adjust the view to have and display the updated to-do item, and let the user know it's updated.
         await self.view.update_todo(interaction, updated_todo_item)
-        await interaction.followup.send(f"Todo task marked as {completion_status}!", ephemeral=True)  # type: ignore
+        await interaction.followup.send(f"Todo task marked as {completion_status}!", ephemeral=True)
 
 
 class TodoEditButton(ui.Button):
@@ -167,7 +171,7 @@ class TodoEditButton(ui.Button):
         """Uses a modal to get the (edited) content for a to-do item, then updates the item and parent view."""
         # Give the user a modal with a textbox filled with a to-do item's content for editing.
         modal = TodoModal(self.view.todo_record["todo_content"])
-        await interaction.response.send_modal(modal)    # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.view.is_finished():
@@ -201,7 +205,7 @@ class TodoDeleteButton(ui.Button):
 
         updated_todo_item = await self.view.todo_record.delete(interaction.client.db_pool)
         await self.view.update_todo(interaction, updated_todo_item)
-        await interaction.followup.send("Todo task deleted!", ephemeral=True)  # type: ignore
+        await interaction.followup.send("Todo task deleted!", ephemeral=True)
 
 
 def generate_embed_from_todo_record(todo_record: TodoRecord | None, deleted: bool = False) -> discord.Embed:
@@ -306,7 +310,7 @@ class TodoView(ui.View):
 
         check = (interaction.user is not None) and (self.author == interaction.user)
         if not check:
-            await interaction.response.send_message("You cannot interact with this.", ephemeral=True)   # type: ignore
+            await interaction.response.send_message("You cannot interact with this.", ephemeral=True)
         return check
 
     async def update_todo(self, interaction: core.Interaction, updated_record: TodoRecord | None = None) -> None:
@@ -323,12 +327,12 @@ class TodoView(ui.View):
         if updated_record is not None:
             self.todo_record = updated_record
             updated_embed = generate_embed_from_todo_record(self.todo_record)
-            await interaction.response.edit_message(embed=updated_embed, view=self)     # type: ignore
+            await interaction.response.edit_message(embed=updated_embed, view=self)
         else:
             updated_embed = generate_embed_from_todo_record(self.todo_record, True)
             for item in self.children:
                 item.disabled = True
-            await interaction.response.edit_message(embed=updated_embed, view=self)     # type: ignore
+            await interaction.response.edit_message(embed=updated_embed, view=self)
             self.todo_record = updated_record
 
 
@@ -396,7 +400,7 @@ class TodoListView(PaginatedEmbedView):
         embed_page = self.format_page()  # Update the page embed.
         self.update_page_buttons()
         self.update_todo_buttons()
-        await interaction.response.edit_message(embed=embed_page, view=self)  # type: ignore
+        await interaction.response.edit_message(embed=embed_page, view=self)
 
     async def update_todo(self, interaction: core.Interaction, updated_record: TodoRecord | None = None) -> None:
         """Updates the state of the view, including the to-do item currently in scope, based on a passed in item.
@@ -412,10 +416,10 @@ class TodoListView(PaginatedEmbedView):
         if updated_record is not None:
             self.current_page_content = self.todo_record = self.pages[self.current_page - 1][0] = updated_record
             updated_embed = generate_embed_from_todo_record(self.todo_record)
-            await interaction.response.edit_message(embed=updated_embed, view=self)     # type: ignore
+            await interaction.response.edit_message(embed=updated_embed, view=self)
         else:
             updated_embed = generate_embed_from_todo_record(self.todo_record, True)
-            await interaction.response.edit_message(embed=updated_embed, view=self)     # type: ignore
+            await interaction.response.edit_message(embed=updated_embed, view=self)
             self.current_page_content = self.todo_record = self.pages[self.current_page - 1][0] = updated_record
 
 
@@ -505,8 +509,11 @@ class TodoCog(commands.Cog, name="Todo"):
 
         query = "SELECT * FROM todos WHERE todo_id = $1 and user_id = $2 ORDER BY todo_id;"
         record = await self.bot.db_pool.fetchrow(query, todo_id, ctx.author.id, record_class=TodoRecord)
-        todo_view = TodoView(author=ctx.author, todo_record=record)
-        todo_view.message = await ctx.send(embed=generate_embed_from_todo_record(record), view=todo_view)
+        if record:
+            todo_view = TodoView(author=ctx.author, todo_record=record)
+            todo_view.message = await ctx.send(embed=generate_embed_from_todo_record(record), view=todo_view)
+        else:
+            await ctx.send("Either this record doesn't exist, or you can't see it.")
 
     @todo.command("list")
     async def todo_list(self, ctx: core.Context, complete: bool = False, pending: bool = True) -> None:

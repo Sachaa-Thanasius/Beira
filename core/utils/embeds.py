@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import itertools
 import logging
-from collections.abc import Callable, Sequence
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
 import discord.utils
@@ -23,32 +23,6 @@ __all__ = ("EMOJI_URL", "DTEmbed", "PaginatedEmbed", "StatsEmbed")
 LOGGER = logging.getLogger(__name__)
 
 EMOJI_URL = "https://cdn.discordapp.com/emojis/{0}.webp?size=128&quality=lossless"
-
-
-def field_range_tracking(func: Callable) -> Callable:
-    """A decorator to ensure that if a range of fields are added to the embed, that range of indexes is recorded.
-
-    Used primarily for the :class:`StatEmbed`, which has dedicated fields matching variables in here.
-    """
-
-    def decorator(self: Any, *args: Any, **kwargs: Any) -> Any:
-
-        # Store the starting index of the stat fields.
-        self.clear_stat_fields()
-        try:
-            self._stat_fields_indexes[0] = len(self._fields)
-        except AttributeError:
-            self._stat_fields_indexes[0] = 0
-
-        # Do the function.
-        return_val = func(self, *args, **kwargs)
-
-        # Store the ending index of the stat fields.
-        self._stat_fields_indexes[1] = len(self._fields)
-
-        return return_val
-
-    return decorator
 
 
 class DTEmbed(Embed):
@@ -164,14 +138,12 @@ class StatsEmbed(DTEmbed):
     :class:`exts.cogs.lol.LoLCog`
     """
 
-    _stat_fields_indexes: list[int, int] = [0, 0]
-
     def __init__(
             self,
             *,
-            stat_names: Sequence[str] | None = (),
-            stat_emojis: Sequence[Emoji | str] | None = (),
-            stat_values: Sequence[Any] | None = (),
+            stat_names: Sequence[str] | None = None,
+            stat_emojis: Sequence[Emoji | str] | None = None,
+            stat_values: Sequence[Any] | None = None,
             inline: bool = False,
             emoji_header_status: bool = False,
             **kwargs: Any,
@@ -179,7 +151,7 @@ class StatsEmbed(DTEmbed):
         colour = kwargs.pop("colour", kwargs.pop("color", 0x2f3136))
         super().__init__(colour=colour, **kwargs)
 
-        if stat_names or stat_emojis or stat_values:
+        if stat_names and stat_emojis and stat_values:
             self.add_stat_fields(
                 stat_names=stat_names,
                 stat_emojis=stat_emojis,
@@ -188,7 +160,6 @@ class StatsEmbed(DTEmbed):
                 emoji_header_status=emoji_header_status,
             )
 
-    @field_range_tracking
     def add_stat_fields(
             self,
             *,
@@ -233,7 +204,6 @@ class StatsEmbed(DTEmbed):
 
         return self
 
-    @field_range_tracking
     def add_leaderboard_fields(
             self,
             *,
@@ -277,28 +247,5 @@ class StatsEmbed(DTEmbed):
                 name = f"{emoji} " + name_format.format(str(content[0]))
 
             self.add_field(name=name, value=value_format.format(*content[1:]), inline=inline)
-
-        return self
-
-    def clear_stat_fields(self) -> Self:
-        """Removes all previously loaded stat fields based on stored indexes.
-
-        If an index is invalid or out of bounds then the error is silently swallowed.
-
-        This function returns the class instance to allow for fluent-style chaining.
-
-        Notes
-        -----
-        When deleting a field by index, the index of the other fields shift to fill the gap just like a regular list.
-        """
-
-        try:
-            stat_start, stat_end = self._stat_fields_indexes
-            del self._fields[stat_start:stat_end]
-
-            # Set the field indexes to the same start value.
-            self._stat_fields_indexes[1] = self._stat_fields_indexes[0]
-        except (AttributeError, IndexError):
-            pass
 
         return self

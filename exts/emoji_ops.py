@@ -39,19 +39,19 @@ class GuildStickerFlags(commands.FlagConverter):
         The reason for the sticker's existence to put in the audit log. Not needed usually.
     """
 
-    name: str | None = commands.flag(description="The name of the sticker. Must be at least 2 characters.")
-    description: str | None = commands.flag(
+    name: str = commands.flag(description="The name of the sticker. Must be at least 2 characters.")
+    description: str = commands.flag(
         default="Added with Beira command.",
         description="The description for the sticker.",
     )
-    emoji: str | None = commands.flag(
+    emoji: str = commands.flag(
         default="\N{NINJA}",
         description="The name of a unicode emoji that represents the sticker's expression.",
     )
     attachment: discord.Attachment | None = commands.flag(
         description="An image attachment. Must be a PNG or APNG less than 512Kb and exactly 320x320 px to work.",
     )
-    reason: str | None = commands.flag(
+    reason: str= commands.flag(
         default="Added with Beira command.",
         description="The reason for the sticker's existence to put in the audit log. Not needed usually.",
     )
@@ -143,18 +143,19 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         return converted_emoji
 
     @commands.hybrid_group("emoji")
-    async def emoji_(self, ctx: core.Context) -> None:
+    @commands.guild_only()
+    async def emoji_(self, ctx: core.GuildContext) -> None:
         """A group of emoji-related commands, like identifying emojis and adding them to a server."""
 
         await ctx.send_help(ctx.command)
 
     @emoji_.command("info")
-    async def emoji_info(self, ctx: core.Context, entity: str) -> None:
+    async def emoji_info(self, ctx: core.GuildContext, entity: str) -> None:
         """Identify a particular emoji and see information about it.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         entity : :class:`str`
             The emoji to provide information about.
@@ -197,7 +198,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     @emoji_.command("add")
     async def emoji_add(
             self,
-            ctx: core.Context,
+            ctx: core.GuildContext,
             name: str,
             entity: str | None = None,
             attachment: discord.Attachment | None = None,
@@ -206,7 +207,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         name : :class:`str`
             The name of the emoji.
@@ -215,10 +216,6 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         attachment : :class:`discord.Attachment`, optional
             An image attachment. Must be a PNG, JPG, or GIF to work.
         """
-
-        if not (entity or attachment):
-            await ctx.send("You're missing an emoji, url, or attachment to add! Make sure you put the name first.")
-            return
 
         if entity:
             converted_emoji = await self.convert_str_to_emoji(ctx, entity)
@@ -242,9 +239,12 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
 
             new_emoji = await ctx.guild.create_custom_emoji(name=name, image=emoji_bytes)
 
-        else:
+        elif attachment:
             emoji_bytes = await attachment.read()
             new_emoji = await ctx.guild.create_custom_emoji(name=name, image=emoji_bytes)
+        else:
+            await ctx.send("You're missing an emoji, url, or attachment to add! Make sure you put the name first.")
+            return
 
         #  Notify user of results.
         if new_emoji:
@@ -253,18 +253,19 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             await ctx.send("Something went wrong. The emoji could not be added.")
 
     @commands.hybrid_group()
-    async def sticker(self, ctx: core.Context) -> None:
+    @commands.guild_only()
+    async def sticker(self, ctx: core.GuildContext) -> None:
         """A group of sticker-related commands, like adding them to a server."""
 
         await ctx.send_help(ctx.command)
 
     @sticker.command("info")
-    async def sticker_info(self, ctx: core.Context, sticker: str) -> None:
+    async def sticker_info(self, ctx: core.GuildContext, sticker: str) -> None:
         """Identify a particular sticker and see information about it.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         sticker : :class:`discord.GuildSticker`
             The id or name of the sticker to provide information about.
@@ -280,11 +281,6 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                 await ctx.send(embed=embed)
                 return
 
-        try:
-            guild = conv_sticker.guild or await self.bot.fetch_guild(conv_sticker.guild_id)
-        except (discord.Forbidden, discord.HTTPException):
-            guild = None
-
         embed = (
             discord.Embed(color=0xffcc4d, title="Sticker Information")
             .add_field(
@@ -292,10 +288,20 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                 value=(conv_sticker.description or ""),
                 inline=False,
             )
-            .add_field(name="Emoji", value=conv_sticker.emoji)
-            .add_field(name="Guild Source", value=guild.name if guild else conv_sticker.guild_id)
             .set_image(url=conv_sticker.url)
         )
+
+        if isinstance(conv_sticker, discord.GuildSticker):
+            try:
+                guild = conv_sticker.guild or await self.bot.fetch_guild(conv_sticker.guild_id)
+            except (discord.Forbidden, discord.HTTPException):
+                guild = None
+
+            (
+                embed.add_field(name="Emoji", value=conv_sticker.emoji)
+                .add_field(name="Guild Source", value=guild.name if guild else conv_sticker.guild_id)
+                .set_image(url=conv_sticker.url)
+            )
 
         await ctx.send(embed=embed, ephemeral=True)
 
@@ -304,7 +310,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
     async def sticker_add(
             self,
-            ctx: core.Context,
+            ctx: core.GuildContext,
             sticker: str | None = None,
             *,
             sticker_flags: GuildStickerFlags,
@@ -314,7 +320,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         Parameters
         ----------
 
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         sticker : :class:`discord.GuildSticker`, optional
             The name or id of an existing sticker to steal. If filled, no other parameters are necessary.
@@ -323,20 +329,16 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         """
 
         if sticker:
-            sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
+            conv_sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
 
             new_sticker = await ctx.guild.create_sticker(
-                name=sticker.name,
-                description=sticker.description,
-                emoji=sticker.emoji,
-                file=await sticker.to_file(),
+                name=conv_sticker.name,
+                description=conv_sticker.description,
+                emoji=conv_sticker.emoji,
+                file=await conv_sticker.to_file(),
                 reason=sticker_flags.reason,
             )
-        else:
-            if None in (sticker_flags.name, sticker_flags.attachment):
-                await ctx.send("You're missing an element! The name and attachment are required at the very least.")
-                return
-
+        elif sticker_flags.name and sticker_flags.attachment:
             new_sticker = await ctx.guild.create_sticker(
                 name=sticker_flags.name,
                 description=sticker_flags.description,
@@ -344,6 +346,9 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                 file=await sticker_flags.attachment.to_file(),
                 reason=sticker_flags.reason,
             )
+        else:
+            await ctx.send("You're missing an element! The name and attachment are required at the very least.")
+            return
 
         await ctx.send(f"Sticker successfully added: `{new_sticker.name}`.", stickers=[new_sticker])
 
@@ -374,9 +379,9 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             if len(error_str) > 3:
                 content += f"Errors encountered:\n{error_str}"
 
-            await interaction.response.send_message(content, ephemeral=True)  # type: ignore
+            await interaction.response.send_message(content, ephemeral=True)
         else:
-            await interaction.response.send_message("No stickers in this message.", ephemeral=True)  # type: ignore
+            await interaction.response.send_message("No stickers in this message.", ephemeral=True)
 
 
 async def setup(bot: core.Beira) -> None:

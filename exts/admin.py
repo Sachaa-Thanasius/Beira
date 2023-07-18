@@ -35,7 +35,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @commands.hybrid_command()
     @commands.guild_only()
-    async def get_timeouts(self, ctx: core.Context) -> None:
+    async def get_timeouts(self, ctx: core.GuildContext) -> None:
         """Get all timed out members on the server."""
 
         async with ctx.typing():
@@ -48,7 +48,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @commands.hybrid_group(fallback="get")
     @commands.guild_only()
-    async def prefixes(self, ctx: core.Context) -> None:
+    async def prefixes(self, ctx: core.GuildContext) -> None:
         """View the prefixes set for this bot in this location."""
 
         async with ctx.typing():
@@ -60,12 +60,12 @@ class AdminCog(commands.Cog, name="Administration"):
     @prefixes.command("add")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), core.is_admin())
-    async def prefixes_add(self, ctx: core.Context, *, new_prefix: str) -> None:
+    async def prefixes_add(self, ctx: core.GuildContext, *, new_prefix: str) -> None:
         """Set a prefix that you'd like this bot to respond to.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         new_prefix : :class:`str`
             The prefix to be added.
@@ -99,12 +99,12 @@ class AdminCog(commands.Cog, name="Administration"):
     @prefixes.command("remove")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), core.is_admin())
-    async def prefixes_remove(self, ctx: core.Context, *, old_prefix: str) -> None:
+    async def prefixes_remove(self, ctx: core.GuildContext, *, old_prefix: str) -> None:
         """Remove a prefix that you'd like this bot to no longer respond to.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         old_prefix : :class:`str`
             The prefix to be removed.
@@ -131,12 +131,12 @@ class AdminCog(commands.Cog, name="Administration"):
     @prefixes.command("reset")
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), core.is_admin())
-    async def prefixes_reset(self, ctx: core.Context) -> None:
+    async def prefixes_reset(self, ctx: core.GuildContext) -> None:
         """Remove all prefixes within this server for the bot to respond to.
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx : :class:`core.GuildContext`
             The invocation context.
         """
 
@@ -150,8 +150,9 @@ class AdminCog(commands.Cog, name="Administration"):
             except (PostgresWarning, PostgresError, PostgresConnectionError):
                 await ctx.send("This server's prefixes could not be reset.")
             else:
-                await ctx.send("The prefix(es) for this guild have been reset."
-                               "Now only accepting the default prefix: `$`.")
+                await ctx.send(
+                    "The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.",
+                )
 
 
 async def setup(bot: core.Beira) -> None:

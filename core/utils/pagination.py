@@ -41,7 +41,7 @@ class PageNumEntryModal(ui.Modal):
 
     def __init__(self, page_limit: int) -> None:
         super().__init__(title="Page Jump", custom_id="page_entry_modal")
-        self.interaction = None
+        self.interaction: discord.Interaction | None = None
         self.page_limit = page_limit
 
     async def on_submit(self, interaction: discord.Interaction, /) -> None:
@@ -100,7 +100,7 @@ class PaginatedEmbedView(ui.View):
             **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.message = None
+        self.message: discord.Message | None = None
         self.author = author
 
         # Page-related instance variables.
@@ -127,7 +127,7 @@ class PaginatedEmbedView(ui.View):
 
     async def on_timeout(self) -> None:
         """Disables all buttons when the view times out."""
-
+        
         self.clear_items()
         if self.message:
             await self.message.edit(view=self)
@@ -198,7 +198,7 @@ class PaginatedEmbedView(ui.View):
         self.current_page = new_page
         embed_page = self.format_page()  # Update the page embed.
         self.update_page_buttons()  # Update the page buttons.
-        await interaction.response.edit_message(embed=embed_page, view=self)  # type: ignore
+        await interaction.response.edit_message(embed=embed_page, view=self)
 
     @discord.ui.button(label="≪", style=discord.ButtonStyle.blurple, disabled=True, custom_id="page_view:first")
     async def turn_to_first(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -218,7 +218,7 @@ class PaginatedEmbedView(ui.View):
 
         # Get page number from a modal.
         modal = PageNumEntryModal(self.total_pages)
-        await interaction.response.send_modal(modal)  # type: ignore
+        await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
         if modal_timed_out or self.is_finished():
@@ -229,7 +229,8 @@ class PaginatedEmbedView(ui.View):
         if self.current_page == temp_new_page:
             return
 
-        await self.update_page(modal.interaction, temp_new_page)
+        if modal.interaction:
+            await self.update_page(modal.interaction, temp_new_page)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple, custom_id="page_view:next")
     async def turn_to_next(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
@@ -247,7 +248,7 @@ class PaginatedEmbedView(ui.View):
     async def quit_view(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
         """Deletes the original message with the view after a slight delay."""
 
-        await interaction.response.defer()  # type: ignore
+        await interaction.response.defer()
         await asyncio.sleep(0.5)
         await interaction.delete_original_response()
         self.stop()
