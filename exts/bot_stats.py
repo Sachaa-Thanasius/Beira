@@ -25,6 +25,24 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
+class CommandStatsSearchConverter(commands.FlagConverter):
+    """A Discord commands flag converter for queries related to command usage stats."""
+
+    time_period: Literal["today", "last month", "last year", "all time"] = commands.flag(
+        default="all time",
+        description="Whether to stay local or look among all guilds. Defaults to 'all time'.",
+    )
+    command: str | None = commands.flag(description="The command to look up. Optional.")
+    guilds: bool = commands.flag(
+        default=False,
+        description="Whether to look at guilds instead of users. Defaults to False.",
+    )
+    universal: bool = commands.flag(
+        default=False,
+        description="Whether to look at users among all guilds. Defaults to False.",
+    )
+
+
 class BotStatsCog(commands.Cog, name="Bot Stats"):
     """A cog for tracking different bot metrics."""
 
@@ -121,38 +139,24 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await upsert_guilds(self.bot.db_pool, guild)
 
     @commands.hybrid_command(name="usage")
-    async def check_usage(
-            self,
-            ctx: core.Context,
-            *,
-            time_period: Literal["today", "last month", "last year", "all time"] = "all time",
-            command: str | None = None,
-            guilds: bool = False,
-            universal: bool = False,
-    ) -> None:
+    async def check_usage(self, ctx: core.Context, *, search_factors: CommandStatsSearchConverter) -> None:
         """Retrieve statistics about bot command usage.
 
         Parameters
         ----------
         ctx : :class:`core.Context`
             The invocation context.
-        time_period : Literal["today", "last month", "last year", "all time"], default="all time"
-            Whether to stay local or look among all guilds. Defaults to 'all time'.
-        command : :class:`str`, optional
-            The command to look up.
-        guilds : :class:`bool`, default=False
-            Whether to look at guilds or users. Defaults to False.
-        universal : :class:`bool`, default=False
-            Whether to look at users among all guilds. Defaults to False.
+        search_factors : :class:`CommandStatsSearchConverter`
+            A flag converter for taking a few query specifications when searching for usage stats.
         """
 
         async with ctx.typing():
             periods = {"today": 1, "last month": 30, "last year": 365}
-            actual_time_pd = periods.get(time_period, 0)
+            actual_time_pd = periods.get(search_factors.time_period, 0)
 
-            guild = None if guilds else ctx.guild
+            guild = None if search_factors.guilds else ctx.guild
 
-            records = await self.get_usage(actual_time_pd, command, guild, universal)
+            records = await self.get_usage(actual_time_pd, search_factors.command, guild, search_factors.universal)
 
             ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
             ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
