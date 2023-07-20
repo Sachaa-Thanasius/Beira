@@ -138,14 +138,14 @@ def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T] | 
 
     Parameters
     ----------
-    func : Callable[P, T | Awaitable[T]]
-        The function being benchmarked.
+    func
+        The function being benchmarked. Can be sync or async.
     logger : :class:`logging.Logger`
         The logger being used to display the benchmark.
 
     Returns
     -------
-    bench_wrapper : Callable[P, T | Awaitable[T]]
+    bench_wrapper
         A modified function decorated with a benchmark logging mechanism.
 
     Notes
@@ -180,13 +180,12 @@ def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T] | 
         @wraps(func)
         async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
             with benchmark_logic():
-                result = await func(*args, **kwargs)
-            return result
+                return await func(*args, **kwargs)
         return async_wrapper
 
     @wraps(func)
     def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
         with benchmark_logic():
-            result = func(*args, **kwargs)
-        return result
+            return func(*args, **kwargs)
     return sync_wrapper
+

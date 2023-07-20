@@ -8,6 +8,7 @@ import asyncio
 import logging
 import re
 
+import aiohttp
 import AO3
 import atlas_api
 import discord
@@ -69,10 +70,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             self.allowed_channels_cache.setdefault(record["guild_id"], set()).add(record["channel_id"])
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
-        # Just log the exception, whatever it is.
+        # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
+            
         LOGGER.exception("", exc_info=error)
 
     @commands.Cog.listener("on_message")
@@ -300,7 +302,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 try:
                     url = match.group(0)
                     story_data = await self.fichub_client.get_story_metadata(url)
-                except Exception as err:
+                except (fichub_api.FicHubException, aiohttp.ClientResponseError) as err:
                     msg = "Retrieval with Fichub client failed. Trying Armindo Flores's AO3 library now."
                     LOGGER.warning(msg, exc_info=err)
                     try:
@@ -323,12 +325,12 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         if fic_id := atlas_api.extract_fic_id(name_or_url):
             try:
                 story_data = await self.atlas_client.get_story_metadata(fic_id)
-            except atlas_api.AtlasException as err:
+            except (atlas_api.AtlasException, aiohttp.ClientResponseError) as err:
                 msg = "Retrieval with Atlas client failed. Trying FicHub now."
                 LOGGER.warning(msg, exc_info=err)
                 try:
                     story_data = await self.fichub_client.get_story_metadata(name_or_url)
-                except Exception as err:
+                except (fichub_api.FicHubException, aiohttp.ClientResponseError) as err:
                     msg = "Retrieval with Atlas and Fichub clients failed. Returning None."
                     LOGGER.warning(msg, exc_info=err)
                     story_data = None

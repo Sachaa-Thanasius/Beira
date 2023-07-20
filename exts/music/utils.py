@@ -5,7 +5,7 @@ utils.py: A bunch of utility functions and classes for Wavelink.
 from __future__ import annotations
 
 from copy import deepcopy
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import discord
 import wavelink
@@ -17,12 +17,15 @@ from wavelink import Playable
 from wavelink.ext import spotify
 
 from core.utils import PaginatedEmbed, PaginatedEmbedView
+from core.wave import AnyTrack_alias
 
 
 if TYPE_CHECKING:
     from core import Context, Interaction
-    AnyPlayable: TypeAlias = Playable | spotify.SpotifyTrack
-
+else:
+    Context = commands.Context
+    Interaction = discord.Interaction
+    
 
 __all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
 
@@ -71,8 +74,7 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
         5) Input is a SoundCloud track url or has ``scsearch:`` as a prefix — Attempt to lookup with
            :class:`wavelink.SoundCloudTrack`.
 
-        6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify —
-            a. Try conversion to playlist, album, then track.
+        6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify.
 
         7) Try lookup as a direct url.
     """
@@ -81,7 +83,7 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
     def type(self) -> discord.AppCommandOptionType:     # noqa: A003
         return discord.AppCommandOptionType.string
 
-    async def _convert(self, argument: str) -> AnyPlayable:
+    async def _convert(self, argument: str) -> AnyTrack_alias | list[AnyTrack_alias]:
         """Attempt to convert a string into a Wavelink track or list of tracks."""
 
         check = yarl.URL(argument)
@@ -92,39 +94,38 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
                 check.scheme == "ytsearch:"
         ):
             tracks = await wavelink.YouTubeTrack.search(argument)
+            if isinstance(tracks, list):
+                tracks = tracks[0]
         elif (
                 (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "list" in check.query) or
                 check.scheme == "ytpl:"
         ):
             tracks = await wavelink.YouTubePlaylist.search(argument)
         elif check.host == "music.youtube.com" or check.scheme == "ytmsearch:":
-            tracks = await wavelink.YouTubeMusicTrack.search(argument)
+            tracks = (await wavelink.YouTubeMusicTrack.search(argument))[0]
         elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.parts:
             tracks = await wavelink.SoundCloudPlaylist.search(argument)
         elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch:":
-            tracks = await wavelink.SoundCloudTrack.search(argument)
+            tracks = (await wavelink.SoundCloudTrack.search(argument))[0]
         elif check.host in ("spotify.com", "open.spotify.com"):
             tracks = await spotify.SpotifyTrack.search(argument)
         else:
-            tracks = await wavelink.GenericTrack.search(argument)
+            tracks = (await wavelink.GenericTrack.search(argument))[0]
 
         if not tracks:
             msg = f"Your search query {argument} returned no tracks."
             raise wavelink.NoTracksError(msg)
 
-        if isinstance(tracks, list):
-            tracks = tracks[0]
-
         return tracks
 
-    async def convert(self, ctx: Context, argument: str) -> AnyPlayable:
+    async def convert(self, _: Context, argument: str) -> AnyTrack_alias | list[AnyTrack_alias]:
         return await self._convert(argument)
 
-    async def transform(self, interaction: Interaction, value: str, /) -> AnyPlayable:
+    async def transform(self, _: Interaction, value: str, /) -> AnyTrack_alias | list[AnyTrack_alias]:
         return await self._convert(value)
 
 
-async def format_track_embed(embed: discord.Embed, track: AnyPlayable) -> discord.Embed:
+async def format_track_embed(embed: discord.Embed, track: AnyTrack_alias) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 
     duration = track.duration // 1000
@@ -145,7 +146,7 @@ async def format_track_embed(embed: discord.Embed, track: AnyPlayable) -> discor
             f"{escape_markdown(', '.join(track.artists), as_needed=True)}\n"
         )
 
-    embed.description += f"`[0:00-{end_time}]`"
+    embed.description = (embed.description or "") + f"`[0:00-{end_time}]`"
 
     if requester := getattr(track, "requester", None):
         embed.description += f"\n\nRequested by: {requester}"
@@ -157,7 +158,7 @@ async def format_track_embed(embed: discord.Embed, track: AnyPlayable) -> discor
     return embed
 
 
-def generate_tracks_add_notification(tracks: AnyPlayable | list[AnyPlayable]) -> str:
+def generate_tracks_add_notification(tracks: AnyTrack_alias | list[AnyTrack_alias]) -> str:
     """Adds tracks to a queue even if they are contained in another object or structure.
 
     Also, it returns the appropriate notification string.

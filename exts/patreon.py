@@ -41,7 +41,7 @@ class PatreonTierSelectView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         for child in self.children:
-            child.disabled = True
+            child.disabled = True   # type: ignore
         
         if self.message:
             await self.message.edit(view=self)
@@ -81,7 +81,7 @@ class PatreonTierSelectView(discord.ui.View):
 
         new_tier = self.tiers[self.current_tier]
 
-        if self.page_cache[self.current_tier] is None:
+        if (temp := self.page_cache[self.current_tier]) is None:
             if self.current_tier != 0:
                 # Compile the benefit information.
                 benefits = [f"> • {tier['tier_info']}" for tier in self.tiers[self.current_tier:0:-1]]
@@ -102,7 +102,7 @@ class PatreonTierSelectView(discord.ui.View):
 
             self.page_cache[self.current_tier] = embed
         else:
-            embed = deepcopy(self.page_cache[self.current_tier])
+            embed = deepcopy(temp)
 
         return embed
 
@@ -155,7 +155,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.access_token = self.bot.config["patreon"]["creator_access_token"]
-        # self.patrons_on_discord = None
+        self.patrons_on_discord: dict[str, list[discord.Member]] = {}
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -167,7 +167,9 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         """Start patreon-related background tasks."""
 
         self.bot.loop.create_task(self._get_patreon_roles())
-        # self.bot.loop.create_task(self.get_current_discord_patrons())
+        # Note: Reactivate for testing later.
+        if False:
+            self.bot.loop.create_task(self.get_current_discord_patrons())
 
     async def cog_unload(self) -> None:
         """Stop patreon-related background tasks."""
@@ -175,13 +177,18 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         if self.get_current_discord_patrons.is_running():
             self.get_current_discord_patrons.stop()
 
-    async def cog_check(self, ctx: commands.Context) -> bool:
+    async def cog_check(self, ctx: core.Context) -> bool:
         """Set up bot owner check as universal within the cog."""
 
         original = commands.is_owner().predicate
         return await original(ctx)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        
         LOGGER.exception("Error in Patreon Cog", exc_info=error)
 
     async def _get_patreon_roles(self) -> None:
@@ -226,7 +233,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
         patreon_guild = self.bot.get_guild(aci100_id)
         patron_roles = (role for role in patreon_guild.roles if "patrons" in role.name.lower())
-        self.patrons_on_discord: dict[str, list[discord.Member]] = {role.name: role.members for role in patron_roles}
+        self.patrons_on_discord.update({role.name: role.members for role in patron_roles})
 
         await self.get_current_actual_patrons()
 

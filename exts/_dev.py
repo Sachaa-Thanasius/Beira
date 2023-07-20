@@ -45,6 +45,14 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         """Set up bot owner check as universal within the cog."""
 
         return await self.bot.is_owner(ctx.author)
+    
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        
+        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_group(fallback="get")
     @only_dev_guilds
@@ -98,13 +106,13 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             if users:
                 self.bot.blocked_entities_cache["users"].update(user.id for user in users)
                 embeds.append(
-                    discord.Embed(title="Users", description='\n'.join(str(self.bot.get_user(u) or u) for u in users)),
+                    discord.Embed(title="Users", description='\n'.join(str(u) for u in users)),
                 )
             if guilds:
                 self.bot.blocked_entities_cache["guilds"].update(guild.id for guild in guilds)
                 embeds.append(
                     discord.Embed(
-                        title="Guilds", description='\n'.join(str(self.bot.get_guild(g) or g) for g in guilds),
+                        title="Guilds", description='\n'.join(str(g) for g in guilds),
                     ),
                 )
 
@@ -148,10 +156,10 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             embeds = []
             if users:
                 self.bot.blocked_entities_cache["users"].difference_update(user.id for user in users)
-                embeds.append(discord.Embed(title="Users", description='\n'.join(str(user) for user in users)))
+                embeds.append(discord.Embed(title="Users", description='\n'.join(str(u) for u in users)))
             if guilds:
                 self.bot.blocked_entities_cache["guilds"].difference_update(guild.id for guild in guilds)
-                embeds.append(discord.Embed(title="Guilds", description='\n'.join(str(guild) for guild in guilds)))
+                embeds.append(discord.Embed(title="Guilds", description='\n'.join(str(g) for g in guilds)))
 
             # Display the results.
             await ctx.send("Unblocked the following from bot usage:", embeds=embeds, ephemeral=True)
@@ -385,8 +393,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 if spec == "~":
                     synced = await ctx.bot.tree.sync(guild=ctx.guild)
                 elif spec == "*":
-                    ctx.bot.tree.copy_global_to(guild=ctx.guild)
-                    synced = await ctx.bot.tree.sync(guild=ctx.guild)
+                    if ctx.guild:
+                        ctx.bot.tree.copy_global_to(guild=ctx.guild)
+                        synced = await ctx.bot.tree.sync(guild=ctx.guild)
+                    else:
+                        synced = []
                 elif spec == "^":
                     ctx.bot.tree.clear_commands(guild=ctx.guild)
                     await ctx.bot.tree.sync(guild=ctx.guild)

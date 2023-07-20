@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 
 import wavelink
 from wavelink import Playable
@@ -11,10 +11,13 @@ from wavelink.ext import spotify
 if TYPE_CHECKING:
     from discord.abc import MessageableChannel
 
-    AnyPlayable: TypeAlias = Playable | spotify.SpotifyTrack
-
 
 __all__ = ("SkippableQueue", "SkippablePlayer")
+
+
+PlayableT = TypeVar("PlayableT", bound=Playable)
+SpotifyTrackT = TypeVar("SpotifyTrackT", bound=spotify.SpotifyTrack)
+AnyTrack_alias: TypeAlias = PlayableT | SpotifyTrackT
 
 LOGGER = logging.getLogger(__name__)
 
@@ -39,7 +42,7 @@ class SkippableQueue(wavelink.Queue):
             except IndexError:
                 break
 
-    async def put_all_wait(self, item: AnyPlayable | list[AnyPlayable], requester: str | None = None) -> None:
+    async def put_all_wait(self, item: AnyTrack_alias | list[AnyTrack_alias], requester: str | None = None) -> None:
         """Put anything in the queue, so long as it's "playable", and optionally indicate who queued it.
 
         This can include some playlist subclasses.
@@ -53,11 +56,11 @@ class SkippableQueue(wavelink.Queue):
         """
 
         if not isinstance(item, list):
-            item.requester = requester  # type: ignore
+            item.requester = requester
             await self.put_wait(item)
         else:
             for sub_item in item:
-                sub_item.requester = requester  # type: ignore
+                sub_item.requester = requester
                 await self.put_wait(sub_item)
 
 

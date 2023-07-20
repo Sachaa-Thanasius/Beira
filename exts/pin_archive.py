@@ -34,7 +34,7 @@ class PinArchiveSettings(commands.FlagConverter):
         description="The channels that the bot shouldn't archive pins from, e.g. admin channels. Separate with spaces. "
                     "Defaults to nothing.",
     )
-    send_all: bool | None = commands.flag(
+    send_all: bool = commands.flag(
         default=False,
         description="Whether *all* current pins will be relocated to the pin archive channel on next pin. Defaults to "
                     "False. WARNING: THIS REMOVES PINS FROM ALL NON-BLACKLISTED CHANNELS.",
@@ -64,10 +64,12 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
         return await original(ctx) and await guild_only(ctx)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        LOGGER.error("", exc_info=error)
+        
+        LOGGER.exception("", exc_info=error)
 
     @commands.Cog.listener("on_guild_channel_pins_update")
     async def on_pins_update(self, channel: PinnableGuildChannel, last_pin: datetime.datetime | None = None) -> None:

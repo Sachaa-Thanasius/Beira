@@ -7,7 +7,7 @@ from __future__ import annotations
 import datetime
 import logging
 import textwrap
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
 import discord
@@ -134,6 +134,8 @@ class TodoCompleteButton(ui.Button):
     async def callback(self, interaction: core.Interaction) -> None:
         """Changes the button's look, and updates the parent view and its to-do item's completion status."""
 
+        assert self.view is not None
+
         # Get a new version of the to-do item after adding a completion date.
         updated_todo_item = await self.view.todo_record.update_completion(interaction.client.db_pool)
 
@@ -169,6 +171,9 @@ class TodoEditButton(ui.Button):
 
     async def callback(self, interaction: core.Interaction) -> None:
         """Uses a modal to get the (edited) content for a to-do item, then updates the item and parent view."""
+        
+        assert self.view is not None
+
         # Give the user a modal with a textbox filled with a to-do item's content for editing.
         modal = TodoModal(self.view.todo_record["todo_content"])
         await interaction.response.send_modal(modal)
@@ -181,9 +186,10 @@ class TodoEditButton(ui.Button):
         if self.view.todo_record["todo_content"] != modal.content.value:
             updated_todo_item = await self.view.todo_record.edit(interaction.client.db_pool, modal.content.value)
             await self.view.update_todo(modal.interaction, updated_todo_item)
-            await modal.interaction.followup.send("Todo item edited.", ephemeral=True)  # type: ignore
-        else:
-            await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)
+            if modal.interaction:
+                await modal.interaction.followup.send("Todo item edited.", ephemeral=True)
+        elif modal.interaction:
+                await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)
 
 
 class TodoDeleteButton(ui.Button):
@@ -202,6 +208,8 @@ class TodoDeleteButton(ui.Button):
 
     async def callback(self, interaction: core.Interaction) -> None:
         """Deletes the to-do item, and updates the parent view accordingly."""
+
+        assert self.view is not None
 
         updated_todo_item = await self.view.todo_record.delete(interaction.client.db_pool)
         await self.view.update_todo(interaction, updated_todo_item)
@@ -298,7 +306,7 @@ class TodoView(ui.View):
         """Disables all buttons when the view times out."""
 
         for item in self.children:
-            item.disabled = True
+            item.disabled = True    # type: ignore
 
         if self.message:
             await self.message.edit(view=self)
@@ -331,7 +339,7 @@ class TodoView(ui.View):
         else:
             updated_embed = generate_embed_from_todo_record(self.todo_record, True)
             for item in self.children:
-                item.disabled = True
+                item.disabled = True    # type: ignore
             await interaction.response.edit_message(embed=updated_embed, view=self)
             self.todo_record = updated_record
 
@@ -354,30 +362,30 @@ class TodoListView(PaginatedEmbedView):
         self.current_page_content = self.todo_record = kwargs["all_pages_content"][0]
         self.remove_item(self.enter_page)
         self.add_item(TodoCompleteButton(
-            self.todo_record["todo_completed_at"], row=1, custom_id="todo_view:complete_button",
+            self.todo_record["todo_completed_at"], row=1, custom_id="todo_view:complete_btn",
         ))
-        self.add_item(TodoEditButton(row=1, custom_id="todo_view:edit_button"))
-        self.add_item(TodoDeleteButton(row=1, custom_id="todo_view:delete_button"))
+        self.add_item(TodoEditButton(row=1, custom_id="todo_view:edit_btn"))
+        self.add_item(TodoDeleteButton(row=1, custom_id="todo_view:delete_btn"))
 
     def update_todo_buttons(self) -> None:
         """Changes the state of the to-do buttons based on the current item being viewed."""
 
-        complete_button = discord.utils.get(self.children, custom_id="todo_view:complete_button")
-        edit_button = discord.utils.get(self.children, custom_id="todo_view:edit_button")
-        delete_button = discord.utils.get(self.children, custom_id="todo_view:delete_button")
+        complete_btn = cast(TodoCompleteButton, discord.utils.get(self.children, custom_id="todo_view:complete_btn"))
+        edit_btn = cast(TodoEditButton, discord.utils.get(self.children, custom_id="todo_view:edit_btn"))
+        delete_btn = cast(TodoDeleteButton, discord.utils.get(self.children, custom_id="todo_view:delete_btn"))
 
         if self.todo_record is None:
-            complete_button.disabled = edit_button.disabled = delete_button.disabled = True
+            complete_btn.disabled = edit_btn.disabled = delete_btn.disabled = True
             return
 
-        complete_button.disabled = edit_button.disabled = delete_button.disabled = False
+        complete_btn.disabled = edit_btn.disabled = delete_btn.disabled = False
 
         if self.todo_record["todo_completed_at"] is None:
-            complete_button.label = "Mark as complete"
-            complete_button.style = discord.ButtonStyle.green
+            complete_btn.label = "Mark as complete"
+            complete_btn.style = discord.ButtonStyle.green
         else:
-            complete_button.label = "Mark as incomplete"
-            complete_button.style = discord.ButtonStyle.grey
+            complete_btn.label = "Mark as incomplete"
+            complete_btn.style = discord.ButtonStyle.grey
 
     def format_page(self) -> discord.Embed:
         """Makes the to-do 'page' that the user will see.
@@ -439,11 +447,12 @@ class TodoCog(commands.Cog, name="Todo"):
         return discord.PartialEmoji(name="\N{SPIRAL NOTE PAD}")
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
-        # Just catch any exceptions.
+        # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        LOGGER.error("", exc_info=error)
+        
+        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_group()
     async def todo(self, ctx: core.Context) -> None:

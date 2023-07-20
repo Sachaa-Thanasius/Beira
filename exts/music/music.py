@@ -10,7 +10,6 @@ from typing import Literal
 
 import discord
 import wavelink
-from discord import app_commands
 from discord.ext import commands
 from wavelink.ext import spotify
 
@@ -38,10 +37,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def cog_load(self) -> None:
         """Create and connect to the Lavalink node(s)."""
 
-        spotify_cfg = self.bot.config["spotify"]
-        sc = spotify.SpotifyClient(client_id=spotify_cfg["client_id"], client_secret=spotify_cfg["client_secret"])
-        lavalink_cfg = self.bot.config["lavalink"]
-        node = wavelink.Node(uri=lavalink_cfg["uri"], password=lavalink_cfg["password"])
+        sc = spotify.SpotifyClient(**self.bot.config["spotify"])
+        node = wavelink.Node(**self.bot.config["lavalink"])
 
         await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
@@ -51,10 +48,9 @@ class MusicCog(commands.Cog, name="Music"):
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, commands.HybridCommandError | commands.CommandInvokeError):
-            error = error.original
-            if isinstance(error, app_commands.CommandInvokeError):
-                error = error.original
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
 
         if isinstance(error, commands.MissingPermissions):
             embed.description = "You don't have permission to do this."

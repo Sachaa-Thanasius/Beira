@@ -31,7 +31,13 @@ class AdminCog(commands.Cog, name="Administration"):
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
-        LOGGER.error("", exc_info=error)
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        
+        LOGGER.exception("", exc_info=error)
+        
 
     @commands.hybrid_command()
     @commands.guild_only()

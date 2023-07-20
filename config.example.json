@@ -6,17 +6,39 @@
         "guilds": {
             "dev": [],
             "prod": []
-        }
+        },
+        "webhooks": []
     },
     "db": {
         "postgres_url": ""
     },
+    "patreon": {
+        "client_id": "",
+        "client_secret": "",
+        "creator_access_token": "",
+        "creator_refresh_token": "",
+        "patreon_guild_id": 0
+    },
     "openai": {
         "api_key": ""
     },
-    "lavalink":
-    {
+    "atlas_fanfic": {
+        "user": "",
+        "pass": ""
+    },
+    "ao3": {
+        "user": "",
+        "pass": ""
+    },
+    "lavalink": {
         "uri": "",
         "password": ""
+    },
+    "spotify": {
+        "client_id": "",
+        "client_secret": ""
+    },
+    "tatsu": {
+        "key": ""
     }
 }

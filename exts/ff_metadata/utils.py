@@ -287,7 +287,7 @@ class Ao3SeriesView(discord.ui.View):
         """Disables all items on timeout."""
 
         for item in self.children:
-            item.disabled = True
+            item.disabled = True    # type: ignore
 
         if self.message:
             await self.message.edit(view=self)
@@ -296,7 +296,7 @@ class Ao3SeriesView(discord.ui.View):
 
     async def on_error(self, interaction: Interaction, error: Exception, item: discord.ui.Item, /) -> None:
         error = getattr(error, "original", error)
-        LOGGER.error("", exc_info=error)
+        LOGGER.error("User: %s - Item: %s", interaction.user, item, exc_info=error)
 
     def update_navigation_items(self) -> None:
         """Disable specific "page" switching components based on what page we're on, chosen by the user."""

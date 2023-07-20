@@ -81,10 +81,11 @@ class MiscCog(commands.Cog, name="Misc"):
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
-        # Just log the exception, whatever it is.
+        # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
+        
         LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()

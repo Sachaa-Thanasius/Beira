@@ -169,6 +169,14 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         for file in project_path.glob("data/story_text/**/*.md"):
             if "text" in file.name:
                 await self.load_story_text(file)
+    
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        
+        LOGGER.exception("", exc_info=error)
 
     @classmethod
     async def load_story_text(cls, filepath: Path) -> None:

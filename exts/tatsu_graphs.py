@@ -42,9 +42,11 @@ class TatsuCog(commands.Cog, name="Tatsu"):
         await self.tatsu_client.close()
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
+        
         LOGGER.exception("", exc_info=error)
 
     @staticmethod

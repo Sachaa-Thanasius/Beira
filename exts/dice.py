@@ -557,6 +557,16 @@ async def roll(ctx: core.Context, expression: str | None = None) -> None:
     await ctx.send(embed=embed, view=view)
 
 
+@roll.error
+async def roll_error(ctx: core.Context, error: commands.CommandError) -> None:
+    # Extract the original error.
+    error = getattr(error, "original", error)
+    if ctx.interaction:
+        error = getattr(error, "original", error)
+    
+    LOGGER.exception("", exc_info=error) 
+
+
 async def setup(bot: core.Beira) -> None:
     """Add roll command and persistent dice view to bot."""
 

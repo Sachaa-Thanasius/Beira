@@ -62,7 +62,7 @@ class PaginatedEmbedView(ui.View):
 
     Parameters
     ----------
-    author : :class:`discord.User | :class:`discord.Member`
+    author : :class:`discord.User` | :class:`discord.Member`
         The user that triggered this view. No one else can use it.
     all_pages_content : list[Any]
         The text content for every possible page.
@@ -73,7 +73,7 @@ class PaginatedEmbedView(ui.View):
     ----------
     message : :class:`discord.Message`
         The message to which the view is attached to, allowing interaction without a :class:`discord.Interaction`.
-    author : :class:`discord.User | :class:`discord.Member`
+    author : :class:`discord.User` | :class:`discord.Member`
         The user that triggered this view. No one else can use it.
     per_page : :class:`int`
         The number of entries to be displayed per page.

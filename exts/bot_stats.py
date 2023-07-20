@@ -38,10 +38,12 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        LOGGER.error("", exc_info=error)
+        
+        LOGGER.exception("", exc_info=error)
 
     async def track_command_use(self, ctx: core.Context) -> None:
         """Stores records of command uses in the database after some processing."""
@@ -155,6 +157,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
             ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
             embed = StatsEmbed(color=0x193d2c, title="Commands Leaderboard", description="―――――――――――")
+            assert embed.description is not None
+            
             if records:
                 record_tuples = tuple(
                     (user if (user := self.bot.get_user(record[0])) else record[0], record[1]) for record in records

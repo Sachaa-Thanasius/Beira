@@ -23,12 +23,12 @@ async def pool_init(connection: Connection) -> None:
     await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
-async def upsert_users(db_pool: Pool | Connection, *users: discord.abc.User | discord.Object | tuple) -> None:
+async def upsert_users(conn: Pool | Connection, *users: discord.abc.User | discord.Object | tuple) -> None:
     """Upsert a Discord user in the appropriate database table.
 
     Parameters
     ----------
-    db_pool : :class:`asyncpg.Pool`
+    conn : :class:`Pool` | :class:`Connection`
         The connection pool used to interact to the database.
     users : tuple[:class:`discord.abc.User` | :class:`discord.Object` | tuple]
         One or more users, members, discord objects, or tuples of user ids and blocked statuses, to use for upsertion.
@@ -44,15 +44,15 @@ async def upsert_users(db_pool: Pool | Connection, *users: discord.abc.User | di
 
     # Format the users as minimal tuples.
     values = [(user.id, False) if not isinstance(user, tuple) else user for user in users]
-    await db_pool.executemany(upsert_query, values, timeout=60.0)
+    await conn.executemany(upsert_query, values, timeout=60.0)
 
 
-async def upsert_guilds(db_pool: Pool | Connection, *guilds: discord.Guild | discord.Object | tuple) -> None:
+async def upsert_guilds(conn: Pool | Connection, *guilds: discord.Guild | discord.Object | tuple) -> None:
     """Upsert a Discord guild in the appropriate database table.
 
     Parameters
     ----------
-    db_pool : :class:`asyncpg.Pool`
+    conn : :class:`Pool` | :class:`Connection`
         The connection pool used to interact to the database.
     guilds : tuple[:class:`discord.Guild` | :class:`discord.Object` | tuple]
         One or more guilds, discord objects, or tuples of guild ids, names, and blocked statuses, to use for upsertion.
@@ -68,4 +68,4 @@ async def upsert_guilds(db_pool: Pool | Connection, *guilds: discord.Guild | dis
 
     # Format the guilds as minimal tuples.
     values = [(guild.id, False) if not isinstance(guild, tuple) else guild for guild in guilds]
-    await db_pool.executemany(upsert_query, values, timeout=60.0)
+    await conn.executemany(upsert_query, values, timeout=60.0)

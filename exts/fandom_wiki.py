@@ -14,7 +14,7 @@ from urllib.parse import quote, urljoin
 
 import discord
 from bs4 import BeautifulSoup  # TODO: Look into switching to lxml.
-from discord import app_commands
+from discord.app_commands import Choice
 from discord.ext import commands
 
 import core
@@ -22,6 +22,8 @@ from core.utils import EMOJI_URL, DTEmbed
 
 
 LOGGER = logging.getLogger(__name__)
+
+AOC_EMOJI_URL, JARE_EMOJI_URL = EMOJI_URL.format(770620658501025812), EMOJI_URL.format(1061029880059400262)
 
 
 class AoCWikiEmbed(DTEmbed):
@@ -38,21 +40,18 @@ class AoCWikiEmbed(DTEmbed):
 
     See Also
     --------
-    :class:`exts.cogs.fandom_wiki_search.FandomWikiSearchCog`
+    :class:`FandomWikiSearchCog`
     """
 
     def __init__(
             self,
-            author_icon_url: str | None = None,
-            footer_icon_url: str | None = None,
+            author_icon_url: str = AOC_EMOJI_URL,
+            footer_icon_url: str = JARE_EMOJI_URL,
             **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
         aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
-        aoc_id, jare_id = 770620658501025812, 1061029880059400262
-        author_icon_url = EMOJI_URL.format(aoc_id) if (author_icon_url is None) else author_icon_url
-        footer_icon_url = EMOJI_URL.format(jare_id) if (footer_icon_url is None) else footer_icon_url
 
         self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
         self.set_footer(
@@ -93,6 +92,14 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         """Perform any necessary tasks before the bot connects to the Websocket, like loading wiki directions."""
 
         await self.load_all_wiki_pages()
+
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        
+        LOGGER.exception("", exc_info=error)
 
     async def load_all_wiki_pages(self) -> None:
         """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
@@ -142,18 +149,14 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         await ctx.send(embed=embed)
 
     @wiki.autocomplete("wiki")
-    async def wiki_autocomplete(self, _: core.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    async def wiki_autocomplete(self, _: core.Interaction, current: str) -> list[Choice[str]]:
         """Autocomplete callback for the names of different wikis."""
 
         options = self.all_wikis.values()
-        return [app_commands.Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
+        return [Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
 
     @wiki.autocomplete("search_term")
-    async def wiki_search_term_autocomplete(
-            self,
-            interaction: core.Interaction,
-            current: str,
-    ) -> list[app_commands.Choice[str]]:
+    async def wiki_search_term_autocomplete(self, interaction: core.Interaction, current: str) -> list[Choice[str]]:
         """Autocomplete callback for the names of different wiki pages.
 
         Defaults to searching through the AoC wiki if the given wiki name is invalid.
@@ -164,7 +167,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             wiki = "Harry Potter and the Ashes of Chaos"
 
         options = self.all_wikis[wiki]["all_pages"]
-        return [app_commands.Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
+        return [Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
 
     async def search_wiki(self, wiki_name: str, wiki_query: str) -> discord.Embed:
         """Search a Fandom wiki for different pages.
@@ -194,7 +197,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 return failed_embed
 
             wiki_name = possible_results[0]
-            get_wiki_name = self.all_wikis.get(wiki_name)
+            get_wiki_name = self.all_wikis[wiki_name]
 
         # --------------------------------
         # Check if the wiki has any recorded pages.

@@ -58,19 +58,21 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """Handles any errors within this cog."""
 
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+            
         embed = discord.Embed(color=0x5e9a40)
 
         if isinstance(error, ConnectionError | KeyError):
             LOGGER.warning("OpenAI Response error.", exc_info=error)
-
             embed.title = "OpenAI Response Error"
             embed.description = "There's a connection issue with OpenAI's API. Please try again in a minute or two."
             ctx.command.reset_cooldown(ctx)  # type: ignore
-
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
-
         else:
             embed.title = f'Error with "{ctx.command}"'
             embed.description = "You've triggered an error with this command. Please try again in a minute or two."
@@ -213,6 +215,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
         async with ctx.typing():
             embed = discord.Embed(color=0x5d6e7f, title="AI-Generated", description="—+—+—+—+—+—+—")
+            assert (embed.title is not None) and (embed.description is not None)        # For typing.
 
             if generation_type == "image":
                 log_start_time = perf_counter()

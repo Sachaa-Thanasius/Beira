@@ -327,6 +327,12 @@ class HelpCog(commands.Cog, name="Help"):
         """Resets the bot's help command to its default state before unloading the cog."""
 
         self.bot.help_command = self._old_help_command
+    
+    async def cog_app_command_error(self, interaction: core.Interaction, error: app_commands.AppCommandError) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        base_interaction_info = interaction.guild, interaction.channel, interaction.user
+        LOGGER.exception("Error in help: Guild - %s; Channel - %s; User - %s", *base_interaction_info, exc_info=error)
 
     @app_commands.command(name="help")
     async def help_(self, interaction: core.Interaction, command: str | None = None) -> None:

@@ -88,10 +88,9 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         embed = discord.Embed(title="Error", description="Something went wrong with this command.")
 
         # Extract the original error.
-        if isinstance(error, commands.HybridCommandError | commands.CommandInvokeError):
-            error = error.original
-            if isinstance(error, app_commands.CommandInvokeError):
-                error = error.original
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
 
         # Respond to the error.
         if isinstance(error, discord.Forbidden):
@@ -101,7 +100,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         elif isinstance(error, commands.GuildStickerNotFound):
             embed.description = "That is not a valid sticker name or ID, sorry!"
         else:
-            LOGGER.error(f"Error in `{ctx.command.name}` command", exc_info=error)
+            LOGGER.exception(f"Error in `{ctx.command.name}` command", exc_info=error)  # type: ignore
             embed.description = "Something went wrong. The emoji/sticker could not be added."
 
         await ctx.send(embed=embed)
@@ -169,16 +168,19 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                 isinstance(actual_emoji, discord.Emoji) or
                 (isinstance(actual_emoji, discord.PartialEmoji) and actual_emoji.is_custom_emoji())
         ):
+            created_at = actual_emoji.created_at.strftime('%B %d, %Y') if actual_emoji.created_at else "Unknown"
             (
                 embed.add_field(name="Name", value=actual_emoji.name, inline=False)
                 .add_field(name="Type", value="Custom")
                 .add_field(name="ID", value=actual_emoji.id)
-                .add_field(name="Created", value=actual_emoji.created_at.strftime('%B %d, %Y'))
+                .add_field(name="Created", value=created_at)
                 .add_field(name="URL", value=f"[Here]({actual_emoji.url})")
                 .set_thumbnail(url=actual_emoji.url)
             )
+
             if isinstance(actual_emoji, discord.Emoji):
-                embed.add_field(name="Guild Source", value=actual_emoji.guild.name)
+                guild_name = actual_emoji.guild.name if actual_emoji.guild else "Unknown"
+                embed.add_field(name="Guild Source", value=guild_name)
                 embed.add_field(name="Display", value=str(actual_emoji))
         elif isinstance(actual_emoji, discord.PartialEmoji) and actual_emoji.is_unicode_emoji():
             name = unicodedata.name(actual_emoji.name)
@@ -319,7 +321,6 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
 
         Parameters
         ----------
-
         ctx : :class:`core.GuildContext`
             The invocation context.
         sticker : :class:`discord.GuildSticker`, optional
@@ -358,7 +359,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
 
         added_count = 0
         errors = []
-        if message.stickers:
+        if message.stickers and (interaction.guild is not None):
             for sticker in message.stickers:
                 try:
                     sticker_file = await sticker.to_file()

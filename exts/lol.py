@@ -122,6 +122,14 @@ class LoLCog(commands.Cog, name="League of Legends"):
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
+    
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+        
+        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_group()
     async def lol(self, ctx: core.Context) -> None:

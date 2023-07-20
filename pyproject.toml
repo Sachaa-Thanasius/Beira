@@ -31,10 +31,11 @@ ignore = [
     "TRY002",  # Use of Exception. To be removed later when I narrow down exception types.
     "S311",  # No need for cryptographically secure random number generation in this use case.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
+    # "PLR0913"  # Seems excessive to point out number of function call arguments in most cases here.
 ]
 unfixable = [
     "ERA",  # I don't want anything erroneously detected deleted by this.
-    "PLC0414",  # This causes issues with package importing in __init__ files. Disallow erroneous deletion.
+    "PLC0414",  # This causes issues when declaring module imports in __init__ files. Disallow erroneous deletion.
 ]
 
 [tool.ruff.isort]
