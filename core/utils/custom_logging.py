@@ -9,14 +9,9 @@ https://github.com/AbstractUmbra/Mipha/blob/main/bot.py#L91
 from __future__ import annotations
 
 import logging
-from asyncio import iscoroutinefunction
-from collections.abc import Awaitable, Callable, Generator
-from contextlib import contextmanager
-from functools import wraps
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from time import perf_counter
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
 
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour
 
@@ -25,7 +20,7 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 
-__all__ = ("CustomLogger", "benchmark")
+__all__ = ("CustomLogger",)
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -126,66 +121,3 @@ class CustomLogger:
         for hdlr in handlers:
             hdlr.close()
             self.log.removeHandler(hdlr)
-
-
-
-@overload
-def benchmark(func: Callable[P, Awaitable[T]], logger: logging.Logger) -> Callable[P, Awaitable[T]]: ...
-@overload
-def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T]: ...
-def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T] | Callable[P, Awaitable[T]]:
-    """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
-
-    Parameters
-    ----------
-    func
-        The function being benchmarked. Can be sync or async.
-    logger : :class:`logging.Logger`
-        The logger being used to display the benchmark.
-
-    Returns
-    -------
-    bench_wrapper
-        A modified function decorated with a benchmark logging mechanism.
-
-    Notes
-    -----
-    To use, place these lines near the top of a file:
-
-        ``import logging``
-
-        ``from utils.custom_logging import benchmark``
-
-        ``LOGGER = logging.getLogger(__name__)``
-
-        ``with_benchmark = functools.partial(benchmark, logger=LOGGER)``
-    
-    References
-    ----------
-    https://stackoverflow.com/a/75439065
-    """
-
-    @contextmanager
-    def benchmark_logic() -> Generator[Any, Any, None]:
-        """Context manager that actually measures the function execution time."""
-        
-        start_time = perf_counter()
-        yield
-        end_time = perf_counter()
-        run_time = end_time - start_time
-        logger.info("Execution of %s took %.5fs.", func.__name__, run_time)
-
-    # Pick the wrapper based on whether the given function is sync or async.
-    if iscoroutinefunction(func):
-        @wraps(func)
-        async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            with benchmark_logic():
-                return await func(*args, **kwargs)
-        return async_wrapper
-
-    @wraps(func)
-    def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-        with benchmark_logic():
-            return func(*args, **kwargs)
-    return sync_wrapper
-

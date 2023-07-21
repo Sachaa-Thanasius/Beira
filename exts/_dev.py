@@ -5,6 +5,7 @@ _dev.py: A cog that implements commands for reloading and syncing extensions and
 from __future__ import annotations
 
 import logging
+from time import perf_counter
 from typing import Literal
 
 import discord
@@ -22,6 +23,15 @@ LOGGER = logging.getLogger(__name__)
 
 # List for cogs that you don't want to be reloaded, using dot-style notation (e.g. "exts.cogs.snowball").
 IGNORE_EXTENSIONS = []
+
+# Tuples with data for a parameter's choices in the sync command.
+SPEC_CHOICES: list[tuple[str, str]] = [
+    ("[~] —— Sync current guild.", "~"),
+    ("[*] —— Copy all global app commands to current guild and sync.", "*"),
+    ("[^] —— Clear all commands from the current guild target and sync, thereby removing guild commands.", "^"),
+    ("[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.", "-"),
+    ("[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", "+"),
+]
 
 # Preload the guild-only slash commands decorator.
 only_dev_guilds = app_commands.guilds(*core.CONFIG["discord"]["guilds"]["dev"])
@@ -305,7 +315,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 await ctx.send(embed=embed, ephemeral=True)
             else:
                 reloaded, failed = [], []
-                for extension in self.bot.extensions:
+
+                start_time = perf_counter()
+                for extension in sorted(self.bot.extensions):
                     try:
                         await self.bot.reload_extension(extension)
                     except commands.ExtensionError as err:
@@ -313,12 +325,16 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                         LOGGER.error("Couldn't reload extension: %s", extension, exc_info=err)
                     else:
                         reloaded.append(extension)
+                end_time = perf_counter()
+
+                ratio_succeeded = f"{len(reloaded)}/{len(self.bot.extensions)}"
+                LOGGER.info("Attempted to reload all extensions. Successful: %s.", ratio_succeeded)
 
                 embed.add_field(name="Reloaded", value="\n".join(reloaded))
                 embed.add_field(name="Failed to reload", value="\n".join(failed))
+                embed.set_footer(text=f"Time taken: {end_time - start_time:.3f}s")
 
                 await ctx.send(embed=embed, ephemeral=True)
-
 
     @unload.autocomplete("extension")
     @reload.autocomplete("extension")
@@ -332,22 +348,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
     @commands.hybrid_command("sync")
     @only_dev_guilds
-    @app_commands.choices(spec=[
-        app_commands.Choice(name="[~] —— Sync current guild.", value="~"),
-        app_commands.Choice(name="[*] —— Copy all global app commands to current guild and sync.", value="*"),
-        app_commands.Choice(
-            name="[^] —— Clear all commands from the current guild target and sync, thereby removing guild commands.",
-            value="^",
-        ),
-        app_commands.Choice(
-            name="[-] —— (D-N-T!) Clear all global commands and sync, thereby removing all global commands.",
-            value="-",
-        ),
-        app_commands.Choice(
-            name="[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.",
-            value="+",
-        ),
-    ])
+    @app_commands.choices(spec=[app_commands.Choice(name=name, value=value) for name, value in SPEC_CHOICES])
     async def sync_(
             self,
             ctx: core.Context,
@@ -419,7 +420,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                     synced = []
                 else:
                     synced = await ctx.bot.tree.sync()
-
+                
                 place = "globally" if spec is None else "to the current guild"
                 await ctx.send(f"Synced {len(synced)} commands {place}.", ephemeral=True)
                 return
