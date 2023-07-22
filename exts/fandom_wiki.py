@@ -1,6 +1,9 @@
 """
 fandom_wiki.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
 first.
+
+TODO: Look into switching to lxml.
+TODO: Figure out typing for bs4 stuff.
 """
 
 from __future__ import annotations
@@ -13,7 +16,7 @@ from typing import Any
 from urllib.parse import quote, urljoin
 
 import discord
-from bs4 import BeautifulSoup  # TODO: Look into switching to lxml.
+from bs4 import BeautifulSoup
 from discord.app_commands import Choice
 from discord.ext import commands
 

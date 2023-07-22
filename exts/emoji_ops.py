@@ -85,12 +85,14 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             The error thrown by the command.
         """
 
-        embed = discord.Embed(title="Error", description="Something went wrong with this command.")
+        assert ctx.command is not None
 
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
+
+        embed = discord.Embed(title="Error", description="Something went wrong with this command.")
 
         # Respond to the error.
         if isinstance(error, discord.Forbidden):
@@ -100,7 +102,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         elif isinstance(error, commands.GuildStickerNotFound):
             embed.description = "That is not a valid sticker name or ID, sorry!"
         else:
-            LOGGER.exception(f"Error in `{ctx.command.name}` command", exc_info=error)  # type: ignore
+            LOGGER.exception(f"Error in `{ctx.command.name}` command", exc_info=error)
             embed.description = "Something went wrong. The emoji/sticker could not be added."
 
         await ctx.send(embed=embed)

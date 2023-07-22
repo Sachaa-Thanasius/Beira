@@ -16,7 +16,7 @@ from discord.ext import commands
 import core
 
 
-PinnableGuildChannel: TypeAlias = discord.abc.GuildChannel | discord.Thread
+PinnableGuildChannel: TypeAlias = discord.TextChannel | discord.Thread
 
 LOGGER = logging.getLogger(__name__)
 
@@ -85,12 +85,13 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
         LOGGER.info(f"set_archive_channel(): {ctx.author}, {channel.guild}, {channel}")
 
     @commands.command()
-    async def get_pins(self, ctx: core.GuildContext, channel: PinnableGuildChannel = commands.CurrentChannel) -> None:
+    async def get_pins(self, ctx: core.GuildContext, channel: PinnableGuildChannel) -> None:
         """Print all pins in a guild channel."""
 
         LOGGER.info(f"get_pins(): {ctx.author}, {channel.guild}, {channel}")
-        all_pins = await channel.pins()
-        LOGGER.info(str(all_pins))
+        if hasattr(channel, "pins"):
+            all_pins = await channel.pins()
+            LOGGER.info(str(all_pins))
 
     @commands.command()
     async def activate(self, ctx: core.GuildContext) -> None:
@@ -109,7 +110,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
             self,
             ctx: core.GuildContext,
             *,
-            channels: commands.Greedy[discord.abc.GuildChannel] = None,
+            channels: commands.Greedy[discord.abc.GuildChannel] = None,  # type: ignore # Effectively optional. 
     ) -> None:
         """Add channels to a blacklist so that pins from them aren't archived.
 

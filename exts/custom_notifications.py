@@ -5,12 +5,16 @@ custom_notifications.py: A cog for sending custom notifications based on events.
 from __future__ import annotations
 
 import logging
+from typing import TypeAlias, cast
 
 import discord
+from discord import CategoryChannel, ForumChannel, StageChannel, TextChannel, VoiceChannel
 from discord.ext import commands
 
 import core
 
+
+GuildChannel: TypeAlias = VoiceChannel | StageChannel | ForumChannel | TextChannel | CategoryChannel
 
 LOGGER = logging.getLogger(__name__)
 
@@ -95,20 +99,28 @@ class CustomNotificationsCog(commands.Cog):
     # @commands.Cog.listener("on_raw_message_delete")
     async def test_on_any_message_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
         # TODO: Improve.
+        
         # Only check in ACI100 server.
         if payload.guild_id == self.aci_guild_id:
             LOGGER.info("In message delete listener:\n%s", payload)
 
             # Attempt to get the message.
-            channel = self.bot.get_channel(payload.channel_id)
-            message = payload.cached_message or (await channel.fetch_message(payload.message_id))
+            channel = cast(
+                GuildChannel | discord.Thread,
+                self.bot.get_channel(payload.channel_id) or self.bot.fetch_channel(payload.channel_id),
+            )
+            
+            message = payload.cached_message
+            if not message and not isinstance(channel, ForumChannel | CategoryChannel):
+                message = await channel.fetch_message(payload.message_id)
 
+            assert message is not None
             # Create a Discord log message.
             extra = []
             embed = (
                 discord.Embed(
                     colour=discord.Colour.dark_green(),
-                    description=f"**Message sent by {message.author.mention} - Deleted in {message.channel.mention}**"
+                    description=f"**Message sent by {message.author.mention} - Deleted in <#{payload.channel_id}>**"
                                 f"\n{message.content}",
                     timestamp=discord.utils.utcnow(),
                 )

@@ -11,7 +11,7 @@ import random
 import re
 import textwrap
 from io import StringIO
-from typing import Any
+from typing import Any, cast
 
 import asteval
 import discord
@@ -47,7 +47,7 @@ class Die:
     color: discord.Colour
     label: str = field(init=False)
 
-    @label.default
+    @label.default  # type: ignore # Pyright doesn't account for this attrs syntax.
     def _label(self) -> str:
         return f"D{self.value}"
 
@@ -430,7 +430,8 @@ class DiceView(ui.View):
             button.label = f"Modifier: {int(modifier_value)}"
             self.modifier = int(modifier_value)
 
-        await modal.interaction.response.edit_message(view=self)  # type: ignore
+        if modal.interaction:
+            await modal.interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="# of Rolls", custom_id="dice:set_num_button", style=discord.ButtonStyle.green,
                        emoji="\N{HEAVY MULTIPLICATION X}", row=3)
@@ -465,7 +466,8 @@ class DiceView(ui.View):
             button.label = f"# of Rolls: {mod_int}"
             self.num_rolls = mod_int
 
-        await modal.interaction.response.edit_message(view=self)  # type: ignore
+        if modal.interaction:
+            await modal.interaction.response.edit_message(view=self)
 
     @discord.ui.button(label="Custom Expression", custom_id="dice:set_expr_button",
                        style=discord.ButtonStyle.green, emoji="\N{ABACUS}", row=3)
@@ -497,7 +499,8 @@ class DiceView(ui.View):
             original_embed.remove_field(0).add_field(name="Loaded Expression:", value=self.expression)
 
         # Edit the original embed to display it.
-        await modal.interaction.response.edit_message(embed=original_embed, view=self)  # type: ignore
+        if modal.interaction:
+            await modal.interaction.response.edit_message(embed=original_embed, view=self)
 
     @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", custom_id="dice:run_expr_button",
                        style=discord.ButtonStyle.green, row=3)
@@ -511,7 +514,7 @@ class DiceView(ui.View):
             send_kwargs["embed"] = DiceEmbed(expression_info=(self.expression, filled_in_expression, result))
             send_kwargs["view"] = ui.View().add_item(RerollButton(expression=self.expression))
         else:
-            dice_select: DiceSelect = discord.utils.get(self.children, custom_id="dice:select")  # type: ignore
+            dice_select = cast(DiceSelect, discord.utils.get(self.children, custom_id="dice:select"))
             if dice_select.values:
                 dice_info = {int(val): self.num_rolls for val in dice_select.values}
                 roll_info = roll_basic_dice(dice_info)

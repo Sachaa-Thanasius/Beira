@@ -48,7 +48,10 @@ class AdminCog(commands.Cog, name="Administration"):
             timed_members = filter(lambda m: m.is_timed_out(), ctx.guild.members)
             embed = discord.Embed(
                 title=f"Members Timed Out in {ctx.guild.name}",
-                description="\n".join(f"{mem}: {format_dt(mem.timed_out_until, style='f')}" for mem in timed_members),
+                description="\n".join(
+                    f"{mem}: {format_dt(mem.timed_out_until, style='f')}" for mem in timed_members
+                    if mem.timed_out_until is not None
+                ),
             )
             await ctx.send(embed=embed)
 

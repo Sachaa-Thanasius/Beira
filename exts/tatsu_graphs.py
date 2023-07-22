@@ -86,7 +86,10 @@ class TatsuCog(commands.Cog, name="Tatsu"):
                     [
                         ((ranking.score / (now - valid_member.joined_at).days), ranking.user_id, ranking.rank)
                         for ranking in results.rankings
-                        if (valid_member := query_guild.get_member(int(ranking.user_id)))
+                        if (
+                            (valid_member := query_guild.get_member(int(ranking.user_id))) and 
+                            valid_member.joined_at is not None
+                        )
                     ],
                     dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")],
                 )

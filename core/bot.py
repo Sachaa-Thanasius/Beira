@@ -1,5 +1,5 @@
 """
-bot.py: The main bot initializer and starter.
+bot.py: The main bot code.
 """
 
 from __future__ import annotations
@@ -56,7 +56,7 @@ class Beira(commands.Bot):
         self.web_session = web_session
         self.initial_extensions = initial_extensions
         self._config = CONFIG
-
+        
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}
         self.blocked_entities_cache: dict[str, set] = {}
@@ -148,7 +148,6 @@ class Beira(commands.Bot):
         await self.wait_until_ready()
         self._load_emoji_stock()
         self._load_special_friends()
-        await self.is_owner(self.user)
 
     async def on_ready(self) -> None:
         """Display that the bot is ready."""

@@ -1,6 +1,5 @@
 """
 bot_stats.py: A cog for tracking different bot metrics.
-TODO: Fix commands not being logged properly in DMs.
 """
 
 from __future__ import annotations

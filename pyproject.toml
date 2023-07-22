@@ -11,6 +11,7 @@ authors = [{ name = "Sachaa-Thanasius", email = "i.like.ike101@gmail.com" }]
 "Bug Tracker" = "https://github.com/Sachaa-Thanasius/Beira/issues"
 
 [tool.ruff]
+# Credit to mikeshardmind for inspiring this setup.
 line-length = 120
 target-version = "py310"
 select = [
@@ -31,19 +32,24 @@ ignore = [
     "TRY002",  # Use of Exception. To be removed later when I narrow down exception types.
     "S311",  # No need for cryptographically secure random number generation in this use case.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
-    # "PLR0913"  # Seems excessive to point out number of function call arguments in most cases here.
 ]
 unfixable = [
     "ERA",  # I don't want anything erroneously detected deleted by this.
     "PLC0414",  # This causes issues when declaring module imports in __init__ files. Disallow erroneous deletion.
 ]
 
+[tool.ruff.extend-per-file-ignores]
+"__init__.py" = ["F403", "PLC0414"]
+
 [tool.ruff.isort]
 lines-after-imports = 2
 combine-as-imports = true
 
+[tool.ruff.pylint]
+max-args = 7    # For the custom embeds. They need to be refactored at some point.
+
 [tool.pyright]
-reportUnnecessaryTypeIgnoreComment = "warning"
-reportUnusedImport = "error"
 pythonVersion = "3.10"
 typeCheckingMode = "basic"
+reportUnnecessaryTypeIgnoreComment = "warning"
+reportUnusedImport = "error"

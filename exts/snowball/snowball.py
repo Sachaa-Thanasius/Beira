@@ -84,6 +84,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         error : :class:`Exception`
             The error that happened.
         """
+        assert ctx.command is not None
 
         # Extract the original error.
         error = getattr(error, "original", error)
@@ -95,7 +96,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if isinstance(error, commands.MissingRequiredArgument):
             embed.title = "Missing Parameter!"
             embed.description = "This command needs a target."
-            ctx.command.reset_cooldown(ctx)  # type: ignore
+            ctx.command.reset_cooldown(ctx)
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
@@ -106,7 +107,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
                 "face."
             )
         else:
-            embed.title = f"{ctx.command.name}: Unknown Command Error"  # type: ignore
+            embed.title = f"{ctx.command.name}: Unknown Command Error"
             embed.description = (
                 "Maybe the snowballs are revolting. Maybe you hit a beehive. Regardless, there's some kind of error. "
                 "Please try again in a minute or two."
@@ -528,7 +529,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             color=0x2f3136,
             title="**Global Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————",
-        ).set_thumbnail(url=self.bot.user.display_avatar.url)
+        ).set_thumbnail(url=self.bot.user.display_avatar.url)   # type: ignore
 
         if global_ldbd is not None:
             await self._make_leaderboard_fields(embed, global_ldbd)
@@ -555,7 +556,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             color=0x2f3136,
             title="**Guild-Level Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————",
-        ).set_thumbnail(url=self.bot.user.display_avatar.url)
+        ).set_thumbnail(url=self.bot.user.display_avatar.url)   # type: ignore
 
         if guilds_only_ldbd:
             await self._make_leaderboard_fields(embed, guilds_only_ldbd)

@@ -235,6 +235,7 @@ class SnowballSettingsView(ui.View):
     async def interaction_check(self, interaction: core.Interaction, /) -> bool:
         # Ensure users are only server administrators or bot owners.
         
+        assert isinstance(interaction.user, discord.Member)  # This should only ever be called in a guild context.
         check = bool(
             interaction.guild and
             (interaction.user.guild_permissions.administrator or interaction.client.owner_id == interaction.user.id),

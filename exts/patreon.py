@@ -232,6 +232,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
         patreon_guild = self.bot.get_guild(aci100_id)
+        assert patreon_guild is not None
+        
         patron_roles = (role for role in patreon_guild.roles if "patrons" in role.name.lower())
         self.patrons_on_discord.update({role.name: role.members for role in patron_roles})
 
@@ -277,7 +279,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                 for member in resp_json["data"]:
                     user_id = member["relationships"]["user"]["data"]["id"]
                     LOGGER.info(f"User ID: {user_id}")
-                    user: dict = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])
+                    user: dict = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])  # type: ignore
                     LOGGER.info(f"User: {user}")
 
                     assert user is not None

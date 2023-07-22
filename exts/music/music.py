@@ -6,7 +6,7 @@ with Wavelink.
 from __future__ import annotations
 
 import logging
-from typing import Literal
+from typing import Literal, cast
 
 import discord
 import wavelink
@@ -78,7 +78,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
         """Called when the current track has finished playing."""
 
-        player: SkippablePlayer = payload.player    # type: ignore
+        player = cast(SkippablePlayer, payload.player)
         if player.is_connected() and not player.queue.is_empty:
             new_track = await player.queue.get_wait()
             await player.play(new_track)
@@ -105,7 +105,7 @@ class MusicCog(commands.Cog, name="Music"):
         if vc is not None and ctx.author.voice is not None:
             if vc.channel != ctx.author.voice.channel:
                 if ctx.author.guild_permissions.administrator:
-                    await vc.move_to(ctx.author.voice.channel)
+                    await vc.move_to(ctx.author.voice.channel)  # type: ignore
                     await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
                 else:
                     await ctx.send("Voice player is currently being used in another channel.")

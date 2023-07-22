@@ -2,6 +2,7 @@
     "discord": {
         "token": "",
         "default_prefix": "$",
+        "owner_id": "DISCORD_ID_WITHOUT_QUOTES_HERE",
         "friend_ids": [],
         "guilds": {
             "dev": [],

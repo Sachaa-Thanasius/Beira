@@ -1,3 +1,7 @@
+"""
+context.py: For the custom context and interaction subclasses. Mainly used for type narrowing.
+"""
+
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, TypeAlias
@@ -5,6 +9,7 @@ from typing import TYPE_CHECKING, Any, TypeAlias
 import discord
 from discord.ext import commands
 
+from .bot import Beira
 from .wave import SkippablePlayer
 
 
@@ -12,7 +17,6 @@ if TYPE_CHECKING:
     from aiohttp import ClientSession
     from asyncpg import Pool
 
-    from .bot import Beira
 
 __all__ = ("Context", "GuildContext", "Interaction")
 

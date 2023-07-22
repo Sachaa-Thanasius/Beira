@@ -1,3 +1,7 @@
+"""
+wave.py: Custom subclasses or extras related to wavelink.
+"""
+
 from __future__ import annotations
 
 import logging

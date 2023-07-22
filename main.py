@@ -20,11 +20,13 @@ async def main() -> None:
         intents.members = True
         intents.message_content = True
         default_prefix = core.CONFIG["discord"]["default_prefix"]
+        owner_id: int = core.CONFIG["discord"]["owner_id"]
 
         # Initialize and start the bot.
         async with core.Beira(
                 command_prefix=default_prefix,
                 intents=intents,
+                owner_id=owner_id,
                 db_pool=pool,
                 web_session=web_session,
         ) as bot:

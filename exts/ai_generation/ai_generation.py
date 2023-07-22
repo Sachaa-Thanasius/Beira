@@ -57,6 +57,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """Handles any errors within this cog."""
+        
+        assert ctx.command is not None
 
         # Extract the original error.
         error = getattr(error, "original", error)
@@ -69,7 +71,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             LOGGER.warning("OpenAI Response error.", exc_info=error)
             embed.title = "OpenAI Response Error"
             embed.description = "There's a connection issue with OpenAI's API. Please try again in a minute or two."
-            ctx.command.reset_cooldown(ctx)  # type: ignore
+            ctx.command.reset_cooldown(ctx)
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."

@@ -1,5 +1,5 @@
 """
-misc.py: Small utility functions that might come in handy.
+misc.py: Miscellaneous utility functions that might come in handy.
 """
 
 from __future__ import annotations
@@ -25,16 +25,12 @@ P = ParamSpec("P")
 class catchtime:
     """A context manager class that times what happens within it.
 
-    Taken from StackOverflow [1_].
+    Based on code from StackOverflow: https://stackoverflow.com/a/69156219.
 
     Parameters
     ----------
     logger : :class:`logging.Logger`, optional
         The logging channel to send the time to, if relevant. Optional.
-
-    References
-    ----------
-    .. [1] https://stackoverflow.com/a/69156219
     """
 
     def __init__(self, logger: logging.Logger | None = None) -> None:
@@ -58,6 +54,8 @@ def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T]: .
 def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T] | Callable[P, Awaitable[T]]:
     """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
 
+    Based on code from StackOverflow: https://stackoverflow.com/a/75439065.
+
     Parameters
     ----------
     func
@@ -74,10 +72,6 @@ def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T] | 
     -----
     If you have a logger that you want to use with this multiple times, you can use functools.partial to avoid repeating
     that logger argument repeatedly.
-    
-    References
-    ----------
-    https://stackoverflow.com/a/75439065
     """
     
     # Pick the wrapper based on whether the given function is sync or async.

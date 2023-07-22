@@ -24,7 +24,7 @@ LOGGER = logging.getLogger(__name__)
 # List for cogs that you don't want to be reloaded, using dot-style notation (e.g. "exts.cogs.snowball").
 IGNORE_EXTENSIONS = []
 
-# Tuples with data for a parameter's choices in the sync command.
+# Tuples with data for a parameter's choices in the sync command. Putting it all in the decorator is ugly.
 SPEC_CHOICES: list[tuple[str, str]] = [
     ("[~] —— Sync current guild.", "~"),
     ("[*] —— Copy all global app commands to current guild and sync.", "*"),
@@ -352,10 +352,10 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     async def sync_(
             self,
             ctx: core.Context,
-            guilds: commands.Greedy[discord.Object] = None,
+            guilds: commands.Greedy[discord.Object] = None,     # type: ignore # Can't be type-hinted as optional.
             spec: app_commands.Choice[str] | None = None,
     ) -> None:
-        """Syncs the command tree in a way based on input.
+        """Syncs the command tree in some way based on input.
 
         The `spec` and `guilds` parameters are mutually exclusive.
 
@@ -363,9 +363,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         ----------
         ctx : :class:`core.Context`
             The invocation context.
-        guilds : Greedy[:class:`discord.Object`]
+        guilds : Greedy[:class:`discord.Object`], optional
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
-            :class:`discord.Object`s.
+            :class:`discord.Object`s. Please provide as IDs separated by spaces.
         spec : Choice[:class:`str`], optional
             The type of sync to perform if no guilds are entered. No input means global sync.
 

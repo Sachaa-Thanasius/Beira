@@ -1,5 +1,9 @@
 """
 ff_metadata.py: A cog with triggers for retrieving story metadata.
+
+TODO: Account for orphaned fics, anonymous fics, really long embed descriptions, and series with more than 25 fics.
+TODO: Also figure out the specific exceptions thrown by AO3 lib when it doesn't work for something. AttributeError
+      and others?
 """
 
 from __future__ import annotations
@@ -315,7 +319,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         else:
             search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
             await asyncio.to_thread(search.update)
-            story_data = search.results[0] if len(search.results) > 0 else None  # type: ignore
+            story_data = search.results[0] if search.results else None
 
         return story_data
 
