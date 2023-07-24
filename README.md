@@ -6,3 +6,5 @@ Credit: Much of this code was heavily based on the discord.py example code as we
 
 Shoutout to Ali for making this possible by inspiring me with their own bot development, as well as Athena for 
 entertaining my bot on her server.
+
+To actually use this yourself, you'll have to change the name of `config.example.json` to `config.json` and set all the variables within. As a precursor to that, you'll have to set up a PostgreSQL database and a Lavalink node, or at least get access to those.

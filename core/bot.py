@@ -11,7 +11,6 @@ from typing import Any
 import aiohttp
 import asyncpg
 import discord
-import jishaku  # type: ignore # noqa: F401 # Imported as a bot extension
 from discord.ext import commands
 
 from exts import EXTENSIONS

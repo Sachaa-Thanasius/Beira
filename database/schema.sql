@@ -70,13 +70,6 @@ CREATE TABLE IF NOT EXISTS patreon_creators (
 );
 
 
-CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
-    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    channel_id  BIGINT  NOT NULL,
-    PRIMARY KEY (guild_id, channel_id)
-);
-
-
 CREATE TABLE IF NOT EXISTS snowball_stats (
     user_id     BIGINT  NOT NULL,
     guild_id    BIGINT  NOT NULL,
@@ -100,6 +93,13 @@ CREATE VIEW guilds_only_rank_view AS
                 DENSE_RANK() OVER (ORDER BY SUM(hits) DESC, SUM(kos), SUM(misses), SUM(stock) DESC, guild_id DESC) AS guild_rank
     FROM        snowball_stats
     GROUP BY    guild_id;
+
+
+CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
+    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    channel_id  BIGINT  NOT NULL,
+    PRIMARY KEY (guild_id, channel_id)
+);
 
 
 CREATE TABLE IF NOT EXISTS snowball_settings (

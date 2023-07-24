@@ -15,11 +15,12 @@ async def main() -> None:
     async with aiohttp.ClientSession() as web_session, asyncpg.create_pool(
             dsn=core.CONFIG["db"]["postgres_url"], command_timeout=30, init=pool_init,
     ) as pool, CustomLogger() as _:
+        
         # Set the bot's basic starting parameters.
         intents = discord.Intents.default()
         intents.members = True
         intents.message_content = True
-        default_prefix = core.CONFIG["discord"]["default_prefix"]
+        default_prefix: str = core.CONFIG["discord"]["default_prefix"]
         owner_id: int = core.CONFIG["discord"]["owner_id"]
 
         # Initialize and start the bot.
