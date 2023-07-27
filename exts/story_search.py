@@ -20,7 +20,6 @@ from attrs import asdict, define, field
 from cattrs import Converter
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import MISSING
 
 import core
 from core.utils import EMOJI_URL, PaginatedEmbed, PaginatedEmbedView
@@ -59,10 +58,10 @@ class StoryQuoteEmbed(PaginatedEmbed):
         Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`. See that class for more info.
     """
 
-    def __init__(self, *, story_data: dict | None = MISSING, **kwargs: Any) -> None:
+    def __init__(self, *, story_data: dict | None = None, **kwargs: Any) -> None:
         super().__init__(**kwargs)
 
-        if story_data is not MISSING:
+        if story_data is not None:
             self.set_page_author(story_data)
 
     def set_page_author(self, story_data: dict | None = None) -> Self:

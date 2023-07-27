@@ -11,12 +11,12 @@ from typing import TYPE_CHECKING, Any
 
 import discord.utils
 from discord import Embed
-from discord.utils import MISSING
 
 
 if TYPE_CHECKING:
-    from discord import Emoji
+    from discord import Emoji, PartialEmoji
     from typing_extensions import Self
+
 
 __all__ = ("EMOJI_URL", "DTEmbed", "PaginatedEmbed", "StatsEmbed")
 
@@ -32,7 +32,7 @@ class DTEmbed(Embed):
     """
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["timestamp"] = discord.utils.utcnow()
+        kwargs["timestamp"] = kwargs.get("timestamp", discord.utils.utcnow())
         super().__init__(**kwargs)
 
 
@@ -48,28 +48,28 @@ class PaginatedEmbed(Embed):
     max_pages : :class:`int`, optional
         The total number of pages possible.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`Embed`.
+        Keyword arguments for the normal initialization of a discord :class:`Embed`.
 
     See Also
     --------
-    :class:`utils.paginated_views.PaginatedEmbedView`
+    :class:`.paginated_views.PaginatedEmbedView`
     """
 
     def __init__(
             self,
             *,
-            page_content: tuple | None = MISSING,
-            current_page: int | None = MISSING,
-            max_pages: int | None = MISSING,
+            page_content: tuple | None = None,
+            current_page: int | None = None,
+            max_pages: int | None = None,
             **kwargs: Any,
     ) -> None:
 
         super().__init__(**kwargs)
 
-        if page_content is not MISSING:
+        if page_content is not None:
             self.set_page_content(page_content)
 
-        if (current_page is not MISSING) and (max_pages is not MISSING):
+        if (current_page is not None) and (max_pages is not None):
             self.set_page_footer(current_page, max_pages)
 
     def set_page_content(self, page_content: tuple | None = None) -> Self:
@@ -89,8 +89,7 @@ class PaginatedEmbed(Embed):
                 self.remove_field(0)
 
         else:
-            self.title = str(page_content[0])
-            chapter_name, quote = str(page_content[1]), str(page_content[2])
+            self.title, chapter_name, quote = (str(item) for item in page_content[:3])
             self.add_field(name=chapter_name, value=quote)
 
         return self
@@ -108,10 +107,8 @@ class PaginatedEmbed(Embed):
             The total number of pages possible.
         """
 
-        if current_page is None:
-            current_page = 0
-        if max_pages is None:
-            max_pages = 0
+        current_page = current_page or 0
+        max_pages = max_pages or 0
 
         self.set_footer(text=f"Page {current_page}/{max_pages}")
 
@@ -120,51 +117,24 @@ class PaginatedEmbed(Embed):
 
 class StatsEmbed(DTEmbed):
     """A subclass of :class:`DTEmbed` that displays given statistics for a user.
+    
+    This has a default colour of 0x2f3136 and, due to inheritance, a default timestamp for right now in UTC.
 
     Parameters
     ----------
-    stat_names : Sequence[:class:`str`], optional
-        The headers representing each statistic that will be used as names for stat fields.
-    stat_emojis : Sequence[:class:`Emoji` | :class:`str`], optional
-        The emojis representing each statistic that will adorn the values of stat fields.
-    stat_values : Sequence[Any], optional
-        The user's statistics fetched from a database, to be used as values in stat fields.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`DTEmbed`.
-
-    See Also
-    --------
-    :class:`exts.cogs.snowball.SnowballCog`
-    :class:`exts.cogs.lol.LoLCog`
+        Keyword arguments for the normal initialization of a discord :class:`Embed`.
     """
 
-    def __init__(
-            self,
-            *,
-            stat_names: Sequence[str] | None = None,
-            stat_emojis: Sequence[Emoji | str] | None = None,
-            stat_values: Sequence[Any] | None = None,
-            inline: bool = False,
-            emoji_header_status: bool = False,
-            **kwargs: Any,
-    ) -> None:
-        colour = kwargs.pop("colour", kwargs.pop("color", 0x2f3136))
-        super().__init__(colour=colour, **kwargs)
-
-        if stat_names and stat_emojis and stat_values:
-            self.add_stat_fields(
-                stat_names=stat_names,
-                stat_emojis=stat_emojis,
-                stat_values=stat_values,
-                inline=inline,
-                emoji_header_status=emoji_header_status,
-            )
+    def __init__(self, **kwargs: Any) -> None:
+        kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0x2f3136
+        super().__init__(**kwargs)
 
     def add_stat_fields(
             self,
             *,
             stat_names: Sequence[Any],
-            stat_emojis: Sequence[Emoji | str],
+            stat_emojis: Sequence[Emoji | PartialEmoji | str] = (""),
             stat_values: Sequence[Any],
             inline: bool = False,
             emoji_header_status: bool = False,
@@ -178,19 +148,15 @@ class StatsEmbed(DTEmbed):
         stat_names : Sequence[Any]
             The names for each field.
         stat_emojis : Sequence[:class:`Emoji` | :class:`str`]
-            The emojis adorning each field.
-        stat_values : Sequence[Any]
+            The emojis adorning each field. Defaults to a tuple with an empty string so there is at least one "emoji".
+        stat_values : Sequence[Any], default=("")
             The values for each field.
         inline : :class:`bool`, default=False
-            Whether the fields should be displayed inline.
-        emoji_header_status : :class: `bool`, default=False
-            Whether the emojis should adorn the names or the values of each field.
+            Whether the fields should be displayed inline. Defaults to False.
+        emoji_header_status : :class:`bool`, default=False
+            Whether the emojis should adorn the names or the values of each field. By default, adorns the values.
         """
-
-        # Make sure there is at least one "emoji" in the list, even if it's just an empty string.
-        if not stat_emojis:
-            stat_emojis = [""]
-
+        
         # Add the stat fields.
         # - The emojis will be cycled over.
         for name, emoji, value in zip(stat_names, itertools.cycle(stat_emojis), stat_values, strict=False):
@@ -208,7 +174,7 @@ class StatsEmbed(DTEmbed):
             self,
             *,
             ldbd_content: Sequence[Sequence[Any]],
-            ldbd_emojis: Sequence[Emoji | str],
+            ldbd_emojis: Sequence[Emoji | PartialEmoji | str] = (""),
             name_format: str = "| {}",
             value_format: str = "{}",
             inline: bool = False,
@@ -221,9 +187,10 @@ class StatsEmbed(DTEmbed):
         Parameters
         ----------
         ldbd_content: Sequence[Sequence[Any]]
-            The content for each leaderboard, including names and values.
-        ldbd_emojis : Sequence[:class:`Emoji` | :class:`str`]
-            The emojis adorning the names of the leaderboard fields.
+            The content for each leaderboard, including names and values. Assumes they're given in descending order.
+        ldbd_emojis : Sequence[:class:`Emoji` | :class:`str`], default=("")
+            The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there 
+            is at least one "emoji".
         name_format : :class:`str`, default="| {}"
             The format for the name, to be filled by information from the content.
         value_format : :class:`str`, default="{}"
@@ -233,10 +200,6 @@ class StatsEmbed(DTEmbed):
         ranked : :class:`bool`, default=True
             Whether the stats should be ranked in descending order.
         """
-
-        # Make sure there's at least one "emoji" in the list, even if it's just an empty string.
-        if not ldbd_emojis:
-            ldbd_emojis = [""]
 
         # Add the leaderboard fields.
         # - The emojis will be cycled over.

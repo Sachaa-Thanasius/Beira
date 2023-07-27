@@ -326,7 +326,7 @@ def steal_cooldown(ctx: core.Context) -> commands.Cooldown | None:
     """
 
     rate, per = 1.0, 90.0  # Default cooldown
-    exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["Athena Hope"]]
+    exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["athenahope"]]
 
     if ctx.author.id in exempt:
         return None

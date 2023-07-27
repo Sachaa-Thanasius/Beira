@@ -26,7 +26,7 @@ __all__ = (
     "create_ao3_series_embed",
     "create_fichub_embed",
     "create_atlas_ffn_embed",
-    "Ao3SeriesView",
+    "AO3SeriesView",
 )
 
 LOGGER = logging.getLogger(__name__)
@@ -103,13 +103,13 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     await asyncio.to_thread(author.reload)
 
     # Format the relevant information.
-    updated = work.date_updated.strftime('%B %d, %Y') + (" (Complete)" if work.complete else "")
+    updated = work.date_updated.strftime("%B %d, %Y") + (" (Complete)" if work.complete else "")
     author_names = ", ".join(str(author.username) for author in work.authors)
     fandoms = textwrap.shorten(", ".join(work.fandoms), 100, placeholder="...")
     categories = textwrap.shorten(", ".join(work.categories), 100, placeholder="...")
     characters = textwrap.shorten(", ".join(work.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
-    stats = " • ".join((
+    stats_str = " • ".join((
         f"**Comments:** {work.comments:,d}",
         f"**Kudos:** {work.kudos:,d}",
         f"**Bookmarks:** {work.bookmarks:,d}",
@@ -123,8 +123,8 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{work.words:,d} words in {work.nchapters} chapter(s)")
         .add_field(name=f"\N{BOOKMARK} Rating: {work.rating}", value=details, inline=False)
-        .add_field(name="\N{BAR CHART} Stats", value=stats, inline=False)
-        .set_footer(text="A substitute for displaying Ao3 information, using Armindo Flores's Ao3 API.")
+        .add_field(name="\N{BAR CHART} Stats", value=stats_str, inline=False)
+        .set_footer(text="A substitute for displaying AO3 information, using Armindo Flores's AO3 API.")
     )
 
     # Use the remaining space in the embed for the truncated description.
@@ -140,9 +140,9 @@ async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
 
     author: AO3.User = series.creators[0]
     await asyncio.to_thread(author.reload)
-
+    
     # Format the relevant information.
-    updated = series.series_updated.strftime('%B %d, %Y') + (" (Complete)" if series.complete else "")
+    updated = series.series_updated.strftime("%B %d, %Y") + (" (Complete)" if series.complete else "")
     author_names = ", ".join(str(creator.username) for creator in series.creators)
     work_links = "\N{BOOKS} **Works:**\n" + "\n".join(f"[{work.title}]({work.url})" for work in series.work_list)
 
@@ -152,11 +152,11 @@ async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
         .set_author(name=author_names, url=author.url, icon_url=StoryWebsiteStore["AO3"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=updated)
         .add_field(name="\N{OPEN BOOK} Length", value=f"{series.words:,d} words in {series.nworks} work(s)")
-        .set_footer(text="A substitute for displaying Ao3 information, using Armindo Flores's Ao3 API.")
+        .set_footer(text="A substitute for displaying AO3 information, using Armindo Flores's AO3 API.")
     )
 
     # Use the remaining space in the embed for the truncated description.
-    series_descr = textwrap.shorten(series.description, 6000 - len(ao3_embed), placeholder="...\n\n")
+    series_descr = textwrap.shorten(series.description + "\n\n", 6000 - len(ao3_embed), placeholder="...\n\n")
     ao3_embed.description = series_descr + (ao3_embed.description or "")
     return ao3_embed
 
@@ -213,12 +213,17 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
     if "fanfiction.net" in story.url:
         stats_names = ("reviews", "favorites", "follows")
-        stats = " • ".join(f"**{stat_name.capitalize()}:** {story.stats[stat_name]:,d}" for stat_name in stats_names)
+        stats_str = " • ".join(f"**{name.capitalize()}:** {story.stats[name]:,d}" for name in stats_names)
     elif "archiveofourown.org" in story.url:
         stats_names = ("comments", "kudos", "bookmarks", "hits")
-        stats = " • ".join(f"**{stat_name.capitalize()}:** {story.stats[stat_name]:,d}" for stat_name in stats_names)
+        # Account for absent extended metadata.
+        stats = (
+            f"**{stat_name.capitalize()}:** {ind_stat:,d}" for stat_name in stats_names
+            if (ind_stat := story.stats.get(stat_name)) is not None
+        )
+        stats_str = " • ".join(stats)
     else:
-        stats = "No stats available at this time."
+        stats_str = "No stats available at this time."
 
     # Add the info to the embed appropriately.
     story_embed = (
@@ -227,7 +232,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated} ({story.status.capitalize()})")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{story.words:,d} words in {story.chapters} chapter(s)")
         .add_field(name=f"\N{BOOKMARK} Rating: {story.rating}", value=details, inline=False)
-        .add_field(name="\N{BAR CHART} Stats", value=stats, inline=False)
+        .add_field(name="\N{BAR CHART} Stats", value=stats_str, inline=False)
         .set_footer(text="Made using the FicHub API. Some results may be out of date or unavailable.")
     )
 
@@ -236,7 +241,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     return story_embed
 
 
-class Ao3SeriesView(discord.ui.View):
+class AO3SeriesView(discord.ui.View):
     """A view that wraps a dropdown item.
 
     Parameters
@@ -244,7 +249,7 @@ class Ao3SeriesView(discord.ui.View):
     author : :class:`discord.User` | :class:`discord.Member`
         The user who invoked the view.
     series : :class:`AO3.Series`
-        The object holding metadata about an Ao3 series and the works within.
+        The object holding metadata about an AO3 series and the works within.
     **kwargs
         Arbitrary keyword arguments, primarily for :class:`View`. See that class for more information.
 
@@ -253,7 +258,7 @@ class Ao3SeriesView(discord.ui.View):
     author : :class:`discord.User` | :class:`discord.Member`
         The user who invoked the view.
     series : :class:`AO3.Series`
-        The object holding metadata about an Ao3 series and the works within.
+        The object holding metadata about an AO3 series and the works within.
     message : :class:`discord.Message`
         The message this view instance is attached to.
     choice : :class:`int`

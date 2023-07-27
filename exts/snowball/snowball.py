@@ -216,7 +216,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             roll = random.random()
 
             # Update the database records and prepare the response message and embed based on the outcome.
-            if roll > base_hit_odds:
+            if roll < base_hit_odds:
                 async with ctx.db.acquire() as conn:
                     async with conn.transaction():
                         await UserSnowballUpdate(ctx.author, hits=1, stock=-1).upsert_record(conn)  # type: ignore
@@ -355,7 +355,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         def_embed = discord.Embed(color=0x69ff69)
 
         # Set a limit on how many snowballs can be stolen at a time.
-        if amount > base_transfer_cap:
+        if (amount > base_transfer_cap) and (ctx.author.id not in self.bot.special_friends.values()):
             def_embed.description = "10 snowballs at once is the bulk stealing limit."
             await ctx.send(embed=def_embed, ephemeral=True)
             return
@@ -367,7 +367,11 @@ class SnowballCog(commands.Cog, name="Snowball"):
                 victim_record = await conn.fetchrow(query, ctx.guild.id, victim.id)
 
         # In case of failed steal, send one of these messages.
-        if (victim_record is not None) and (victim_record["stock"] - amount < 0):
+        if (
+            (victim_record is not None) and 
+            (victim_record["stock"] - amount < 0) and 
+            ctx.author.id not in self.bot.special_friends.values()
+        ):
             def_embed.description = (
                 "They don't have that much to steal. Wait for them to collect a few more, or "
                 "pilfer a smaller number."
@@ -386,11 +390,13 @@ class SnowballCog(commands.Cog, name="Snowball"):
         # Update the giver and receiver's records.
         async with ctx.db.acquire() as conn:
             async with conn.transaction():
-                await UserSnowballUpdate(ctx.author, stock=amount).upsert_record(conn)  # type: ignore
-                await UserSnowballUpdate(victim, stock=-amount).upsert_record(conn)     # type: ignore
+                assert victim_record is not None
+                amount_to_steal = min(victim_record["stock"], amount)
+                await UserSnowballUpdate(ctx.author, stock=amount_to_steal).upsert_record(conn)  # type: ignore
+                await UserSnowballUpdate(victim, stock=-amount_to_steal).upsert_record(conn)     # type: ignore
 
         # Send notification message of successful theft.
-        def_embed.description = f"Thievery successful! You've stolen {amount} snowballs from {victim.mention}!"
+        def_embed.description = f"Thievery successful! You've stolen {amount_to_steal} snowballs from {victim.mention}!"
         message = f"{ctx.author.mention}, {victim.mention}"
         await ctx.send(content=message, embed=def_embed, ephemeral=False)
 
@@ -428,8 +434,11 @@ class SnowballCog(commands.Cog, name="Snowball"):
             headers = ["Rank", "Direct Hits", "Total Misses", "KOs", "Total Snowballs Collected"]
             emojis = [self.bot.emojis_stock["snowsgive_phi"] or ""]
 
-            embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
-            embed.set_thumbnail(url=target.display_avatar.url)
+            embed = (
+                StatsEmbed(title=title)
+                .add_stat_fields(stat_names=headers, stat_emojis=emojis, stat_values=record)
+                .set_thumbnail(url=target.display_avatar.url)
+            )
 
             await ctx.send(embed=embed, ephemeral=True)
 
@@ -462,10 +471,13 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if record is not None:
             title = f"**Global Player Statistics for {target}**"  # Formerly 0x2f3171
             headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
-            emojis = [self.bot.emojis_stock["snowsgive_phi"] or ""]
-
-            embed = StatsEmbed(stat_names=headers, stat_emojis=emojis, stat_values=record, title=title)
-            embed.set_thumbnail(url=target.display_avatar.url)
+            emojis = [self.bot.emojis_stock["snowsgive_phi"]]
+            
+            embed = (
+                StatsEmbed(title=title)
+                .add_stat_fields(stat_names=headers, stat_emojis=emojis, stat_values=record)
+                .set_thumbnail(url=target.display_avatar.url)
+            )
 
             await ctx.send(embed=embed, ephemeral=True)
 
@@ -548,7 +560,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         ctx : :class:`core.Context`
             The invocation context.
         """
-
+        assert self.bot.user    # Known to exist during runtime.
         query = "SELECT * FROM guilds_only_rank_view LIMIT $1;"
         guilds_only_ldbd = await ctx.db.fetch(query, LEADERBOARD_MAX)
 
@@ -556,7 +568,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             color=0x2f3136,
             title="**Guild-Level Snowball Champions**",
             description="(Total Hits / Total Misses / Total KOs)\n——————————————",
-        ).set_thumbnail(url=self.bot.user.display_avatar.url)   # type: ignore
+        ).set_thumbnail(url=self.bot.user.display_avatar.url)
 
         if guilds_only_ldbd:
             await self._make_leaderboard_fields(embed, guilds_only_ldbd)
@@ -624,7 +636,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return entity
 
         # Create temporary, more concise references for a few emojis.
-        special_stars = (self.bot.emojis_stock[ref] or "" for ref in ("orange_star", "blue_star", "pink_star"))
+        special_stars = (self.bot.emojis_stock.get(name, "") for name in ("orange_star", "blue_star", "pink_star"))
         
         # Create a list of emojis to accompany the leaderboard members.
         ldbd_places_emojis = (

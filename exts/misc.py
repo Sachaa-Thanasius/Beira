@@ -92,7 +92,8 @@ class MiscCog(commands.Cog, name="Misc"):
     async def about(self, ctx: core.Context) -> None:
         """See some basic information about the bot, including its source."""
 
-        assert self.bot.owner_id is not None
+        assert self.bot.owner_id    # Known to exist during runtime.
+        assert self.bot.user        # Known to exist during runtime.
         owner: discord.User = self.bot.get_user(self.bot.owner_id)  # type: ignore
         
         embed = (
@@ -107,7 +108,7 @@ class MiscCog(commands.Cog, name="Misc"):
                 timestamp=discord.utils.utcnow(),
             )
             .set_author(name=f"Made by {owner}", icon_url=owner.display_avatar.url)
-            .set_thumbnail(url=self.bot.user.display_avatar.url)    # type: ignore
+            .set_thumbnail(url=self.bot.user.display_avatar.url)    
             .set_footer(text=f"Made with discord.py v{discord.__version__}")
         )
         await ctx.send(embed=embed)

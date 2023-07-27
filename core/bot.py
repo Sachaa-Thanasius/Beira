@@ -60,8 +60,21 @@ class Beira(commands.Bot):
         self.prefix_cache: dict[int, list[str]] = {}
         self.blocked_entities_cache: dict[str, set] = {}
 
-        # Things to load right after connecting to the Gateway for easy future retrieval.
-        self.emojis_stock: dict[str, discord.Emoji | None] = {}
+        # Things that are more convenient to retrieve when established here or after connecting to the Gateway.
+        self.emojis_stock: dict[str, discord.PartialEmoji | str] = {
+            "blue_star":     discord.PartialEmoji(name="snow_StarB_2021", id=917859752057376779),
+            "pink_star":     discord.PartialEmoji(name="snow_StarP_2021", id=917859752095133757),
+            "orange_star":   discord.PartialEmoji(name="snow_StarO_2021", id=988609772821573694),
+            "angry_nicole":  discord.PartialEmoji(name="angry_nicole",    id=994805744446742569),
+            "snowball1":     discord.PartialEmoji(name="snowball1",       animated=True, id=1051263366410293248),
+            "snowball2":     discord.PartialEmoji(name="snowball2",       animated=True, id=1051263327810105505),
+            "snowsgive_phi": discord.PartialEmoji(name="snow_phi_a_2022", animated=True, id=1050442722118476039),
+            "aoc":           discord.PartialEmoji(name="AoC",             id=770620658501025812),
+            "cop":           discord.PartialEmoji(name="CoP",             id=856969710952644609),
+            "fof":           discord.PartialEmoji(name="FoF",             id=856969711241396254),
+            "pop":           discord.PartialEmoji(name="PoP",             id=856969710486814730),
+            "mr_jare":       discord.PartialEmoji(name="Mr_Jare",         id=1061029880059400262),
+        }
         self.special_friends: dict[str, int] = {}
 
         # Add a global check for blocked members.
@@ -113,28 +126,6 @@ class Beira(commands.Bot):
             except commands.ExtensionError as err:
                 LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
-    def _load_emoji_stock(self) -> None:
-        """Sets a dict of emojis for quick reference.
-
-        Most of the keys used here are shorthand for the actual names.
-        """
-
-        self.emojis_stock.update({
-            "blue_star": self.get_emoji(917859752057376779),
-            "pink_star": self.get_emoji(917859752095133757),
-            "orange_star": self.get_emoji(988609772821573694),
-            "angry_nicole": self.get_emoji(994805935740559400),
-            "snow_phi": self.get_emoji(1050442718842732614),
-            "snowball1": self.get_emoji(1051263366410293248),
-            "snowball2": self.get_emoji(1051263327810105505),
-            "snowsgive_phi": self.get_emoji(1050442718842732614),
-            "aoc": self.get_emoji(770620658501025812),
-            "cop": self.get_emoji(856969710952644609),
-            "fof": self.get_emoji(856969711241396254),
-            "pop": self.get_emoji(856969710486814730),
-            "mr_jare": self.get_emoji(1061029880059400262),
-        })
-
     def _load_special_friends(self) -> None:
         friends_ids: list[int] = self.config["discord"]["friend_ids"]
         for user_id in friends_ids:
@@ -145,7 +136,6 @@ class Beira(commands.Bot):
         """Loads some variables once on startup after the bot has connected to the Discord Gateway."""
         
         await self.wait_until_ready()
-        self._load_emoji_stock()
         self._load_special_friends()
 
     async def on_ready(self) -> None:

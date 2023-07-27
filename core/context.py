@@ -7,15 +7,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import discord
+from aiohttp import ClientSession
+from asyncpg import Pool
 from discord.ext import commands
 
-from .bot import Beira
 from .wave import SkippablePlayer
 
 
 if TYPE_CHECKING:
-    from aiohttp import ClientSession
-    from asyncpg import Pool
+    from .bot import Beira
 
 
 __all__ = ("Context", "GuildContext", "Interaction")
@@ -23,10 +23,15 @@ __all__ = ("Context", "GuildContext", "Interaction")
 Interaction: TypeAlias = discord.Interaction["Beira"]
 
 
-class Context(commands.Context):
-    """A custom context subclass for Beira."""
+class Context(commands.Context["Beira"]):
+    """A custom context subclass for Beira.
 
-    bot: Beira
+    Attributes
+    ----------
+    session
+    db
+    """
+
     voice_client: SkippablePlayer | None
 
     def __init__(self, **kwargs: Any) -> None:
@@ -35,7 +40,7 @@ class Context(commands.Context):
 
     @property
     def session(self) -> ClientSession:
-        """:class:`ClientSession`: Returns the asynchronous http session used by the bot for http requests."""
+        """:class:`ClientSession`: Returns the asynchronous HTTP session used by the bot for HTTP requests."""
 
         return self.bot.web_session
 

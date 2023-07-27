@@ -15,8 +15,8 @@ lxml>=4.9.3,<5
 matplotlib
 numpy
 openai==0.27.8
-Pillow==9.4.0
+Pillow>=10.0.0
 tatsu @ git+https://github.com/Sachaa-Thanasius/Tatsu@27c223e4d25399d589af3813bb48568e8606451c
 typing_extensions>=4.5.0,<5
-Wavelink @ git+https://github.com/PythonistaGuild/Wavelink.git@a73aa36987c72713a30455a09d29c00110bca967
+Wavelink>=2.6.1,<3
 yarl>=1.8.2,<2

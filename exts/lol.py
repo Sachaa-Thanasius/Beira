@@ -40,7 +40,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 
     # Create the webdriver.
     with GECKODRIVER_LOGS.open(mode='a', encoding="utf-8") as log_file:
-        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)  # type: ignore
+        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)  # type: ignore # attrs class
         browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
         async with get_session(service, browser) as session:
@@ -155,11 +155,11 @@ class LoLCog(commands.Cog, name="League of Legends"):
         title = f"League of Legends Stats: *{summoner_name}*"
 
         # Construct the embed for the stats.
+        embed = StatsEmbed(color=0x193d2c, title=title)
         if stats == ("None", "None", "None"):
-            embed = StatsEmbed(color=0x193d2c, title=title,
-                               description="This player either doesn't exist or isn't ranked!")
+            embed.description ="This player either doesn't exist or isn't ranked!"
         else:
-            embed = StatsEmbed(stat_names=stat_headers, stat_values=stats, color=0x193d2c, title=title)
+            embed.add_stat_fields(stat_names=stat_headers, stat_values=stats)
 
         await ctx.send(embed=embed)
 

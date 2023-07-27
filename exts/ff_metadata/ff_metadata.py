@@ -24,7 +24,7 @@ from core.utils import DTEmbed
 
 from .utils import (
     STORY_WEBSITE_REGEX,
-    Ao3SeriesView,
+    AO3SeriesView,
     StoryWebsiteStore,
     create_ao3_series_embed,
     create_ao3_work_embed,
@@ -34,6 +34,7 @@ from .utils import (
 
 
 LOGGER = logging.getLogger(__name__)
+FANFICFINDER_ID = 779772534040166450
 
 
 class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_name="ff"):
@@ -57,14 +58,12 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         return discord.PartialEmoji(name="\N{BAR CHART}")
 
     async def cog_load(self) -> None:
-        # Log into Ao3 for a backup method.
+        # Log into AO3 for a backup method.
         try:
-            self.ao3_session = await asyncio.to_thread(
-                AO3.Session, self.bot.config["ao3"]["user"], self.bot.config["ao3"]["pass"],
-            )
+            self.ao3_session = await asyncio.to_thread(AO3.Session, *self.bot.config["ao3"])
         except Exception as err:
-            LOGGER.error("Couldn't log in to Ao3 during cog load.", exc_info=err)
-            # Fuck accessing Ao3 normally. Just set it to none and go without backup.
+            LOGGER.error("Couldn't log in to AO3 during cog load.", exc_info=err)
+            # Screw accessing AO3 normally. Just set it to none and go without backup.
             self.ao3_session = None
 
         # Load a cache of channels to auto-respond in.
@@ -101,38 +100,35 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             async with message.channel.typing():
                 # Send an embed for every valid link.
                 for match_obj in re.finditer(STORY_WEBSITE_REGEX, message.content):
-                    embed: discord.Embed | None = None
-
+                    # Attempt to get the story data from whatever method.
+                    story_data = None
                     if match_obj.lastgroup == "FFN":
                         story_data = await self.atlas_client.get_story_metadata(int(match_obj.group("ffn_id")))
-                        embed = await create_atlas_ffn_embed(story_data)
-
                     elif match_obj.lastgroup == "AO3" and (message.guild.id != self.aci100_id):
                         story_data = await self.search_ao3(match_obj.group(0))
-                        if isinstance(story_data, fichub_api.Story):
-                            embed = await create_fichub_embed(story_data)
-                        elif isinstance(story_data, AO3.Work):
-                            embed = await create_ao3_work_embed(story_data)
-                        elif isinstance(story_data, AO3.Series):
-                            embed = await create_ao3_series_embed(story_data)
-
                     elif match_obj.lastgroup and (match_obj.lastgroup != "AO3"):
-                        story_data = await self.search_other(match_obj.group(0))                        
-                        embed = await create_fichub_embed(story_data) if story_data else None
-
-                    if embed:
+                        story_data = await self.search_other(match_obj.group(0))
+                    
+                    _embed_strategy: dict = {
+                        atlas_api.FFNStory: create_atlas_ffn_embed,
+                        fichub_api.Story: create_fichub_embed,
+                        AO3.Work: create_ao3_work_embed,
+                        AO3.Series: create_ao3_series_embed,
+                    }
+                    
+                    # Convert the story data into an embed depending on its type, then send it.
+                    if story_data is not None and (strategy := _embed_strategy.get(type(story_data))):
+                        embed: discord.Embed = await strategy(story_data)
                         await message.channel.send(embed=embed)
 
     @commands.Cog.listener("on_message")
     async def on_fanficfinder_nothing_found_message(self, message: discord.Message) -> None:
 
-        fanficfinder_id = 779772534040166450
-
         # Listen to the allowed channels in the allowed guilds.
         if (
                 message.guild and
                 (message.guild.id == self.aci100_id) and
-                (message.author.id == fanficfinder_id) and
+                (message.author.id == FANFICFINDER_ID) and
                 (embed := message.embeds[0]) is not None and
                 embed.description is not None and
                 "fanfiction not found" in embed.description.lower()
@@ -163,7 +159,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             *,
             channels: commands.Greedy[discord.abc.GuildChannel],
     ) -> None:
-        """Set the bot to listen for Ao3/FFN/other ff site links posted in the given channels.
+        """Set the bot to listen for AO3/FFN/other ff site links posted in the given channels.
 
         If allowed, the bot will respond automatically with an informational embed.
 
@@ -203,7 +199,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             *,
             channels: commands.Greedy[discord.abc.GuildChannel],
     ) -> None:
-        """Set the bot to not listen for Ao3/FFN/other ff site links posted in the given channels.
+        """Set the bot to not listen for AO3/FFN/other ff site links posted in the given channels.
 
         The bot will no longer automatically respond to links with information embeds.
 
@@ -255,7 +251,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 kwargs["embed"] = await create_ao3_work_embed(story_data)
             elif isinstance(story_data, AO3.Series):
                 kwargs["embed"] = await create_ao3_series_embed(story_data)
-                kwargs["view"] = Ao3SeriesView(ctx.author, story_data)
+                kwargs["view"] = AO3SeriesView(ctx.author, story_data)
             else:
                 kwargs["embed"] = DTEmbed(
                     title="No Results",
@@ -292,7 +288,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             await ctx.reply(embed=ffn_embed)
 
     async def search_ao3(self, name_or_url: str) -> AO3.Work | AO3.Series | fichub_api.Story | None:
-        """More generically search Ao3 for works based on a partial title or full url."""
+        """More generically search AO3 for works based on a partial title or full url."""
 
         if match := re.search(StoryWebsiteStore["AO3"].story_regex, name_or_url):
             if match.group("type") == "series":
@@ -306,7 +302,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 try:
                     url = match.group(0)
                     story_data = await self.fichub_client.get_story_metadata(url)
-                except (fichub_api.FicHubException, aiohttp.ClientResponseError) as err:
+                except (KeyError, fichub_api.FicHubException, aiohttp.ClientResponseError) as err:
                     msg = "Retrieval with Fichub client failed. Trying Armindo Flores's AO3 library now."
                     LOGGER.warning(msg, exc_info=err)
                     try:

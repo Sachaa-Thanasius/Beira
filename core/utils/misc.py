@@ -6,13 +6,15 @@ from __future__ import annotations
 
 import logging
 from asyncio import iscoroutinefunction
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
 from time import perf_counter
-from typing import TYPE_CHECKING, ParamSpec, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar, overload
 
 
 if TYPE_CHECKING:
+    from types import TracebackType
+
     from typing_extensions import Self
 
 
@@ -40,50 +42,58 @@ class catchtime:
         self.time = perf_counter()
         return self
     
-    def __exit__(self, *args: object) -> None:
+    def __exit__(
+            self,
+            exc_type: type[BaseException] | None,
+            exc_value: BaseException | None,
+            traceback: TracebackType | None,
+    ) -> None:
         self.time = perf_counter() - self.time
         self.readout = f"Time: {self.time:.3f} seconds"
         if self.logger:
             self.logger.info(self.readout)
 
 
-@overload
-def benchmark(func: Callable[P, Awaitable[T]], logger: logging.Logger) -> Callable[P, Awaitable[T]]: ...
-@overload
-def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T]: ...
-def benchmark(func: Callable[P, T], logger: logging.Logger) -> Callable[P, T] | Callable[P, Awaitable[T]]:
+def benchmark(logger: logging.Logger):
     """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
 
-    Based on code from StackOverflow: https://stackoverflow.com/a/75439065.
+    Based on code from StackOverflow: https://stackoverflow.com/a/75439065. Also serves as a type-hinting 
+    experiment more than anything.
 
     Parameters
     ----------
-    func
-        The function being benchmarked. Can be sync or async.
     logger : :class:`logging.Logger`
         The logger being used to display the benchmark.
 
     Returns
     -------
-    bench_wrapper
+    decorator : Callable[P, T] | Callable[P, Coroutine[Any, Any, T]]
         A modified function decorated with a benchmark logging mechanism.
 
     Notes
     -----
     If you have a logger that you want to use with this multiple times, you can use functools.partial to avoid repeating
-    that logger argument repeatedly.
+    that logger argument for every decorated function.
     """
     
-    # Pick the wrapper based on whether the given function is sync or async.
-    if iscoroutinefunction(func):
-        @wraps(func)
-        async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-            with catchtime(logger):
-                return await func(*args, **kwargs)
-        return async_wrapper
-
-    @wraps(func)
-    def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
-        with catchtime(logger):
-            return func(*args, **kwargs)
-    return sync_wrapper
+    @overload
+    def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Coroutine[Any, Any, T]]: ...
+    @overload
+    def decorator(func: Callable[P, T]) -> Callable[P, T]: ...
+    # Without this explicit union below, the T inside the function would be different.
+    def decorator(func) -> Callable[P, T] | Callable[P, Coroutine[Any, Any, T]]:
+        # Pick the wrapper based on whether the given function is sync or async.
+        if iscoroutinefunction(func):
+            wraps(func)
+            async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+                with catchtime(logger):
+                    return await func(*args, **kwargs)
+            wrapper = async_wrapper
+        else:
+            wraps(func)
+            def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+                with catchtime(logger):
+                    return func(*args, **kwargs)
+            wrapper = sync_wrapper
+        return wrapper
+    return decorator

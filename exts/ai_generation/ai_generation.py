@@ -127,7 +127,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """
 
         async with ctx.typing():
-            default_target: discord.User = self.bot.get_user(self.bot.special_friends["Athena Hope"])   # type: ignore
+            default_target: discord.User = self.bot.get_user(self.bot.special_friends["athenahope"])   # type: ignore
             act_target = target or default_target
             prompt = "an anxious, dumb, insane, crazy-looking cartoon pigeon"
 
