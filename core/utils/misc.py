@@ -6,10 +6,10 @@ from __future__ import annotations
 
 import logging
 from asyncio import iscoroutinefunction
-from collections.abc import Awaitable, Callable, Coroutine
+from collections.abc import Awaitable, Callable
 from functools import wraps
 from time import perf_counter
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar, overload
+from typing import TYPE_CHECKING, ParamSpec, TypeGuard, TypeVar, overload
 
 
 if TYPE_CHECKING:
@@ -22,6 +22,10 @@ __all__ = ("catchtime", "benchmark")
 
 T = TypeVar("T")
 P = ParamSpec("P")
+
+
+def is_coroutine(func: Callable[P, T] | Callable[P, Awaitable[T]]) -> TypeGuard[Callable[P, Awaitable[T]]]:
+    return iscoroutinefunction(func)
 
 
 class catchtime:
@@ -57,8 +61,9 @@ class catchtime:
 def benchmark(logger: logging.Logger):
     """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
 
-    Based on code from StackOverflow: https://stackoverflow.com/a/75439065. Also serves as a type-hinting 
-    experiment more than anything.
+    Based on code from StackOverflow: https://stackoverflow.com/a/75439065 (and apparently this pyright thread, 
+    https://github.com/microsoft/pyright/issues/2142, which shows conclusions and naming conventions I independently 
+    reached, haha). This also serves as a type-hinting experiment more than anything.
 
     Parameters
     ----------
@@ -67,7 +72,7 @@ def benchmark(logger: logging.Logger):
 
     Returns
     -------
-    decorator : Callable[P, T] | Callable[P, Coroutine[Any, Any, T]]
+    decorator : Callable[P, T] | Callable[P, Awaitable[T]]
         A modified function decorated with a benchmark logging mechanism.
 
     Notes
@@ -77,23 +82,30 @@ def benchmark(logger: logging.Logger):
     """
     
     @overload
-    def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Coroutine[Any, Any, T]]: ...
+    def decorator(func: Callable[P, Awaitable[T]]) -> Callable[P, Awaitable[T]]: ...
     @overload
     def decorator(func: Callable[P, T]) -> Callable[P, T]: ...
-    # Without this explicit union below, the T inside the function would be different.
-    def decorator(func) -> Callable[P, T] | Callable[P, Coroutine[Any, Any, T]]:
+    def decorator(func: Callable[P, T]) -> Callable[P, T] | Callable[P, Awaitable[T]]:
+        # A few notes on the type annotations above:
+        # - Overloads are used to tie awaitable input to awaitable output, and the same for non-awaitable.
+        # - Having func be a sync callable in the final signature is to make sure it's interpreted as a sync callable 
+        #   in the else case below.
+        # - Without having P/T in the final signature's annotations, the P/T in the internal scope will be interpreted 
+        #   as different.
+
         # Pick the wrapper based on whether the given function is sync or async.
-        if iscoroutinefunction(func):
+        if is_coroutine(func):
             wraps(func)
             async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
                 with catchtime(logger):
                     return await func(*args, **kwargs)
-            wrapper = async_wrapper
+            return async_wrapper
+        
         else:
             wraps(func)
             def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
                 with catchtime(logger):
                     return func(*args, **kwargs)
-            wrapper = sync_wrapper
-        return wrapper
+            return sync_wrapper
+        
     return decorator

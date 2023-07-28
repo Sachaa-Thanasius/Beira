@@ -252,7 +252,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                 quote = "\n".join(all_text[index:index + 3])
 
                 # Underline the terms.
-                quote = re.sub(f'( |^)({terms})', r'\1__\2__', quote, flags=re.I)
+                quote = re.sub(f"( |^)({terms})", r"\1__\2__", quote, flags=re.I)
 
                 # Fit the paragraphs in the space of a Discord embed field.
                 quote = textwrap.shorten(quote, 1024, placeholder="...")

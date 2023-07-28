@@ -129,7 +129,8 @@ class MusicCog(commands.Cog, name="Music"):
             A url or search query.
         """
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by a before_invoke.
+        vc: SkippablePlayer = ctx.voice_client
         vc.chan_ctx = ctx.channel
 
         async with ctx.typing():
@@ -150,7 +151,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def pause(self, ctx: core.GuildContext) -> None:
         """Pause the audio."""
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         if vc.is_paused():
             await vc.resume()
@@ -164,7 +166,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def resume(self, ctx: core.GuildContext) -> None:
         """Resume the audio if paused."""
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         if vc.is_paused():
             await vc.resume()
@@ -175,7 +178,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def stop(self, ctx: core.GuildContext) -> None:
         """Stop playback and disconnect the bot from voice."""
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         await vc.disconnect()
         await ctx.send("Disconnected from voice channel.")
@@ -228,7 +232,8 @@ class MusicCog(commands.Cog, name="Music"):
             The track's position.
         """
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         if entry > vc.queue.count or entry < 1:
             await ctx.send("That track does not exist and cannot be removed.")
@@ -241,7 +246,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def clear(self, ctx: core.GuildContext) -> None:
         """Empty the queue."""
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         if not vc.queue.is_empty:
             vc.queue.clear()
@@ -264,7 +270,8 @@ class MusicCog(commands.Cog, name="Music"):
             The index you want to move it to.
         """
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         for num in (before, after):
             if num > len(vc.queue) or num < 1:
@@ -288,7 +295,8 @@ class MusicCog(commands.Cog, name="Music"):
             The place in the queue to skip to.
         """
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc = ctx.voice_client
 
         if vc.queue.is_empty:
             await ctx.send("The queue is empty and can't be skipped into.")
@@ -306,7 +314,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def shuffle(self, ctx: core.GuildContext) -> None:
         """Shuffle the tracks in the queue."""
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc: SkippablePlayer = ctx.voice_client
         if not vc.queue.is_empty:
             vc.queue.shuffle()
             await ctx.send("Shuffled the queue.")
@@ -327,7 +336,8 @@ class MusicCog(commands.Cog, name="Music"):
             "Off" resets all looping.
         """
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc: SkippablePlayer = ctx.voice_client
 
         if loop == "All Tracks":
             vc.queue.loop, vc.queue.loop_all = False, True
@@ -352,7 +362,8 @@ class MusicCog(commands.Cog, name="Music"):
             The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
         """
 
-        vc: SkippablePlayer = ctx.voice_client  # type: ignore
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc: SkippablePlayer = ctx.voice_client
 
         if vc.current:
             if vc.current.is_seekable:
@@ -382,11 +393,10 @@ class MusicCog(commands.Cog, name="Music"):
             The volume to change to, with a maximum of 1000.
         """
 
-        vc: SkippablePlayer | None = ctx.voice_client
+        assert ctx.voice_client  # Ensured by the in_bot_vc() check.
+        vc: SkippablePlayer = ctx.voice_client
 
-        if vc is None:
-            await ctx.send("Not currently playing anything.")
-        elif volume is None:
+        if volume is None:
             await ctx.send(f"Current volume is {vc.volume}.")
         else:
             await vc.set_volume(volume)

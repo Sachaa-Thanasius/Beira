@@ -23,8 +23,10 @@ from core.wave import AnyTrack_alias
 if TYPE_CHECKING:
     from core import Context, Interaction
 else:
-    Context = commands.Context
-    Interaction = discord.Interaction
+    from typing import TypeAlias
+
+    Context: TypeAlias = commands.Context
+    Interaction: TypeAlias = discord.Interaction
     
 
 __all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
@@ -83,8 +85,9 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
     def type(self) -> discord.AppCommandOptionType:     # noqa: A003
         return discord.AppCommandOptionType.string
 
-    async def _convert(self, argument: str) -> AnyTrack_alias | list[AnyTrack_alias]:
-        """Attempt to convert a string into a Wavelink track or list of tracks."""
+    @staticmethod
+    def _get_search_type(argument: str):
+        """Get the searchable wavelink class that matches the argument string closest."""
 
         check = yarl.URL(argument)
 
@@ -93,27 +96,36 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
                 (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "v" in check.query) or
                 check.scheme == "ytsearch:"
         ):
-            tracks = await wavelink.YouTubeTrack.search(argument)
-            if isinstance(tracks, list):
-                tracks = tracks[0]
+            search_type = wavelink.YouTubeTrack
         elif (
                 (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "list" in check.query) or
                 check.scheme == "ytpl:"
         ):
-            tracks = await wavelink.YouTubePlaylist.search(argument)
+            search_type = wavelink.YouTubePlaylist
         elif check.host == "music.youtube.com" or check.scheme == "ytmsearch:":
-            tracks = (await wavelink.YouTubeMusicTrack.search(argument))[0]
+            search_type = wavelink.YouTubeMusicTrack
         elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.parts:
-            tracks = await wavelink.SoundCloudPlaylist.search(argument)
+            search_type = wavelink.SoundCloudPlaylist
         elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch:":
-            tracks = (await wavelink.SoundCloudTrack.search(argument))[0]
+            search_type = wavelink.SoundCloudTrack
         elif check.host in ("spotify.com", "open.spotify.com"):
-            tracks = await spotify.SpotifyTrack.search(argument)
+            search_type = spotify.SpotifyTrack
         else:
-            tracks = (await wavelink.GenericTrack.search(argument))[0]
+            search_type = wavelink.GenericTrack
+
+        return search_type
+    
+    async def _convert(self, argument: str) -> AnyTrack_alias | list[AnyTrack_alias]:
+        """Attempt to convert a string into a Wavelink track or list of tracks."""
+
+        search_type = self._get_search_type(argument)
+        tracks = await search_type.search(argument)
+        
+        if (search_type != spotify.SpotifyTrack and isinstance(tracks, list)):
+            tracks = tracks[0]
 
         if not tracks:
-            msg = f"Your search query {argument} returned no tracks."
+            msg = f"Your search query `{argument}` returned no tracks."
             raise wavelink.NoTracksError(msg)
 
         return tracks
@@ -123,6 +135,11 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
     async def transform(self, _: Interaction, value: str, /) -> AnyTrack_alias | list[AnyTrack_alias]:
         return await self._convert(value)
+    
+    async def autocomplete(self, _: Interaction, value: str) -> list[app_commands.Choice[str]]:
+        search_type = self._get_search_type(value)
+        tracks = await search_type.search(value)
+        return [app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
 
 
 async def format_track_embed(embed: discord.Embed, track: AnyTrack_alias) -> discord.Embed:

@@ -105,6 +105,33 @@ class PinArchiveCog(commands.Cog, name="Pin Archive", command_attrs={"hidden": T
 
         await ctx.send_help(ctx.command)
 
+    @pin_.command("mode")
+    async def pin_mode(self, ctx: core.GuildContext, mode: Literal["oldest", "newest"] | None = None) -> None:
+        """_summary_
+
+        Parameters
+        ----------
+        ctx : :class:`core.GuildContext`
+            The invocation context.
+        mode : Literal[&quot;oldest&quot;, &quot;newest&quot;] | None, optional
+            What to set the mode to, if you'd like to do that. If None, just retrieves the current setting. "Oldest" 
+            means that every time a pin is made and no pin spots are left, the oldest pin is migrated to the pin
+            archive. "Newest" means the same thing, but the newest pin is migrated instead.
+        """
+        query = "SELECT * FROM pin_archive_settings WHERE guild_id = $1;"
+        record = await ctx.db.fetchrow(query, ctx.guild.id)
+        if not record:
+            await ctx.send("You haven't set up the archive channel yet. Do that first with /pin archive or /pin setup.")
+        elif not mode:
+            await ctx.send(f"Pin archive currently set to `{record['pin_mode']}`.")
+        elif mode == record["pin_mode"]:
+            await ctx.send("The pin archive mode is already set to that.")
+        else:
+            command = "UPDATE pin_archive_settings SET pin_mode = $1 WHERE guild_id = $2;"
+            await ctx.db.execute(command, mode, ctx.guild.id)
+            await ctx.send(f"Pin archive mode updated to `{mode}`. This will not apply retroactively.")
+            
+
     @pin_.command("blacklist")
     async def pin_blacklist(
             self,

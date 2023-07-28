@@ -1,9 +1,6 @@
 """
 fandom_wiki.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
 first.
-
-TODO: Look into switching to lxml.
-TODO: Figure out typing for bs4 stuff.
 """
 
 from __future__ import annotations
@@ -12,9 +9,10 @@ import json
 import logging
 import pathlib
 import textwrap
-from typing import Any
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urljoin
 
+import bs4
 import discord
 from bs4 import BeautifulSoup
 from discord.app_commands import Choice
@@ -22,6 +20,10 @@ from discord.ext import commands
 
 import core
 from core.utils import EMOJI_URL, DTEmbed
+
+
+if TYPE_CHECKING:
+    from aiohttp import ClientSession
 
 
 LOGGER = logging.getLogger(__name__)
@@ -62,6 +64,65 @@ class AoCWikiEmbed(DTEmbed):
             icon_url=footer_icon_url,
         )
 
+
+async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | None, str | None]:
+    """Extract the summary and image from a Fandom page."""
+
+    async with session.get(url) as response:
+        char_summary, char_thumbnail = None, None
+
+        # Extract the main content.
+        text = await response.text()
+        soup = BeautifulSoup(text, "lxml")
+        content = soup.find("div", class_="mw-parser-output")
+        if isinstance(content, bs4.Tag):
+            # Extract the image.
+            image = content.find("a", class_="image image-thumbnail")
+            if isinstance(image, bs4.Tag):
+                char_thumbnail = str(image["href"])
+
+            content = clean_fandom_page(content)
+            char_summary = content.text
+
+        # Return the remaining text.
+        return char_summary, char_thumbnail
+    
+
+def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
+    """Attempts to clean a Fandom wiki page.
+
+    Removes everything from a Fandom wiki page that isn't the first few lines, if possible.
+    """
+
+    summary_end_index = 0
+
+    # Clean the content.
+    infoboxes = soup.find_all("aside", class_="portable-infobox", recursive=True)
+    for box in infoboxes:
+        box.replace_with("")
+
+    toc = soup.find("div", id="toc", recursive=True)
+    if isinstance(toc, bs4.Tag):
+        if soup.index(toc) > summary_end_index:
+            summary_end_index = soup.index(toc)
+        toc.decompose()
+
+    subheading = soup.find("h2")
+    if isinstance(subheading, bs4.Tag):
+        if soup.index(subheading) > summary_end_index:
+            summary_end_index = soup.index(subheading)
+        subheading.decompose()
+
+    if summary_end_index != 0:
+        for element in soup.contents[summary_end_index + 1:]:
+            element.replace_with("")
+
+    for element in soup.contents:
+        if element.text == "\n":
+            element.replace_with("")
+
+    return soup
+    
 
 class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     """A cog for searching a fandom's Fandom wiki page.
@@ -125,7 +186,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                     text = await response.text()
                     soup = BeautifulSoup(text, "html.parser")
                     content = soup.find("div", class_="mw-allpages-body")
-                    if content is not None:
+                    if isinstance(content, bs4.Tag):
                         for link in content.find_all("a"):
                             wiki_data["all_pages"][link["title"]] = link["href"]
                     else:
@@ -164,7 +225,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         Defaults to searching through the AoC wiki if the given wiki name is invalid.
         """
-
+        
         wiki = interaction.namespace.wiki
         if wiki not in self.all_wikis:
             wiki = "Harry Potter and the Ashes of Chaos"
@@ -201,6 +262,8 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
             wiki_name = possible_results[0]
             get_wiki_name = self.all_wikis[wiki_name]
+        
+        assert isinstance(get_wiki_name, dict)
 
         # --------------------------------
         # Check if the wiki has any recorded pages.
@@ -239,7 +302,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         final_embed.url = wiki_page_link
 
         # Fetch information from the character webpage to populate the rest of the embed.
-        summary, thumbnail = await self._process_fandom_page(wiki_page_link)
+        summary, thumbnail = await process_fandom_page(self.bot.web_session, wiki_page_link)
 
         if summary:
             final_embed.description = textwrap.shorten(summary, 4096, placeholder="...")
@@ -249,64 +312,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         return final_embed
 
-    async def _process_fandom_page(self, url: str) -> tuple[str, str | None]:
-        """Extract the summary and image from a Fandom page."""
-
-        async with self.bot.web_session.get(url) as response:
-            char_summary, char_thumbnail = None, None
-
-            # Extract the main content.
-            text = await response.text()
-            soup = BeautifulSoup(text, "html.parser")
-            content = soup.find("div", class_="mw-parser-output")
-
-            # Extract the image.
-            image = content.find("a", class_="image image-thumbnail")
-            if image:
-                char_thumbnail = image["href"]
-
-            content = self._clean_fandom_page(content)
-            char_summary = content.text
-
-            # Return the remaining text.
-            return char_summary, char_thumbnail
-
-    @staticmethod
-    def _clean_fandom_page(soup: BeautifulSoup) -> BeautifulSoup:
-        """Attempts to clean a Fandom wiki page.
-
-        Removes everything from a Fandom wiki page that isn't the first few lines, if possible.
-        """
-
-        summary_end_index = 0
-
-        # Clean the content.
-        infoboxes = soup.find_all("aside", class_="portable-infobox", recursive=True)
-        for box in infoboxes:
-            box.replace_with("")
-
-        toc = soup.find("div", id="toc", recursive=True)
-        if toc:
-            if soup.index(toc) > summary_end_index:
-                summary_end_index = soup.index(toc)
-            toc.decompose()
-
-        subheading = soup.find("h2")
-        if subheading:
-            if soup.index(subheading) > summary_end_index:
-                summary_end_index = soup.index(subheading)
-            subheading.decompose()
-
-        if summary_end_index != 0:
-            for element in soup.contents[summary_end_index + 1:]:
-                element.replace_with("")
-
-        # Remove empty newlines.
-        for element in soup.contents:
-            if element.text == "\n":
-                element.replace_with("")
-
-        return soup
 
 
 async def setup(bot: core.Beira) -> None:
