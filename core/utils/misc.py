@@ -58,7 +58,7 @@ class catchtime:
             self.logger.info(self.readout)
 
 
-def benchmark(logger: logging.Logger):
+def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to type-hint an internal overload.
     """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
 
     Based on code from StackOverflow: https://stackoverflow.com/a/75439065 (and apparently this pyright thread, 
@@ -101,7 +101,7 @@ def benchmark(logger: logging.Logger):
                     return await func(*args, **kwargs)
             return async_wrapper
         
-        else:
+        else:   # noqa: RET505 # Stylistic choice to differentiate the wrappers.
             wraps(func)
             def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
                 with catchtime(logger):

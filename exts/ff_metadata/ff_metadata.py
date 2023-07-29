@@ -61,7 +61,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         # Log into AO3 for a backup method.
         try:
             self.ao3_session = await asyncio.to_thread(AO3.Session, *self.bot.config["ao3"])
-        except Exception as err:
+        except (AO3.utils.LoginError, AttributeError, Exception) as err:
             LOGGER.error("Couldn't log in to AO3 during cog load.", exc_info=err)
             # Screw accessing AO3 normally. Just set it to none and go without backup.
             self.ao3_session = None
@@ -295,7 +295,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 try:
                     series_id = match.group("ao3_id")
                     story_data = await asyncio.to_thread(AO3.Series, series_id, self.ao3_session, True)
-                except Exception as err:
+                except (AttributeError, Exception) as err:
                     LOGGER.error("", exc_info=err)
                     story_data = None
             else:
@@ -308,7 +308,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                     try:
                         work_id = match.group("ao3_id")
                         story_data = await asyncio.to_thread(AO3.Work, work_id, True, False)
-                    except Exception as err:
+                    except (AttributeError, Exception) as err:
                         msg = "Retrieval with Fichub client and AO3 library failed. Returning None."
                         LOGGER.warning(msg, exc_info=err)
                         story_data = None

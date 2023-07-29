@@ -23,10 +23,8 @@ from core.wave import AnyTrack_alias
 if TYPE_CHECKING:
     from core import Context, Interaction
 else:
-    from typing import TypeAlias
-
-    Context: TypeAlias = commands.Context
-    Interaction: TypeAlias = discord.Interaction
+    Context = commands.Context
+    Interaction = discord.Interaction
     
 
 __all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
@@ -62,23 +60,9 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
 
     The lookup strategy is as follows (in order):
 
-        1) Input isn't a url, is a YouTube video url, or has ``ytsearch:`` as a prefix — Attempt 
-           lookup with :class:`wavelink.YouTubeTrack`.
-
-        2) Input is a YouTube playlist url or has ``ytpl:`` as a prefix — Attempt lookup with
-           :class:`wavelink.YouTubePlaylist`.
-
-        3) Input is a YouTube Music url or has ``ytmsearch:`` as a prefix — Attempt lookup with
-           :class:`wavelink.YouTubeMusicTrack`.
-
-        4) Input is a SoundCloud playlist url: Attempt lookup with :class:`SoundCloudPlaylist`.
-
-        5) Input is a SoundCloud track url or has ``scsearch:`` as a prefix — Attempt to lookup with
-           :class:`wavelink.SoundCloudTrack`.
-
-        6) Input is a usable Spotify link: Attempt to lookup with wavelink.ext.spotify.
-
-        7) Try lookup as a direct url.
+    1. Lookup by :class:`wavelink.YouTubeTrack` if the argument has no url "scheme".
+    2. Lookup by first valid wavelink track class if the argument matches the search/url format.
+    3. Lookup by assuming argument to be a direct url or local file address.
     """
 
     @property
@@ -86,27 +70,27 @@ class WavelinkSearchConverter(commands.Converter, app_commands.Transformer):
         return discord.AppCommandOptionType.string
 
     @staticmethod
-    def _get_search_type(argument: str):
+    def _get_search_type(argument: str) -> type[Playable | spotify.SpotifyTrack]:
         """Get the searchable wavelink class that matches the argument string closest."""
 
         check = yarl.URL(argument)
-
+        
         if (
-                not check.host or
+                (not check.host and not check.scheme) or
                 (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "v" in check.query) or
-                check.scheme == "ytsearch:"
+                check.scheme == "ytsearch"
         ):
             search_type = wavelink.YouTubeTrack
         elif (
                 (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "list" in check.query) or
-                check.scheme == "ytpl:"
+                check.scheme == "ytpl"
         ):
             search_type = wavelink.YouTubePlaylist
-        elif check.host == "music.youtube.com" or check.scheme == "ytmsearch:":
+        elif check.host == "music.youtube.com" or check.scheme == "ytmsearch":
             search_type = wavelink.YouTubeMusicTrack
         elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.parts:
             search_type = wavelink.SoundCloudPlaylist
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch:":
+        elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch":
             search_type = wavelink.SoundCloudTrack
         elif check.host in ("spotify.com", "open.spotify.com"):
             search_type = spotify.SpotifyTrack

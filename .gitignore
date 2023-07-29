@@ -252,10 +252,17 @@ fabric.properties
 # Built Visual Studio Code Extensions
 *.vsix
 
+# Ruff
 .ruff_cache
+
+# Bot data
 data/dunk/
 logs/
-misc/
+
+# Bot config
 config.json
 database/table_insertions.sql
+
+# Bot misc
+misc/
 test_bot.py

@@ -6,10 +6,11 @@ with Wavelink.
 from __future__ import annotations
 
 import logging
-from typing import Literal, cast
+from typing import Literal
 
 import discord
 import wavelink
+from discord import app_commands
 from discord.ext import commands
 from wavelink.ext import spotify
 
@@ -56,6 +57,11 @@ class MusicCog(commands.Cog, name="Music"):
             embed.description = "You don't have permission to do this."
         elif isinstance(error, core.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
+        elif isinstance(error, app_commands.TransformerError):
+            if err := error.__cause__:
+                embed.description = err.args[0]
+            else:
+                embed.description = f"Couldn't convert `{error.value}` into a track."
         else:
             LOGGER.exception("Exception: %s", error, exc_info=error)
 
@@ -71,14 +77,16 @@ class MusicCog(commands.Cog, name="Music"):
     async def on_wavelink_websocket_closed(self, payload: wavelink.WebsocketClosedPayload) -> None:
         """Called when the websocket to the voice server is closed."""
 
-        payload_tuple = payload.code, payload.by_discord, payload.reason, payload.player
+        payload_tuple = (payload.code, payload.by_discord, payload.reason, payload.player)
         LOGGER.info("Wavelink websocket closed: %s - %s - %s - %s", *payload_tuple)
 
     @commands.Cog.listener()
     async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
         """Called when the current track has finished playing."""
 
-        player = cast(SkippablePlayer, payload.player)
+        player = payload.player
+        assert isinstance(player, SkippablePlayer)  # Known due to personal bot setup.
+
         if player.is_connected() and not player.queue.is_empty:
             new_track = await player.queue.get_wait()
             await player.play(new_track)
@@ -114,11 +122,18 @@ class MusicCog(commands.Cog, name="Music"):
         elif ctx.author.voice is None:
             await ctx.send("Please join a voice channel and try again.")
         else:
-            await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore
+            # Not sure in what circumstances a member would have a voice state without being in a valid channel.
+            assert ctx.author.voice.channel
+            await ctx.author.voice.channel.connect(cls=SkippablePlayer)
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @music.command()
-    async def play(self, ctx: core.GuildContext, *, search: str) -> None:
+    async def play(
+            self,
+            ctx: core.GuildContext,
+            *,
+            search: app_commands.Transform[str, WavelinkSearchConverter],
+    ) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
@@ -129,14 +144,13 @@ class MusicCog(commands.Cog, name="Music"):
             A url or search query.
         """
 
-        assert ctx.voice_client  # Ensured by a before_invoke.
+        assert ctx.voice_client  # Ensured by this command's before_invoke.
         vc: SkippablePlayer = ctx.voice_client
         vc.chan_ctx = ctx.channel
 
         async with ctx.typing():
-            tracks = await WavelinkSearchConverter().convert(ctx, search)
-            await vc.queue.put_all_wait(tracks, ctx.author.mention)
-            notif_text = generate_tracks_add_notification(tracks)
+            await vc.queue.put_all_wait(search, ctx.author.mention)
+            notif_text = generate_tracks_add_notification(search)
             await ctx.send(notif_text)
 
             if not vc.is_playing():
@@ -410,7 +424,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc is None:
             if ctx.author.voice:
-                await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore
+                # Not sure in what circumstances a member would have a voice state without being in a valid channel.
+                assert ctx.author.voice.channel
+                await ctx.author.voice.channel.connect(cls=SkippablePlayer)
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 msg = "Author not connected to a voice channel."

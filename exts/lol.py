@@ -156,7 +156,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         # Construct the embed for the stats.
         embed = StatsEmbed(color=0x193d2c, title=title)
-        if stats == ("None", "None", "None"):
+        if stats[1:2] == ("None", "None"):
             embed.description ="This player either doesn't exist or isn't ranked!"
         else:
             embed.add_stat_fields(stat_names=stat_headers, stat_values=stats)
@@ -212,7 +212,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         tasks = [self.bot.loop.create_task(self.check_lol_stats(name)) for name in summoner_name_list]
         results = await asyncio.gather(*tasks)
 
-        leaderboard = [result for result in results if result != ("None", "None", "None")]
+        leaderboard = [result for result in results if result[1:2] != ("None", "None")]
         leaderboard.sort(key=lambda x: x[1])
 
         # Construct the embed for the leaderboard.
@@ -253,11 +253,10 @@ class LoLCog(commands.Cog, name="League of Legends"):
             winrate = "".join(tree.xpath("//div[@class='ratio']/text()")).removeprefix('Win Rate ')
             rank = "".join(tree.xpath("//div[@class='tier']/text()")).capitalize()
             if not (winrate and rank):
-                msg = "Nothing found."
-                raise AttributeError(msg)
+                winrate, rank = "None", "None"
         except (AttributeError, aiohttp.ClientError):
             # Thrown if the summoner has no games in ranked or no data at all.
-            summoner_name, winrate, rank = "None", "None", "None"
+            winrate, rank = "None", "None"
 
         await asyncio.sleep(0.25)
 

@@ -279,6 +279,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                 for member in resp_json["data"]:
                     user_id = member["relationships"]["user"]["data"]["id"]
                     LOGGER.info(f"User ID: {user_id}")
+
+                    # TODO: Check if this works and figure out why.
                     user: dict = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])  # type: ignore
                     LOGGER.info(f"User: {user}")
 

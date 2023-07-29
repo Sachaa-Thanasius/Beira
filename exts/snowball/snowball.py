@@ -609,8 +609,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         guild_snow_settings = await GuildSnowballSettings.from_database(ctx.db, ctx.guild.id)
-        setattr(ctx, "guild_snow_settings", guild_snow_settings)
-    
+        setattr(ctx, "guild_snow_settings", guild_snow_settings)    # noqa: B010 # Dynamically setting attribute.
+        
     @collect.after_invoke
     @throw.after_invoke
     @transfer.after_invoke

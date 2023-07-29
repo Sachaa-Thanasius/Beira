@@ -1,12 +1,11 @@
 [project]
 name = "Beira"
+version = "0.0.1"
 description = "An personal Discord bot made in Python."
 readme = "README.md"
-license = { file = "LICENSE" }
+license = "MIT"
 requires-python = ">=3.10"
-authors = [
-    { name = "Sachaa-Thanasius", email = "111999343+Sachaa-Thanasius@users.noreply.github.com" },
-]
+authors = [{ name = "Sachaa-Thanasius", email = "111999343+Sachaa-Thanasius@users.noreply.github.com" }]
 
 [project.urls]
 "Homepage" = "https://github.com/Sachaa-Thanasius/Beira"
@@ -16,42 +15,7 @@ authors = [
 # Credit to mikeshardmind for this setup.
 line-length = 120
 target-version = "py310"
-select = [
-    "F",
-    "E",
-    "I",
-    "UP",
-    "YTT",
-    "ANN",
-    "S",
-    "BLE",
-    "B",
-    "A",
-    "COM",
-    "C4",
-    "DTZ",
-    "EM",
-    "ISC",
-    "G",
-    "INP",
-    "PIE",
-    "T20",
-    "Q003",
-    "RSE",
-    "RET",
-    "SIM",
-    "TID",
-    "PTH",
-    "ERA",
-    "PD",
-    "PLC",
-    "PLE",
-    "PLR",
-    "PLW",
-    "TRY",
-    "NPY",
-    "RUF",
-]
+select = ["F", "E", "I", "UP", "YTT", "ANN", "S", "BLE", "B", "A", "COM", "C4", "DTZ", "EM", "ISC", "G", "INP", "PIE", "T20", "Q003", "RSE", "RET", "SIM", "TID", "PTH", "ERA", "PD", "PLC", "PLE", "PLR", "PLW", "TRY", "NPY", "RUF"]
 ignore = [
     "G002",    # Erroneous issue with %-logging when logging can be configured for % logging.
     "S101",    # Use of assert here is a known quantity. Blame typing memes.
@@ -72,15 +36,12 @@ unfixable = [
 ]
 
 [tool.ruff.extend-per-file-ignores]
-# Importing internal modules usually throws these.
-"__init__.py" = ["F403", "PLC0414"]
+"__init__.py" = ["F403", "PLC0414"]  # Importing internal modules usually throws these.
+"core/utils/embeds.py" = ["PLR0913"] # For StatsEmbed. It needs to be refactored at some point.
 
 [tool.ruff.isort]
 lines-after-imports = 2
 combine-as-imports = true
-
-[tool.ruff.pylint]
-max-args = 7 # For the custom embeds. They need to be refactored at some point.
 
 [tool.pyright]
 pythonVersion = "3.10"
