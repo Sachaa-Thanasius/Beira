@@ -7,7 +7,9 @@ Credit to Froopy and Danny for inspiration from their bots.
 from __future__ import annotations
 
 import logging
+import re
 import unicodedata
+from typing import Any
 
 import discord
 from discord import app_commands
@@ -57,13 +59,37 @@ class GuildStickerFlags(commands.FlagConverter):
     )
 
 
+class AddEmojiButton(discord.ui.Button):
+    def __init__(self, *, guild: discord.Guild, emoji: discord.PartialEmoji | discord.Emoji, **kwargs: Any):
+        super().__init__(**kwargs)
+        self.guild = guild
+        self.emoji: discord.PartialEmoji | discord.Emoji = emoji
+
+    async def callback(self, interaction: core.Interaction) -> None:
+        assert self.view
+
+        self.emoji._state = interaction.client._connection  # Do this everytime to make sure the connection doesn't disappear?
+
+        try:
+            emoji_bytes = await self.emoji.read()
+            new_emoji = await self.guild.create_custom_emoji(name=self.emoji.name, image=emoji_bytes)
+        except Exception as err:
+            LOGGER.exception("", exc_info=err)
+        else:
+            self.disabled = True
+            await interaction.response.edit_message(view=self.view)
+            await interaction.followup.send(f"Added this emoji to the server: {new_emoji}", ephemeral=True)
+
+
 class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     """A cog with commands for performing actions with emojis and stickers."""
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.ctx_menu = app_commands.ContextMenu(name="Add Sticker(s)", callback=self.context_menu_sticker_add)
-        self.bot.tree.add_command(self.ctx_menu)
+        self.sticker_ctx_menu = app_commands.ContextMenu(name="Add Sticker(s)", callback=self.context_menu_sticker_add)
+        self.emoji_ctx_menu = app_commands.ContextMenu(name="Add Emoji(s)", callback=self.context_menu_emoji_add)
+        self.bot.tree.add_command(self.sticker_ctx_menu)
+        self.bot.tree.add_command(self.emoji_ctx_menu)
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -72,7 +98,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         return discord.PartialEmoji(name="\N{GRINNING FACE}")
 
     async def cog_unload(self) -> None:
-        self.bot.tree.remove_command(self.ctx_menu.name, type=self.ctx_menu.type)
+        self.bot.tree.remove_command(self.sticker_ctx_menu.name, type=self.sticker_ctx_menu.type)
+        self.bot.tree.remove_command(self.emoji_ctx_menu.name, type=self.emoji_ctx_menu.type)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         """A local error handler for the emoji and sticker-related commands.
@@ -385,6 +412,47 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             await interaction.response.send_message(content, ephemeral=True)
         else:
             await interaction.response.send_message("No stickers in this message.", ephemeral=True)
+    
+    @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
+    async def context_menu_emoji_add(self, interaction: core.Interaction, message: discord.Message) -> None:
+        """Context menu command for adding emojis from a message to the guild in context."""
+
+        matches = re.findall(r'<(a?):([a-zA-Z0-9\_]{1,32}):([0-9]{15,20})>', message.content)
+
+        if matches and (interaction.guild is not None):
+            extracted_emojis: list[discord.PartialEmoji] = []
+
+            for match in matches:
+                emoji_animated = bool(match[0])
+                emoji_name = match[1]
+                emoji_id = int(match[2])
+
+                converted_emoji = discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+                extracted_emojis.append(converted_emoji)
+            
+            if len(extracted_emojis) == 1:
+                # Skip the whole view thing.
+                emoji = extracted_emojis[0]
+                emoji._state = interaction.client._connection  # Need this to read the bytes.
+
+                emoji_bytes = await emoji.read()
+                new_emoji = await interaction.guild.create_custom_emoji(name=emoji.name, image=emoji_bytes)
+                await interaction.response.send_message(f"Added this emoji to the server: {new_emoji}", ephemeral=True)
+            elif extracted_emojis:
+                view = discord.ui.View()
+                for emoji in extracted_emojis[:25]:
+                    view.add_item(AddEmojiButton(guild=interaction.guild, emoji=emoji))
+                embed = discord.Embed(title="Click the buttons below to add the corresponding emojis!")
+                await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+            else:
+                await interaction.response.send_message("None of the emojis could be properly parsed.", ephemeral=True)
+        else:
+            if not interaction.guild:
+                content = "This needs to be in a server to work."
+            else:
+                content = "No emojis found in this message."
+
+            await interaction.response.send_message(content, ephemeral=True)
 
 
 async def setup(bot: core.Beira) -> None:

@@ -53,14 +53,14 @@ class Beira(commands.Bot):
         super().__init__(*args, **kwargs)
         self.db_pool = db_pool
         self.web_session = web_session
-        self.initial_extensions = initial_extensions
+        self.initial_extensions = initial_extensions or []
         self._config = CONFIG
         
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}
         self.blocked_entities_cache: dict[str, set] = {}
 
-        # Things that are more convenient to retrieve when established here or after connecting to the Gateway.
+        # Things that are more convenient to retrieve when established here or filled after connecting to the Gateway.
         self.emojis_stock: dict[str, discord.PartialEmoji | str] = {
             "blue_star":     discord.PartialEmoji(name="snow_StarB_2021", id=917859752057376779),
             "pink_star":     discord.PartialEmoji(name="snow_StarP_2021", id=917859752095133757),
@@ -100,13 +100,22 @@ class Beira(commands.Bot):
         self.blocked_entities_cache["users"] = {record["user_id"] for record in user_records}
         self.blocked_entities_cache["guilds"] = {record["guild_id"] for record in guild_records}
 
-    async def _load_guild_prefixes(self) -> None:
+    async def _load_guild_prefixes(self, guild_id: int | None = None) -> None:
         """Load all prefixes from the bot database."""
 
-        query = """SELECT guild_id, prefix FROM guild_prefixes;"""
-        db_prefixes = await self.db_pool.fetch(query)
-        for entry in db_prefixes:
-            self.prefix_cache.setdefault(entry["id"], []).append(entry["prefixes"])
+        query = """SELECT guild_id, prefix FROM guild_prefixes"""
+        try:
+            if guild_id:
+                query += " WHERE guild_id = $1"
+
+            db_prefixes = await self.db_pool.fetch(query)
+            for entry in db_prefixes:
+                self.prefix_cache.setdefault(entry["guild_id"], []).append(entry["prefix"])
+
+            msg = f"(Re)loaded guild prefixes for {guild_id}." if guild_id else "(Re)loaded all guild prefixes."
+            LOGGER.info(msg)
+        except OSError:
+            LOGGER.error("Couldn't load guild prefixes from the database. Ignoring for sake of defaults.")
 
     async def _load_extensions(self) -> None:
         """Loads extensions/cogs.
