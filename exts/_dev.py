@@ -33,7 +33,7 @@ SPEC_CHOICES: list[tuple[str, str]] = [
     ("[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", "+"),
 ]
 
-dev_guilds_objects = [discord.Object(id=id) for id in core.CONFIG["discord"]["guilds"]["dev"]]
+dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in core.CONFIG["discord"]["guilds"]["dev"]]
 
 # Preload the dev-guild-only slash commands decorator.
 only_dev_guilds = app_commands.guilds(*dev_guilds_objects)
@@ -47,8 +47,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.block_add_ctx_menu = app_commands.ContextMenu(name="Bot Block", callback=self.context_menu_block_add)
-        self.block_remove_ctx_menu = app_commands.ContextMenu(name="Bot Unblock", callback=self.context_menu_block_remove)
+        self.block_add_ctx_menu = app_commands.ContextMenu(
+            name="Bot Block", callback=self.context_menu_block_add,
+        )
+        self.block_remove_ctx_menu = app_commands.ContextMenu(
+            name="Bot Unblock", callback=self.context_menu_block_remove,
+        )
         self.bot.tree.add_command(self.block_add_ctx_menu, guilds=dev_guilds_objects)
         self.bot.tree.add_command(self.block_remove_ctx_menu, guilds=dev_guilds_objects)
 
@@ -181,7 +185,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         await interaction.response.send_message("Blocked the following from bot usage:", embed=embed, ephemeral=True)
     
     @app_commands.check(lambda interaction: interaction.user.id == interaction.client.owner_id)
-    async def context_menu_block_remove(self, interaction: core.Interaction, user: discord.User | discord.Member) -> None:
+    async def context_menu_block_remove(
+            self,
+            interaction: core.Interaction,
+            user: discord.User | discord.Member,
+    ) -> None:
         await upsert_users(interaction.client.db_pool, (user.id, False))
         self.bot.blocked_entities_cache["users"].difference_update((user.id,))
 

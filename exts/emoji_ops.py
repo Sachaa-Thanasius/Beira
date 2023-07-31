@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import re
 import unicodedata
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord import app_commands, ui
@@ -19,6 +19,7 @@ from discord.ext import commands
 import core
 
 from .ai_generation.utils import get_image
+
 
 if TYPE_CHECKING:
     from typing_extensions import Self
