@@ -10,13 +10,13 @@ import logging
 import random
 import re
 from io import StringIO
-from time import perf_counter
 
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 import core
+from core.utils import catchtime
 
 
 LOGGER = logging.getLogger(__name__)
@@ -63,6 +63,8 @@ def meowify_word(match: re.Match) -> str:
 
 
 def meowify_text(text: str) -> str:
+    """Turn a string into meows."""
+
     return re.sub(r"\w+", meowify_word, text)
 
 
@@ -71,14 +73,17 @@ class MiscCog(commands.Cog, name="Misc"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.ctx_menu = app_commands.ContextMenu(name="Meowify", callback=self.context_menu_meowify)
-        self.bot.tree.add_command(self.ctx_menu)
+        self.meowify_ctx_menu = app_commands.ContextMenu(name="Meowify", callback=self.context_menu_meowify)
+        self.bot.tree.add_command(self.meowify_ctx_menu)
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
+    
+    async def cog_unload(self) -> None:
+        self.bot.tree.remove_command(self.meowify_ctx_menu.name, type=self.meowify_ctx_menu.type)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
         # Extract the original error.
@@ -164,23 +169,20 @@ class MiscCog(commands.Cog, name="Misc"):
 
         ws_ping = self.bot.latency * 1000
 
-        typing_start = perf_counter()
-        await ctx.typing()
-        typing_end = perf_counter()
-        typing_ping = (typing_end - typing_start) * 1000
+        with catchtime() as ct:
+            await ctx.typing()
+        typing_ping = ct.time * 1000
+        
+        with catchtime() as ct:
+            await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
+        db_ping = ct.time * 1000
 
-        db_start = perf_counter()
-        await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
-        db_end = perf_counter()
-        db_ping = (db_end - db_start) * 1000
-
-        msg_start = perf_counter()
-        message = await ctx.send(embed=discord.Embed(title="Ping..."))
-        msg_end = perf_counter()
-        msg_ping = (msg_end - msg_start) * 1000
+        with catchtime() as ct:
+            message = await ctx.send(embed=discord.Embed(title="Ping..."))
+        msg_ping = ct.time * 1000
 
         pong_embed = (
-            discord.Embed(title="**Pong!** \N{TABLE TENNIS PADDLE AND BALL}")
+            discord.Embed(title="Pong! \N{TABLE TENNIS PADDLE AND BALL}")
             .add_field(name="Websocket", value=f"```json\n{ws_ping:.2f} ms\n```")
             .add_field(name="Typing", value=f"```json\n{typing_ping:.2f} ms\n```")
             .add_field(name="\u200B", value="\u200B")
@@ -205,10 +207,20 @@ class MiscCog(commands.Cog, name="Misc"):
         """
 
         async with ctx.typing():
-            await ctx.reply(meowify_text(text))
+            if len(text) > 2000:
+                await ctx.reply(meowify_text(text[:2000]), ephemeral=True)
+                await ctx.send(meowify_text(text[2000:]), ephemeral=True)
+            else:
+                await ctx.reply(meowify_text(text), ephemeral=True)
 
     async def context_menu_meowify(self, interaction: core.Interaction, message: discord.Message) -> None:
-        await interaction.response.send_message(meowify_text(message.content), ephemeral=True)
+        """Context menu command callback for meowifying the test in a message."""
+
+        if len(message.content) > 2000:
+            await interaction.response.send_message(meowify_text(message.content[:2000]), ephemeral=True)
+            await interaction.followup.send(meowify_text(message.content[2000:]), ephemeral=True)
+        else:
+            await interaction.response.send_message(meowify_text(message.content), ephemeral=True)
 
 
 async def setup(bot: core.Beira) -> None:

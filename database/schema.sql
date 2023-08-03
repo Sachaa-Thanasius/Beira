@@ -125,9 +125,9 @@ CREATE INDEX IF NOT EXISTS todos_completed_at_idx on todos(todo_completed_at);
 
 
 CREATE TABLE IF NOT EXISTS pin_archive_settings (
-    guild_id                    BIGINT      PRIMARY KEY        REFERENCES guilds(guild_id),
+    guild_id                    BIGINT      PRIMARY KEY         REFERENCES guilds(guild_id),
     pin_channel_id              BIGINT      NOT NULL,
-    pin_mode                    INT         NOT NULL,
+    pin_mode                    INT         NOT NULL            DEFAULT 2,
     pin_send_all                BOOLEAN     DEFAULT FALSE
 );
 

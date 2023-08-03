@@ -61,20 +61,6 @@ class Beira(commands.Bot):
         self.blocked_entities_cache: dict[str, set] = {}
 
         # Things that are more convenient to retrieve when established here or filled after connecting to the Gateway.
-        self.emojis_stock: dict[str, discord.PartialEmoji | str] = {
-            "blue_star":     discord.PartialEmoji(name="snow_StarB_2021", id=917859752057376779),
-            "pink_star":     discord.PartialEmoji(name="snow_StarP_2021", id=917859752095133757),
-            "orange_star":   discord.PartialEmoji(name="snow_StarO_2021", id=988609772821573694),
-            "angry_nicole":  discord.PartialEmoji(name="angry_nicole",    id=994805744446742569),
-            "snowball1":     discord.PartialEmoji(name="snowball1",       animated=True, id=1051263366410293248),
-            "snowball2":     discord.PartialEmoji(name="snowball2",       animated=True, id=1051263327810105505),
-            "snowsgive_phi": discord.PartialEmoji(name="snow_phi_a_2022", animated=True, id=1050442722118476039),
-            "aoc":           discord.PartialEmoji(name="AoC",             id=770620658501025812),
-            "cop":           discord.PartialEmoji(name="CoP",             id=856969710952644609),
-            "fof":           discord.PartialEmoji(name="FoF",             id=856969711241396254),
-            "pop":           discord.PartialEmoji(name="PoP",             id=856969710486814730),
-            "mr_jare":       discord.PartialEmoji(name="Mr_Jare",         id=1061029880059400262),
-        }
         self.special_friends: dict[str, int] = {}
 
         # Add a global check for blocked members.
@@ -86,6 +72,35 @@ class Beira(commands.Bot):
 
         return self._config
 
+    async def on_ready(self) -> None:
+        """Display that the bot is ready."""
+
+        assert self.user
+        LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
+
+    async def setup_hook(self) -> None:
+        """Loads variables from the database and local files before the bot connects to the Discord Gateway."""
+
+        await self._load_guild_prefixes()
+        await self._load_blocked_entities()
+        await self._load_extensions()
+        self.loop.create_task(self._load_special_friends())
+
+    async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
+        if not self.prefix_cache:
+            await self._load_guild_prefixes()
+
+        return self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
+
+    async def get_context(
+            self,
+            origin: discord.Message | discord.Interaction,
+            /,
+            *,
+            cls: type[Context] = Context,
+    ) -> Context:
+        return await super().get_context(origin, cls=cls)
+    
     async def _load_blocked_entities(self) -> None:
         """Load all blocked users and guilds from the bot database."""
 
@@ -135,54 +150,19 @@ class Beira(commands.Bot):
             except commands.ExtensionError as err:
                 LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
 
-    def _load_special_friends(self) -> None:
+    async def _load_special_friends(self) -> None:
+        await self.wait_until_ready()
+
         friends_ids: list[int] = self.config["discord"]["friend_ids"]
         for user_id in friends_ids:
             if user_obj := self.get_user(user_id):
                 self.special_friends[user_obj.name] = user_id
 
-    async def load_cache(self) -> None:
-        """Loads some variables once on startup after the bot has connected to the Discord Gateway."""
-        
-        await self.wait_until_ready()
-        self._load_special_friends()
-
-    async def on_ready(self) -> None:
-        """Display that the bot is ready."""
-
-        assert self.user
-        LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
-
-    async def setup_hook(self) -> None:
-        """Loads variables from the database and local files before the bot connects to the Discord Gateway."""
-
-        await self._load_guild_prefixes()
-        await self._load_blocked_entities()
-        await self._load_extensions()
-
-        self.loop.create_task(self.load_cache())
-
-    async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
-        if not self.prefix_cache:
-            await self._load_guild_prefixes()
-
-        return self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
-
-    async def get_context(
-            self,
-            origin: discord.Message | discord.Interaction,
-            /,
-            *,
-            cls: type[Context] = Context,
-    ) -> Context:
-        return await super().get_context(origin, cls=cls)
-
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
         this bot's owner.
 
-        If a :attr:`special_friends` dict is not set, it is fetched automatically
-        through the use of :meth:`~._load_special_friends`.
+        If a :attr:`special_friends` dict is not set, it is assumed to be on purpose.
 
         Parameters
         -----------
@@ -198,17 +178,12 @@ class Beira(commands.Bot):
         if len(self.special_friends) > 0:
             return user.id in self.special_friends.values()
 
-        self._load_special_friends()
-        if len(self.special_friends) > 0:
-            return user.id in self.special_friends.values()
-
         return False
 
     def is_ali(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali.
 
-        If a :attr:`special_friends` dict is not set, it is fetched automatically
-        through the use of :meth:`~._load_special_friends`.
+        If a :attr:`special_friends` dict is not set, it is assumed to be on purpose.
 
         Parameters
         -----------
@@ -221,10 +196,6 @@ class Beira(commands.Bot):
             Whether the user is Ali.
         """
 
-        if len(self.special_friends) > 0:
-            return user.id == self.special_friends["aeroali"]
-
-        self._load_special_friends()
         if len(self.special_friends) > 0:
             return user.id == self.special_friends["aeroali"]
 

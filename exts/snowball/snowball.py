@@ -23,7 +23,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import core
-from core.utils import StatsEmbed
+from core.utils import EMOJI_STOCK, StatsEmbed
 
 from .utils import (
     GuildSnowballSettings,
@@ -432,7 +432,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if record is not None:
             title = f"**Player Statistics for {target}**"
             headers = ["Rank", "Direct Hits", "Total Misses", "KOs", "Total Snowballs Collected"]
-            emojis = [self.bot.emojis_stock["snowsgive_phi"] or ""]
+            emojis = [EMOJI_STOCK["snowsgive_phi"] or ""]
 
             embed = (
                 StatsEmbed(title=title)
@@ -446,7 +446,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             person = "You don't" if target.id == ctx.author.id else "That player doesn't"
             await ctx.send(
                 f"{person} have any stats yet. *Maybe you could change that.* "
-                f"{self.bot.emojis_stock['snowball1']}{self.bot.emojis_stock['snowball2']}",
+                f"{EMOJI_STOCK['snowball1']}{EMOJI_STOCK['snowball2']}",
                 ephemeral=True,
             )
 
@@ -471,7 +471,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         if record is not None:
             title = f"**Global Player Statistics for {target}**"  # Formerly 0x2f3171
             headers = ["*Overall* Rank", "*All* Direct Hits", "*All* Misses", "*All* KOs", "*All* Snowballs Collected"]
-            emojis = [self.bot.emojis_stock["snowsgive_phi"]]
+            emojis = [EMOJI_STOCK["snowsgive_phi"]]
             
             embed = (
                 StatsEmbed(title=title)
@@ -482,9 +482,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=embed, ephemeral=True)
 
         else:
+            snow1, snow2 = EMOJI_STOCK['snowball1'], EMOJI_STOCK['snowball2']
             person = "You don't" if target.id == ctx.author.id else "That player doesn't"
-            await ctx.send(f"{person} have any stats yet. *Maybe you could change that.* "
-                           f"{self.bot.emojis_stock['snowball1']}{self.bot.emojis_stock['snowball2']}", ephemeral=True)
+            await ctx.send(
+                f"{person} have any stats yet. *Maybe you could change that.* {snow1}{snow2}",
+                ephemeral=True,
+            )
 
     @snow.group(fallback="get")
     @commands.guild_only()
@@ -636,7 +639,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return entity
 
         # Create temporary, more concise references for a few emojis.
-        special_stars = (self.bot.emojis_stock.get(name, "") for name in ("orange_star", "blue_star", "pink_star"))
+        special_stars = (EMOJI_STOCK[name] for name in ("orange_star", "blue_star", "pink_star"))
         
         # Create a list of emojis to accompany the leaderboard members.
         ldbd_places_emojis = (

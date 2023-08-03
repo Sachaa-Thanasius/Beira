@@ -7,6 +7,7 @@ from __future__ import annotations
 import datetime
 import logging
 import textwrap
+from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
@@ -29,6 +30,12 @@ class TodoRecord(asyncpg.Record):
 
     Includes methods for updating the records and returning the new version when applicable.
     """
+
+    def __getattr__(self, name):
+        return self[name]
+    
+    # def __dir__(self) -> Iterable[str]:
+    #     return ("todo_id", "user_id", "todo_content", "todo_created_at", "todo_due_date", "todo_completed_at")
 
     async def update_completion(self, conn: asyncpg.Pool | asyncpg.Connection) -> Self | None:
         """Adds or removes a completion date from the record in the database, giving back the new version of the record.

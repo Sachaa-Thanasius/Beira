@@ -63,8 +63,13 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         return discord.PartialEmoji(name="discord_dev", animated=True, id=1084608963896672256)
 
     async def cog_unload(self) -> None:
-        self.bot.tree.remove_command(self.block_add_ctx_menu.name, type=self.block_add_ctx_menu.type)
-        self.bot.tree.remove_command(self.block_remove_ctx_menu.name, type=self.block_remove_ctx_menu.type)
+        for dev_guild in dev_guilds_objects:
+            self.bot.tree.remove_command(
+                self.block_add_ctx_menu.name, type=self.block_add_ctx_menu.type, guild=dev_guild,
+            )
+            self.bot.tree.remove_command(
+                self.block_remove_ctx_menu.name, type=self.block_remove_ctx_menu.type, guild=dev_guild,
+            )
         
     async def cog_check(self, ctx: commands.Context) -> bool:
         """Set up bot owner check as universal within the cog."""
@@ -174,16 +179,20 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         except (PostgresError, PostgresConnectionError) as err:
             LOGGER.exception("", exc_info=err)
             await ctx.send("Unable to unblock these users/guilds at this time.", ephemeral=True)
-    
+
     @app_commands.check(lambda interaction: interaction.user.id == interaction.client.owner_id)
-    async def context_menu_block_add(self, interaction: core.Interaction, user: discord.User | discord.Member) -> None:
+    async def context_menu_block_add(
+            self,
+            interaction: core.Interaction,
+            user: discord.User | discord.Member,
+    ) -> None:
         await upsert_users(interaction.client.db_pool, (user.id, True))
         self.bot.blocked_entities_cache["users"].update((user.id,))
 
         # Display the results.
         embed = discord.Embed(title="Users", description=str(user))
         await interaction.response.send_message("Blocked the following from bot usage:", embed=embed, ephemeral=True)
-    
+
     @app_commands.check(lambda interaction: interaction.user.id == interaction.client.owner_id)
     async def context_menu_block_remove(
             self,
@@ -196,7 +205,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         # Display the results.
         embed = discord.Embed(title="Users", description=str(user))
         await interaction.response.send_message("Unlocked the following from bot usage:", embed=embed, ephemeral=True)
-    
 
     @commands.hybrid_command()
     @only_dev_guilds
