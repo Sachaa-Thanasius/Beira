@@ -37,7 +37,7 @@ def create_pin_embed(message: discord.Message) -> discord.Embed:
     return embed
 
 
-class PinArchiveSettings(commands.FlagConverter):
+class PinArchiveSettingFlags(commands.FlagConverter):
     """Command flags for a pin archive's settings, including channel, mode, blacklisted channels, and send_all."""
 
     channel: discord.TextChannel = commands.flag(
@@ -93,9 +93,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
     @commands.Cog.listener("on_guild_channel_pins_update")
     async def on_pins_update(
-        self,
-        channel: discord.abc.GuildChannel | discord.Thread,
-        last_pin: datetime.datetime | None = None,
+            self,
+            channel: discord.abc.GuildChannel | discord.Thread,
+            last_pin: datetime.datetime | None = None,
     ) -> None:
         """Listen to guild-level pin events and display them."""
 
@@ -135,6 +135,15 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
     
     @pin_.command("num")
     async def pin_num(self, ctx: core.GuildContext, channel: discord.abc.GuildChannel | None = None) -> None:
+        """See the number of pins in a given channel, or if none is given, the current channel.
+
+        Parameters
+        ----------
+        ctx : :class:`core.GuildContext`
+            The invocation context.
+        channel : :class:`discord.abc.GuildChannel` | None, optional
+            The channel to check for pins. Defaults to current.
+        """
         async with ctx.typing():
             channel_to_check = channel or ctx.channel
             try:
@@ -303,7 +312,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
             await ctx.send(f"Removed channels from the pin blacklist:\n{channels_str}")
 
     @pin_.command("setup")
-    async def pin_setup(self, ctx: core.GuildContext, *, pin_flags: PinArchiveSettings) -> None:
+    async def pin_setup(self, ctx: core.GuildContext, *, pin_flags: PinArchiveSettingFlags) -> None:
         """Set up the pin archive settings in one go."""
 
         async with ctx.typing():

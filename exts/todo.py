@@ -7,7 +7,6 @@ from __future__ import annotations
 import datetime
 import logging
 import textwrap
-from collections.abc import Iterable
 from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
@@ -31,11 +30,15 @@ class TodoRecord(asyncpg.Record):
     Includes methods for updating the records and returning the new version when applicable.
     """
 
-    def __getattr__(self, name):
+    todo_id: int
+    user_id: int
+    todo_content: str
+    todo_created_at: datetime.datetime
+    todo_due_date: datetime.datetime | None
+    todo_completed_at: datetime.datetime | None
+
+    def __getattr__(self, name: str) -> Any:
         return self[name]
-    
-    # def __dir__(self) -> Iterable[str]:
-    #     return ("todo_id", "user_id", "todo_content", "todo_created_at", "todo_due_date", "todo_completed_at")
 
     async def update_completion(self, conn: asyncpg.Pool | asyncpg.Connection) -> Self | None:
         """Adds or removes a completion date from the record in the database, giving back the new version of the record.
@@ -49,8 +52,8 @@ class TodoRecord(asyncpg.Record):
         """
 
         command = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
-        new_date = discord.utils.utcnow() if self["todo_completed_at"] is None else None
-        return await conn.fetchrow(command, new_date, self["todo_id"], record_class=type(self))
+        new_date = discord.utils.utcnow() if self.todo_completed_at is None else None
+        return await conn.fetchrow(command, new_date, self.todo_id, record_class=type(self))
 
     async def edit(self, conn: asyncpg.Pool | asyncpg.Connection, updated_content: str) -> Self | None:
         """Changes the to-do content of the record, giving back the new version of the record.
@@ -66,7 +69,7 @@ class TodoRecord(asyncpg.Record):
         """
 
         command = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
-        return await conn.fetchrow(command, updated_content, self["todo_id"], record_class=type(self))
+        return await conn.fetchrow(command, updated_content, self.todo_id, record_class=type(self))
 
     async def delete(self, conn: asyncpg.Pool | asyncpg.Connection) -> None:
         """Deletes the record from the database.
@@ -78,7 +81,7 @@ class TodoRecord(asyncpg.Record):
         """
 
         command = "DELETE FROM todos where todo_id = $1;"
-        await conn.execute(command, self["todo_id"])
+        await conn.execute(command, self.todo_id)
 
 
 class TodoModal(ui.Modal):
@@ -95,8 +98,8 @@ class TodoModal(ui.Modal):
     content : :class:`ui.TextInput`
         The text box that will allow a user to enter or edit a to-do item's content. If editing, existing content is
         added as "default".
-    interaction : :class:`discord.Interaction`, optional
-        The interaction of the user with the modal.
+    interaction : :class:`discord.Interaction` | None, optional
+        The interaction of the user with the modal. Only populates on submission.
     """
 
     content = ui.TextInput(
@@ -244,12 +247,12 @@ def generate_embed_from_todo_record(todo_record: TodoRecord | None, deleted: boo
 
     todo_embed = discord.Embed(
         colour=discord.Colour.light_grey(),
-        title=f"To-Do {todo_record['todo_id']}",
+        title=f"To-Do {todo_record.todo_id}",
         description=todo_record["todo_content"],
     )
 
-    completed_at = todo_record["todo_completed_at"]
-    due_date = todo_record["todo_due_date"]
+    completed_at = todo_record.todo_completed_at
+    due_date = todo_record.todo_due_date
 
     # Changes colour, footer, and timestamp based on the state of the to-do item - completed, due, and/or deleted.
     # - The properties won't overlap for different states, except for the default grey.
@@ -305,7 +308,7 @@ class TodoView(ui.View):
         self.message: discord.Message | None = None
         self.author = author
         self.todo_record: TodoRecord | None = todo_record
-        self.add_item(TodoCompleteButton(todo_record["todo_completed_at"]))
+        self.add_item(TodoCompleteButton(todo_record.todo_completed_at))
         self.add_item(TodoEditButton())
         self.add_item(TodoDeleteButton())
 
@@ -564,12 +567,12 @@ class TodoCog(commands.Cog, name="Todo"):
         query = "SELECT * FROM todos WHERE user_id = $1 ORDER BY todo_id;"
         records = await interaction.client.db_pool.fetch(query, interaction.user.id, record_class=TodoRecord)
 
-        def shorten(record: asyncpg.Record) -> str:
-            return textwrap.shorten(f"{record['todo_id']} - {record['todo_content']}", width=100, placeholder="...")
+        def shorten(record: TodoRecord) -> str:
+            return textwrap.shorten(f"{record.todo_id} - {record.todo_content}", width=100, placeholder="...")
 
         return [
-                   app_commands.Choice(name=shorten(record), value=record["todo_id"])
-                   for record in records if current.lower() in str(record["todo_id"]).lower()
+                   app_commands.Choice(name=shorten(record), value=record.todo_id)
+                   for record in records if current.lower() in str(record.todo_id).lower()
                ][:25]
 
 

@@ -34,7 +34,7 @@ class PatreonTierSelectView(discord.ui.View):
     def __init__(self, tiers: list[dict], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.tiers = tiers
-        self.select_tier.options = self._set_select_options()
+        self._set_select_options()
         self.current_tier = 0
         self.page_cache: list[discord.Embed | None] = [None for _ in tiers]
         self.message: discord.Message | None = None
@@ -46,14 +46,11 @@ class PatreonTierSelectView(discord.ui.View):
         if self.message:
             await self.message.edit(view=self)
 
-    def _set_select_options(self) -> list[discord.SelectOption]:
-        options = []
+    def _set_select_options(self) -> None:
         for i, tier in enumerate(self.tiers):
             label = f"{tier['tier_name']} - ${tier['tier_value']}" if i != 0 else tier["tier_name"]
             descr = textwrap.shorten(tier["tier_info"], 100, placeholder="...")
-            options.append(discord.SelectOption(label=label, value=str(i), description=descr, emoji=tier["tier_emoji"]))
-
-        return options
+            self.select_tier.add_option(label=label, value=str(i), description=descr, emoji=tier["tier_emoji"])
 
     def _increment_current_tier(self, incr: int) -> None:
         self.current_tier += incr
@@ -66,7 +63,6 @@ class PatreonTierSelectView(discord.ui.View):
     def update_page_buttons(self) -> None:
         """Enables and disables tier-flipping buttons based on page count and position."""
 
-        # Disable buttons based on the page extremes.
         self.show_previous_tier.disabled = (self.current_tier <= 0)
         self.show_next_tier.disabled = (self.current_tier >= len(self.tiers) - 1)
 
@@ -209,8 +205,10 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         menu_info = {
             "creator_name": "ACI100",
             "tier_name": "ACI100 Patreon Tiers",
-            "tier_info": "Use the select menu below to explore the different tiers that ACI100 has on Patreon and what "
-                         "benefits they come with.",
+            "tier_info": (
+                "Use the select menu below to explore the different tiers that ACI100 has on Patreon and what "
+                "benefits they come with."
+            ),
             "discord_guild": temp_guild.id,
             "tier_emoji": discord.PartialEmoji.from_str("<:icons_info:880113401207095346>"),
         }
@@ -241,8 +239,6 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
     @get_current_discord_patrons.before_loop
     async def before_background_task(self) -> None:
-        """Ensure the bot is connected to the Discord Gateway before doing anything."""
-
         await self.bot.wait_until_ready()
 
     async def get_current_actual_patrons(self) -> None:
@@ -280,25 +276,19 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                     user_id = member["relationships"]["user"]["data"]["id"]
                     LOGGER.info(f"User ID: {user_id}")
 
-                    # TODO: Check if this works and figure out why.
-                    user: dict = discord.utils.find(lambda u: u["id"] == user_id, resp_json["included"])  # type: ignore
+                    user: dict = discord.utils.find(lambda u, uid=user_id: u["id"] == uid, resp_json["included"])
                     LOGGER.info(f"User: {user}")
 
                     assert user is not None
 
-                    # Check if they have any social media connected to their Patreon account.
-                    # Check if they have Discord specifically connected to their Patreon account.
+                    # Check if they have any social media connected to their Patreon account, and
+                    # if they have Discord specifically connected to their Patreon account.
                     if (
                             (socials := user["attributes"].get("social_connections")) is not None and
                             (discord_info := socials["discord"]) is not None
                     ):
-                        members.append(
-                            PatreonMember(
-                                user_id,
-                                int(discord_info["user_id"]),
-                                member["relationships"]["currently_entitled_tiers"],
-                            ),
-                        )
+                        currently_entitled_tiers = member["relationships"]["currently_entitled_tiers"]
+                        members.append(PatreonMember(user_id, int(discord_info["user_id"]), currently_entitled_tiers))
 
                 # Get page info.
                 pagination_info = resp_json["meta"]["pagination"]
