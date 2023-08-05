@@ -39,7 +39,7 @@ def capitalize_meow(word: str, reference: str) -> str:
         return new_word.getvalue()
 
 
-def meowify_word(match: re.Match) -> str:
+def meowify_word(match: re.Match[str]) -> str:
     """Turn a word into a version of 'meow' based on its length."""
 
     word = match.group(0)
@@ -81,39 +81,40 @@ class MiscCog(commands.Cog, name="Misc"):
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
-    
+
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(self.meowify_ctx_menu.name, type=self.meowify_ctx_menu.type)
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()
     async def about(self, ctx: core.Context) -> None:
         """See some basic information about the bot, including its source."""
 
-        assert self.bot.owner_id    # Known to exist during runtime.
-        assert self.bot.user        # Known to exist during runtime.
+        assert self.bot.owner_id  # Known to exist during runtime.
+        assert self.bot.user  # Known to exist during runtime.
+
         owner: discord.User = self.bot.get_user(self.bot.owner_id)  # type: ignore
-        
+
         embed = (
             discord.Embed(
-                color=0xcfeedf,
+                color=0xCFEEDF,
                 title="About",
                 description="**Source:** [GitHub](https://github.com/Sachaa-Thanasius/Beira)\n"
-                            f"**Members:** {len(self.bot.users):,d}\n"
-                            f"**Channels:** {len(list(self.bot.get_all_channels())):,d}\n"
-                            f"**Servers:** {len(self.bot.guilds):,d}\n"
-                            f"**Commands:** {len(self.bot.commands):,d}",
+                f"**Members:** {len(self.bot.users):,d}\n"
+                f"**Channels:** {len(list(self.bot.get_all_channels())):,d}\n"
+                f"**Servers:** {len(self.bot.guilds):,d}\n"
+                f"**Commands:** {len(self.bot.commands):,d}",
                 timestamp=discord.utils.utcnow(),
             )
             .set_author(name=f"Made by {owner}", icon_url=owner.display_avatar.url)
-            .set_thumbnail(url=self.bot.user.display_avatar.url)    
+            .set_thumbnail(url=self.bot.user.display_avatar.url)
             .set_footer(text=f"Made with discord.py v{discord.__version__}")
         )
         await ctx.send(embed=embed)
@@ -151,7 +152,7 @@ class MiscCog(commands.Cog, name="Misc"):
         """
 
         quote_embed = (
-            discord.Embed(color=0x8c0d52, description=message.content, timestamp=discord.utils.utcnow())
+            discord.Embed(color=0x8C0D52, description=message.content, timestamp=discord.utils.utcnow())
             .set_author(name=message.author.name, icon_url=message.author.display_avatar.url)
             .set_footer(text=f"#{message.channel} in {message.guild}")
         )
@@ -172,7 +173,7 @@ class MiscCog(commands.Cog, name="Misc"):
         with catchtime() as ct:
             await ctx.typing()
         typing_ping = ct.time * 1000
-        
+
         with catchtime() as ct:
             await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
         db_ping = ct.time * 1000

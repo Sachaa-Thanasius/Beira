@@ -1,4 +1,4 @@
-__version__ = "0.1.0"
+__version__ = "0.0.1"
 
 from . import utils as utils, wave as wave
 from .bot import *

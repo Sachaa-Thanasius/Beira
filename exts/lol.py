@@ -9,6 +9,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from pathlib import Path
+from typing import TYPE_CHECKING
 from urllib.parse import quote, urljoin
 
 import aiohttp
@@ -19,6 +20,10 @@ from discord.ext import commands
 
 import core
 from core.utils import StatsEmbed
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 LOGGER = logging.getLogger(__name__)
@@ -39,7 +44,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
     """
 
     # Create the webdriver.
-    with GECKODRIVER_LOGS.open(mode='a', encoding="utf-8") as log_file:
+    with GECKODRIVER_LOGS.open(mode="a", encoding="utf-8") as log_file:
         service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)  # type: ignore # attrs class
         browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
@@ -63,7 +68,7 @@ class UpdateOPGGView(discord.ui.View):
         self.summoner_name_list = summoner_name_list
 
     @discord.ui.button(label="Update", style=discord.ButtonStyle.blurple)
-    async def update(self, interaction: core.Interaction, button: discord.ui.Button) -> None:
+    async def update(self, interaction: core.Interaction, button: discord.ui.Button[Self]) -> None:
         """Update the information in the given leaderboard."""
 
         # Change the button to show the update is in progress.
@@ -79,8 +84,7 @@ class UpdateOPGGView(discord.ui.View):
 
             if cog and isinstance(cog, LoLCog):
                 # Update every member's OP.GG page.
-                await update_op_gg_profiles(
-                    [urljoin(cog.req_site, quote(name)) for name in self.summoner_name_list])
+                await update_op_gg_profiles([urljoin(cog.req_site, quote(name)) for name in self.summoner_name_list])
 
                 # Recreate and resend the leaderboard.
                 updated_embed: StatsEmbed = await cog.create_lol_leaderboard(self.summoner_name_list)
@@ -111,10 +115,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
         ]
         self.req_site = "https://www.op.gg/summoners/na/"
         self.req_headers = {
-            'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) '
-                          'AppleWebKit/537.36 (KHTML, like Gecko) '
-                          'Chrome/39.0.2171.95 '
-                          'Safari/537.36',
+            "User-Agent": (
+                "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_1) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/39.0.2171.95 "
+                "Safari/537.36"
+            ),
         }
 
     @property
@@ -122,13 +128,13 @@ class LoLCog(commands.Cog, name="League of Legends"):
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
-    
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_group()
@@ -155,9 +161,9 @@ class LoLCog(commands.Cog, name="League of Legends"):
         title = f"League of Legends Stats: *{summoner_name}*"
 
         # Construct the embed for the stats.
-        embed = StatsEmbed(color=0x193d2c, title=title)
+        embed = StatsEmbed(color=0x193D2C, title=title)
         if stats[1:2] == ("None", "None"):
-            embed.description ="This player either doesn't exist or isn't ranked!"
+            embed.description = "This player either doesn't exist or isn't ranked!"
         else:
             embed.add_stat_fields(stat_names=stat_headers, stat_values=stats)
 
@@ -217,11 +223,13 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         # Construct the embed for the leaderboard.
         embed = StatsEmbed(
-            color=0x193d2c,
+            color=0x193D2C,
             title="League of Legends Leaderboard",
-            description="If players are missing, they either don't exist or aren't ranked.\n"
-                        r"(Winrate \|| Rank)"
-                        "\n―――――――――――",
+            description=(
+                "If players are missing, they either don't exist or aren't ranked.\n"
+                r"(Winrate \|| Rank)"
+                "\n―――――――――――"
+            ),
         )
         if leaderboard:
             embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format=r"({} \|| {})")
@@ -250,7 +258,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
             # Parse the summoner information for winrate and tier (referred to later as rank).
             tree = lh.fromstring(content)
-            winrate = "".join(tree.xpath("//div[@class='ratio']/text()")).removeprefix('Win Rate ')
+            winrate = "".join(tree.xpath("//div[@class='ratio']/text()")).removeprefix("Win Rate ")
             rank = "".join(tree.xpath("//div[@class='tier']/text()")).capitalize()
             if not (winrate and rank):
                 winrate, rank = "None", "None"

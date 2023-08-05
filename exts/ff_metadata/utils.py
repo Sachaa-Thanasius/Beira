@@ -11,11 +11,14 @@ import atlas_api
 import discord
 import fichub_api
 from attrs import define
+from discord import ui
 
 from core.utils import DTEmbed
 
 
 if TYPE_CHECKING:
+    from typing_extensions import Self
+
     from core import Interaction
 
 
@@ -36,7 +39,7 @@ LOGGER = logging.getLogger(__name__)
 class StoryWebsite:
     name: str
     acronym: str
-    story_regex: re.Pattern
+    story_regex: re.Pattern[str]
     icon_url: str
 
 
@@ -87,9 +90,8 @@ StoryWebsiteStore: dict[str, StoryWebsite] = {
 }
 
 STORY_WEBSITE_REGEX = re.compile(
-    r"(?:http://|https://|)" + "|".join(
-        f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()
-    ),
+    r"(?:http://|https://|)"
+    + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()),
 )
 
 
@@ -109,12 +111,14 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     categories = textwrap.shorten(", ".join(work.categories), 100, placeholder="...")
     characters = textwrap.shorten(", ".join(work.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
-    stats_str = " • ".join((
-        f"**Comments:** {work.comments:,d}",
-        f"**Kudos:** {work.kudos:,d}",
-        f"**Bookmarks:** {work.bookmarks:,d}",
-        f"**Hits:** {work.hits:,d}",
-    ))
+    stats_str = " • ".join(
+        (
+            f"**Comments:** {work.comments:,d}",
+            f"**Kudos:** {work.kudos:,d}",
+            f"**Bookmarks:** {work.bookmarks:,d}",
+            f"**Hits:** {work.hits:,d}",
+        ),
+    )
 
     # Add the info in the embed appropriately.
     ao3_embed = (
@@ -140,7 +144,7 @@ async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
 
     author: AO3.User = series.creators[0]
     await asyncio.to_thread(author.reload)
-    
+
     # Format the relevant information.
     updated = series.series_updated.strftime("%B %d, %Y") + (" (Complete)" if series.complete else "")
     author_names = ", ".join(str(creator.username) for creator in series.creators)
@@ -208,7 +212,8 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
     # Get site-specific information, since FicHub works for multiple websites.
     icon_url = next(
-        (value.icon_url for value in StoryWebsiteStore.values() if re.search(value.story_regex, story.url)), None,
+        (value.icon_url for value in StoryWebsiteStore.values() if re.search(value.story_regex, story.url)),
+        None,
     )
 
     if "fanfiction.net" in story.url:
@@ -218,7 +223,8 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
         stats_names = ("comments", "kudos", "bookmarks", "hits")
         # Account for absent extended metadata.
         stats = (
-            f"**{stat_name.capitalize()}:** {ind_stat:,d}" for stat_name in stats_names
+            f"**{stat_name.capitalize()}:** {ind_stat:,d}"
+            for stat_name in stats_names
             if (ind_stat := story.stats.get(stat_name)) is not None
         )
         stats_str = " • ".join(stats)
@@ -241,7 +247,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     return story_embed
 
 
-class AO3SeriesView(discord.ui.View):
+class AO3SeriesView(ui.View):
     """A view that wraps a dropdown item.
 
     Parameters
@@ -279,11 +285,14 @@ class AO3SeriesView(discord.ui.View):
         for i, work in enumerate(series.work_list, start=1):
             descr = textwrap.shorten(work.summary, 100, placeholder="...")
             self.works_dropdown.add_option(
-                label=f"{i}. {work.title}", value=str(i), description=descr, emoji="\N{OPEN BOOK}",
+                label=f"{i}. {work.title}",
+                value=str(i),
+                description=descr,
+                emoji="\N{OPEN BOOK}",
             )
 
     async def interaction_check(self, interaction: Interaction, /) -> bool:
-        check = (interaction.user is not None) and interaction.user.id in (self.author.id, interaction.client.owner_id)
+        check = interaction.user.id in (self.author.id, interaction.client.owner_id)
         if not check:
             await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
         return check
@@ -292,22 +301,22 @@ class AO3SeriesView(discord.ui.View):
         """Disables all items on timeout."""
 
         for item in self.children:
-            item.disabled = True    # type: ignore
+            item.disabled = True  # type: ignore
 
         if self.message:
             await self.message.edit(view=self)
 
         self.stop()
 
-    async def on_error(self, interaction: Interaction, error: Exception, item: discord.ui.Item, /) -> None:
+    async def on_error(self, interaction: Interaction, error: Exception, item: ui.Item[Self], /) -> None:
         error = getattr(error, "original", error)
         LOGGER.error("User: %s - Item: %s", interaction.user, item, exc_info=error)
 
     def update_navigation_items(self) -> None:
         """Disable specific "page" switching components based on what page we're on, chosen by the user."""
 
-        self.turn_to_previous.disabled = (self.choice == 0)
-        self.turn_to_next.disabled = (self.choice == len(self.series.work_list))
+        self.turn_to_previous.disabled = self.choice == 0
+        self.turn_to_next.disabled = self.choice == len(self.series.work_list)
 
     async def format_page(self) -> discord.Embed:
         """Makes the series/work 'page' that the user will see."""
@@ -323,22 +332,22 @@ class AO3SeriesView(discord.ui.View):
         self.update_navigation_items()
         await interaction.response.edit_message(embed=result_embed, view=self)
 
-    @discord.ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
-    async def works_dropdown(self, interaction: Interaction, select: discord.ui.Select) -> None:
+    @ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
+    async def works_dropdown(self, interaction: Interaction, select: ui.Select[Any]) -> None:
         """A dropdown of works within a series to display more information about those as embed "pages"."""
 
         self.choice = int(select.values[0])
         await self.update_page(interaction)
 
-    @discord.ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
-    async def turn_to_previous(self, interaction: Interaction, _: discord.ui.Button) -> None:
+    @ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
+    async def turn_to_previous(self, interaction: Interaction, _: ui.Button[Self]) -> None:
         """A button to turn back a page between embeds."""
 
         self.choice -= 1
         await self.update_page(interaction)
 
-    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)
-    async def turn_to_next(self, interaction: Interaction, _: discord.ui.Button) -> None:
+    @ui.button(label=">", style=discord.ButtonStyle.blurple)
+    async def turn_to_next(self, interaction: Interaction, _: ui.Button[Self]) -> None:
         """A button to turn forward a page between embeds."""
 
         self.choice += 1

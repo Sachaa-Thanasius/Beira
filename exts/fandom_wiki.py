@@ -49,10 +49,10 @@ class AoCWikiEmbed(DTEmbed):
     """
 
     def __init__(
-            self,
-            author_icon_url: str = AOC_EMOJI_URL,
-            footer_icon_url: str = JARE_EMOJI_URL,
-            **kwargs: Any,
+        self,
+        author_icon_url: str = AOC_EMOJI_URL,
+        footer_icon_url: str = JARE_EMOJI_URL,
+        **kwargs: Any,
     ) -> None:
         super().__init__(**kwargs)
 
@@ -86,7 +86,7 @@ async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | N
 
         # Return the remaining text.
         return char_summary, char_thumbnail
-    
+
 
 def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
     """Attempts to clean a Fandom wiki page.
@@ -114,7 +114,7 @@ def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
         subheading.decompose()
 
     if summary_end_index != 0:
-        for element in soup.contents[summary_end_index + 1:]:
+        for element in soup.contents[summary_end_index + 1 :]:
             element.replace_with("")
 
     for element in soup.contents:
@@ -122,7 +122,7 @@ def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
             element.replace_with("")
 
     return soup
-    
+
 
 class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     """A cog for searching a fandom's Fandom wiki page.
@@ -144,7 +144,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.all_wikis = {}
+        self.all_wikis: dict[str, Any] = {}
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -157,12 +157,12 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         await self.load_all_wiki_pages()
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
 
     async def load_all_wiki_pages(self) -> None:
@@ -180,7 +180,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             wiki_data["all_pages"] = {}
 
             for url in wiki_data["pages_directory"]:
-                directory_url = urljoin(wiki_data['base_url'], url)
+                directory_url = urljoin(wiki_data["base_url"], url)
 
                 async with self.bot.web_session.get(directory_url) as response:
                     text = await response.text()
@@ -225,7 +225,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         Defaults to searching through the AoC wiki if the given wiki name is invalid.
         """
-        
+
         wiki = interaction.namespace.wiki
         if wiki not in self.all_wikis:
             wiki = "Harry Potter and the Ashes of Chaos"
@@ -247,7 +247,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         failed_embed = discord.Embed(title="Wiki Unavailable")
 
         # Check if the wiki name is valid.
-        get_wiki_name: dict | None = self.all_wikis.get(wiki_name)
+        get_wiki_name: dict[str, Any] | None = self.all_wikis.get(wiki_name)
 
         if get_wiki_name is None:
             entries_list = self.all_wikis.keys()
@@ -255,19 +255,18 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
             if len(possible_results) == 0:
                 failed_embed.description = (
-                    "Error: Wiki Does Not Exist Or Is Not Indexed. "
-                    "Please try a different wiki name."
+                    "Error: Wiki Does Not Exist Or Is Not Indexed. Please try a different wiki name."
                 )
                 return failed_embed
 
             wiki_name = possible_results[0]
             get_wiki_name = self.all_wikis[wiki_name]
-        
+
         assert isinstance(get_wiki_name, dict)
 
         # --------------------------------
         # Check if the wiki has any recorded pages.
-        get_wiki_pages: dict | None = get_wiki_name.get("all_pages")
+        get_wiki_pages: dict[str, Any] | None = get_wiki_name.get("all_pages")
 
         if get_wiki_pages is None:
             failed_embed.description = "Error: No Pages on Record for This Wiki. It is unavailable at this time."
@@ -277,7 +276,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         # Check if the wiki has the requested query as a page.
         final_embed = AoCWikiEmbed() if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed()
 
-        get_specific_wiki_page: str = get_wiki_pages.get(wiki_query)
+        get_specific_wiki_page: str | None = get_wiki_pages.get(wiki_query)
 
         if get_specific_wiki_page is None:
             entries_list = self.all_wikis[wiki_name]["all_pages"].keys()
@@ -294,7 +293,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             wiki_query = possible_results[0]
             get_specific_wiki_page = get_wiki_pages.get(wiki_query)
 
-        wiki_page_link = urljoin(self.all_wikis[wiki_name]['base_url'], get_specific_wiki_page)
+        wiki_page_link = urljoin(self.all_wikis[wiki_name]["base_url"], get_specific_wiki_page)
 
         # --------------------------------
         # Add the primary embed parameters.
@@ -311,7 +310,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             final_embed.set_thumbnail(url=thumbnail)
 
         return final_embed
-
 
 
 async def setup(bot: core.Beira) -> None:

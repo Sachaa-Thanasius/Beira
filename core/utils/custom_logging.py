@@ -13,7 +13,7 @@ from logging.handlers import RotatingFileHandler
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
 
-from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour
+from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
 
 
 if TYPE_CHECKING:
@@ -39,7 +39,7 @@ class RemoveNoise(logging.Filter):
     def __init__(self) -> None:
         super().__init__(name="discord.state")
 
-    def filter(self, record: logging.LogRecord) -> bool:    # noqa: A003
+    def filter(self, record: logging.LogRecord) -> bool:  # noqa: A003
         if record.levelname == "WARNING" and "referencing an unknown" in record.msg:
             return False
         return True

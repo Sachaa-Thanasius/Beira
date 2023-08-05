@@ -6,9 +6,9 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any, TypeAlias
 
+import asyncpg
 import discord
 from aiohttp import ClientSession
-from asyncpg import Pool
 from discord.ext import commands
 
 from .wave import SkippablePlayer
@@ -32,7 +32,7 @@ class Context(commands.Context["Beira"]):
     db
     """
 
-    voice_client: SkippablePlayer | None
+    voice_client: SkippablePlayer | None  # type: ignore # Type lie for narrowing
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)
@@ -45,14 +45,14 @@ class Context(commands.Context["Beira"]):
         return self.bot.web_session
 
     @property
-    def db(self) -> Pool:
+    def db(self) -> asyncpg.Pool[asyncpg.Record]:
         """:class:`Pool`: Returns the asynchronous connection pool used by the bot for database management."""
 
         return self.bot.db_pool
 
 
 class GuildContext(Context):
-    author: discord.Member
-    guild: discord.Guild
-    channel: discord.TextChannel | discord.VoiceChannel | discord.StageChannel | discord.Thread
-    me: discord.Member
+    author: discord.Member  # type: ignore # Type lie for narrowing
+    guild: discord.Guild  # type: ignore # Type lie for narrowing
+    channel: discord.abc.GuildChannel | discord.Thread  # type: ignore # Type lie for narrowing
+    me: discord.Member  # type: ignore # Type lie for narrowing

@@ -1,4 +1,4 @@
-__all__ = ("EMOJI_STOCK", )
+__all__ = ("EMOJI_STOCK",)
 
 EMOJI_STOCK: dict[str, str] = {
     "blue_star":     "<:snow_StarB_2021:917859752057376779>",

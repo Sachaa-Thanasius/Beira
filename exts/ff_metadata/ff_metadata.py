@@ -11,6 +11,8 @@ from __future__ import annotations
 import asyncio
 import logging
 import re
+from collections.abc import Callable, Coroutine
+from typing import Any
 
 import aiohttp
 import AO3
@@ -72,12 +74,12 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         for record in records:
             self.allowed_channels_cache.setdefault(record["guild_id"], set()).add(record["channel_id"])
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-            
+
         LOGGER.exception("", exc_info=error)
 
     @commands.Cog.listener("on_message")
@@ -92,9 +94,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         # Listen to the allowed channels in the allowed guilds for valid fanfic links.
         if (
-                (channels_cache := self.allowed_channels_cache.get(message.guild.id, set())) and
-                (message.channel.id in channels_cache) and
-                re.search(STORY_WEBSITE_REGEX, message.content)
+            (channels_cache := self.allowed_channels_cache.get(message.guild.id, set()))
+            and (message.channel.id in channels_cache)
+            and re.search(STORY_WEBSITE_REGEX, message.content)
         ):
             # Only show typing indicator on valid messages.
             async with message.channel.typing():
@@ -108,14 +110,14 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                         story_data = await self.search_ao3(match_obj.group(0))
                     elif match_obj.lastgroup and (match_obj.lastgroup != "AO3"):
                         story_data = await self.search_other(match_obj.group(0))
-                    
-                    _embed_strategy: dict = {
+
+                    _embed_strategy: dict[Any, Callable[..., Coroutine[Any, Any, DTEmbed]]] = {
                         atlas_api.FFNStory: create_atlas_ffn_embed,
                         fichub_api.Story: create_fichub_embed,
                         AO3.Work: create_ao3_work_embed,
                         AO3.Series: create_ao3_series_embed,
                     }
-                    
+
                     # Convert the story data into an embed depending on its type, then send it.
                     if story_data is not None and (strategy := _embed_strategy.get(type(story_data))):
                         embed: discord.Embed = await strategy(story_data)
@@ -123,16 +125,17 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     @commands.Cog.listener("on_message")
     async def on_fanficfinder_nothing_found_message(self, message: discord.Message) -> None:
-
         # Listen to the allowed channels in the allowed guilds.
-        if (
-                message.guild and
-                (message.guild.id == self.aci100_id) and
-                (message.author.id == FANFICFINDER_ID) and
-                (embed := message.embeds[0]) is not None and
-                embed.description is not None and
-                "fanfiction not found" in embed.description.lower()
-        ):
+        fanfic_finder_message_condition = bool(
+            message.guild
+            and (message.guild.id == self.aci100_id)
+            and (message.author.id == FANFICFINDER_ID)
+            and message.embeds
+            and (embed := message.embeds[0])
+            and embed.description is not None
+            and "fanfiction not found" in embed.description.lower()
+        )
+        if fanfic_finder_message_condition:
             await message.delete()
 
     @commands.hybrid_group(fallback="get")
@@ -154,10 +157,10 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     @autoresponse.command("add")
     async def autoresponse_add(
-            self,
-            ctx: core.GuildContext,
-            *,
-            channels: commands.Greedy[discord.abc.GuildChannel],
+        self,
+        ctx: core.GuildContext,
+        *,
+        channels: commands.Greedy[discord.abc.GuildChannel],
     ) -> None:
         """Set the bot to listen for AO3/FFN/other ff site links posted in the given channels.
 
@@ -194,10 +197,10 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     @autoresponse.command("remove")
     async def autoresponse_remove(
-            self,
-            ctx: core.GuildContext,
-            *,
-            channels: commands.Greedy[discord.abc.GuildChannel],
+        self,
+        ctx: core.GuildContext,
+        *,
+        channels: commands.Greedy[discord.abc.GuildChannel],
     ) -> None:
         """Set the bot to not listen for AO3/FFN/other ff site links posted in the given channels.
 
@@ -244,23 +247,23 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         async with ctx.typing():
             story_data = await self.search_ao3(name_or_url)
-            kwargs = {}
+            send_kwargs: dict[str, Any] = {}
             if isinstance(story_data, fichub_api.Story):
-                kwargs["embed"] = await create_fichub_embed(story_data)
+                send_kwargs["embed"] = await create_fichub_embed(story_data)
             elif isinstance(story_data, AO3.Work):
-                kwargs["embed"] = await create_ao3_work_embed(story_data)
+                send_kwargs["embed"] = await create_ao3_work_embed(story_data)
             elif isinstance(story_data, AO3.Series):
-                kwargs["embed"] = await create_ao3_series_embed(story_data)
-                kwargs["view"] = AO3SeriesView(ctx.author, story_data)
+                send_kwargs["embed"] = await create_ao3_series_embed(story_data)
+                send_kwargs["view"] = AO3SeriesView(ctx.author, story_data)
             else:
-                kwargs["embed"] = DTEmbed(
+                send_kwargs["embed"] = DTEmbed(
                     title="No Results",
                     description="No results found. You may need to edit your search.",
                 )
 
-            message = await ctx.reply(**kwargs)
-            if "view" in kwargs:
-                kwargs["view"].message = message
+            message = await ctx.reply(**send_kwargs)
+            if "view" in send_kwargs:
+                send_kwargs["view"].message = message
 
     @commands.hybrid_command()
     async def ffn(self, ctx: core.Context, *, name_or_url: str) -> None:

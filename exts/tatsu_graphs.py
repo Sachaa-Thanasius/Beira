@@ -9,7 +9,7 @@ https://github.com/Sachaa-Thanasius/Tatsu
 import asyncio
 import logging
 from io import BytesIO
-from typing import ClassVar
+from typing import Any, ClassVar
 
 import discord
 import matplotlib.pyplot as plt
@@ -41,23 +41,23 @@ class TatsuCog(commands.Cog, name="Tatsu"):
     async def cog_unload(self) -> None:
         await self.tatsu_client.close()
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
 
     @staticmethod
-    def process_data(data: np.ndarray) -> BytesIO:
+    def process_data(data: np.ndarray[Any, Any]) -> BytesIO:
         # Set colors for the points.
         raw_colors = np.array(["orange", "green", "blue"])
         length, leftover = np.divmod(len(data), len(raw_colors))
         colors = np.concatenate((np.tile(raw_colors, length), np.array(raw_colors[:leftover])))
 
         # Plot the data with matplotlib.
-        fig, ax = plt.subplots()
+        _, ax = plt.subplots()
         ax.scatter(data["rank"], data["score_rate"], c=colors, s=1.5)
         ax.set_xlabel("Current Rank")
         ax.set_ylabel("Average Score Per Day")
@@ -87,8 +87,8 @@ class TatsuCog(commands.Cog, name="Tatsu"):
                         ((ranking.score / (now - valid_member.joined_at).days), ranking.user_id, ranking.rank)
                         for ranking in results.rankings
                         if (
-                            (valid_member := query_guild.get_member(int(ranking.user_id))) and 
-                            valid_member.joined_at is not None
+                            (valid_member := query_guild.get_member(int(ranking.user_id)))
+                            and valid_member.joined_at is not None
                         )
                     ],
                     dtype=[("score_rate", "f4"), ("user_id", "U20"), ("rank", "i4")],
@@ -99,12 +99,15 @@ class TatsuCog(commands.Cog, name="Tatsu"):
                 await ctx.send(file=graph_file)
 
     @staticmethod
-    def process_data_3d(data: np.ndarray) -> BytesIO:
+    def process_data_3d(data: np.ndarray[Any, Any]) -> BytesIO:
         plt.style.use("_mpl-gallery")
 
-        fig, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        _, ax = plt.subplots(subplot_kw={"projection": "3d"})
         ax.scatter(
-            data["r"], data["g"], data["b"], c=np.dstack(
+            data["r"],
+            data["g"],
+            data["b"],
+            c=np.dstack(
                 (np.divide(data["r"], 255), np.divide(data["g"], 255), np.divide(data["b"], 255)),
             ),
         )

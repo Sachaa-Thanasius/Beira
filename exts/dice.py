@@ -11,7 +11,7 @@ import random
 import re
 import textwrap
 from io import StringIO
-from typing import Any, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import asteval
 import discord
@@ -20,6 +20,10 @@ from discord import ui
 from discord.ext import commands
 
 import core
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
 
 
 LOGGER = logging.getLogger(__name__)
@@ -54,17 +58,17 @@ class Die:
 
 # A dict of standard dice represented via dataclasses.
 standard_dice: dict[int, Die] = {
-    4: Die(4, discord.PartialEmoji(name="d04", animated=True, id=1109234548727885884), discord.Colour(0x5971c4)),
-    6: Die(6, discord.PartialEmoji(name="d06", animated=True, id=1109234547389907017), discord.Colour(0xc5964a)),
-    8: Die(8, discord.PartialEmoji(name="d08", animated=True, id=1109234533041197196), discord.Colour(0x8dca6f)),
-    10: Die(10, discord.PartialEmoji(name="d10", animated=True, id=1109234530348437606), discord.Colour(0xa358b4)),
-    12: Die(12, discord.PartialEmoji(name="d12", animated=True, id=1109234528431636672), discord.Colour(0xc26436)),
-    20: Die(20, discord.PartialEmoji(name="d20", animated=True, id=1109234550707593346), discord.Colour(0xd43c54)),
-    100: Die(100, discord.PartialEmoji(name="d100", animated=True, id=1109960365967687841), discord.Colour(0xb40ea9)),
+    4: Die(4, discord.PartialEmoji(name="d04", animated=True, id=1109234548727885884), discord.Colour(0x5971C4)),
+    6: Die(6, discord.PartialEmoji(name="d06", animated=True, id=1109234547389907017), discord.Colour(0xC5964A)),
+    8: Die(8, discord.PartialEmoji(name="d08", animated=True, id=1109234533041197196), discord.Colour(0x8DCA6F)),
+    10: Die(10, discord.PartialEmoji(name="d10", animated=True, id=1109234530348437606), discord.Colour(0xA358B4)),
+    12: Die(12, discord.PartialEmoji(name="d12", animated=True, id=1109234528431636672), discord.Colour(0xC26436)),
+    20: Die(20, discord.PartialEmoji(name="d20", animated=True, id=1109234550707593346), discord.Colour(0xD43C54)),
+    100: Die(100, discord.PartialEmoji(name="d100", animated=True, id=1109960365967687841), discord.Colour(0xB40EA9)),
 }
 
 
-def replace_dice_in_expr(match: re.Match) -> str:
+def replace_dice_in_expr(match: re.Match[str]) -> str:
     """Replace the dice in an expression with an expression containing the resulting rolls.
 
     Example: Replaces``5d6`` in ``5d6 + 7`` with ``(1, 5, 6, 3, 3)``.
@@ -90,7 +94,7 @@ def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
         A mapping from the maximum value of a particular die to the list of rolls that it made.
     """
 
-    rolls_info = {}
+    rolls_info: dict[int, list[int]] = {}
     for die_val, num_rolls in dice_info.items():
         rolls_info[die_val] = [random.randint(1, die_val) for _ in range(num_rolls)]
     return rolls_info
@@ -136,14 +140,13 @@ class DiceEmbed(discord.Embed):
     """
 
     def __init__(
-            self,
-            *,
-            rolls_info: dict[int, list[int]] | None = None,
-            modifier: int = 0,
-            expression_info: tuple[str, str, int] | None = None,
-            **kwargs: Any,
+        self,
+        *,
+        rolls_info: dict[int, list[int]] | None = None,
+        modifier: int = 0,
+        expression_info: tuple[str, str, int] | None = None,
+        **kwargs: Any,
     ) -> None:
-
         # Determine what type of description needs to be made: straight rolls, or custom expression.
         if rolls_info:
             # Calculate the total before any display formatting happens.
@@ -181,7 +184,8 @@ class DiceEmbed(discord.Embed):
 
                 # Basically, only display the total separately if enough calculation was done to deem it necessary.
                 if (len(rolls_info) == 1 and (modifier or (len(next(iter(rolls_info.values()))) > 1))) or len(
-                        rolls_info) > 1:
+                    rolls_info,
+                ) > 1:
                     description.write(f"\nTotal: **{total}**")
 
                 kwargs["description"] = description.getvalue()
@@ -203,7 +207,7 @@ class DiceEmbed(discord.Embed):
             
             Total: **{total}**"""
             kwargs["description"] = textwrap.dedent(description)
-            kwargs["colour"] = 0xd5ab88
+            kwargs["colour"] = 0xD5AB88
 
         else:
             kwargs["description"] = "\N{GAME DIE} **Nothing was rolled.**"
@@ -211,16 +215,16 @@ class DiceEmbed(discord.Embed):
         super().__init__(**kwargs)
 
 
-class RerollButton(ui.Button):
+class RerollButton(ui.Button[ui.View]):
     """A button subclass that redoes a roll based on input."""
 
     def __init__(
-            self,
-            *,
-            dice_info: dict[int, int] | None = None,
-            modifier: int = 0,
-            expression: str | None = None,
-            **kwargs: Any,
+        self,
+        *,
+        dice_info: dict[int, int] | None = None,
+        modifier: int = 0,
+        expression: str | None = None,
+        **kwargs: Any,
     ) -> None:
         kwargs["label"] = kwargs.get("label", "\N{CLOCKWISE GAPPED CIRCLE ARROW}")
         kwargs["style"] = kwargs.get("style", discord.ButtonStyle.green)
@@ -231,7 +235,6 @@ class RerollButton(ui.Button):
         self.expression = expression
 
     async def callback(self, interaction: core.Interaction) -> None:
-
         assert self.view is not None
         if self.dice_info:
             rolls_info = roll_basic_dice(dice_info=self.dice_info)
@@ -295,11 +298,14 @@ class DiceSelect(ui.Select["DiceView"]):
         custom_id = "dice:select"
         placeholder = "Choose multiple dice to roll..."
         options = [
-            discord.SelectOption(label=die.label, value=str(num), emoji=die.emoji)
-            for num, die in standard_dice.items()
+            discord.SelectOption(label=die.label, value=str(num), emoji=die.emoji) for num, die in standard_dice.items()
         ]
         super().__init__(
-            custom_id=custom_id, placeholder=placeholder, min_values=1, max_values=len(standard_dice), options=options,
+            custom_id=custom_id,
+            placeholder=placeholder,
+            min_values=1,
+            max_values=len(standard_dice),
+            options=options,
         )
 
     async def callback(self, interaction: core.Interaction) -> None:
@@ -329,7 +335,7 @@ class DiceModifierModal(ui.Modal):
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
-    modifier_input = ui.TextInput(
+    modifier_input: ui.TextInput[Self] = ui.TextInput(
         label="Roll Modifier (Submit with nothing to reset)",
         placeholder="Enter modifier here...",
         required=False,
@@ -343,7 +349,7 @@ class DiceModifierModal(ui.Modal):
         """Store the interaction and ensure the input is an integer."""
 
         self.interaction = interaction
-        if value := self.modifier_input.value is not None:
+        if value := self.modifier_input.value:
             _ = int(value)
 
 
@@ -358,7 +364,7 @@ class DiceExpressionModal(ui.Modal):
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
-    expression_input = ui.TextInput(
+    expression_input: ui.TextInput[Self] = ui.TextInput(
         label="Dice Expression (Submit empty to reset)",
         style=discord.TextStyle.long,
         placeholder="Enter expression here...",
@@ -400,13 +406,18 @@ class DiceView(ui.View):
 
         self.add_item(DiceSelect())
 
-    async def on_error(self, interaction: core.Interaction, error: Exception, item: ui.Item[Any], /) -> None:
+    async def on_error(self, interaction: core.Interaction, error: Exception, item: ui.Item[Self], /) -> None:
         error = getattr(error, "original", error)
         LOGGER.error("", exc_info=error)
 
-    @discord.ui.button(label="Modifier", custom_id="dice:modifier_button", style=discord.ButtonStyle.green,
-                       emoji="\N{HEAVY PLUS SIGN}", row=3)
-    async def set_modifier(self, interaction: core.Interaction, button: ui.Button) -> None:
+    @discord.ui.button(
+        label="Modifier",
+        custom_id="dice:modifier_button",
+        style=discord.ButtonStyle.green,
+        emoji="\N{HEAVY PLUS SIGN}",
+        row=3,
+    )
+    async def set_modifier(self, interaction: core.Interaction, button: ui.Button[Self]) -> None:
         """Allow the user to set a modifier to add to the result of a roll or series of rolls.
 
         Applies to individual buttons and the select menu. Happens once at the end of multiple rolls.
@@ -433,9 +444,14 @@ class DiceView(ui.View):
         if modal.interaction:
             await modal.interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="# of Rolls", custom_id="dice:set_num_button", style=discord.ButtonStyle.green,
-                       emoji="\N{HEAVY MULTIPLICATION X}", row=3)
-    async def set_number(self, interaction: core.Interaction, button: ui.Button) -> None:
+    @discord.ui.button(
+        label="# of Rolls",
+        custom_id="dice:set_num_button",
+        style=discord.ButtonStyle.green,
+        emoji="\N{HEAVY MULTIPLICATION X}",
+        row=3,
+    )
+    async def set_number(self, interaction: core.Interaction, button: ui.Button[Self]) -> None:
         """Allow the user to set the number of dice to roll at once.
 
         Applies to individual buttons and the select menu.
@@ -469,9 +485,14 @@ class DiceView(ui.View):
         if modal.interaction:
             await modal.interaction.response.edit_message(view=self)
 
-    @discord.ui.button(label="Custom Expression", custom_id="dice:set_expr_button",
-                       style=discord.ButtonStyle.green, emoji="\N{ABACUS}", row=3)
-    async def set_expression(self, interaction: core.Interaction, _: ui.Button) -> None:
+    @discord.ui.button(
+        label="Custom Expression",
+        custom_id="dice:set_expr_button",
+        style=discord.ButtonStyle.green,
+        emoji="\N{ABACUS}",
+        row=3,
+    )
+    async def set_expression(self, interaction: core.Interaction, _: ui.Button[Self]) -> None:
         """Allow the user to enter a custom dice expression to be evaluated for result."""
 
         # Create and send a modal for user input.
@@ -502,9 +523,13 @@ class DiceView(ui.View):
         if modal.interaction:
             await modal.interaction.response.edit_message(embed=original_embed, view=self)
 
-    @discord.ui.button(label="\N{CLOCKWISE GAPPED CIRCLE ARROW}", custom_id="dice:run_expr_button",
-                       style=discord.ButtonStyle.green, row=3)
-    async def run_expression(self, interaction: discord.Interaction, _: ui.Button) -> None:
+    @discord.ui.button(
+        label="\N{CLOCKWISE GAPPED CIRCLE ARROW}",
+        custom_id="dice:run_expr_button",
+        style=discord.ButtonStyle.green,
+        row=3,
+    )
+    async def run_expression(self, interaction: discord.Interaction, _: ui.Button[Self]) -> None:
         """Roll based on the entered custom expression and display the result."""
 
         send_kwargs: dict[str, Any] = {"ephemeral": True}
@@ -546,11 +571,12 @@ async def roll(ctx: core.Context, expression: str | None = None) -> None:
         embed = discord.Embed(
             title="Take a chance. Roll the dice!",
             description="Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple "
-                        "dice simultaneously!\n"
-                        "Note: Maximum number of rolls at once is 50.",
+            "dice simultaneously!\n"
+            "Note: Maximum number of rolls at once is 50.",
         )
         embed.set_thumbnail(
-            url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif")
+            url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif",
+        )
         view = DiceView()
     else:
         filled_in_expression, result = roll_custom_dice_expression(expression)
@@ -566,8 +592,8 @@ async def roll_error(ctx: core.Context, error: commands.CommandError) -> None:
     error = getattr(error, "original", error)
     if ctx.interaction:
         error = getattr(error, "original", error)
-    
-    LOGGER.exception("", exc_info=error) 
+
+    LOGGER.exception("", exc_info=error)
 
 
 async def setup(bot: core.Beira) -> None:

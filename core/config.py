@@ -4,12 +4,13 @@ config.py: Imports configuration information, such as api keys and tokens, defau
 
 import json
 import pathlib
+from typing import Any
 
 
 __all__ = ("CONFIG",)
 
 
-def load_config() -> dict:
+def load_config() -> dict[str, Any]:
     """Load data from a config file.
 
     Returns
@@ -18,8 +19,8 @@ def load_config() -> dict:
         A variable containing the config data.
     """
 
-    with pathlib.Path('config.json').open() as f:
+    with pathlib.Path("config.json").open() as f:
         return json.load(f)
 
 
-CONFIG = load_config()
+CONFIG: dict[str, Any] = load_config()

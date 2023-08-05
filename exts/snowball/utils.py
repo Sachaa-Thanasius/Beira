@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, NamedTuple, TypeAlias
 
 import asyncpg
 import discord
@@ -25,10 +25,13 @@ __all__ = (
     "steal_cooldown",
 )
 
+Connection_alias: TypeAlias = asyncpg.Connection[asyncpg.Record]
+Pool_alias: TypeAlias = asyncpg.Pool[asyncpg.Record]
+
 
 class UserSnowballUpdate(NamedTuple):
     """Record-like structure that represents a member's snowball record that is being upserted into the database.
-    
+
     Attributes
     ----------
     hits : :class:`int`, default=0
@@ -47,7 +50,7 @@ class UserSnowballUpdate(NamedTuple):
     kos: int = 0
     stock: int = 0
 
-    async def upsert_record(self, conn: asyncpg.Pool | asyncpg.Connection) -> asyncpg.Record | None:
+    async def upsert_record(self, conn: Pool_alias | Connection_alias) -> asyncpg.Record | None:
         """Upserts a user's snowball stats based on the given stat parameters."""
 
         # Upsert the relevant users and guilds to the database before adding a snowball record.
@@ -66,7 +69,7 @@ class UserSnowballUpdate(NamedTuple):
         """
         args = self.member.id, self.member.guild.id, self.hits, self.misses, self.kos, max(self.stock, 0), self.stock
         return await conn.fetchrow(snowball_upsert_query, *args)
-    
+
 
 class GuildSnowballSettings(NamedTuple):
     """Record-like structure to hold a guild's snowball settings.
@@ -89,14 +92,14 @@ class GuildSnowballSettings(NamedTuple):
     transfer_cap: int = 10
 
     @classmethod
-    async def from_database(cls: type[Self], conn: asyncpg.Pool | asyncpg.Connection, guild_id: int) -> Self:
+    async def from_database(cls: type[Self], conn: Pool_alias | Connection_alias, guild_id: int) -> Self:
         """Query a snowball settings database record for a guild."""
 
         query = """SELECT * FROM snowball_settings WHERE guild_id = $1;"""
         record = await conn.fetchrow(query, guild_id)
         return cls(*record) if record else cls(guild_id)
 
-    async def upsert_record(self, conn: asyncpg.Pool | asyncpg.Connection) -> None:
+    async def upsert_record(self, conn: Pool_alias | Connection_alias) -> None:
         """Upsert these snowball settings into the database."""
 
         query = """
@@ -137,19 +140,19 @@ class SnowballSettingsModal(ui.Modal):
         super().__init__(title="This Guild's Snowball Settings")
 
         # Create the items.
-        self.hit_odds_input = ui.TextInput(
+        self.hit_odds_input: ui.TextInput[Self] = ui.TextInput(
             label="The chance of hitting a person (0.0-1.0)",
             placeholder=f"Current: {default_settings.hit_odds:.2}",
             default=f"{default_settings.hit_odds:.2}",
             required=False,
         )
-        self.stock_cap_input = ui.TextInput(
+        self.stock_cap_input: ui.TextInput[Self] = ui.TextInput(
             label="Max snowballs a member can hold (no commas)",
             placeholder=f"Current: {default_settings.stock_cap}",
             default=str(default_settings.stock_cap),
             required=False,
         )
-        self.transfer_cap_input = ui.TextInput(
+        self.transfer_cap_input: ui.TextInput[Self] = ui.TextInput(
             label="Max snowballs that can be gifted/stolen",
             placeholder=f"Current: {default_settings.transfer_cap}",
             default=str(default_settings.transfer_cap),
@@ -227,45 +230,52 @@ class SnowballSettingsView(ui.View):
         # Disable everything on timeout.
 
         for item in self.children:
-            item.disabled = True    # type: ignore
+            item.disabled = True  # type: ignore
 
         if self.message:
             await self.message.edit(view=self)
 
     async def interaction_check(self, interaction: core.Interaction, /) -> bool:
         # Ensure users are only server administrators or bot owners.
-        
+
         assert isinstance(interaction.user, discord.Member)  # This should only ever be called in a guild context.
         check = bool(
-            interaction.guild and
-            (interaction.user.guild_permissions.administrator or interaction.client.owner_id == interaction.user.id),
+            interaction.guild
+            and (
+                interaction.user.guild_permissions.administrator or interaction.client.owner_id == interaction.user.id
+            ),
         )
         if not check:
             await interaction.response.send_message("You can't change that unless you're a guild admin.")
         return check
-    
+
     def format_embed(self) -> discord.Embed:
-        return discord.Embed(
-            color=0x5e9a40,
-            title=f"Snowball Settings in {self.guild_name}",
-            description="Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings can "
-                        "be added on a per-guild basis, but currently don't have any effect. Fix coming soon.",
-        ).add_field(
-            name=f"Odds = {self.settings.hit_odds}",
-            value="The odds of landing a snowball on someone.",
-            inline=False,
-        ).add_field(
-            name=f"Default Stock Cap = {self.settings.stock_cap}",
-            value="The maximum number of snowballs the average member can hold at once.",
-            inline=False,
-        ).add_field(
-            name=f"Transfer Cap = {self.settings.transfer_cap}",
-            value="The maximum number of snowballs that can be gifted or stolen at once.",
-            inline=False,
+        return (
+            discord.Embed(
+                color=0x5E9A40,
+                title=f"Snowball Settings in {self.guild_name}",
+                description="Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings "
+                "can be added on a per-guild basis, but currently don't have any effect. Fix coming soon.",
+            )
+            .add_field(
+                name=f"Odds = {self.settings.hit_odds}",
+                value="The odds of landing a snowball on someone.",
+                inline=False,
+            )
+            .add_field(
+                name=f"Default Stock Cap = {self.settings.stock_cap}",
+                value="The maximum number of snowballs the average member can hold at once.",
+                inline=False,
+            )
+            .add_field(
+                name=f"Transfer Cap = {self.settings.transfer_cap}",
+                value="The maximum number of snowballs that can be gifted or stolen at once.",
+                inline=False,
+            )
         )
 
     @ui.button(label="Update", emoji="⚙")
-    async def change_settings_button(self, interaction: core.Interaction, _: ui.Button) -> None:
+    async def change_settings_button(self, interaction: core.Interaction, _: ui.Button[Self]) -> None:
         """Send a modal that allows the user to edit the snowball settings for this guild."""
 
         # Get inputs from a modal.

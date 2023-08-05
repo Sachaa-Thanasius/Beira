@@ -94,7 +94,7 @@ async def create_completion(prompt: str) -> str:
         The generated text completion.
     """
 
-    completion_response = await openai.Completion.acreate(
+    completion_response = await openai.Completion.acreate(  # type: ignore # Possible args are weird.
         prompt=prompt,
         model="text-davinci-003",
         max_tokens=150,
@@ -119,7 +119,11 @@ async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
         The url of the generated image.
     """
 
-    image_response = await openai.Image.acreate(prompt=prompt, n=1, size=f"{size[0]}x{size[1]}")
+    image_response = await openai.Image.acreate(  # type: ignore # Possible args are weird.
+        prompt=prompt,
+        n=1,
+        size=f"{size[0]}x{size[1]}",
+    )
     return image_response.data[0].url  # type: ignore
 
 
@@ -171,19 +175,21 @@ async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) ->
             await file.write(after_img_buffer.getvalue())
 
         # Run an ffmpeg command to create and save the morph mp4 from the temp images.
+        # fmt: off
         cmd1_list = [
-            f'{FFMPEG}', '-nostdin', '-y', '-r', '0.3', '-stream_loop', '1', '-i', f'{avatar_temp}',
-            '-r', '0.3', '-stream_loop', '2', '-i', f'{ai_temp}',
-            '-filter_complex',
-            '[0][1]concat=n=2:v=1:a=0[v];[v]minterpolate=fps=24:scd=none,trim=3:7,setpts=PTS-STARTPTS',
-            '-pix_fmt', 'yuv420p', f'{mp4_temp}',
+            f"{FFMPEG}", "-nostdin", "-y", "-r", "0.3", "-stream_loop", "1", "-i", f"{avatar_temp}",
+            "-r", "0.3", "-stream_loop", "2", "-i", f"{ai_temp}",
+            "-filter_complex",
+            "[0][1]concat=n=2:v=1:a=0[v];[v]minterpolate=fps=24:scd=none,trim=3:7,setpts=PTS-STARTPTS",
+            "-pix_fmt", "yuv420p", f"{mp4_temp}",
         ]
+        # fmt: on
         process1 = await asyncio.create_subprocess_exec(*cmd1_list)
         await process1.wait()
         LOGGER.info("MP4 creation completed")
 
         # Run another ffmpeg command to convert the morph mp4 into a gif.
-        cmd2_list = [f'{FFMPEG}', '-i', f'{mp4_temp}', '-f', 'gif', f'{gif_temp}']
+        cmd2_list = [f"{FFMPEG}", "-i", f"{mp4_temp}", "-f", "gif", f"{gif_temp}"]
         process2 = await asyncio.create_subprocess_exec(*cmd2_list)
         await process2.wait()
         LOGGER.info("GIF creation completed.")

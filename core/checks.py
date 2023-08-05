@@ -17,7 +17,7 @@ from .errors import GuildIsBlocked, NotAdmin, NotInBotVoiceChannel, NotOwnerOrFr
 
 if TYPE_CHECKING:
     from discord.app_commands.commands import Check as app_Check
-    from discord.ext.commands._types import Check
+    from discord.ext.commands._types import Check  # type: ignore # For the sake of type-checking?
 
     from core import Context, GuildContext
 
@@ -53,7 +53,9 @@ def is_admin() -> Check[Any]:
     """
 
     async def predicate(ctx: GuildContext) -> bool:
-        if not (ctx.guild is not None and ctx.author.guild_permissions.administrator):
+        assert ctx.guild is not None
+
+        if not ctx.author.guild_permissions.administrator:
             msg = "Only someone with administrator permissions can do this."
             raise NotAdmin(msg)
         return True
@@ -73,8 +75,8 @@ def in_bot_vc() -> Check[Any]:
         vc: discord.VoiceProtocol | None = ctx.voice_client
 
         if not (
-                ctx.author.guild_permissions.administrator or
-                (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel)
+            ctx.author.guild_permissions.administrator
+            or (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel)
         ):
             msg = "You are not connected to the same voice channel as the bot."
             raise NotInBotVoiceChannel(msg)
@@ -118,7 +120,7 @@ def is_blocked() -> Check[Any]:
     return commands.check(predicate)
 
 
-def check_any(*checks: app_Check) -> Callable:
+def check_any(*checks: app_Check) -> Callable[..., Any]:
     """An attempt at making a :func:`check_any` decorator for application commands.
 
     Parameters
@@ -134,7 +136,7 @@ def check_any(*checks: app_Check) -> Callable:
 
     # TODO: Actually check if this works.
     async def predicate(interaction: discord.Interaction) -> bool:
-        errors = []
+        errors: list[Exception] = []
         for check in checks:
             try:
                 value = await maybe_coroutine(check, interaction)

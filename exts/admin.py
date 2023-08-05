@@ -30,14 +30,13 @@ class AdminCog(commands.Cog, name="Administration"):
 
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
-        
 
     @commands.hybrid_command()
     @commands.guild_only()
@@ -49,7 +48,8 @@ class AdminCog(commands.Cog, name="Administration"):
             embed = discord.Embed(
                 title=f"Members Timed Out in {ctx.guild.name}",
                 description="\n".join(
-                    f"{mem}: {format_dt(mem.timed_out_until, style='f')}" for mem in timed_members
+                    f"{mem}: {format_dt(mem.timed_out_until, style='f')}"
+                    for mem in timed_members
                     if mem.timed_out_until is not None
                 ),
             )

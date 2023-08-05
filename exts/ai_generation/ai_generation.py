@@ -55,17 +55,17 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     async def cog_load(self) -> None:
         openai.aiosession.set(self.bot.web_session)
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         """Handles any errors within this cog."""
-        
+
         assert ctx.command is not None
 
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-            
-        embed = discord.Embed(color=0x5e9a40)
+
+        embed = discord.Embed(color=0x5E9A40)
 
         if isinstance(error, ConnectionError | KeyError):
             LOGGER.warning("OpenAI Response error.", exc_info=error)
@@ -127,7 +127,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """
 
         async with ctx.typing():
-            default_target: discord.User = self.bot.get_user(self.bot.special_friends["athenahope"])   # type: ignore
+            default_target: discord.User = self.bot.get_user(self.bot.special_friends["athenahope"])  # type: ignore
             act_target = target or default_target
             prompt = "an anxious, dumb, insane, crazy-looking cartoon pigeon"
 
@@ -141,7 +141,9 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             gif_file = discord.File(result_gif, filename="pigeonlord.gif")
             embed = (
                 discord.Embed(
-                    color=0x5d6e7f, title=f"{act_target.display_name}'s True Form", description="***Behold!***",
+                    color=0x5D6E7F,
+                    title=f"{act_target.display_name}'s True Form",
+                    description="***Behold!***",
                 )
                 .set_image(url="attachment://pigeonlord.gif")
                 .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
@@ -179,7 +181,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
             # Create and send an embed that holds the generated morph.
             gif_file = discord.File(result_gif, filename="morph.gif")
             embed = (
-                discord.Embed(color=0x5d6e7f, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
+                discord.Embed(color=0x5D6E7F, title=f"Morph of {target.display_name}", description="—+—+—+—+—+—+—")
                 .add_field(name="Prompt", value=prompt)
                 .set_image(url="attachment://morph.gif")
                 .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
@@ -197,11 +199,11 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
     @openai.command()
     @commands.cooldown(1, 10, commands.cooldowns.BucketType.user)
     async def generate(
-            self,
-            ctx: core.Context,
-            generation_type: Literal["text", "image"] = "image",
-            *,
-            prompt: str,
+        self,
+        ctx: core.Context,
+        generation_type: Literal["text", "image"] = "image",
+        *,
+        prompt: str,
     ) -> None:
         """Create and send AI-generated images or text based on a given prompt.
 
@@ -216,8 +218,8 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         """
 
         async with ctx.typing():
-            embed = discord.Embed(color=0x5d6e7f, title="AI-Generated", description="—+—+—+—+—+—+—")
-            assert (embed.title is not None) and (embed.description is not None)        # For typing.
+            embed = discord.Embed(color=0x5D6E7F, title="AI-Generated", description="—+—+—+—+—+—+—")
+            assert (embed.title is not None) and (embed.description is not None)  # For typing.
 
             if generation_type == "image":
                 log_start_time = perf_counter()
@@ -266,7 +268,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         async with ctx.typing():
             image_url = await create_inspiration(ctx.session)
             embed = (
-                discord.Embed(color=0xe04206)
+                discord.Embed(color=0xE04206)
                 .set_image(url=image_url)
                 .set_footer(text="Generated with InspiroBot at https://inspirobot.me/", icon_url=INSPIROBOT_ICON_URL)
             )

@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import itertools
 import logging
-from collections.abc import Sequence
+from collections.abc import Iterable, Sequence
 from typing import TYPE_CHECKING, Any
 
 import discord.utils
@@ -56,14 +56,13 @@ class PaginatedEmbed(Embed):
     """
 
     def __init__(
-            self,
-            *,
-            page_content: tuple | None = None,
-            current_page: int | None = None,
-            max_pages: int | None = None,
-            **kwargs: Any,
+        self,
+        *,
+        page_content: tuple[Any, ...] | None = None,
+        current_page: int | None = None,
+        max_pages: int | None = None,
+        **kwargs: Any,
     ) -> None:
-
         super().__init__(**kwargs)
 
         if page_content is not None:
@@ -72,7 +71,7 @@ class PaginatedEmbed(Embed):
         if (current_page is not None) and (max_pages is not None):
             self.set_page_footer(current_page, max_pages)
 
-    def set_page_content(self, page_content: tuple | None = None) -> Self:
+    def set_page_content(self, page_content: tuple[Any, ...] | None = None) -> Self:
         """Sets the content field for this embed page.
 
         This function returns the class instance to allow for fluent-style chaining.
@@ -117,7 +116,7 @@ class PaginatedEmbed(Embed):
 
 class StatsEmbed(DTEmbed):
     """A subclass of :class:`DTEmbed` that displays given statistics for a user.
-    
+
     This has a default colour of 0x2f3136 and, due to inheritance, a default timestamp for right now in UTC.
 
     Parameters
@@ -127,17 +126,17 @@ class StatsEmbed(DTEmbed):
     """
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0x2f3136
+        kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0x2F3136
         super().__init__(**kwargs)
 
     def add_stat_fields(
-            self,
-            *,
-            stat_names: Sequence[Any],
-            stat_emojis: Sequence[Emoji | PartialEmoji | str] = (""),
-            stat_values: Sequence[Any],
-            inline: bool = False,
-            emoji_header_status: bool = False,
+        self,
+        *,
+        stat_names: Iterable[Any],
+        stat_emojis: Iterable[Emoji | PartialEmoji | str] = (""),
+        stat_values: Iterable[Any],
+        inline: bool = False,
+        emoji_header_status: bool = False,
     ) -> Self:
         """Add some stat fields to the embed object.
 
@@ -145,18 +144,18 @@ class StatsEmbed(DTEmbed):
 
         Parameters
         ----------
-        stat_names : Sequence[Any]
+        stat_names : Iterable[Any]
             The names for each field.
-        stat_emojis : Sequence[:class:`Emoji` | :class:`str`]
+        stat_emojis : Iterable[:class:`Emoji` | :class:`str`]
             The emojis adorning each field. Defaults to a tuple with an empty string so there is at least one "emoji".
-        stat_values : Sequence[Any], default=("")
+        stat_values : Iterable[Any], default=("")
             The values for each field.
         inline : :class:`bool`, default=False
             Whether the fields should be displayed inline. Defaults to False.
         emoji_header_status : :class:`bool`, default=False
             Whether the emojis should adorn the names or the values of each field. By default, adorns the values.
         """
-        
+
         # Add the stat fields.
         # - The emojis will be cycled over.
         for name, emoji, value in zip(stat_names, itertools.cycle(stat_emojis), stat_values, strict=False):
@@ -171,14 +170,14 @@ class StatsEmbed(DTEmbed):
         return self
 
     def add_leaderboard_fields(
-            self,
-            *,
-            ldbd_content: Sequence[Sequence[Any]],
-            ldbd_emojis: Sequence[Emoji | PartialEmoji | str] = (""),
-            name_format: str = "| {}",
-            value_format: str = "{}",
-            inline: bool = False,
-            ranked: bool = True,
+        self,
+        *,
+        ldbd_content: Iterable[Sequence[Any]],
+        ldbd_emojis: Iterable[Emoji | PartialEmoji | str] = (""),
+        name_format: str = "| {}",
+        value_format: str = "{}",
+        inline: bool = False,
+        ranked: bool = True,
     ) -> Self:
         """Add some leaderboard fields to the embed object.
 
@@ -186,10 +185,10 @@ class StatsEmbed(DTEmbed):
 
         Parameters
         ----------
-        ldbd_content: Sequence[Sequence[Any]]
+        ldbd_content: Iterable[Sequence[Any]]
             The content for each leaderboard, including names and values. Assumes they're given in descending order.
-        ldbd_emojis : Sequence[:class:`Emoji` | :class:`str`], default=("")
-            The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there 
+        ldbd_emojis : Iterable[:class:`Emoji` | :class:`str`], default=("")
+            The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there
             is at least one "emoji".
         name_format : :class:`str`, default="| {}"
             The format for the name, to be filled by information from the content.

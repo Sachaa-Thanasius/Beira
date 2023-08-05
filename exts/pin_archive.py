@@ -45,18 +45,24 @@ class PinArchiveSettingFlags(commands.FlagConverter):
     )
     mode: Literal["oldest", "newest"] = commands.flag(
         default="newest",
-        description="Which pin gets sent to the pin archive channel whenever a new message is pinned and there are no "
-                    "pins left.",
+        description=(
+            "Which pin gets sent to the pin archive channel whenever a new message is pinned and there are no "
+            "pins left."
+        ),
     )
     blacklisted: str | None = commands.flag(
         default=None,
-        description="The channels that the bot shouldn't archive pins from, e.g. admin channels. Separate with spaces. "
-                    "Defaults to nothing.",
+        description=(
+            "The channels that the bot shouldn't archive pins from, e.g. admin channels. Separate with spaces. "
+            "Defaults to nothing."
+        ),
     )
     send_all: bool = commands.flag(
         default=False,
-        description="Whether *all* current pins will be relocated to the pin archive channel upon next pin. Defaults "
-                    "to False. WARNING: THIS WILL REMOVE PINS FROM ALL NON-BLACKLISTED CHANNELS.",
+        description=(
+            "Whether *all* current pins will be relocated to the pin archive channel upon next pin. Defaults "
+            "to False. WARNING: THIS WILL REMOVE PINS FROM ALL NON-BLACKLISTED CHANNELS."
+        ),
     )
 
 
@@ -75,16 +81,16 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         return discord.PartialEmoji(name="\N{PUSHPIN}")
 
-    async def cog_check(self, ctx: core.Context) -> bool:
+    async def cog_check(self, ctx: core.Context) -> bool:  # type: ignore # Narrowing, and async allowed.
         # Set up bot owner and guild-only checks as universal within the cog.
         guild_only = commands.guild_only().predicate
         return await self.bot.is_owner(ctx.author) and await guild_only(ctx)
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Check if the error has been handled already.
         if ctx.error_handled:
             return
-        
+
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
@@ -93,9 +99,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
     @commands.Cog.listener("on_guild_channel_pins_update")
     async def on_pins_update(
-            self,
-            channel: discord.abc.GuildChannel | discord.Thread,
-            last_pin: datetime.datetime | None = None,
+        self,
+        channel: discord.abc.GuildChannel | discord.Thread,
+        last_pin: datetime.datetime | None = None,
     ) -> None:
         """Listen to guild-level pin events and display them."""
 
@@ -111,17 +117,17 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
                         for pin in pins:
                             await pin.unpin(reason="Moving pins to archive channel.")
                             embed = create_pin_embed(pin)
-                            await archive_channel.send(embed=embed)     # type: ignore
+                            await archive_channel.send(embed=embed)  # type: ignore
                     elif record["pin_mode"] == 1:
                         pin = pins[-1]
                         await pin.unpin(reason="Moving pins to archive channel.")
                         embed = create_pin_embed(pin)
-                        await archive_channel.send(embed=embed)     # type: ignore
+                        await archive_channel.send(embed=embed)  # type: ignore
                     elif record["pin_mode"] == 2:
                         pin = pins[0]
                         await pin.unpin(reason="Moving pins to archive channel.")
                         embed = create_pin_embed(pin)
-                        await archive_channel.send(embed=embed)     # type: ignore
+                        await archive_channel.send(embed=embed)  # type: ignore
                 except (discord.Forbidden, discord.NotFound, discord.HTTPException, ValueError, TypeError) as err:
                     LOGGER.exception("", exc_info=err)
 
@@ -132,9 +138,13 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
         """Commands for setting up and maintaining a pin archive for your server."""
 
         await ctx.send_help(ctx.command)
-    
+
     @pin_.command("num")
-    async def pin_num(self, ctx: core.GuildContext, channel: discord.abc.GuildChannel | None = None) -> None:
+    async def pin_num(
+        self,
+        ctx: core.GuildContext,
+        channel: discord.abc.GuildChannel | discord.Thread | None = None,
+    ) -> None:
         """See the number of pins in a given channel, or if none is given, the current channel.
 
         Parameters
@@ -147,7 +157,8 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
         async with ctx.typing():
             channel_to_check = channel or ctx.channel
             try:
-                all_pins = await channel_to_check.pins()    # type: ignore # Guarded by exception handling.
+                # Guarded by exception handling.
+                all_pins: list[discord.Message] = await getattr(channel_to_check, "pins")()
             except AttributeError:
                 await ctx.send("The channel doesn't support pins.")
             except (discord.Forbidden, discord.HTTPException) as err:
@@ -196,7 +207,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
         active : :class:`bool`, default=False
             Whether this should be active or not. Defaults to false.
         """
-        async with ctx.typing():    
+        async with ctx.typing():
             query = "SELECT * FROM pin_archive_settings WHERE guild_id = $1;"
             record = await ctx.db.fetchrow(query, ctx.guild.id)
 
@@ -220,7 +231,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
         ctx : :class:`core.GuildContext`
             The invocation context.
         mode : Literal["oldest", "newest"] | None, optional
-            What to set the mode to, if you'd like to do that. If None, just retrieves the current setting. "Oldest" 
+            What to set the mode to, if you'd like to do that. If None, just retrieves the current setting. "Oldest"
             means that every time a pin is made and no pin spots are left, the oldest pin is migrated to the pin
             archive. "Newest" means the same thing, but the newest pin is migrated instead.
         """
@@ -243,10 +254,10 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
     @pin_.command("blacklist")
     async def pin_blacklist(
-            self,
-            ctx: core.GuildContext,
-            *,
-            channels: commands.Greedy[discord.abc.GuildChannel] = None,  # type: ignore # Effectively optional. 
+        self,
+        ctx: core.GuildContext,
+        *,
+        channels: commands.Greedy[discord.abc.GuildChannel] = None,  # type: ignore # Effectively optional.
     ) -> None:
         """Add channels to a blacklist so that pins from them aren't archived.
 
@@ -285,10 +296,10 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
     @pin_.command("whitelist")
     async def pin_whitelist(
-            self,
-            ctx: core.GuildContext,
-            *,
-            channels: commands.Greedy[discord.abc.GuildChannel],
+        self,
+        ctx: core.GuildContext,
+        *,
+        channels: commands.Greedy[discord.abc.GuildChannel],
     ) -> None:
         """Remove channels from a blacklist so that pins from them are archived.
 
@@ -323,7 +334,8 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
             send_all = pin_flags.send_all
 
             # Parse the blacklisted channels.
-            blacklisted_channels, errors = [], []
+            blacklisted_channels: list[discord.abc.GuildChannel] = []
+            errors: list[str] = []
             if pin_flags.blacklisted:
                 channel_converter = commands.GuildChannelConverter()
                 for arg in pin_flags.blacklisted.split():

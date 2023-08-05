@@ -5,23 +5,17 @@ wave.py: Custom subclasses or extras related to wavelink.
 from __future__ import annotations
 
 import logging
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+from typing import Any, TypeAlias
 
 import wavelink
 from wavelink import Playable
 from wavelink.ext import spotify
 
 
-if TYPE_CHECKING:
-    from discord.abc import MessageableChannel
-
-
 __all__ = ("SkippableQueue", "SkippablePlayer")
 
-
-PlayableT = TypeVar("PlayableT", bound=Playable)
-SpotifyTrackT = TypeVar("SpotifyTrackT", bound=spotify.SpotifyTrack)
-AnyTrack_alias: TypeAlias = PlayableT | SpotifyTrackT
+AnyTrack: TypeAlias = Playable | spotify.SpotifyTrack
+AnyTrackList: TypeAlias = list[Playable] | list[spotify.SpotifyTrack]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -46,7 +40,7 @@ class SkippableQueue(wavelink.Queue):
             except IndexError:
                 break
 
-    async def put_all_wait(self, item: AnyTrack_alias | list[AnyTrack_alias], requester: str | None = None) -> None:
+    async def put_all_wait(self, item: AnyTrack | AnyTrackList, requester: str | None = None) -> None:
         """Put anything in the queue, so long as it's "playable", and optionally indicate who queued it.
 
         This can include some playlist subclasses.
@@ -60,11 +54,11 @@ class SkippableQueue(wavelink.Queue):
         """
 
         if not isinstance(item, list):
-            item.requester = requester
+            item.requester = requester  # type: ignore # Dynamic variable.
             await self.put_wait(item)
         else:
             for sub_item in item:
-                sub_item.requester = requester
+                sub_item.requester = requester  # type: ignore # Dynamic variable.
                 await self.put_wait(sub_item)
 
 
@@ -77,20 +71,8 @@ class SkippablePlayer(wavelink.Player):
     ----------
     queue : :class:`SkippableQueue`
         A version of :class:`wavelink.Queue` that can be skipped into.
-    chan_ctx
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, *kwargs)
         self.queue: SkippableQueue = SkippableQueue()
-        self._chan_ctx: MessageableChannel | None = None
-
-    @property
-    def chan_ctx(self) -> MessageableChannel | None:
-        """:class:`MessageableChannel`: The channel with the command that created this player."""
-
-        return self._chan_ctx
-
-    @chan_ctx.setter
-    def chan_ctx(self, value: MessageableChannel) -> None:
-        self._chan_ctx = value

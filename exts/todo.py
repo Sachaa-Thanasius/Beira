@@ -7,7 +7,8 @@ from __future__ import annotations
 import datetime
 import logging
 import textwrap
-from typing import TYPE_CHECKING, Any, cast
+from abc import ABC, abstractmethod
+from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
 import asyncpg
 import discord
@@ -22,6 +23,10 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
 LOGGER = logging.getLogger(__name__)
+
+
+Connection_alias: TypeAlias = asyncpg.Connection[asyncpg.Record]
+Pool_alias: TypeAlias = asyncpg.Pool[asyncpg.Record]
 
 
 class TodoRecord(asyncpg.Record):
@@ -40,7 +45,7 @@ class TodoRecord(asyncpg.Record):
     def __getattr__(self, name: str) -> Any:
         return self[name]
 
-    async def update_completion(self, conn: asyncpg.Pool | asyncpg.Connection) -> Self | None:
+    async def update_completion(self, conn: Pool_alias | Connection_alias) -> Self | None:
         """Adds or removes a completion date from the record in the database, giving back the new version of the record.
 
         This function returns a new instance of the class.
@@ -55,7 +60,7 @@ class TodoRecord(asyncpg.Record):
         new_date = discord.utils.utcnow() if self.todo_completed_at is None else None
         return await conn.fetchrow(command, new_date, self.todo_id, record_class=type(self))
 
-    async def edit(self, conn: asyncpg.Pool | asyncpg.Connection, updated_content: str) -> Self | None:
+    async def edit(self, conn: Pool_alias | Connection_alias, updated_content: str) -> Self | None:
         """Changes the to-do content of the record, giving back the new version of the record.
 
         This function returns a new instance of the class.
@@ -71,7 +76,7 @@ class TodoRecord(asyncpg.Record):
         command = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
         return await conn.fetchrow(command, updated_content, self.todo_id, record_class=type(self))
 
-    async def delete(self, conn: asyncpg.Pool | asyncpg.Connection) -> None:
+    async def delete(self, conn: Pool_alias | Connection_alias) -> None:
         """Deletes the record from the database.
 
         Parameters
@@ -102,7 +107,7 @@ class TodoModal(ui.Modal):
         The interaction of the user with the modal. Only populates on submission.
     """
 
-    content = ui.TextInput(
+    content: ui.TextInput[Self] = ui.TextInput(
         label="To Do",
         style=discord.TextStyle.long,
         placeholder="Buy pancakes!",
@@ -123,7 +128,7 @@ class TodoModal(ui.Modal):
         self.stop()
 
 
-class TodoCompleteButton(ui.Button):
+class TodoCompleteButton(ui.Button["TodoViewABC"]):
     """A Discord button that marks to-do items in the parent view as (in)complete, and changes visually as a result.
 
     Interacts with kwargs for default styling on initialization.
@@ -135,6 +140,7 @@ class TodoCompleteButton(ui.Button):
     **kwargs
         Arbitrary keywords arguments primarily for :class:`ui.Button`. See that class for more information.
     """
+
     def __init__(self, completed_at: datetime.datetime | None = None, **kwargs: Any) -> None:
         # Default look based on the existence of a completion datetime.
         kwargs["style"] = discord.ButtonStyle.green if (completed_at is None) else discord.ButtonStyle.grey
@@ -145,12 +151,13 @@ class TodoCompleteButton(ui.Button):
         """Changes the button's look, and updates the parent view and its to-do item's completion status."""
 
         assert self.view is not None
+        assert self.view.todo_record is not None
 
         # Get a new version of the to-do item after adding a completion date.
         updated_todo_item = await self.view.todo_record.update_completion(interaction.client.db_pool)
 
         # Adjust the button based on the item.
-        if updated_todo_item["todo_completed_at"] is not None:
+        if updated_todo_item and (updated_todo_item["todo_completed_at"] is not None):
             self.label = "Mark as complete"
             self.style = discord.ButtonStyle.green
             completion_status = "complete"
@@ -164,7 +171,7 @@ class TodoCompleteButton(ui.Button):
         await interaction.followup.send(f"Todo task marked as {completion_status}!", ephemeral=True)
 
 
-class TodoEditButton(ui.Button):
+class TodoEditButton(ui.Button["TodoViewABC"]):
     """A Discord button sends modals for editing the content of the parent view's to-do item.
 
     Interacts with kwargs for default styling on initialization.
@@ -176,13 +183,14 @@ class TodoEditButton(ui.Button):
     """
 
     def __init__(self, **kwargs: Any) -> None:
-        kwargs.update(style=discord.ButtonStyle.grey, label="Edit")     # Default look.
+        kwargs.update(style=discord.ButtonStyle.grey, label="Edit")  # Default look.
         super().__init__(**kwargs)
 
     async def callback(self, interaction: core.Interaction) -> None:
         """Uses a modal to get the (edited) content for a to-do item, then updates the item and parent view."""
-        
+
         assert self.view is not None
+        assert self.view.todo_record is not None
 
         # Give the user a modal with a textbox filled with a to-do item's content for editing.
         modal = TodoModal(self.view.todo_record["todo_content"])
@@ -192,6 +200,8 @@ class TodoEditButton(ui.Button):
         if modal_timed_out or self.view.is_finished():
             return
 
+        assert modal.interaction is not None  # It's known at this point that the modal was submitted.
+
         # Adjust the view to have and display the updated to-do item, and let the user know it's updated.
         if self.view.todo_record["todo_content"] != modal.content.value:
             updated_todo_item = await self.view.todo_record.edit(interaction.client.db_pool, modal.content.value)
@@ -199,10 +209,10 @@ class TodoEditButton(ui.Button):
             if modal.interaction:
                 await modal.interaction.followup.send("Todo item edited.", ephemeral=True)
         elif modal.interaction:
-                await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)
+            await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)
 
 
-class TodoDeleteButton(ui.Button):
+class TodoDeleteButton(ui.Button["TodoViewABC"]):
     """A Discord button that allows users to delete a to-do item.
 
     Interacts with kwargs for default styling on initialization.
@@ -212,6 +222,7 @@ class TodoDeleteButton(ui.Button):
     **kwargs
         Arbitrary keywords arguments primarily for :class:`ui.Button`. See that class for more information.
     """
+
     def __init__(self, **kwargs: Any) -> None:
         kwargs.update(style=discord.ButtonStyle.red, label="Delete")
         super().__init__(**kwargs)
@@ -220,6 +231,7 @@ class TodoDeleteButton(ui.Button):
         """Deletes the to-do item, and updates the parent view accordingly."""
 
         assert self.view is not None
+        assert self.view.todo_record is not None
 
         updated_todo_item = await self.view.todo_record.delete(interaction.client.db_pool)
         await self.view.update_todo(interaction, updated_todo_item)
@@ -273,7 +285,20 @@ def generate_embed_from_todo_record(todo_record: TodoRecord | None, deleted: boo
     return todo_embed
 
 
-class TodoView(ui.View):
+class TodoViewABC(ui.View, ABC):
+    """An ABC view to define a common interface for to-do buttons.
+
+    (Not even sure if it works at the moment)
+    """
+
+    todo_record: TodoRecord | None
+
+    @abstractmethod
+    async def update_todo(self, interaction: core.Interaction, updated_record: TodoRecord | None = None) -> None:
+        ...
+
+
+class TodoView(TodoViewABC):
     """A Discord view for interacting with a single to-do item.
 
     Parameters
@@ -298,11 +323,11 @@ class TodoView(ui.View):
     """
 
     def __init__(
-            self,
-            *args: Any,
-            author: discord.User | discord.Member,
-            todo_record: TodoRecord,
-            **kwargs: Any,
+        self,
+        *args: Any,
+        author: discord.User | discord.Member,
+        todo_record: TodoRecord,
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
         self.message: discord.Message | None = None
@@ -316,7 +341,7 @@ class TodoView(ui.View):
         """Disables all buttons when the view times out."""
 
         for item in self.children:
-            item.disabled = True    # type: ignore
+            item.disabled = True  # type: ignore
 
         if self.message:
             await self.message.edit(view=self)
@@ -326,7 +351,7 @@ class TodoView(ui.View):
     async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
         """Ensures that the user interacting with the view was the one who instantiated it."""
 
-        check = (interaction.user is not None) and (self.author == interaction.user)
+        check = self.author == interaction.user
         if not check:
             await interaction.response.send_message("You cannot interact with this.", ephemeral=True)
         return check
@@ -349,12 +374,12 @@ class TodoView(ui.View):
         else:
             updated_embed = generate_embed_from_todo_record(self.todo_record, True)
             for item in self.children:
-                item.disabled = True    # type: ignore
+                item.disabled = True  # type: ignore
             await interaction.response.edit_message(embed=updated_embed, view=self)
             self.todo_record = updated_record
 
 
-class TodoListView(PaginatedEmbedView):
+class TodoListView(PaginatedEmbedView, TodoViewABC):
     """A Discord view for interacting with multiple to-do items with a pagination implementation.
 
     Copies some machinery from :class:`TodoView` to avoid multiple inheritance (diamond problem).
@@ -371,9 +396,13 @@ class TodoListView(PaginatedEmbedView):
         super().__init__(*args, **kwargs)
         self.current_page_content = self.todo_record = kwargs["all_pages_content"][0]
         self.remove_item(self.enter_page)
-        self.add_item(TodoCompleteButton(
-            self.todo_record["todo_completed_at"], row=1, custom_id="todo_view:complete_btn",
-        ))
+        self.add_item(
+            TodoCompleteButton(
+                self.todo_record["todo_completed_at"],
+                row=1,
+                custom_id="todo_view:complete_btn",
+            ),
+        )
         self.add_item(TodoEditButton(row=1, custom_id="todo_view:edit_btn"))
         self.add_item(TodoDeleteButton(row=1, custom_id="todo_view:delete_btn"))
 
@@ -456,12 +485,12 @@ class TodoCog(commands.Cog, name="Todo"):
 
         return discord.PartialEmoji(name="\N{SPIRAL NOTE PAD}")
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_group()
@@ -571,9 +600,10 @@ class TodoCog(commands.Cog, name="Todo"):
             return textwrap.shorten(f"{record.todo_id} - {record.todo_content}", width=100, placeholder="...")
 
         return [
-                   app_commands.Choice(name=shorten(record), value=record.todo_id)
-                   for record in records if current.lower() in str(record.todo_id).lower()
-               ][:25]
+            app_commands.Choice(name=shorten(record), value=record.todo_id)
+            for record in records
+            if current.lower() in str(record.todo_id).lower()
+        ][:25]
 
 
 async def setup(bot: core.Beira) -> None:

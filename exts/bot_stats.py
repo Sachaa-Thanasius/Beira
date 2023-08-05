@@ -54,12 +54,12 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("", exc_info=error)
 
     async def track_command_use(self, ctx: core.Context) -> None:
@@ -71,7 +71,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         user_info = [ctx.author]
         guild_info = [ctx.guild] if ctx.guild else []
 
-        for arg in (ctx.args + list(ctx.kwargs.values())):
+        for arg in ctx.args + list(ctx.kwargs.values()):
             if isinstance(arg, discord.User | discord.Member):
                 user_info.append(arg)
             elif isinstance(arg, discord.Guild):
@@ -116,9 +116,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """
 
         if (
-                interaction.command is not None and
-                interaction.type is discord.InteractionType.application_command and
-                not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
+            interaction.command is not None
+            and interaction.type is discord.InteractionType.application_command
+            and not isinstance(interaction.command, commands.hybrid.HybridAppCommand)
         ):
             ctx = await core.Context.from_interaction(interaction)
             ctx.command_failed = interaction.command_failed
@@ -159,9 +159,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
             ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
             ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
-            embed = StatsEmbed(color=0x193d2c, title="Commands Leaderboard", description="―――――――――――")
+            embed = StatsEmbed(color=0x193D2C, title="Commands Leaderboard", description="―――――――――――")
             assert embed.description is not None
-            
+
             if records:
                 record_tuples = tuple(
                     (user if (user := self.bot.get_user(record[0])) else record[0], record[1]) for record in records
@@ -173,16 +173,16 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             await ctx.reply(embed=embed)
 
     async def get_usage(
-            self,
-            time_period: int = 0,
-            command: str | None = None,
-            guild: discord.Guild | None = None,
-            universal: bool = False,
+        self,
+        time_period: int = 0,
+        command: str | None = None,
+        guild: discord.Guild | None = None,
+        universal: bool = False,
     ) -> list[Record]:
         """Queries the database for command usage."""
 
-        query_args = ()         # Holds the query args as objects.
-        where_params = []       # Holds the query params as formatted strings.
+        query_args = ()  # Holds the query args as objects.
+        where_params: list[str] = []  # Holds the query params as formatted strings.
 
         # Create the base queries.
         if guild:
@@ -236,10 +236,10 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         current = current.lower()
         return [
-                   Choice(name=command.qualified_name, value=command.qualified_name)
-                   for command in await help_command.filter_commands(self.bot.walk_commands(), sort=True)
-                   if current in command.qualified_name
-               ][:25]
+            Choice(name=command.qualified_name, value=command.qualified_name)
+            for command in await help_command.filter_commands(self.bot.walk_commands(), sort=True)
+            if current in command.qualified_name
+        ][:25]
 
 
 async def setup(bot: core.Beira) -> None:

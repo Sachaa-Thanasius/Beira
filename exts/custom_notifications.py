@@ -47,7 +47,11 @@ class CustomNotificationsCog(commands.Cog):
         self.aci_webhk_url: str = self.bot.config["discord"]["webhooks"][0]
         self.aci_delete_channel = 975459460560605204  # 799077440139034654 # Actual
         self.aci_levelled_roles: list[int] = [
-            694616299476877382, 694615984438509636, 694615108323639377, 694615102237835324, 747520979735019572,
+            694616299476877382,
+            694615984438509636,
+            694615108323639377,
+            694615102237835324,
+            747520979735019572,
         ]
         self.aci_mod_role: int = 780904973004570654
 
@@ -70,7 +74,6 @@ class CustomNotificationsCog(commands.Cog):
 
         # Check if the update is in the right server.
         if before.guild.id == self.aci_guild_id:
-
             # Check if someone got a new relevant leveled role.
             new_leveled_roles = [
                 role for role in after.roles if (role not in before.roles) and (role.id in self.aci_levelled_roles)
@@ -82,7 +85,7 @@ class CustomNotificationsCog(commands.Cog):
                 recently_rejoined = (discord.utils.utcnow() - after.joined_at).total_seconds() < (60 * 60 * 21)
             else:
                 recently_rejoined = False
-                
+
             if new_leveled_roles and not recently_rejoined:
                 # Send a message notifying holders of some other role(s) about this new role acquisition.
                 role_names = [role.name for role in new_leveled_roles]
@@ -99,7 +102,7 @@ class CustomNotificationsCog(commands.Cog):
     # @commands.Cog.listener("on_raw_message_delete")
     async def test_on_any_message_delete(self, payload: discord.RawMessageDeleteEvent) -> None:
         # TODO: Improve.
-        
+
         # Only check in ACI100 server.
         if payload.guild_id == self.aci_guild_id:
             LOGGER.info("In message delete listener:\n%s", payload)
@@ -109,19 +112,21 @@ class CustomNotificationsCog(commands.Cog):
                 GuildChannel | discord.Thread,
                 self.bot.get_channel(payload.channel_id) or self.bot.fetch_channel(payload.channel_id),
             )
-            
+
             message = payload.cached_message
             if not message and not isinstance(channel, ForumChannel | CategoryChannel):
                 message = await channel.fetch_message(payload.message_id)
 
             assert message is not None
             # Create a Discord log message.
-            extra = []
+            extra: list[str] = []
             embed = (
                 discord.Embed(
                     colour=discord.Colour.dark_green(),
-                    description=f"**Message sent by {message.author.mention} - Deleted in <#{payload.channel_id}>**"
-                                f"\n{message.content}",
+                    description=(
+                        f"**Message sent by {message.author.mention} - Deleted in <#{payload.channel_id}>**"
+                        f"\n{message.content}"
+                    ),
                     timestamp=discord.utils.utcnow(),
                 )
                 .set_author(name=str(message.author), icon_url=message.author.display_avatar.url)
@@ -141,7 +146,7 @@ class CustomNotificationsCog(commands.Cog):
                 extra.extend(att.url for att in message.attachments)
 
             # Send the log message(s).
-            delete_log_channel: discord.TextChannel = self.bot.get_channel(self.aci_delete_channel)     # type: ignore
+            delete_log_channel: discord.TextChannel = self.bot.get_channel(self.aci_delete_channel)  # type: ignore
             await delete_log_channel.send(embed=embed)
             if extra:
                 content = "\n".join(extra)

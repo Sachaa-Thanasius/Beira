@@ -21,6 +21,7 @@ import core
 
 if TYPE_CHECKING:
     from asyncpg import Record
+    from typing_extensions import Self
 
 
 LOGGER = logging.getLogger(__name__)
@@ -31,7 +32,7 @@ CAMPAIGN_BASE = "https://www.patreon.com/api/oauth2/v2/campaigns"
 class PatreonTierSelectView(discord.ui.View):
     """A view that displays Patreon tiers and benefits as pages."""
 
-    def __init__(self, tiers: list[dict], **kwargs: Any) -> None:
+    def __init__(self, tiers: list[dict[str, Any]], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.tiers = tiers
         self._set_select_options()
@@ -41,8 +42,8 @@ class PatreonTierSelectView(discord.ui.View):
 
     async def on_timeout(self) -> None:
         for child in self.children:
-            child.disabled = True   # type: ignore
-        
+            child.disabled = True  # type: ignore
+
         if self.message:
             await self.message.edit(view=self)
 
@@ -63,8 +64,8 @@ class PatreonTierSelectView(discord.ui.View):
     def update_page_buttons(self) -> None:
         """Enables and disables tier-flipping buttons based on page count and position."""
 
-        self.show_previous_tier.disabled = (self.current_tier <= 0)
-        self.show_next_tier.disabled = (self.current_tier >= len(self.tiers) - 1)
+        self.show_previous_tier.disabled = self.current_tier <= 0
+        self.show_next_tier.disabled = self.current_tier >= len(self.tiers) - 1
 
     def get_starting_embed(self) -> discord.Embed:
         """Get the embed for the first page."""
@@ -80,7 +81,7 @@ class PatreonTierSelectView(discord.ui.View):
         if (temp := self.page_cache[self.current_tier]) is None:
             if self.current_tier != 0:
                 # Compile the benefit information.
-                benefits = [f"> • {tier['tier_info']}" for tier in self.tiers[self.current_tier:0:-1]]
+                benefits = [f"> • {tier['tier_info']}" for tier in self.tiers[self.current_tier : 0 : -1]]
                 descr = "__**Benefits**__\n" + "\n".join(benefits)
                 if "†" in descr:
                     descr += "\n\n† Provided they have been a patron at this tier for at least 3 months."
@@ -103,7 +104,7 @@ class PatreonTierSelectView(discord.ui.View):
         return embed
 
     @discord.ui.select(placeholder="Choose a Patreon tier...", min_values=1, max_values=1)
-    async def select_tier(self, interaction: discord.Interaction, select: discord.ui.Select) -> None:
+    async def select_tier(self, interaction: discord.Interaction, select: discord.ui.Select[Self]) -> None:
         """Dropdown that displays all the Patreon tiers and provides them as choices to navigate to."""
 
         await interaction.response.defer()
@@ -113,7 +114,7 @@ class PatreonTierSelectView(discord.ui.View):
         await interaction.edit_original_response(embed=embed, view=self)
 
     @discord.ui.button(label="<", disabled=True)
-    async def show_previous_tier(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def show_previous_tier(self, interaction: discord.Interaction, _: discord.ui.Button[Self]) -> None:
         """Button that displays the previous tier's information."""
 
         await interaction.response.defer()
@@ -123,7 +124,7 @@ class PatreonTierSelectView(discord.ui.View):
         await interaction.edit_original_response(embed=embed, view=self)
 
     @discord.ui.button(label=">")
-    async def show_next_tier(self, interaction: discord.Interaction, _: discord.ui.Button) -> None:
+    async def show_next_tier(self, interaction: discord.Interaction, _: discord.ui.Button[Self]) -> None:
         """Button that displays the next tier's information."""
 
         await interaction.response.defer()
@@ -173,18 +174,18 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         if self.get_current_discord_patrons.is_running():
             self.get_current_discord_patrons.stop()
 
-    async def cog_check(self, ctx: core.Context) -> bool:
+    async def cog_check(self, ctx: core.Context) -> bool:  # type: ignore # Narrowing, and async allowed.
         """Set up bot owner check as universal within the cog."""
 
         original = commands.is_owner().predicate
         return await original(ctx)
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
-        
+
         LOGGER.exception("Error in Patreon Cog", exc_info=error)
 
     async def _get_patreon_roles(self) -> None:
@@ -194,9 +195,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         records: list[Record] = await self.bot.db_pool.fetch(query)
 
         self.patreon_tiers_info = [dict(record) for record in records]
-        temp_guild = (
-            self.bot.get_guild(self.patreon_tiers_info[0]["discord_guild"]) or 
-            await self.bot.fetch_guild(self.patreon_tiers_info[0]["discord_guild"])
+        temp_guild = self.bot.get_guild(self.patreon_tiers_info[0]["discord_guild"]) or await self.bot.fetch_guild(
+            self.patreon_tiers_info[0]["discord_guild"],
         )
         for tier in self.patreon_tiers_info:
             tier["tier_role"] = temp_guild.get_role(tier["tier_role"])
@@ -231,7 +231,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
         patreon_guild = self.bot.get_guild(aci100_id)
         assert patreon_guild is not None
-        
+
         patron_roles = (role for role in patreon_guild.roles if "patrons" in role.name.lower())
         self.patrons_on_discord.update({role.name: role.members for role in patron_roles})
 
@@ -253,16 +253,17 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         # Get data from individual members of the campaign.
         cursor = ""
-        members = []
+        members: list[PatreonMember] = []
         LOGGER.info(f"Campaign: {campaigns['data'][0]}")
 
         while True:
             async with self.bot.web_session.get(
-                urljoin(CAMPAIGN_BASE,
-                        f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}"),
+                urljoin(
+                    CAMPAIGN_BASE,
+                    f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}",
+                ),
                 headers=headers,
             ) as resp:
-
                 # Print an error if it exists.
                 if not resp.ok:
                     text = await resp.text()
@@ -270,23 +271,25 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                     resp.raise_for_status()
 
                 # Get the user's data.
-                resp_json = await resp.json()
+                resp_json: dict[str, Any] = await resp.json()
                 LOGGER.info(f"Resp json: {resp_json}")
                 for member in resp_json["data"]:
                     user_id = member["relationships"]["user"]["data"]["id"]
                     LOGGER.info(f"User ID: {user_id}")
 
-                    user: dict = discord.utils.find(lambda u, uid=user_id: u["id"] == uid, resp_json["included"])
+                    user: dict[str, Any] = discord.utils.find(
+                        lambda u, uid=user_id: u["id"] == uid,
+                        resp_json["included"],
+                    )
                     LOGGER.info(f"User: {user}")
 
                     assert user is not None
 
                     # Check if they have any social media connected to their Patreon account, and
                     # if they have Discord specifically connected to their Patreon account.
-                    if (
-                            (socials := user["attributes"].get("social_connections")) is not None and
-                            (discord_info := socials["discord"]) is not None
-                    ):
+                    if (socials := user["attributes"].get("social_connections")) is not None and (
+                        discord_info := socials["discord"]
+                    ) is not None:
                         currently_entitled_tiers = member["relationships"]["currently_entitled_tiers"]
                         members.append(PatreonMember(user_id, int(discord_info["user_id"]), currently_entitled_tiers))
 

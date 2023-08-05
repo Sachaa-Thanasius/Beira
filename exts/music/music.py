@@ -43,7 +43,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
-    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:
+    async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         """Catch errors from commands inside this cog."""
 
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
@@ -91,9 +91,9 @@ class MusicCog(commands.Cog, name="Music"):
             new_track = await player.queue.get_wait()
             await player.play(new_track)
 
-            current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), new_track)
-            if player.chan_ctx:
-                await player.chan_ctx.send(embed=current_embed)
+            current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), new_track)
+            if player.channel:
+                await player.channel.send(embed=current_embed)
         else:
             await player.stop()
 
@@ -129,10 +129,10 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     async def play(
-            self,
-            ctx: core.GuildContext,
-            *,
-            search: app_commands.Transform[str, WavelinkSearchConverter],
+        self,
+        ctx: core.GuildContext,
+        *,
+        search: app_commands.Transform[str, WavelinkSearchConverter],
     ) -> None:
         """Play audio from a YouTube url or search term.
 
@@ -146,18 +146,17 @@ class MusicCog(commands.Cog, name="Music"):
 
         assert ctx.voice_client  # Ensured by this command's before_invoke.
         vc: SkippablePlayer = ctx.voice_client
-        vc.chan_ctx = ctx.channel
 
         async with ctx.typing():
-            await vc.queue.put_all_wait(search, ctx.author.mention)
-            notif_text = generate_tracks_add_notification(search)
+            await vc.queue.put_all_wait(search, ctx.author.mention)  # type: ignore # Idk
+            notif_text = generate_tracks_add_notification(search)  # type: ignore # Idk
             await ctx.send(notif_text)
 
             if not vc.is_playing():
                 first_track = vc.queue.get()
                 await vc.play(first_track)
 
-                embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), first_track)
+                embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), first_track)
                 await ctx.send(embed=embed)
 
     @music.command()
@@ -195,7 +194,7 @@ class MusicCog(commands.Cog, name="Music"):
         assert ctx.voice_client  # Ensured by the in_bot_vc() check.
         vc = ctx.voice_client
 
-        await vc.disconnect()
+        await vc.disconnect()  # type: ignore # Incomplete wavelink typing
         await ctx.send("Disconnected from voice channel.")
 
     @music.command()
@@ -205,10 +204,12 @@ class MusicCog(commands.Cog, name="Music"):
         vc: SkippablePlayer | None = ctx.voice_client
 
         if vc and vc.current:
-            current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
+            current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), vc.current)
         else:
             current_embed = discord.Embed(
-                color=0x149cdf, title="Now Playing", description="Nothing is playing currently.",
+                color=0x149CDF,
+                title="Now Playing",
+                description="Nothing is playing currently.",
             )
 
         await ctx.send(embed=current_embed)
@@ -222,10 +223,10 @@ class MusicCog(commands.Cog, name="Music"):
 
         vc: SkippablePlayer | None = ctx.voice_client
 
-        queue_embeds = []
+        queue_embeds: list[discord.Embed] = []
         if vc:
             if vc.current:
-                current_embed = await format_track_embed(discord.Embed(color=0x149cdf, title="Now Playing"), vc.current)
+                current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), vc.current)
                 queue_embeds.append(current_embed)
 
             view = MusicQueueView(author=ctx.author, all_pages_content=[track.title for track in vc.queue], per_page=10)
@@ -381,9 +382,10 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc.current:
             if vc.current.is_seekable:
-                pos_time = int(sum(
-                    x * float(t) for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")), strict=False)
-                ) * 1000)
+                pos_time = int(
+                    sum(x * float(t) for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")), strict=False))
+                    * 1000,
+                )
                 if pos_time > vc.current.duration or pos_time < 0:
                     await ctx.send("Invalid position to seek.")
                 else:

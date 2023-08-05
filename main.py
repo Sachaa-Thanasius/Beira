@@ -13,9 +13,10 @@ async def main() -> None:
 
     # Initialize a connection to a PostgreSQL database, an asynchronous web session, and a custom logger setup.
     async with aiohttp.ClientSession() as web_session, asyncpg.create_pool(
-            dsn=core.CONFIG["db"]["postgres_url"], command_timeout=30, init=pool_init,
+        dsn=core.CONFIG["db"]["postgres_url"],
+        command_timeout=30,
+        init=pool_init,
     ) as pool, CustomLogger() as _:
-        
         # Set the bot's basic starting parameters.
         intents = discord.Intents.default()
         intents.members = True
@@ -25,11 +26,11 @@ async def main() -> None:
 
         # Initialize and start the bot.
         async with core.Beira(
-                command_prefix=default_prefix,
-                intents=intents,
-                owner_id=owner_id,
-                db_pool=pool,
-                web_session=web_session,
+            command_prefix=default_prefix,
+            intents=intents,
+            owner_id=owner_id,
+            db_pool=pool,
+            web_session=web_session,
         ) as bot:
             await bot.start(core.CONFIG["discord"]["token"])
 

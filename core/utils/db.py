@@ -5,25 +5,28 @@ db.py: Utility functions for interacting with the database.
 from __future__ import annotations
 
 import json
-from typing import TYPE_CHECKING
+from typing import TypeAlias
 
 import discord
-
-
-if TYPE_CHECKING:
-    from asyncpg import Connection, Pool
+from asyncpg import Connection, Pool, Record
 
 
 __all__ = ("pool_init", "upsert_users", "upsert_guilds")
 
+Connection_alias: TypeAlias = Connection[Record]
+Pool_alias: TypeAlias = Pool[Record]
 
-async def pool_init(connection: Connection) -> None:
+
+async def pool_init(connection: Connection_alias) -> None:
     """Sets up codecs for Postgres connection."""
 
     await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
 
 
-async def upsert_users(conn: Pool | Connection, *users: discord.abc.User | discord.Object | tuple) -> None:
+async def upsert_users(
+    conn: Pool_alias | Connection_alias,
+    *users: discord.abc.User | discord.Object | tuple[int, bool],
+) -> None:
     """Upsert a Discord user in the appropriate database table.
 
     Parameters
@@ -47,7 +50,10 @@ async def upsert_users(conn: Pool | Connection, *users: discord.abc.User | disco
     await conn.executemany(upsert_query, values, timeout=60.0)
 
 
-async def upsert_guilds(conn: Pool | Connection, *guilds: discord.Guild | discord.Object | tuple) -> None:
+async def upsert_guilds(
+    conn: Pool_alias | Connection_alias,
+    *guilds: discord.Guild | discord.Object | tuple[int, bool],
+) -> None:
     """Upsert a Discord guild in the appropriate database table.
 
     Parameters

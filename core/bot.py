@@ -43,22 +43,22 @@ class Beira(commands.Bot):
     """
 
     def __init__(
-            self,
-            *args: Any,
-            db_pool: asyncpg.Pool,
-            web_session: aiohttp.ClientSession,
-            initial_extensions: list[str] | None = None,
-            **kwargs: Any,
+        self,
+        *args: Any,
+        db_pool: asyncpg.Pool[asyncpg.Record],
+        web_session: aiohttp.ClientSession,
+        initial_extensions: list[str] | None = None,
+        **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.db_pool = db_pool
-        self.web_session = web_session
-        self.initial_extensions = initial_extensions or []
-        self._config = CONFIG
-        
+        self.db_pool: asyncpg.Pool[asyncpg.Record] = db_pool
+        self.web_session: aiohttp.ClientSession = web_session
+        self.initial_extensions: list[str] = initial_extensions or []
+        self._config: dict[str, Any] = CONFIG
+
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}
-        self.blocked_entities_cache: dict[str, set] = {}
+        self.blocked_entities_cache: dict[str, set[int]] = {}
 
         # Things that are more convenient to retrieve when established here or filled after connecting to the Gateway.
         self.special_friends: dict[str, int] = {}
@@ -67,7 +67,7 @@ class Beira(commands.Bot):
         self.add_check(is_blocked().predicate)
 
     @property
-    def config(self) -> dict:
+    def config(self) -> dict[str, Any]:
         """dict: All configuration information from the config.json file."""
 
         return self._config
@@ -76,7 +76,7 @@ class Beira(commands.Bot):
         """Display that the bot is ready."""
 
         assert self.user
-        LOGGER.info(f'Logged in as {self.user} (ID: {self.user.id})')
+        LOGGER.info(f"Logged in as {self.user} (ID: {self.user.id})")
 
     async def setup_hook(self) -> None:
         """Loads variables from the database and local files before the bot connects to the Discord Gateway."""
@@ -93,14 +93,15 @@ class Beira(commands.Bot):
         return self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
 
     async def get_context(
-            self,
-            origin: discord.Message | discord.Interaction,
-            /,
-            *,
-            cls: type[Context] = Context,
+        self,
+        origin: discord.Message | discord.Interaction,
+        /,
+        *,
+        cls: type[commands.Context[commands.Bot]] | None = None,
     ) -> Context:
-        return await super().get_context(origin, cls=cls)
-    
+        # Figure out if there's a way to type-hint this better to allow cls to actually work.
+        return await super().get_context(origin, cls=Context)
+
     async def _load_blocked_entities(self) -> None:
         """Load all blocked users and guilds from the bot database."""
 
