@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple, TypeAlias
+from typing import TYPE_CHECKING, NamedTuple
 
 import asyncpg
 import discord
@@ -9,6 +9,7 @@ from discord.ext import commands
 
 import core
 from core.utils import upsert_guilds, upsert_users
+from core.utils.db import Connection_alias, Pool_alias
 
 
 if TYPE_CHECKING:
@@ -24,9 +25,6 @@ __all__ = (
     "transfer_cooldown",
     "steal_cooldown",
 )
-
-Connection_alias: TypeAlias = asyncpg.Connection[asyncpg.Record]
-Pool_alias: TypeAlias = asyncpg.Pool[asyncpg.Record]
 
 
 class UserSnowballUpdate(NamedTuple):

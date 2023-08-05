@@ -158,7 +158,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
             channel_to_check = channel or ctx.channel
             try:
                 # Guarded by exception handling.
-                all_pins: list[discord.Message] = await getattr(channel_to_check, "pins")()
+                all_pins: list[discord.Message] = await getattr(channel_to_check, "pins")()  # noqa: B009
             except AttributeError:
                 await ctx.send("The channel doesn't support pins.")
             except (discord.Forbidden, discord.HTTPException) as err:

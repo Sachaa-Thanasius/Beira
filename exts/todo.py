@@ -8,7 +8,7 @@ import datetime
 import logging
 import textwrap
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import asyncpg
 import discord
@@ -17,16 +17,13 @@ from discord.ext import commands
 
 import core
 from core.utils import PaginatedEmbedView
+from core.utils.db import Connection_alias, Pool_alias
 
 
 if TYPE_CHECKING:
     from typing_extensions import Self
 
 LOGGER = logging.getLogger(__name__)
-
-
-Connection_alias: TypeAlias = asyncpg.Connection[asyncpg.Record]
-Pool_alias: TypeAlias = asyncpg.Pool[asyncpg.Record]
 
 
 class TodoRecord(asyncpg.Record):

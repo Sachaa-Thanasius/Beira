@@ -5,16 +5,20 @@ db.py: Utility functions for interacting with the database.
 from __future__ import annotations
 
 import json
-from typing import TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 import discord
 from asyncpg import Connection, Pool, Record
 
 
-__all__ = ("pool_init", "upsert_users", "upsert_guilds")
+if TYPE_CHECKING:
+    Connection_alias: TypeAlias = Connection[Record]
+    Pool_alias: TypeAlias = Pool[Record]
+else:
+    Connection_alias: TypeAlias = Connection
+    Pool_alias: TypeAlias = Pool
 
-Connection_alias: TypeAlias = Connection[Record]
-Pool_alias: TypeAlias = Pool[Record]
+__all__ = ("pool_init", "upsert_users", "upsert_guilds")
 
 
 async def pool_init(connection: Connection_alias) -> None:

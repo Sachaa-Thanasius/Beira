@@ -133,7 +133,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             and message.embeds
             and (embed := message.embeds[0])
             and embed.description is not None
-            and "fanfiction not found" in embed.description.lower()
+            and "fanfiction not found" in embed.description.lower(),
         )
         if fanfic_finder_message_condition:
             await message.delete()
