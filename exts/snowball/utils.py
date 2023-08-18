@@ -8,8 +8,7 @@ from discord import ui
 from discord.ext import commands
 
 import core
-from core.utils import upsert_guilds, upsert_users
-from core.utils.db import Connection_alias, Pool_alias
+from core.utils.db import Connection_alias, Pool_alias, upsert_guilds, upsert_users
 
 
 if TYPE_CHECKING:

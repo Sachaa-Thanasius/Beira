@@ -4,7 +4,9 @@ utils.py: A bunch of utility functions and classes for Wavelink.
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterable
 from copy import deepcopy
+from datetime import timedelta
 from typing import Any
 
 import discord
@@ -17,7 +19,7 @@ from wavelink import Playable
 from wavelink.ext import spotify
 
 from core.utils import PaginatedEmbed, PaginatedEmbedView
-from core.wave import AnyTrack, AnyTrackList
+from core.wave import AnyTrack, AnyTrackIterable
 
 
 __all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
@@ -50,8 +52,8 @@ class MusicQueueView(PaginatedEmbedView):
         return embed_page
 
 
-class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackList], app_commands.Transformer):
-    """Converts to a what Wavelink considers a playable track (:class:`AnyPlayable`).
+class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], app_commands.Transformer):
+    """Converts to what Wavelink considers a playable track (:class:`AnyPlayable` or :class:`AnyTrackIterable`).
 
     The lookup strategy is as follows (in order):
 
@@ -89,11 +91,17 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackList], app_c
 
         return search_type
 
-    async def _convert(self, argument: str) -> AnyTrack | AnyTrackList:
+    async def _convert(self, argument: str) -> AnyTrack | AnyTrackIterable:
         """Attempt to convert a string into a Wavelink track or list of tracks."""
 
         search_type = self._get_search_type(argument)
-        tracks = await search_type.search(argument)
+        if issubclass(search_type, spotify.SpotifyTrack):
+            try:
+                tracks = (track async for track in search_type.iterator(query=argument))  # type: ignore # wl typing
+            except TypeError:
+                tracks = await search_type.search(argument)
+        else:
+            tracks = await search_type.search(argument)
 
         if not tracks:
             msg = f"Your search query `{argument}` returned no tracks."
@@ -105,13 +113,13 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackList], app_c
         return tracks
 
     # Who needs narrowing anyway?
-    async def convert(self, ctx: commands.Context[Any], argument: str) -> AnyTrack | AnyTrackList:
+    async def convert(self, ctx: commands.Context[Any], argument: str) -> AnyTrack | AnyTrackIterable:
         return await self._convert(argument)
 
-    async def transform(self, _: discord.Interaction, value: str, /) -> AnyTrack | AnyTrackList:
+    async def transform(self, _: discord.Interaction, value: str, /) -> AnyTrack | AnyTrackIterable:
         return await self._convert(value)
 
-    async def autocomplete(  # type: ignore Narrowing?
+    async def autocomplete(  # type: ignore Narrowing the types of the input value and return value, I guess.
         self,
         _: discord.Interaction,
         value: str,
@@ -124,11 +132,7 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackList], app_c
 async def format_track_embed(embed: discord.Embed, track: AnyTrack) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 
-    duration = track.duration // 1000
-    if duration > 3600:
-        end_time = f"{duration // 3600}:{(duration % 3600) // 60:02}:{duration % 60:02}"
-    else:
-        end_time = "{}:{:02}".format(*divmod(duration, 60))
+    end_time = str(timedelta(seconds=track.duration // 1000))
 
     if isinstance(track, Playable):
         embed.description = (
@@ -154,7 +158,7 @@ async def format_track_embed(embed: discord.Embed, track: AnyTrack) -> discord.E
     return embed
 
 
-def generate_tracks_add_notification(tracks: AnyTrack | list[AnyTrack]) -> str:
+async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterable) -> str:
     """Adds tracks to a queue even if they are contained in another object or structure.
 
     Also, it returns the appropriate notification string.
@@ -162,9 +166,11 @@ def generate_tracks_add_notification(tracks: AnyTrack | list[AnyTrack]) -> str:
 
     if isinstance(tracks, wavelink.YouTubePlaylist | wavelink.SoundCloudPlaylist):
         return f"Added {len(tracks.tracks)} tracks from the `{tracks.name}` playlist to the queue."
-    if isinstance(tracks, list) and len(tracks) > 1:
-        return f"Added `{len(tracks)}` tracks to the queue."
+    if isinstance(tracks, list) and (length := len(tracks)) > 1:
+        return f"Added `{length}` tracks to the queue."
     if isinstance(tracks, list):
         return f"Added `{tracks[0].title}` to the queue."
+    if isinstance(tracks, AsyncIterable):
+        return f"Added `{len([track async for track in tracks])}` tracks to the queue."
 
     return f"Added `{tracks.title}` to the queue."

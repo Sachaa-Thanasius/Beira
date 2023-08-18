@@ -76,7 +76,7 @@ def in_bot_vc() -> Check[Any]:
 
         if not (
             ctx.author.guild_permissions.administrator
-            or (vc and ctx.author.voice and ctx.author.voice.channel == vc.channel)
+            or (vc and ctx.author.voice and (ctx.author.voice.channel == vc.channel))
         ):
             msg = "You are not connected to the same voice channel as the bot."
             raise NotInBotVoiceChannel(msg)

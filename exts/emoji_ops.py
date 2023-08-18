@@ -127,28 +127,28 @@ class AddEmojisView(ui.View):
         assert isinstance(item, AddEmojiButton)
 
         if item.style == discord.ButtonStyle.secondary:
-            descr = "The emoji could not be added"
+            descr = "The emoji could not be added: "
             if isinstance(error, ValueError):
-                descr += ": This is not a custom emoji."
+                descr += "This is not a custom emoji."
             elif isinstance(error, NotFound):
-                descr += ": The asset for the emoji was deleted."
+                descr += "The asset for the emoji was deleted."
             elif isinstance(error, Forbidden):
-                descr += ": You are not allowed to create emojis."
+                descr += "You are not allowed to create emojis."
             elif isinstance(error, HTTPException):
-                descr += ": Downloading the asset failed or something else went wrong with the creation process."
+                descr += "Downloading the asset failed or something else went wrong with the creation process."
             elif isinstance(error, DiscordException):
-                descr += ": There was no internal connection state for the emoji."
+                descr += "There was no internal connection state for the emoji."
             else:
-                descr = ": An unknown error occurred."
+                descr = "An unknown error occurred."
                 LOGGER.exception("Unknown error in AddEmojiView when adding an emoji.", exc_info=error)
         else:
-            descr = "The emoji could not be deleted"
+            descr = "The emoji could not be deleted: "
             if isinstance(error, Forbidden):
-                descr += ": you are not allowed to delete emojis."
+                descr += "you are not allowed to delete emojis."
             elif isinstance(error, HTTPException):
-                descr += ": an error occurred."
+                descr += "an error occurred."
             else:
-                descr += ": an unknown error occurred."
+                descr += "an unknown error occurred."
                 LOGGER.exception("Unknown error in AddEmojiView when deleting an emoji.", exc_info=error)
 
         await interaction.response.send_message(descr)

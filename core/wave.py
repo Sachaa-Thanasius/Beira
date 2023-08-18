@@ -5,6 +5,7 @@ wave.py: Custom subclasses or extras related to wavelink.
 from __future__ import annotations
 
 import logging
+from collections.abc import AsyncIterable, Iterable
 from typing import Any, TypeAlias
 
 import wavelink
@@ -15,7 +16,7 @@ from wavelink.ext import spotify
 __all__ = ("SkippableQueue", "SkippablePlayer")
 
 AnyTrack: TypeAlias = Playable | spotify.SpotifyTrack
-AnyTrackList: TypeAlias = list[Playable] | list[spotify.SpotifyTrack]
+AnyTrackIterable: TypeAlias = list[Playable] | list[spotify.SpotifyTrack] | AsyncIterable[spotify.SpotifyTrack]
 
 LOGGER = logging.getLogger(__name__)
 
@@ -40,26 +41,30 @@ class SkippableQueue(wavelink.Queue):
             except IndexError:
                 break
 
-    async def put_all_wait(self, item: AnyTrack | AnyTrackList, requester: str | None = None) -> None:
+    async def put_all_wait(self, item: AnyTrack | AnyTrackIterable, requester: str | None = None) -> None:
         """Put anything in the queue, so long as it's "playable", and optionally indicate who queued it.
 
         This can include some playlist subclasses.
 
         Parameters
         ----------
-        item : :class:`AnyPlayable` | list[:class:`AnyPlayable`]
+        item : :class:`AnyPlayable` | :class:`AnyTrackIterable`
             The track or collection of tracks to add to the queue.
         requester : :class:`str`, optional
             A string representing the user who queued this up. Optional.
         """
 
-        if not isinstance(item, list):
-            item.requester = requester  # type: ignore # Dynamic variable.
-            await self.put_wait(item)
-        else:
+        if isinstance(item, Iterable):
             for sub_item in item:
                 sub_item.requester = requester  # type: ignore # Dynamic variable.
                 await self.put_wait(sub_item)
+        elif isinstance(item, AsyncIterable):
+            async for sub_item in item:
+                sub_item.requester = requester  # type: ignore # Dynamic variable.
+                await self.put_wait(sub_item)
+        else:
+            item.requester = requester  # type: ignore # Dynamic variable.
+            await self.put_wait(item)
 
 
 class SkippablePlayer(wavelink.Player):

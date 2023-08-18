@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Any, Literal
 
 import discord
 from discord.app_commands import Choice
@@ -24,14 +24,14 @@ if TYPE_CHECKING:
 LOGGER = logging.getLogger(__name__)
 
 
-class CommandStatsSearchConverter(commands.FlagConverter):
+class CommandStatsSearchFlags(commands.FlagConverter):
     """A Discord commands flag converter for queries related to command usage stats."""
 
     time_period: Literal["today", "last month", "last year", "all time"] = commands.flag(
         default="all time",
-        description="Whether to stay local or look among all guilds. Defaults to 'all time'.",
+        description="What time frame to search within. Defaults to 'all time'.",
     )
-    command: str | None = commands.flag(description="The command to look up. Optional.")
+    command: str | None = commands.flag(default=None, description="The command to look up. Optional.")
     guilds: bool = commands.flag(
         default=False,
         description="Whether to look at guilds instead of users. Defaults to False.",
@@ -138,14 +138,14 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         await upsert_guilds(self.bot.db_pool, guild)
 
     @commands.hybrid_command(name="usage")
-    async def check_usage(self, ctx: core.Context, *, search_factors: CommandStatsSearchConverter) -> None:
+    async def check_usage(self, ctx: core.Context, *, search_factors: CommandStatsSearchFlags) -> None:
         """Retrieve statistics about bot command usage.
 
         Parameters
         ----------
         ctx : :class:`core.Context`
             The invocation context.
-        search_factors : :class:`CommandStatsSearchConverter`
+        search_factors : :class:`CommandStatsSearchFlags`
             A flag converter for taking a few query specifications when searching for usage stats.
         """
 
@@ -163,9 +163,12 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             assert embed.description is not None
 
             if records:
-                record_tuples = tuple(
-                    (user if (user := self.bot.get_user(record[0])) else record[0], record[1]) for record in records
+                get_strat = self.bot.get_user if guild else self.bot.get_guild
+
+                record_tuples = (
+                    ((entity if (entity := get_strat(record[0])) else record[0]), record[1]) for record in records
                 )
+
                 embed.add_leaderboard_fields(ldbd_content=record_tuples, ldbd_emojis=ldbd_emojis)
             else:
                 embed.description += "\nNo records found."
@@ -181,48 +184,46 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
     ) -> list[Record]:
         """Queries the database for command usage."""
 
-        query_args = ()  # Holds the query args as objects.
-        where_params: list[str] = []  # Holds the query params as formatted strings.
+        query_args: list[Any] = []  # Holds the query args as objects.
+        where_params: list[str] = []  # Holds the query param placeholders as formatted strings.
 
         # Create the base queries.
         if guild:
             query = """
                 SELECT u.user_id, COUNT(*)
                 FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
+                {where}
                 GROUP BY u.user_id
                 ORDER BY COUNT(*) DESC
                 LIMIT 10;
             """
 
-            if universal:
-                query_args += (guild.id,)
-                where_params.append(f"guild_id = ${len(query_args)}")
-
         else:
             query = """
                 SELECT g.guild_id, COUNT(*)
                 FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
+                {where}
                 GROUP BY g.guild_id
                 ORDER BY COUNT(*) DESC
                 LIMIT 10;
             """
 
-        where_index = query.find("GROUP BY") - 1
+        # Create the WHERE clause for the query.
+        if guild and not universal:
+            query_args.append(guild.id)
+            where_params.append(f"guild_id = ${len(query_args)}")
 
-        # Modify the queries further.
-        if time_period or command:
-            if time_period > 0:
-                query_args += (utcnow() - timedelta(days=time_period),)
-                where_params.append(f"date_time >= ${len(query_args)}")
+        if time_period and (time_period > 0):
+            query_args.append(utcnow() - timedelta(days=time_period))
+            where_params.append(f"date_time >= ${len(query_args)}")
 
-            if command:
-                query_args += (command,)
-                where_params.append(f"command = ${len(query_args)}")
+        if command:
+            query_args.append(command)
+            where_params.append(f"command = ${len(query_args)}")
 
-        # Reassemble the query if there was user input.
-        if len(query_args) > 0:
-            query = query[:where_index] + " WHERE " + " AND ".join(where_params) + query[where_index:]
-
+        # Add the WHERE clause to the query if necessary.
+        where_clause = ("WHERE " + " AND ".join(where_params) + "\n") if len(query_args) > 0 else ""
+        query = query.format(where=where_clause)
         return await self.bot.db_pool.fetch(query, *query_args)
 
     @check_usage.autocomplete("command")

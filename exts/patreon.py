@@ -302,7 +302,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                 total = pagination_info["total"]
                 LOGGER.info(f"{total=}")
 
-        not_ok_members = []
+        not_ok_members: list[str] = []
         for discord_id in self.patrons_on_discord:
             member = discord.utils.get(members, discord_id=discord_id)
             if member is None:

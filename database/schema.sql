@@ -76,7 +76,7 @@ CREATE TABLE IF NOT EXISTS snowball_stats (
     hits        INT     NOT NULL                    DEFAULT 0           CHECK(hits >= 0),
     misses      INT     NOT NULL                    DEFAULT 0           CHECK(misses >= 0),
     kos         INT     NOT NULL                    DEFAULT 0           CHECK(kos >= 0),
-    stock       INT     NOT NULL                    DEFAULT 0           CHECK(stock >= 0 AND stock <= 100),
+    stock       INT     NOT NULL                    DEFAULT 0           CHECK(stock >= 0),
     FOREIGN KEY (guild_id, user_id) REFERENCES members(guild_id, user_id) ON UPDATE CASCADE ON DELETE CASCADE,
     PRIMARY KEY(user_id, guild_id)
 );

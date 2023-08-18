@@ -18,17 +18,14 @@ async def main() -> None:
         init=pool_init,
     ) as pool, CustomLogger() as _:
         # Set the bot's basic starting parameters.
-        intents = discord.Intents.default()
-        intents.members = True
-        intents.message_content = True
+        intents = discord.Intents.all()
+        intents.presences = False
         default_prefix: str = core.CONFIG["discord"]["default_prefix"]
-        owner_id: int = core.CONFIG["discord"]["owner_id"]
 
         # Initialize and start the bot.
         async with core.Beira(
             command_prefix=default_prefix,
             intents=intents,
-            owner_id=owner_id,
             db_pool=pool,
             web_session=web_session,
         ) as bot:

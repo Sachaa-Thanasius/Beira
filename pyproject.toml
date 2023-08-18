@@ -48,6 +48,7 @@ lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
+include = ["core", "ext"]
 reportMissingTypeStubs = "none"
 pythonVersion = "3.10"
 typeCheckingMode = "strict"

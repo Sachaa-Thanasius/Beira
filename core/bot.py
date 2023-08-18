@@ -5,13 +5,14 @@ bot.py: The main bot code.
 from __future__ import annotations
 
 import logging
+import random
 import time
 from typing import Any
 
 import aiohttp
 import asyncpg
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from exts import EXTENSIONS
 
@@ -66,6 +67,9 @@ class Beira(commands.Bot):
         # Add a global check for blocked members.
         self.add_check(is_blocked().predicate)
 
+        # Start a looped background task.
+        self.set_custom_presence.start()
+
     @property
     def config(self) -> dict[str, Any]:
         """dict: All configuration information from the config.json file."""
@@ -84,6 +88,8 @@ class Beira(commands.Bot):
         await self._load_guild_prefixes()
         await self._load_blocked_entities()
         await self._load_extensions()
+        self.app_info = await self.application_info()
+        self.owner_id = self.app_info.owner.id
         self.loop.create_task(self._load_special_friends())
 
     async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
@@ -101,6 +107,16 @@ class Beira(commands.Bot):
     ) -> Context:
         # Figure out if there's a way to type-hint this better to allow cls to actually work.
         return await super().get_context(origin, cls=Context)
+
+    async def close(self) -> None:
+        self.set_custom_presence.cancel()
+        await super().close()
+
+    @property
+    def owner(self) -> discord.User:
+        """:class:`discord.User`: The user that owns the bot."""
+
+        return self.app_info.owner
 
     async def _load_blocked_entities(self) -> None:
         """Load all blocked users and guilds from the bot database."""
@@ -149,7 +165,7 @@ class Beira(commands.Bot):
                 end_time = time.perf_counter()
                 LOGGER.info(f"Loaded extension: {extension} -- Time: {end_time - start_time:.5}")
             except commands.ExtensionError as err:
-                LOGGER.exception(f"Failed to load extension: {extension}\n\n{err}")
+                LOGGER.exception(f"Failed to load extension: {extension}", exc_info=err)
 
     async def _load_special_friends(self) -> None:
         await self.wait_until_ready()
@@ -158,6 +174,20 @@ class Beira(commands.Bot):
         for user_id in friends_ids:
             if user_obj := self.get_user(user_id):
                 self.special_friends[user_obj.name] = user_id
+
+    @tasks.loop(minutes=5)
+    async def set_custom_presence(self) -> None:
+        """A looping task that changes the custom presence text of the bot every 5 minutes."""
+
+        normal_text = ("Dreaming of", "Sifting through", "Digging up", "Chronicling")
+        eldritch_text = "s̷͙̗̻̳̲͓͉̲̖̺̠̯̲̉̈́̊͋͌̈̓̔̇́́̾̒͜ͅt̷̼͇̬̜̉̽͠a̸̧͈̼̎̐̿̈̀́̐̅r̴̦̯̹̱̅͐̐̏͒̍l̷͔̣͕̫̘̀̓̕̚e̴̢̢̦͙̬̫͎̤̤̘͒̈́̎̂̔̎̀́̈́̆́̓͋͝s̵̫̱̮̺̐̆̏̐͂̎̂̑̎̏̍̚͜s̷̢̫͈̯̟͉̖̲̖̘̟̓̾̿̒͊̒͋́̀͒ ̸̨̦̮̳̎̾͜m̸̖̰̦̪͕͔͇̲̞̅̈͛̀̑͊́͛̏̽̅̏́͜e̶̹̯̺̮̯̒̑̈́̑̈̍͒̃͗͘͝m̸͍̋̉̃͆o̶̗͚͗͑̈́̿͛̎͛͗́͗̉̈́r̵̛̮̖̣̦̎̐͒͒ḭ̶̩̲̘͔̮͆͝ẽ̷͓̟̳̳̬͗́̍̓͋̐̐́s̴͖̯̠͔͓̑̓"
+
+        activity = discord.CustomActivity(name=f"{random.choice(normal_text)} {eldritch_text}")
+        await self.change_presence(activity=activity)
+
+    @set_custom_presence.before_loop
+    async def set_custom_presence_before(self) -> None:
+        await self.wait_until_ready()
 
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of

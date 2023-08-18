@@ -116,9 +116,9 @@ class TodoModal(ui.Modal):
         super().__init__(title="What do you want to do?")
         if existing_content:
             self.content.default = existing_content
-        self.interaction: core.Interaction | None = None
+        self.interaction: discord.Interaction | None = None
 
-    async def on_submit(self, interaction: core.Interaction, /) -> None:
+    async def on_submit(self, interaction: discord.Interaction, /) -> None:
         """Saves the interaction for a later response."""
 
         self.interaction = interaction

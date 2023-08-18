@@ -15,7 +15,7 @@ from urllib.parse import quote, urljoin
 import aiohttp
 import discord
 import lxml.html as lh
-from arsenic import browsers, errors, get_session, services
+from arsenic import browsers, errors, get_session, services  # type: ignore # Third-party lib typing.
 from discord.ext import commands
 
 import core
@@ -50,7 +50,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 
         async with get_session(service, browser) as session:
             for url in urls:
-                await session.get(url)
+                await session.get(url)  # type: ignore # Third-party lib typing.
                 try:
                     update_button = await session.wait_for_element(10, "button[class*=eapd0am1]")
                 except (errors.ArsenicTimeout, errors.NoSuchWindow, errors.NoSuchElement):
@@ -257,7 +257,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
                 content = await response.text()
 
             # Parse the summoner information for winrate and tier (referred to later as rank).
-            tree = lh.fromstring(content)
+            tree = lh.fromstring(content)  # type: ignore # Third-party lib typing.
             winrate = "".join(tree.xpath("//div[@class='ratio']/text()")).removeprefix("Win Rate ")
             rank = "".join(tree.xpath("//div[@class='tier']/text()")).capitalize()
             if not (winrate and rank):
