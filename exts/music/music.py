@@ -15,7 +15,7 @@ from discord.ext import commands
 from wavelink.ext import spotify
 
 import core
-from core.wave import SkippablePlayer
+from core.wave import AnyTrack, AnyTrackIterable, SkippablePlayer
 
 from .utils import MusicQueueView, WavelinkSearchConverter, format_track_embed, generate_tracks_add_notification
 
@@ -69,7 +69,10 @@ class MusicCog(commands.Cog, name="Music"):
 
     @commands.Cog.listener()
     async def on_wavelink_node_ready(self, node: wavelink.Node) -> None:
-        """Called when the Node you are connecting to has initialised and successfully connected to Lavalink."""
+        """Called when the Node you are connecting to has initialised and successfully connected to Lavalink.
+
+        Note: If this cog is reloaded, this will not trigger. Duh.
+        """
 
         LOGGER.info("Wavelink node %s is ready!", node.id)
 
@@ -85,17 +88,23 @@ class MusicCog(commands.Cog, name="Music"):
         """Called when the current track has finished playing."""
 
         player = payload.player
-        assert isinstance(player, SkippablePlayer)  # Known due to personal bot setup.
 
-        if player.is_connected() and not player.queue.is_empty:
-            new_track = await player.queue.get_wait()
-            await player.play(new_track)
-
-            current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), new_track)
-            if player.channel:
-                await player.channel.send(embed=current_embed)
+        if player.is_connected():
+            if player.queue.loop or player.queue.loop_all:
+                next_track = player.queue.get()
+            else:
+                next_track = await player.queue.get_wait()
+            await player.play(next_track)
         else:
             await player.stop()
+
+    @commands.Cog.listener()
+    async def on_wavelink_track_start(self, payload: wavelink.TrackEventPayload) -> None:
+        # Send a notification of the song now playing.
+        if original := payload.original:
+            current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), original)
+            if payload.player.channel:
+                await payload.player.channel.send(embed=current_embed)
 
     @commands.hybrid_group()
     @commands.guild_only()
@@ -132,7 +141,7 @@ class MusicCog(commands.Cog, name="Music"):
         self,
         ctx: core.GuildContext,
         *,
-        search: app_commands.Transform[str, WavelinkSearchConverter],
+        search: app_commands.Transform[AnyTrack | AnyTrackIterable, WavelinkSearchConverter],
     ) -> None:
         """Play audio from a YouTube url or search term.
 
@@ -148,16 +157,13 @@ class MusicCog(commands.Cog, name="Music"):
         vc: SkippablePlayer = ctx.voice_client
 
         async with ctx.typing():
-            await vc.queue.put_all_wait(search, ctx.author.mention)  # type: ignore # Idk
-            notif_text = await generate_tracks_add_notification(search)  # type: ignore # Idk
+            await vc.queue.put_all_wait(search, ctx.author.mention)
+            notif_text = await generate_tracks_add_notification(search)
             await ctx.send(notif_text)
 
             if not vc.is_playing():
                 first_track = vc.queue.get()
                 await vc.play(first_track)
-
-                embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), first_track)
-                await ctx.send(embed=embed)
 
     @music.command()
     @core.in_bot_vc()

@@ -4,7 +4,6 @@ utils.py: A bunch of utility functions and classes for Wavelink.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterable
 from copy import deepcopy
 from datetime import timedelta
 from typing import Any
@@ -97,7 +96,7 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], a
         search_type = self._get_search_type(argument)
         if issubclass(search_type, spotify.SpotifyTrack):
             try:
-                tracks = (track async for track in search_type.iterator(query=argument))  # type: ignore # wl typing
+                tracks = search_type.iterator(query=argument)
             except TypeError:
                 tracks = await search_type.search(argument)
         else:
@@ -107,7 +106,8 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], a
             msg = f"Your search query `{argument}` returned no tracks."
             raise wavelink.NoTracksError(msg)
 
-        if issubclass(search_type, Playable) and isinstance(tracks, list):  # type: ignore # Feels necessary?
+        # Still technically possible for tracks to be a Playlist subclass now.
+        if issubclass(search_type, Playable) and isinstance(tracks, list):
             tracks = tracks[0]
 
         return tracks
@@ -119,7 +119,7 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], a
     async def transform(self, _: discord.Interaction, value: str, /) -> AnyTrack | AnyTrackIterable:
         return await self._convert(value)
 
-    async def autocomplete(  # type: ignore Narrowing the types of the input value and return value, I guess.
+    async def autocomplete(  # type: ignore # Narrowing the types of the input value and return value, I guess.
         self,
         _: discord.Interaction,
         value: str,
@@ -132,21 +132,22 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], a
 async def format_track_embed(embed: discord.Embed, track: AnyTrack) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 
-    end_time = str(timedelta(seconds=track.duration // 1000))
+    description_template = "[{0}]({1})\n{2}\n`[0:00-{3}]`"
 
-    if isinstance(track, Playable):
-        embed.description = (
-            f"[{escape_markdown(track.title, as_needed=True)}]({track.uri})\n"
-            f"{escape_markdown(track.author or '', as_needed=True)}\n"
-        )
+    try:
+        end_time = timedelta(seconds=track.duration // 1000)
+    except OverflowError:
+        end_time = "\N{INFINITY}"
+
+    if isinstance(track, wavelink.Playable):
+        uri = track.uri or ""
+        author = escape_markdown(track.author or "")
     else:
-        embed.description = (
-            f"[{escape_markdown(track.title, as_needed=True)}]"
-            f"(https://open.spotify.com/track/{track.uri.rpartition(':')[2]})\n"
-            f"{escape_markdown(', '.join(track.artists), as_needed=True)}\n"
-        )
+        uri = f"https://open.spotify.com/track/{track.uri.rpartition(':')[2]}"
+        author = escape_markdown(", ".join(track.artists))
 
-    embed.description = (embed.description or "") + f"`[0:00-{end_time}]`"
+    title = escape_markdown(track.title)
+    embed.description = description_template.format(title, uri, author, end_time)
 
     if requester := getattr(track, "requester", None):
         embed.description += f"\n\nRequested by: {requester}"
@@ -170,7 +171,7 @@ async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterable) 
         return f"Added `{length}` tracks to the queue."
     if isinstance(tracks, list):
         return f"Added `{tracks[0].title}` to the queue."
-    if isinstance(tracks, AsyncIterable):
-        return f"Added `{len([track async for track in tracks])}` tracks to the queue."
+    if isinstance(tracks, spotify.SpotifyAsyncIterator):
+        return f"Added `{tracks._count}` tracks to the queue."  # type: ignore # This avoids iterating through it again.
 
     return f"Added `{tracks.title}` to the queue."

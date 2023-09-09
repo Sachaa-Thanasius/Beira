@@ -19,7 +19,42 @@ target-version = ["py310"]
 # Credit to @mikeshardmind for this setup.
 line-length = 120
 target-version = "py310"
-select = ["F", "E", "I", "UP", "YTT", "ANN", "S", "BLE", "B", "A", "COM", "C4", "DTZ", "EM", "ISC", "G", "INP", "PIE", "T20", "Q003", "RSE", "RET", "SIM", "TID", "PTH", "ERA", "PD", "PLC", "PLE", "PLR", "PLW", "TRY", "NPY", "RUF"]
+select = [
+    "F",
+    "E",
+    "I",
+    "UP",
+    "YTT",
+    "ANN",
+    "S",
+    "BLE",
+    "B",
+    "A",
+    "COM",
+    "C4",
+    "DTZ",
+    "EM",
+    "ISC",
+    "G",
+    "INP",
+    "PIE",
+    "T20",
+    "Q003",
+    "RSE",
+    "RET",
+    "SIM",
+    "TID",
+    "PTH",
+    "ERA",
+    "PD",
+    "PLC",
+    "PLE",
+    "PLR",
+    "PLW",
+    "TRY",
+    "NPY",
+    "RUF",
+]
 ignore = [
     "G002",    # Erroneous issue with %-logging when logging can be configured for % logging.
     "S101",    # Use of assert here is a known quantity. Blame typing memes.

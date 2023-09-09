@@ -5,25 +5,19 @@ wave.py: Custom subclasses or extras related to wavelink.
 from __future__ import annotations
 
 import logging
-from collections.abc import AsyncIterable, Iterable
-from typing import Any, TypeAlias
+from collections.abc import AsyncIterator, Iterable
+from typing import Any, TypeAlias, cast
 
 import wavelink
-from wavelink import Playable
 from wavelink.ext import spotify
 
 
 __all__ = ("SkippableQueue", "SkippablePlayer")
 
-AnyTrack: TypeAlias = Playable | spotify.SpotifyTrack
-AnyTrackIterable: TypeAlias = list[Playable] | list[spotify.SpotifyTrack] | AsyncIterable[spotify.SpotifyTrack]
+AnyTrack: TypeAlias = wavelink.Playable | spotify.SpotifyTrack
+AnyTrackIterable: TypeAlias = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
 
 LOGGER = logging.getLogger(__name__)
-
-# TODO:
-#   - Check which queue methods don't work with adding a playlist subclass.
-#       - `put()` method was advertised as working, but it doesn't. Might require Queue to override BaseQueue's `put()`.
-#   - Determine if adding `__len__()` methods to playlist subclasses would be a nice feature.
 
 
 class SkippableQueue(wavelink.Queue):
@@ -58,8 +52,9 @@ class SkippableQueue(wavelink.Queue):
             for sub_item in item:
                 sub_item.requester = requester  # type: ignore # Dynamic variable.
                 await self.put_wait(sub_item)
-        elif isinstance(item, AsyncIterable):
-            async for sub_item in item:
+        elif isinstance(item, spotify.SpotifyAsyncIterator):
+            # Awkward casting to satisfy pyright since wavelink isn't fully typed.
+            async for sub_item in cast(AsyncIterator[spotify.SpotifyTrack], item):
                 sub_item.requester = requester  # type: ignore # Dynamic variable.
                 await self.put_wait(sub_item)
         else:

@@ -15,14 +15,13 @@ from discord.ext import commands
 
 import core
 from core.utils import upsert_guilds, upsert_users
-
-from . import EXTENSIONS
+from exts import EXTENSIONS
 
 
 LOGGER = logging.getLogger(__name__)
 
 # List for cogs that you don't want to be reloaded, using dot-style notation (e.g. "exts.cogs.snowball").
-IGNORE_EXTENSIONS = []
+IGNORE_EXTENSIONS: list[str] = []
 
 # Tuples with data for a parameter's choices in the sync command. Putting it all in the decorator is ugly.
 SPEC_CHOICES: list[tuple[str, str]] = [
@@ -35,7 +34,7 @@ SPEC_CHOICES: list[tuple[str, str]] = [
 
 dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in core.CONFIG["discord"]["guilds"]["dev"]]
 
-# Preload the dev-guild-only slash commands decorator.
+# Preload the dev-guild-only app commands decorator.
 only_dev_guilds = app_commands.guilds(*dev_guilds_objects)
 
 
@@ -83,12 +82,22 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         return await self.bot.is_owner(ctx.author)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
+        assert ctx.command
+
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
 
-        LOGGER.exception("", exc_info=error)
+        embed = discord.Embed(color=0x5E9A40)
+
+        if isinstance(error, commands.ExtensionError):
+            embed.description = f"Couldn't {ctx.command.name} extension: {error.name}\n{error}"
+            LOGGER.error("Couldn't %s extension: %s", ctx.command.name, error.name, exc_info=error)
+        else:
+            LOGGER.exception("", exc_info=error)
+
+        await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_group(fallback="get")
     @only_dev_guilds
@@ -131,23 +140,18 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             The entities to block.
         """
 
-        try:
-            # Regardless of block type, update the database, update the cache, and create an informational embed.
-            if block_type == "users":
-                await upsert_users(ctx.db, *((user.id, True) for user in entities))
-                self.bot.blocked_entities_cache["users"].update(user.id for user in entities)
-                embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
-            else:
-                await upsert_guilds(ctx.db, *((guild.id, True) for guild in entities))
-                self.bot.blocked_entities_cache["guilds"].update(guild.id for guild in entities)
-                embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
+        # Regardless of block type, update the database, update the cache, and create an informational embed.
+        if block_type == "users":
+            await upsert_users(ctx.db, *((user.id, True) for user in entities))
+            self.bot.blocked_entities_cache["users"].update(user.id for user in entities)
+            embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
+        else:
+            await upsert_guilds(ctx.db, *((guild.id, True) for guild in entities))
+            self.bot.blocked_entities_cache["guilds"].update(guild.id for guild in entities)
+            embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
 
-            # Display the results.
-            await ctx.send("Blocked the following from bot usage:", embed=embed, ephemeral=True)
-
-        except (PostgresError, PostgresConnectionError) as err:
-            LOGGER.exception("", exc_info=err)
-            await ctx.send("Unable to block these users/guilds at this time.", ephemeral=True)
+        # Display the results.
+        await ctx.send("Blocked the following from bot usage:", embed=embed, ephemeral=True)
 
     @block.command("remove")
     @only_dev_guilds
@@ -170,23 +174,33 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             The entities to unblock.
         """
 
-        try:
-            # Regardless of block type, update the database, update the cache, and create an informational embed.
-            if block_type == "users":
-                await upsert_users(ctx.db, *((user.id, False) for user in entities))
-                self.bot.blocked_entities_cache["users"].difference_update(user.id for user in entities)
-                embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
-            else:
-                await upsert_guilds(ctx.db, *((guild.id, False) for guild in entities))
-                self.bot.blocked_entities_cache["guilds"].difference_update(guild.id for guild in entities)
-                embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
+        # Regardless of block type, update the database, update the cache, and create an informational embed.
+        if block_type == "users":
+            await upsert_users(ctx.db, *((user.id, False) for user in entities))
+            self.bot.blocked_entities_cache["users"].difference_update(user.id for user in entities)
+            embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
+        else:
+            await upsert_guilds(ctx.db, *((guild.id, False) for guild in entities))
+            self.bot.blocked_entities_cache["guilds"].difference_update(guild.id for guild in entities)
+            embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
 
-            # Display the results.
-            await ctx.send("Unblocked the following from bot usage:", embed=embed, ephemeral=True)
+        # Display the results.
+        await ctx.send("Unblocked the following from bot usage:", embed=embed, ephemeral=True)
 
-        except (PostgresError, PostgresConnectionError) as err:
-            LOGGER.exception("", exc_info=err)
-            await ctx.send("Unable to unblock these users/guilds at this time.", ephemeral=True)
+    @block_add.error
+    @block_remove.error
+    async def block_change_error(self, ctx: core.Context, error: commands.CommandError) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+
+        assert ctx.command
+
+        if isinstance(error, PostgresError | PostgresConnectionError):
+            action = "block" if ctx.command.qualified_name == "block add" else "unblock"
+            await ctx.send(f"Unable to {action} these users/guilds at this time.", ephemeral=True)
+        LOGGER.exception("", exc_info=error)
 
     @app_commands.check(lambda interaction: interaction.user.id == interaction.client.owner_id)
     async def context_menu_block_add(
@@ -277,14 +291,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             elif extension in self.bot.extensions:
                 embed.description = f"This extension is already loaded: {extension}"
             else:
-                try:
-                    await self.bot.load_extension(extension)
-                except commands.ExtensionError as err:
-                    embed.description = f"Couldn't load extension: {extension}\n{err}"
-                    LOGGER.error("Couldn't load extension: %s", extension, exc_info=err)
-                else:
-                    embed.description = f"Loaded extension: {extension}"
-                    LOGGER.info("Loaded extension via `load`: %s", extension)
+                await self.bot.load_extension(extension)
+                embed.description = f"Loaded extension: {extension}"
+                LOGGER.info("Loaded extension via `load`: %s", extension)
 
             await ctx.send(embed=embed, ephemeral=True)
 
@@ -322,14 +331,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             elif extension not in self.bot.extensions:
                 embed.description = f"This extension has already been unloaded: {extension}"
             else:
-                try:
-                    await self.bot.unload_extension(extension)
-                except commands.ExtensionError as err:
-                    embed.description = f"Couldn't unload extension: {extension}\n{err}"
-                    LOGGER.error("Couldn't unload extension: %s", extension, exc_info=err)
-                else:
-                    embed.description = f"Unloaded extension: {extension}"
-                    LOGGER.info("Unloaded extension via `unload`: %s", extension)
+                await self.bot.unload_extension(extension)
+                embed.description = f"Unloaded extension: {extension}"
+                LOGGER.info("Unloaded extension via `unload`: %s", extension)
 
             await ctx.send(embed=embed, ephemeral=True)
 
@@ -357,14 +361,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 elif extension not in self.bot.extensions:
                     embed.description = f"Never initially loaded this extension: {extension}"
                 else:
-                    try:
-                        await self.bot.reload_extension(extension)
-                    except commands.ExtensionError as err:
-                        embed.description = f"Couldn't reload extension: {extension}\n{err}"
-                        LOGGER.error("Couldn't reload extension: %s", extension, exc_info=err)
-                    else:
-                        embed.description = f"Reloaded extension: {extension}"
-                        LOGGER.info("Reloaded extension via `reload`: %s", extension)
+                    await self.bot.reload_extension(extension)
+                    embed.description = f"Reloaded extension: {extension}"
+                    LOGGER.info("Reloaded extension via `reload`: %s", extension)
 
                 await ctx.send(embed=embed, ephemeral=True)
             else:
@@ -532,48 +531,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         await ctx.reply(embed=embed)
 
-    @commands.command()
-    async def test_pre(self, ctx: core.Context) -> None:
-        """Test prefix command."""
-
-        await ctx.send("Test prefix command.")
-
-    @commands.hybrid_command()
-    @only_dev_guilds
-    async def test_hy(self, ctx: core.Context) -> None:
-        """Test hybrid command."""
-
-        await ctx.send("Test hybrid command.")
-
-        image_urls = [
-            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-for-PC-620x388.jpg",
-            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-Free-Download-620x388.jpg",
-            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-Full-HD-620x349.jpg",
-            "https://www.pixelstalk.net/wp-content/uploads/2016/12/Beautiful-Landscape-Background-HD-620x388.jpg",
-        ]
-
-        # Main embed url attribute has to be the same for all of these embeds.
-        embed = discord.Embed(
-            title="Test the ability to force multiple images in an embed's main image area.",
-            description="[Test description](https://www.google.com)",
-            url="https://google.com",
-        )
-        embed.set_image(url=image_urls[0])
-        embeds = [embed]
-        embeds.extend(embed.copy().set_image(url=image_url) for image_url in image_urls[1:])
-
-        await ctx.send(embeds=embeds)
-
-    @app_commands.command()
-    @only_dev_guilds
-    async def test_sl(self, interaction: core.Interaction) -> None:
-        """Test app command."""
-
-        await interaction.response.send_message("Test app command.")
-
 
 async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
-    # , guilds=[discord.Object(guild_id) for guild_id in CONFIG["discord"]["guilds"]["dev"]])
     await bot.add_cog(DevCog(bot))

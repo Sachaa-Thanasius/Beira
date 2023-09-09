@@ -5,16 +5,19 @@ Credit to Froopy and Danny for inspiration from their bots.
 """
 
 from __future__ import annotations
+import asyncio
 
 import logging
 import re
 import unicodedata
+from io import BytesIO
 from typing import TYPE_CHECKING, Any
 
 import discord
 from discord import app_commands, ui
 from discord.errors import DiscordException, Forbidden, HTTPException, NotFound
 from discord.ext import commands
+from PIL import Image
 
 import core
 
@@ -199,6 +202,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             embed.description = "You aren't allowed to create emojis/stickers here."
         elif isinstance(error, discord.HTTPException):
             embed.description = "Something went wrong in the creation process."
+            LOGGER.exception("", exc_info=error)
         elif isinstance(error, commands.GuildStickerNotFound):
             embed.description = "That is not a valid sticker name or ID, sorry!"
         else:
@@ -464,9 +468,13 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             Flags for a sticker's payload.
         """
 
+        def to_png_file(attach_bytes: bytes, filetypes: list[str]) -> discord.File:
+            with Image.open(attach_bytes, formats=filetypes) as image, BytesIO() as file_binary:
+                image.save(file_binary, "PING")
+                return discord.File(file_binary, "image.png")
+
         if sticker:
             conv_sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
-
             new_sticker = await ctx.guild.create_sticker(
                 name=conv_sticker.name,
                 description=conv_sticker.description,
@@ -475,11 +483,17 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                 reason=sticker_flags.reason,
             )
         elif sticker_flags.name and sticker_flags.attachment:
+            attachment = sticker_flags.attachment
+            if not attachment.filename.endswith((".png", ".apng")):
+                filetype = attachment.filename.rsplit(".", 1)[-1]
+                to_file = await asyncio.to_thread(to_png_file, await attachment.read(), [filetype])
+            else:
+                to_file = await attachment.to_file()
             new_sticker = await ctx.guild.create_sticker(
                 name=sticker_flags.name,
                 description=sticker_flags.description,
                 emoji=sticker_flags.emoji,
-                file=await sticker_flags.attachment.to_file(),
+                file=to_file,
                 reason=sticker_flags.reason,
             )
         else:

@@ -5,6 +5,7 @@ import asyncpg
 import discord
 
 import core
+from core.tree import HookableTree
 from core.utils import CustomLogger, pool_init
 
 
@@ -28,6 +29,7 @@ async def main() -> None:
             intents=intents,
             db_pool=pool,
             web_session=web_session,
+            tree_cls=HookableTree,
         ) as bot:
             await bot.start(core.CONFIG["discord"]["token"])
 

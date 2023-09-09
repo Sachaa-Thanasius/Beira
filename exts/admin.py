@@ -93,17 +93,14 @@ class AdminCog(commands.Cog, name="Administration"):
                     ON CONFLICT (guild_id, prefix) DO NOTHING;
                 """
                 async with self.bot.db_pool.acquire() as conn:
-                    try:
-                        # Update it in the database.
-                        async with conn.transaction():
-                            await conn.execute(guild_query, ctx.guild.id)
-                            await conn.execute(prefix_query, ctx.guild.id, new_prefix)
-                        # Update it in the cache.
-                        self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
-                    except (PostgresWarning, PostgresError, PostgresConnectionError):
-                        await ctx.send("This prefix could not be added at this time.")
-                    else:
-                        await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
+                    # Update it in the database.
+                    async with conn.transaction():
+                        await conn.execute(guild_query, ctx.guild.id)
+                        await conn.execute(prefix_query, ctx.guild.id, new_prefix)
+                    # Update it in the cache.
+                    self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
+
+                    await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
 
     @prefixes.command("remove")
     @commands.guild_only()
@@ -126,16 +123,14 @@ class AdminCog(commands.Cog, name="Administration"):
                 await ctx.send("This prefix was never registered in this guild or has already been unregistered.")
             else:
                 prefix_query = """DELETE FROM guild_prefixes WHERE guild_id = $1 AND prefix = $2;"""
-                try:
-                    # Update it in the database.
-                    await self.bot.db_pool.execute(prefix_query, ctx.guild.id, old_prefix)
 
-                    # Update it in the cache.
-                    self.bot.prefix_cache.setdefault(ctx.guild.id, []).remove(old_prefix)
-                except (PostgresWarning, PostgresError, PostgresConnectionError):
-                    await ctx.send("This prefix could not be removed at this time.")
-                else:
-                    await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
+                # Update it in the database.
+                await self.bot.db_pool.execute(prefix_query, ctx.guild.id, old_prefix)
+
+                # Update it in the cache.
+                self.bot.prefix_cache.setdefault(ctx.guild.id, [old_prefix]).remove(old_prefix)
+
+                await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
 
     @prefixes.command("reset")
     @commands.guild_only()
@@ -151,17 +146,38 @@ class AdminCog(commands.Cog, name="Administration"):
 
         async with ctx.typing():
             prefix_query = """DELETE FROM guild_prefixes WHERE guild_id = $1;"""
-            try:
-                # Update it in the database.
-                await self.bot.db_pool.execute(prefix_query, ctx.guild.id)
-                # Update it in the cache.
-                self.bot.prefix_cache.setdefault(ctx.guild.id, []).clear()
-            except (PostgresWarning, PostgresError, PostgresConnectionError):
+
+            # Update it in the database.
+            await self.bot.db_pool.execute(prefix_query, ctx.guild.id)
+            # Update it in the cache.
+            self.bot.prefix_cache.setdefault(ctx.guild.id, []).clear()
+
+            await ctx.send(
+                "The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.",
+            )
+
+    @prefixes_add.error
+    @prefixes_remove.error
+    @prefixes_reset.error
+    async def prefixes_subcommands_error(self, ctx: core.Context, error: commands.CommandError) -> None:
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+
+        assert ctx.command
+
+        if isinstance(error, PostgresWarning | PostgresError | PostgresConnectionError):
+            if ctx.command.name == "add":
+                await ctx.send("This prefix could not be added at this time.")
+            elif ctx.command.name == "remove":
+                await ctx.send("This prefix could not be removed at this time.")
+            elif ctx.command.name == "reset":
                 await ctx.send("This server's prefixes could not be reset.")
             else:
-                await ctx.send(
-                    "The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.",
-                )
+                LOGGER.exception("", exc_info=error)
+        else:
+            LOGGER.exception("", exc_info=error)
 
 
 async def setup(bot: core.Beira) -> None:
