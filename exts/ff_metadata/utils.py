@@ -4,14 +4,13 @@ import asyncio
 import logging
 import re
 import textwrap
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import AO3
 import atlas_api
+import attrs
 import discord
 import fichub_api
-from attrs import define
-from discord import ui
 
 from core.utils import DTEmbed
 
@@ -20,6 +19,9 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 
     from core import Interaction
+else:
+    Self: TypeAlias = Any
+    Interaction: TypeAlias = discord.Interaction
 
 
 __all__ = (
@@ -34,8 +36,24 @@ __all__ = (
 
 LOGGER = logging.getLogger(__name__)
 
+FFN_PATTERN = re.compile(r"(?:www\.|m\.|)fanfiction\.net/s/(?P<ffn_id>\d+)")
+FP_PATTERN = re.compile(r"(?:www\.|m\.|)fictionpress\.com/s/\d+")
+AO3_PATTERN = re.compile(r"(?:www\.|)archiveofourown\.org/(?P<type>works|series)/(?P<ao3_id>\d+)")
+SB_PATTERN = re.compile(r"forums\.spacebattles\.com/threads/\S*")
+SV_PATTERN = re.compile(r"forums\.sufficientvelocity\.com/threads/\S*")
+QQ_PATTERN = re.compile(r"forums\.questionablequesting\.com/threads/\S*")
+SIYE_PATTERN = re.compile(r"(?:www\.|)siye\.co\.uk/(?:siye/|)viewstory\.php\?sid=\d+")
 
-@define
+FFN_ICON = "https://www.fanfiction.net/static/icons3/ff-icon-128.png"
+FP_ICON = "https://www.fanfiction.net/static/icons3/ff-icon-128.png"
+AO3_ICON = "https://www.archiveofourown.com/images/ao3_logos/xlogo_42.png.pagespeed.ic.ax-awMa4j4.png"
+SB_ICON = "https://forums.spacebattles.com/data/svg/2/1/1682578744/2022_favicon_192x192.png"
+SV_ICON = "https://forums.sufficientvelocity.com/favicon-96x96.png?v=69wyvmQdJN"
+QQ_ICON = "https://forums.questionablequesting.com/favicon.ico"
+SIYE_ICON = "https://www.siye.co.uk/siye/favicon.ico"
+
+
+@attrs.define
 class StoryWebsite:
     name: str
     acronym: str
@@ -44,49 +62,13 @@ class StoryWebsite:
 
 
 StoryWebsiteStore: dict[str, StoryWebsite] = {
-    "FFN": StoryWebsite(
-        "FanFiction.Net",
-        "FFN",
-        re.compile(r"(?:www\.|m\.|)fanfiction\.net/s/(?P<ffn_id>\d+)"),
-        "https://www.fanfiction.net/static/icons3/ff-icon-128.png",
-    ),
-    "FP": StoryWebsite(
-        "FictionPress",
-        "FP",
-        re.compile(r"(?:www\.|m\.|)fictionpress\.com/s/\d+"),
-        "https://www.fanfiction.net/static/icons3/ff-icon-128.png",
-    ),
-    "AO3": StoryWebsite(
-        "Archive of Our Own",
-        "AO3",
-        re.compile(r"(?:www\.|)archiveofourown\.org/(?P<type>works|series)/(?P<ao3_id>\d+)"),
-        "https://www.archiveofourown.com/images/ao3_logos/xlogo_42.png.pagespeed.ic.ax-awMa4j4.png",
-    ),
-    "SB": StoryWebsite(
-        "SpaceBattles",
-        "SB",
-        re.compile(r"forums\.spacebattles\.com/threads/\S*"),
-        "https://forums.spacebattles.com/data/svg/2/1/1682578744/2022_favicon_192x192.png",
-        # Potential image: https://forums.spacebattles.com/data/svg/2/1/1686867453/2022FinalLogo_pride.svg
-    ),
-    "SV": StoryWebsite(
-        "Sufficient Velocity",
-        "SV",
-        re.compile(r"forums\.sufficientvelocity\.com/threads/\S*"),
-        "https://forums.sufficientvelocity.com/favicon-96x96.png?v=69wyvmQdJN",
-    ),
-    "QQ": StoryWebsite(
-        "Questionable Questing",
-        "QQ",
-        re.compile(r"forums\.questionablequesting\.com/threads/\S*"),
-        "https://forums.questionablequesting.com/favicon.ico",
-    ),
-    "SIYE": StoryWebsite(
-        "Sink Into Your Eyes",
-        "SIYE",
-        re.compile(r"(?:www\.|)siye\.co\.uk/(?:siye/|)viewstory\.php\?sid=\d+"),
-        "https://www.siye.co.uk/siye/favicon.ico",
-    ),
+    "FFN": StoryWebsite("FanFiction.Net", "FFN", FFN_PATTERN, FFN_ICON),
+    "FP": StoryWebsite("FictionPress", "FP", FP_PATTERN, FP_ICON),
+    "AO3": StoryWebsite("Archive of Our Own", "AO3", AO3_PATTERN, AO3_ICON),
+    "SB": StoryWebsite("SpaceBattles", "SB", SB_PATTERN, SB_ICON),
+    "SV": StoryWebsite("Sufficient Velocity", "SV", SV_PATTERN, SV_ICON),
+    "QQ": StoryWebsite("Questionable Questing", "QQ", QQ_PATTERN, QQ_ICON),
+    "SIYE": StoryWebsite("Sink Into Your Eyes", "SIYE", SIYE_PATTERN, SIYE_ICON),
 }
 
 STORY_WEBSITE_REGEX = re.compile(
@@ -247,7 +229,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     return story_embed
 
 
-class AO3SeriesView(ui.View):
+class AO3SeriesView(discord.ui.View):
     """A view that wraps a dropdown item.
 
     Parameters
@@ -271,11 +253,12 @@ class AO3SeriesView(ui.View):
         The page number chosen by the author.
     """
 
+    message: discord.Message
+
     def __init__(self, author: discord.User | discord.Member, series: AO3.Series, **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.author = author
         self.series = series
-        self.message: discord.Message | None = None
         self.choice = 0
 
         # Load the options in the dropdown.
@@ -308,7 +291,13 @@ class AO3SeriesView(ui.View):
 
         self.stop()
 
-    async def on_error(self, interaction: Interaction, error: Exception, item: ui.Item[Self], /) -> None:
+    async def on_error(
+        self,
+        interaction: discord.Interaction,
+        error: Exception,
+        item: discord.ui.Item[Self],
+        /,
+    ) -> None:
         error = getattr(error, "original", error)
         LOGGER.error("User: %s - Item: %s", interaction.user, item, exc_info=error)
 
@@ -332,22 +321,22 @@ class AO3SeriesView(ui.View):
         self.update_navigation_items()
         await interaction.response.edit_message(embed=result_embed, view=self)
 
-    @ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
-    async def works_dropdown(self, interaction: Interaction, select: ui.Select[Any]) -> None:
+    @discord.ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
+    async def works_dropdown(self, interaction: Interaction, select: discord.ui.Select[Any]) -> None:
         """A dropdown of works within a series to display more information about those as embed "pages"."""
 
         self.choice = int(select.values[0])
         await self.update_page(interaction)
 
-    @ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
-    async def turn_to_previous(self, interaction: Interaction, _: ui.Button[Self]) -> None:
+    @discord.ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
+    async def turn_to_previous(self, interaction: Interaction, _: discord.ui.Button[Self]) -> None:
         """A button to turn back a page between embeds."""
 
         self.choice -= 1
         await self.update_page(interaction)
 
-    @ui.button(label=">", style=discord.ButtonStyle.blurple)
-    async def turn_to_next(self, interaction: Interaction, _: ui.Button[Self]) -> None:
+    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)
+    async def turn_to_next(self, interaction: Interaction, _: discord.ui.Button[Self]) -> None:
         """A button to turn forward a page between embeds."""
 
         self.choice += 1

@@ -13,12 +13,11 @@ import textwrap
 from bisect import bisect_left
 from copy import deepcopy
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import TYPE_CHECKING, Any, ClassVar, TypeAlias
 
+import asyncpg
+import attrs
 import discord
-from attrs import asdict, define, field
-from cattrs import Converter
-from discord import app_commands
 from discord.ext import commands
 
 import core
@@ -27,11 +26,13 @@ from core.utils import EMOJI_URL, PaginatedEmbed, PaginatedEmbedView
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 LOGGER = logging.getLogger(__name__)
 
 
-@define
+@attrs.define
 class StoryInfo:
     """A class to hold all the information about each story."""
 
@@ -40,10 +41,19 @@ class StoryInfo:
     author_name: str
     story_link: str
     emoji_id: int
-    template_embed: StoryQuoteEmbed | None = None
-    text: list[str] = field(factory=list)
-    chapter_index: list[int] = field(factory=list)
-    collection_index: list[int] = field(factory=list)
+    text: list[str] = attrs.field(factory=list)
+    chapter_index: list[int] = attrs.field(factory=list)
+    collection_index: list[int] = attrs.field(factory=list)
+
+    @classmethod
+    def from_record(cls, record: asyncpg.Record) -> Self:
+        return cls(
+            record["story_acronym"],
+            record["story_full_name"],
+            record["author_name"],
+            record["story_link"],
+            record["emoji_id"],
+        )
 
 
 class StoryQuoteEmbed(PaginatedEmbed):
@@ -72,13 +82,9 @@ class StoryQuoteEmbed(PaginatedEmbed):
 
         if story_data is None:
             self.remove_author()
-
         else:
-            self.set_author(
-                name=story_data["story_full_name"],
-                url=story_data["story_link"],
-                icon_url=EMOJI_URL.format(str(story_data["emoji_id"])),
-            )
+            name, url, emoji_id = story_data["story_full_name"], story_data["story_link"], story_data["emoji_id"]
+            self.set_author(name=name, url=url, icon_url=EMOJI_URL.format(emoji_id))
 
         return self
 
@@ -88,14 +94,14 @@ class StoryQuoteView(PaginatedEmbedView):
 
     Parameters
     ----------
-    story_data : dict
+    story_data : dict[str, Any]
         The story's data and metadata, including full name, author name, and image representation.
     **kwargs
         Keyword arguments the normal initialization of an :class:`PaginatedEmbedView`. See that class for more info.
 
     Attributes
     ----------
-    story_data : dict
+    story_data : dict[str, Any]
         The story's data and metadata, including full name, author name, and image representation.
     """
 
@@ -145,7 +151,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.converter = Converter()
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -155,13 +160,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     async def cog_load(self) -> None:
         """Load whatever is necessary to avoid reading from files or querying the database during runtime."""
-
-        # Load story metadata from DB.
-        query = "SELECT * FROM story_information"
-        temp_records = await self.bot.db_pool.fetch(query)
-        self.story_records.update(
-            self.converter.structure({rec["story_acronym"]: dict(rec) for rec in temp_records}, dict[str, StoryInfo]),
-        )
 
         # Load story text from markdown files.
         project_path = Path(__file__).resolve().parents[1]
@@ -307,19 +305,19 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         # Bundle the quote in an embed.
         embed = StoryQuoteEmbed(
             color=0xDB05DB,
-            story_data=asdict(self.story_records[story]),
+            story_data=attrs.asdict(self.story_records[story]),
             page_content=(quote_year, quote_chapter, "".join(b_sample)),
         ).set_footer(text="Randomly chosen quote from an ACI100 story.")
 
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    @app_commands.choices(
+    @discord.app_commands.choices(
         story=[
-            app_commands.Choice(name="Ashes of Chaos", value="aoc"),
-            app_commands.Choice(name="Conjoining of Paragons", value="cop"),
-            app_commands.Choice(name="Fabric of Fate", value="fof"),
-            app_commands.Choice(name="Perversion of Purity", value="pop"),
+            discord.app_commands.Choice(name="Ashes of Chaos", value="aoc"),
+            discord.app_commands.Choice(name="Conjoining of Paragons", value="cop"),
+            discord.app_commands.Choice(name="Fabric of Fate", value="fof"),
+            discord.app_commands.Choice(name="Perversion of Purity", value="pop"),
         ],
     )
     async def search_text(self, ctx: core.Context, story: str, *, query: str) -> None:
@@ -337,7 +335,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         async with ctx.typing():
             processed_text = self.process_text(story, query)
-            story_data = asdict(self.story_records[story])
+            story_data = attrs.asdict(self.story_records[story])
             view = StoryQuoteView(author=ctx.author, all_pages_content=processed_text, story_data=story_data)
             message = await ctx.send(embed=view.get_starting_embed(), view=view)
             view.message = message
@@ -356,13 +354,16 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         async with ctx.typing():
             processed_text = self.process_text("acvr", query)
-            story_data = asdict(self.story_records["acvr"])
+            story_data = attrs.asdict(self.story_records["acvr"])
             view = StoryQuoteView(author=ctx.author, all_pages_content=processed_text, story_data=story_data)
             message = await ctx.send(embed=view.get_starting_embed(), view=view)
             view.message = message
 
 
 async def setup(bot: core.Beira) -> None:
-    """Connects cog to bot."""
+    """Loads story metadata and connects cog to bot."""
+
+    story_info_records = await bot.db_pool.fetch("SELECT * FROM story_information;")
+    StorySearchCog.story_records = {rec["story_acronym"]: StoryInfo.from_record(rec) for rec in story_info_records}
 
     await bot.add_cog(StorySearchCog(bot))

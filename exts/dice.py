@@ -11,11 +11,11 @@ import random
 import re
 import textwrap
 from io import StringIO
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
 import asteval
+import attrs
 import discord
-from attrs import define, field
 from discord import ui
 from discord.ext import commands
 
@@ -24,13 +24,15 @@ import core
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 
 LOGGER = logging.getLogger(__name__)
 AEVAL = asteval.Interpreter(use_numpy=False, minimal=True)
 
 
-@define
+@attrs.frozen
 class Die:
     """A quick and dirty dataclass for dice-related information relevant to the roll command and associated views.
 
@@ -49,7 +51,7 @@ class Die:
     value: int
     emoji: discord.PartialEmoji
     color: discord.Colour
-    label: str = field(init=False)
+    label: str = attrs.field(init=False)
 
     @label.default  # type: ignore # Pyright doesn't account for this attrs syntax.
     def _label(self) -> str:
@@ -77,7 +79,7 @@ def replace_dice_in_expr(match: re.Match[str]) -> str:
     num = int(match.group(1)) if match.group(1) else 1
     limit = int(match.group(2))
     rolls = [random.randint(1, limit) for _ in range(num)]
-    return "(" + " + ".join(str(ind_roll) for ind_roll in rolls) + ")"
+    return f"({' + '.join(str(ind_roll) for ind_roll in rolls)})"
 
 
 def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
@@ -224,17 +226,16 @@ class RerollButton(ui.Button[ui.View]):
         dice_info: dict[int, int] | None = None,
         modifier: int = 0,
         expression: str | None = None,
-        **kwargs: Any,
     ) -> None:
-        kwargs["label"] = kwargs.get("label", "\N{CLOCKWISE GAPPED CIRCLE ARROW}")
-        kwargs["style"] = kwargs.get("style", discord.ButtonStyle.green)
-        kwargs["custom_id"] = kwargs.get("custom_id", "dice:reroll_button")
-        super().__init__(**kwargs)
+        label = "\N{CLOCKWISE GAPPED CIRCLE ARROW}"
+        style = discord.ButtonStyle.green
+        custom_id = "dice:reroll_button"
+        super().__init__(label=label, style=style, custom_id=custom_id)
         self.dice_info = dice_info
         self.modifier = modifier
         self.expression = expression
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None
         if self.dice_info:
             rolls_info = roll_basic_dice(dice_info=self.dice_info)
@@ -275,7 +276,7 @@ class DiceButton(ui.Button["DiceView"]):
         self.response_colour = die.color
         self.value = die.value
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: discord.Interaction) -> None:
         """Roll the selected die and display the result."""
 
         assert self.view is not None
@@ -308,7 +309,7 @@ class DiceSelect(ui.Select["DiceView"]):
             options=options,
         )
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: discord.Interaction) -> None:
         """Roll all selected dice and display the results to the user."""
 
         assert self.view is not None
@@ -345,7 +346,7 @@ class DiceModifierModal(ui.Modal):
         super().__init__(title="Change Modifier", custom_id="dice:modifier_modal")
         self.interaction: discord.Interaction | None = None
 
-    async def on_submit(self, interaction: core.Interaction, /) -> None:
+    async def on_submit(self, interaction: discord.Interaction, /) -> None:
         """Store the interaction and ensure the input is an integer."""
 
         self.interaction = interaction
@@ -376,7 +377,7 @@ class DiceExpressionModal(ui.Modal):
         super().__init__(title="Enter Dice Expression", custom_id="dice:expression_modal")
         self.interaction: discord.Interaction | None = None
 
-    async def on_submit(self, interaction: core.Interaction, /) -> None:
+    async def on_submit(self, interaction: discord.Interaction, /) -> None:
         """Store the interaction."""
 
         self.interaction = interaction
@@ -406,7 +407,7 @@ class DiceView(ui.View):
 
         self.add_item(DiceSelect())
 
-    async def on_error(self, interaction: core.Interaction, error: Exception, item: ui.Item[Self], /) -> None:
+    async def on_error(self, _: discord.Interaction, error: Exception, item: ui.Item[Self], /) -> None:
         error = getattr(error, "original", error)
         LOGGER.error("", exc_info=error)
 

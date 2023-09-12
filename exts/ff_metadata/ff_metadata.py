@@ -3,7 +3,7 @@ ff_metadata.py: A cog with triggers for retrieving story metadata.
 
 TODO: Account for orphaned fics, anonymous fics, really long embed descriptions, and series with more than 25 fics.
 TODO: Also figure out the specific exceptions thrown by AO3 lib when it doesn't work for something. AttributeError
-      and others?
+    and others?
 """
 
 from __future__ import annotations

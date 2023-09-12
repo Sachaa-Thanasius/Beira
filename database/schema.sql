@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS members (
 
 
 CREATE TABLE IF NOT EXISTS guild_prefixes (
-    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id),
+    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
     prefix      TEXT    NOT NULL    CHECK(LENGTH(prefix) > 0 AND LENGTH(prefix) < 16),
     PRIMARY KEY (guild_id, prefix)
 );
@@ -30,9 +30,9 @@ CREATE TABLE IF NOT EXISTS guild_prefixes (
 
 CREATE TABLE IF NOT EXISTS commands (
     id              SERIAL                      PRIMARY KEY,
-    guild_id        BIGINT                      REFERENCES guilds(guild_id)   ON DELETE CASCADE,
+    guild_id        BIGINT,
     channel_id      BIGINT,
-    user_id         BIGINT                      REFERENCES users(user_id)    ON DELETE CASCADE,
+    user_id         BIGINT,
     date_time       TIMESTAMP WITH TIME ZONE,
     prefix          TEXT,
     command         TEXT,
@@ -61,7 +61,7 @@ CREATE TABLE IF NOT EXISTS story_information (
 CREATE TABLE IF NOT EXISTS patreon_creators (
     creator_name        TEXT        NOT NULL,
     tier_name           TEXT        NOT NULL,
-    tier_value          NUMERIC     NOT NULL        CHECK (tier_value > 0),
+    tier_value          NUMERIC     NOT NULL        CHECK (tier_value >= 0),
     tier_info           TEXT,
     discord_guild       BIGINT,
     tier_role           BIGINT,
@@ -77,8 +77,8 @@ CREATE TABLE IF NOT EXISTS snowball_stats (
     misses      INT     NOT NULL                    DEFAULT 0           CHECK(misses >= 0),
     kos         INT     NOT NULL                    DEFAULT 0           CHECK(kos >= 0),
     stock       INT     NOT NULL                    DEFAULT 0           CHECK(stock >= 0),
-    FOREIGN KEY (guild_id, user_id) REFERENCES members(guild_id, user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    PRIMARY KEY(user_id, guild_id)
+    PRIMARY KEY(user_id, guild_id),
+    FOREIGN KEY (guild_id, user_id) REFERENCES members(guild_id, user_id) ON UPDATE CASCADE ON DELETE CASCADE
 );
 
 CREATE VIEW global_rank_view AS
@@ -95,13 +95,6 @@ CREATE VIEW guilds_only_rank_view AS
     GROUP BY    guild_id;
 
 
-CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
-    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    channel_id  BIGINT  NOT NULL,
-    PRIMARY KEY (guild_id, channel_id)
-);
-
-
 CREATE TABLE IF NOT EXISTS snowball_settings (
     guild_id            BIGINT  PRIMARY KEY     REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
     hit_odds            REAL    NOT NULL        DEFAULT 0.6         CHECK (hit_odds >= 0.0 and hit_odds <= 1.0),
@@ -110,9 +103,16 @@ CREATE TABLE IF NOT EXISTS snowball_settings (
 );
 
 
+CREATE TABLE IF NOT EXISTS fanfic_autoresponse_settings (
+    guild_id    BIGINT  NOT NULL    REFERENCES guilds(guild_id) ON UPDATE CASCADE ON DELETE CASCADE,
+    channel_id  BIGINT  NOT NULL,
+    PRIMARY KEY (guild_id, channel_id)
+);
+
+
 CREATE TABLE IF NOT EXISTS todos (
     todo_id             SERIAL                      PRIMARY KEY,
-    user_id             BIGINT                      REFERENCES users(user_id),
+    user_id             BIGINT                      NOT NULL,
     todo_content        TEXT                        NOT NULL,
     todo_created_at     TIMESTAMP WITH TIME ZONE    DEFAULT (NOW() AT TIME ZONE 'utc'),
     todo_due_date       TIMESTAMP WITH TIME ZONE,

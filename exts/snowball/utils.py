@@ -1,10 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias
 
 import asyncpg
+import attrs
 import discord
-from discord import ui
 from discord.ext import commands
 
 import core
@@ -13,6 +13,8 @@ from core.utils.db import Connection_alias, Pool_alias, upsert_guilds, upsert_us
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 
 __all__ = (
@@ -68,7 +70,8 @@ class UserSnowballUpdate(NamedTuple):
         return await conn.fetchrow(snowball_upsert_query, *args)
 
 
-class GuildSnowballSettings(NamedTuple):
+@attrs.define
+class GuildSnowballSettings:
     """Record-like structure to hold a guild's snowball settings.
 
     Attributes
@@ -89,12 +92,22 @@ class GuildSnowballSettings(NamedTuple):
     transfer_cap: int = 10
 
     @classmethod
+    def from_record(cls: type[Self], record: asyncpg.Record) -> Self:
+        guild_id, hit_odds, stock_cap, transfer_cap = (
+            record["guild_id"],
+            record["hit_odds"],
+            record["stock_cap"],
+            record["transfer_cap"],
+        )
+        return cls(guild_id, hit_odds, stock_cap, transfer_cap)
+
+    @classmethod
     async def from_database(cls: type[Self], conn: Pool_alias | Connection_alias, guild_id: int) -> Self:
         """Query a snowball settings database record for a guild."""
 
         query = """SELECT * FROM snowball_settings WHERE guild_id = $1;"""
         record = await conn.fetchrow(query, guild_id)
-        return cls(*record) if record else cls(guild_id)
+        return cls.from_record(record) if record else cls(guild_id)
 
     async def upsert_record(self, conn: Pool_alias | Connection_alias) -> None:
         """Upsert these snowball settings into the database."""
@@ -111,7 +124,7 @@ class GuildSnowballSettings(NamedTuple):
         await conn.execute(query, self.guild_id, self.hit_odds, self.stock_cap, self.transfer_cap)
 
 
-class SnowballSettingsModal(ui.Modal):
+class SnowballSettingsModal(discord.ui.Modal):
     """Custom modal for changing the guild-specific settings of the snowball game.
 
     Parameters
@@ -121,11 +134,11 @@ class SnowballSettingsModal(ui.Modal):
 
     Attributes
     ----------
-    hit_odds_input : :class:`ui.TextInput`
+    hit_odds_input : :class:`discord.ui.TextInput`
         An editable text field showing the current hit odds for this guild.
-    stock_cap_input : :class:`ui.TextInput`
+    stock_cap_input : :class:`discord.ui.TextInput`
         An editable text field showing the current stock cap for this guild.
-    transfer_cap_input : :class:`ui.TextInput`
+    transfer_cap_input : :class:`discord.ui.TextInput`
         An editable text field showing the current transfer cap for this guild.
     default_settings : :class:`SnowballSettings`
         The current snowball-related settings for the guild.
@@ -137,19 +150,19 @@ class SnowballSettingsModal(ui.Modal):
         super().__init__(title="This Guild's Snowball Settings")
 
         # Create the items.
-        self.hit_odds_input: ui.TextInput[Self] = ui.TextInput(
+        self.hit_odds_input: discord.ui.TextInput[Self] = discord.ui.TextInput(
             label="The chance of hitting a person (0.0-1.0)",
             placeholder=f"Current: {default_settings.hit_odds:.2}",
             default=f"{default_settings.hit_odds:.2}",
             required=False,
         )
-        self.stock_cap_input: ui.TextInput[Self] = ui.TextInput(
+        self.stock_cap_input: discord.ui.TextInput[Self] = discord.ui.TextInput(
             label="Max snowballs a member can hold (no commas)",
             placeholder=f"Current: {default_settings.stock_cap}",
             default=str(default_settings.stock_cap),
             required=False,
         )
-        self.transfer_cap_input: ui.TextInput[Self] = ui.TextInput(
+        self.transfer_cap_input: discord.ui.TextInput[Self] = discord.ui.TextInput(
             label="Max snowballs that can be gifted/stolen",
             placeholder=f"Current: {default_settings.transfer_cap}",
             default=str(default_settings.transfer_cap),
@@ -201,7 +214,7 @@ class SnowballSettingsModal(ui.Modal):
             await interaction.response.send_message("Settings updated!")
 
 
-class SnowballSettingsView(ui.View):
+class SnowballSettingsView(discord.ui.View):
     """A view with a button that allows server administrators and bot owners to change snowball-related settings.
 
     Parameters
@@ -232,16 +245,16 @@ class SnowballSettingsView(ui.View):
         if self.message:
             await self.message.edit(view=self)
 
-    async def interaction_check(self, interaction: core.Interaction, /) -> bool:
-        # Ensure users are only server administrators or bot owners.
+    async def interaction_check(self, interaction: core.Interaction, /) -> bool:  # type: ignore # Needed narrowing.
+        """Ensure people interacting with this view are only server administrators or bot owners."""
 
-        assert isinstance(interaction.user, discord.Member)  # This should only ever be called in a guild context.
-        check = bool(
-            interaction.guild
-            and (
-                interaction.user.guild_permissions.administrator or interaction.client.owner_id == interaction.user.id
-            ),
-        )
+        # This should only ever be called in a guild context.
+        assert interaction.guild
+        assert isinstance(interaction.user, discord.Member)
+
+        user = interaction.user
+        check = bool(user.guild_permissions.administrator or interaction.client.owner_id == user.id)
+
         if not check:
             await interaction.response.send_message("You can't change that unless you're a guild admin.")
         return check
@@ -271,8 +284,8 @@ class SnowballSettingsView(ui.View):
             )
         )
 
-    @ui.button(label="Update", emoji="⚙")
-    async def change_settings_button(self, interaction: core.Interaction, _: ui.Button[Self]) -> None:
+    @discord.ui.button(label="Update", emoji="⚙")
+    async def change_settings_button(self, interaction: core.Interaction, _: discord.ui.Button[Self]) -> None:
         """Send a modal that allows the user to edit the snowball settings for this guild."""
 
         # Get inputs from a modal.
@@ -317,11 +330,12 @@ def transfer_cooldown(ctx: core.Context) -> commands.Cooldown | None:
 
     rate, per = 1.0, 60.0  # Default cooldown
     exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
+    testing_guild_ids: list[int] = ctx.bot.config["discord"]["guilds"]["dev"]
 
     if ctx.author.id in exempt:
         return None
 
-    if ctx.guild and (ctx.guild.id in ctx.bot.config["discord"]["guilds"]["dev"]):  # Testing server ids
+    if ctx.guild and (ctx.guild.id in testing_guild_ids):
         per = 2.0
     return commands.Cooldown(rate, per)
 
@@ -334,10 +348,11 @@ def steal_cooldown(ctx: core.Context) -> commands.Cooldown | None:
 
     rate, per = 1.0, 90.0  # Default cooldown
     exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["athenahope"]]
+    testing_guild_ids: list[int] = ctx.bot.config["discord"]["guilds"]["dev"]
 
     if ctx.author.id in exempt:
         return None
 
-    if ctx.guild and (ctx.guild.id in ctx.bot.config["discord"]["guilds"]["dev"]):  # Testing server ids
+    if ctx.guild and (ctx.guild.id in testing_guild_ids):  # Testing server ids
         per = 2.0
     return commands.Cooldown(rate, per)

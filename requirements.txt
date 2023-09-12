@@ -5,9 +5,8 @@ asteval
 asyncpg==0.28.0
 asyncpg-stubs==0.28.0
 atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper@b9596d6f0240c42457a0f42e45f29f7cd8b445ee
-attrs==23.1.0
+attrs>=23.1.0
 beautifulsoup4>=4.12.2
-cattrs==22.2.0
 discord.py[speed,voice]>=2.3.2
 fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api-wrapper@5ef22a0cd4c6aeacc67028f52fe328eacf3e9922
 jishaku @ git+https://github.com/Gorialis/jishaku@bf26bea3c1f86993fd75744de48bf52d4925521a

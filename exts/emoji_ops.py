@@ -5,8 +5,8 @@ Credit to Froopy and Danny for inspiration from their bots.
 """
 
 from __future__ import annotations
-import asyncio
 
+import asyncio
 import logging
 import re
 import unicodedata
@@ -90,12 +90,12 @@ class AddEmojiButton(ui.Button["AddEmojisView"]):
         self.emoji = emoji
         self.new_emoji: discord.Emoji | None = None
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view
 
         if not self.new_emoji:
             assert isinstance(self.emoji, discord.PartialEmoji)
-            self.emoji._state = interaction.client._connection  # type: ignore # Necessary to make it readable.
+            self.emoji._state = interaction.client._connection  # type: ignore # Necessary to make the emoji readable.
             emoji_bytes = await self.emoji.read()
             self.new_emoji = await self.guild.create_custom_emoji(name=self.emoji.name, image=emoji_bytes)
 
@@ -126,7 +126,7 @@ class AddEmojisView(ui.View):
         for emoji in emojis[:25]:
             self.add_item(AddEmojiButton(guild=guild, emoji=emoji))
 
-    async def on_error(self, interaction: core.Interaction, error: Exception, item: ui.Item[Self]) -> None:
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item: ui.Item[Self]) -> None:
         assert isinstance(item, AddEmojiButton)
 
         if item.style == discord.ButtonStyle.secondary:

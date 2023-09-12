@@ -178,6 +178,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
         channel : PinnableGuildChannel | None
             The channel to archive pins in.
         """
+
         async with ctx.typing():
             query = "SELECT * FROM pin_archive_settings WHERE guild_id = $1;"
             record = await ctx.db.fetchrow(query, ctx.guild.id)

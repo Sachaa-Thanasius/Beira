@@ -8,11 +8,11 @@ import datetime
 import logging
 import textwrap
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, cast
+from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
 import asyncpg
+import attrs
 import discord
-from discord import app_commands, ui
 from discord.ext import commands
 
 import core
@@ -22,27 +22,38 @@ from core.utils.db import Connection_alias, Pool_alias
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 LOGGER = logging.getLogger(__name__)
 
 
-class TodoRecord(asyncpg.Record):
-    """A read-only subclass of :class:`asyncpg.Record` for to-do items.
-
-    Includes methods for updating the records and returning the new version when applicable.
-    """
-
+@attrs.define
+class TodoRecord:
     todo_id: int
     user_id: int
-    todo_content: str
-    todo_created_at: datetime.datetime
-    todo_due_date: datetime.datetime | None
-    todo_completed_at: datetime.datetime | None
+    content: str
+    created_at: datetime.datetime
+    due_date: datetime.datetime | None = None
+    completed_at: datetime.datetime | None = None
 
-    def __getattr__(self, name: str) -> Any:
-        return self[name]
+    @property
+    def summary(self) -> str:
+        return textwrap.shorten(f"{self.todo_id} - {self.content}", width=100, placeholder="...")
 
-    async def update_completion(self, conn: Pool_alias | Connection_alias) -> Self | None:
+    @classmethod
+    def from_record(cls, record: asyncpg.Record) -> Self:
+        todo_id, user_id, todo_content, created_at, due_date, completed_at = (
+            record["todo_id"],
+            record["user_id"],
+            record["todo_content"],
+            record["todo_created_at"],
+            record.get("todo_due_date", None),
+            record.get("todo_completed_at", None),
+        )
+        return cls(todo_id, user_id, todo_content, created_at, due_date, completed_at)
+
+    async def change_completion(self, conn: Pool_alias | Connection_alias) -> Self | None:
         """Adds or removes a completion date from the record in the database, giving back the new version of the record.
 
         This function returns a new instance of the class.
@@ -54,10 +65,11 @@ class TodoRecord(asyncpg.Record):
         """
 
         command = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
-        new_date = discord.utils.utcnow() if self.todo_completed_at is None else None
-        return await conn.fetchrow(command, new_date, self.todo_id, record_class=type(self))
+        new_date = discord.utils.utcnow() if self.completed_at is None else None
+        record = await conn.fetchrow(command, new_date, self.todo_id)
+        return self.from_record(record) if record else None
 
-    async def edit(self, conn: Pool_alias | Connection_alias, updated_content: str) -> Self | None:
+    async def update(self, conn: Pool_alias | Connection_alias, updated_content: str) -> Self | None:
         """Changes the to-do content of the record, giving back the new version of the record.
 
         This function returns a new instance of the class.
@@ -71,7 +83,8 @@ class TodoRecord(asyncpg.Record):
         """
 
         command = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
-        return await conn.fetchrow(command, updated_content, self.todo_id, record_class=type(self))
+        record = await conn.fetchrow(command, updated_content, self.todo_id)
+        return self.from_record(record) if record else None
 
     async def delete(self, conn: Pool_alias | Connection_alias) -> None:
         """Deletes the record from the database.
@@ -86,7 +99,7 @@ class TodoRecord(asyncpg.Record):
         await conn.execute(command, self.todo_id)
 
 
-class TodoModal(ui.Modal):
+class TodoModal(discord.ui.Modal):
     """A Discord modal for putting in or editing the content of a to-do item.
 
     Parameters
@@ -97,14 +110,14 @@ class TodoModal(ui.Modal):
 
     Attributes
     ----------
-    content : :class:`ui.TextInput`
+    content : :class:`discord.ui.TextInput`
         The text box that will allow a user to enter or edit a to-do item's content. If editing, existing content is
         added as "default".
     interaction : :class:`discord.Interaction` | None, optional
         The interaction of the user with the modal. Only populates on submission.
     """
 
-    content: ui.TextInput[Self] = ui.TextInput(
+    content: discord.ui.TextInput[Self] = discord.ui.TextInput(
         label="To Do",
         style=discord.TextStyle.long,
         placeholder="Buy pancakes!",
@@ -125,7 +138,7 @@ class TodoModal(ui.Modal):
         self.stop()
 
 
-class TodoCompleteButton(ui.Button["TodoViewABC"]):
+class TodoCompleteButton(discord.ui.Button["TodoViewABC"]):
     """A Discord button that marks to-do items in the parent view as (in)complete, and changes visually as a result.
 
     Interacts with kwargs for default styling on initialization.
@@ -135,7 +148,7 @@ class TodoCompleteButton(ui.Button["TodoViewABC"]):
     completed_at : :class:`datetime.datetime`, optional
         An optional completion time for the to-do item in the parent view. Determines the button's initial look.
     **kwargs
-        Arbitrary keywords arguments primarily for :class:`ui.Button`. See that class for more information.
+        Arbitrary keywords arguments primarily for :class:`discord.ui.Button`. See that class for more information.
     """
 
     def __init__(self, completed_at: datetime.datetime | None = None, **kwargs: Any) -> None:
@@ -144,17 +157,17 @@ class TodoCompleteButton(ui.Button["TodoViewABC"]):
         kwargs["label"] = "Mark as complete" if (completed_at is None) else "Mark as incomplete"
         super().__init__(**kwargs)
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: core.Interaction) -> None:  # type: ignore # Necessary narrowing
         """Changes the button's look, and updates the parent view and its to-do item's completion status."""
 
         assert self.view is not None
         assert self.view.todo_record is not None
 
         # Get a new version of the to-do item after adding a completion date.
-        updated_todo_item = await self.view.todo_record.update_completion(interaction.client.db_pool)
+        updated_todo_item = await self.view.todo_record.change_completion(interaction.client.db_pool)
 
         # Adjust the button based on the item.
-        if updated_todo_item and (updated_todo_item["todo_completed_at"] is not None):
+        if updated_todo_item and (updated_todo_item.completed_at is not None):
             self.label = "Mark as complete"
             self.style = discord.ButtonStyle.green
             completion_status = "complete"
@@ -168,7 +181,7 @@ class TodoCompleteButton(ui.Button["TodoViewABC"]):
         await interaction.followup.send(f"Todo task marked as {completion_status}!", ephemeral=True)
 
 
-class TodoEditButton(ui.Button["TodoViewABC"]):
+class TodoEditButton(discord.ui.Button["TodoViewABC"]):
     """A Discord button sends modals for editing the content of the parent view's to-do item.
 
     Interacts with kwargs for default styling on initialization.
@@ -176,21 +189,21 @@ class TodoEditButton(ui.Button["TodoViewABC"]):
     Parameters
     ----------
     **kwargs
-        Arbitrary keywords arguments primarily for :class:`ui.Button`. See that class for more information.
+        Arbitrary keywords arguments primarily for :class:`discord.ui.Button`. See that class for more information.
     """
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs.update(style=discord.ButtonStyle.grey, label="Edit")  # Default look.
         super().__init__(**kwargs)
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: core.Interaction) -> None:  # type: ignore # Necessary narrowing
         """Uses a modal to get the (edited) content for a to-do item, then updates the item and parent view."""
 
         assert self.view is not None
         assert self.view.todo_record is not None
 
         # Give the user a modal with a textbox filled with a to-do item's content for editing.
-        modal = TodoModal(self.view.todo_record["todo_content"])
+        modal = TodoModal(self.view.todo_record.content)
         await interaction.response.send_modal(modal)
         modal_timed_out = await modal.wait()
 
@@ -200,8 +213,8 @@ class TodoEditButton(ui.Button["TodoViewABC"]):
         assert modal.interaction is not None  # It's known at this point that the modal was submitted.
 
         # Adjust the view to have and display the updated to-do item, and let the user know it's updated.
-        if self.view.todo_record["todo_content"] != modal.content.value:
-            updated_todo_item = await self.view.todo_record.edit(interaction.client.db_pool, modal.content.value)
+        if self.view.todo_record.content != modal.content.value:
+            updated_todo_item = await self.view.todo_record.update(interaction.client.db_pool, modal.content.value)
             await self.view.update_todo(modal.interaction, updated_todo_item)
             if modal.interaction:
                 await modal.interaction.followup.send("Todo item edited.", ephemeral=True)
@@ -209,7 +222,7 @@ class TodoEditButton(ui.Button["TodoViewABC"]):
             await modal.interaction.response.send_message("No changes made to the todo item.", ephemeral=True)
 
 
-class TodoDeleteButton(ui.Button["TodoViewABC"]):
+class TodoDeleteButton(discord.ui.Button["TodoViewABC"]):
     """A Discord button that allows users to delete a to-do item.
 
     Interacts with kwargs for default styling on initialization.
@@ -217,14 +230,14 @@ class TodoDeleteButton(ui.Button["TodoViewABC"]):
     Parameters
     ----------
     **kwargs
-        Arbitrary keywords arguments primarily for :class:`ui.Button`. See that class for more information.
+        Arbitrary keywords arguments primarily for :class:`discord.ui.Button`. See that class for more information.
     """
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs.update(style=discord.ButtonStyle.red, label="Delete")
         super().__init__(**kwargs)
 
-    async def callback(self, interaction: core.Interaction) -> None:
+    async def callback(self, interaction: core.Interaction) -> None:  # type: ignore # Necessary narrowing
         """Deletes the to-do item, and updates the parent view accordingly."""
 
         assert self.view is not None
@@ -257,11 +270,11 @@ def generate_embed_from_todo_record(todo_record: TodoRecord | None, deleted: boo
     todo_embed = discord.Embed(
         colour=discord.Colour.light_grey(),
         title=f"To-Do {todo_record.todo_id}",
-        description=todo_record["todo_content"],
+        description=todo_record.content,
     )
 
-    completed_at = todo_record.todo_completed_at
-    due_date = todo_record.todo_due_date
+    completed_at = todo_record.completed_at
+    due_date = todo_record.due_date
 
     # Changes colour, footer, and timestamp based on the state of the to-do item - completed, due, and/or deleted.
     # - The properties won't overlap for different states, except for the default grey.
@@ -282,7 +295,7 @@ def generate_embed_from_todo_record(todo_record: TodoRecord | None, deleted: boo
     return todo_embed
 
 
-class TodoViewABC(ui.View, ABC):
+class TodoViewABC(discord.ui.View, ABC):
     """An ABC view to define a common interface for to-do buttons.
 
     (Not even sure if it works at the moment)
@@ -291,7 +304,11 @@ class TodoViewABC(ui.View, ABC):
     todo_record: TodoRecord | None
 
     @abstractmethod
-    async def update_todo(self, interaction: core.Interaction, updated_record: TodoRecord | None = None) -> None:
+    async def update_todo(
+        self,
+        interaction: discord.Interaction[Any],
+        updated_record: TodoRecord | None = None,
+    ) -> None:
         ...
 
 
@@ -301,13 +318,13 @@ class TodoView(TodoViewABC):
     Parameters
     ----------
     *args
-        Variable length argument list, primarily for :class:`ui.View`.
+        Variable length argument list, primarily for :class:`discord.ui.View`.
     author : :class:`discord.User` | :class:`discord.Member`
         The user that triggered this view. No one else can use it.
     todo_record : :class:`TodoRecord`
         The to-do item that's being viewed and interacted with.
     **kwargs
-        Arbitrary keyword arguments, primarily for :class:`ui.View`. See that class for more information.
+        Arbitrary keyword arguments, primarily for :class:`discord.ui.View`. See that class for more information.
 
     Attributes
     ----------
@@ -330,7 +347,7 @@ class TodoView(TodoViewABC):
         self.message: discord.Message | None = None
         self.author = author
         self.todo_record: TodoRecord | None = todo_record
-        self.add_item(TodoCompleteButton(todo_record.todo_completed_at))
+        self.add_item(TodoCompleteButton(todo_record.completed_at))
         self.add_item(TodoEditButton())
         self.add_item(TodoDeleteButton())
 
@@ -416,7 +433,7 @@ class TodoListView(PaginatedEmbedView, TodoViewABC):
 
         complete_btn.disabled = edit_btn.disabled = delete_btn.disabled = False
 
-        if self.todo_record["todo_completed_at"] is None:
+        if self.todo_record.completed_at is None:
             complete_btn.label = "Mark as complete"
             complete_btn.style = discord.ButtonStyle.green
         else:
@@ -553,10 +570,11 @@ class TodoCog(commands.Cog, name="Todo"):
         """
 
         query = "SELECT * FROM todos WHERE todo_id = $1 and user_id = $2 ORDER BY todo_id;"
-        record = await self.bot.db_pool.fetchrow(query, todo_id, ctx.author.id, record_class=TodoRecord)
+        record = await self.bot.db_pool.fetchrow(query, todo_id, ctx.author.id)
         if record:
-            todo_view = TodoView(author=ctx.author, todo_record=record)
-            todo_view.message = await ctx.send(embed=generate_embed_from_todo_record(record), view=todo_view)
+            new_record = TodoRecord.from_record(record)
+            todo_view = TodoView(author=ctx.author, todo_record=new_record)
+            todo_view.message = await ctx.send(embed=generate_embed_from_todo_record(new_record), view=todo_view)
         else:
             await ctx.send("Either this record doesn't exist, or you can't see it.")
 
@@ -581,24 +599,27 @@ class TodoCog(commands.Cog, name="Todo"):
             query += " AND todo_completed_at IS NULL"
         query += " ORDER BY todo_completed_at IS NULL, todo_id ASC;"
 
-        records = await self.bot.db_pool.fetch(query, ctx.author.id, record_class=TodoRecord)
-        todo_view = TodoListView(author=ctx.author, all_pages_content=records, per_page=1)
+        records = await self.bot.db_pool.fetch(query, ctx.author.id)
+        processed_records = [TodoRecord.from_record(record) for record in records]
+        todo_view = TodoListView(author=ctx.author, all_pages_content=processed_records, per_page=1)
         todo_view.message = await ctx.send(embed=todo_view.get_starting_embed(), view=todo_view)
 
     @todo_delete.autocomplete("todo_id")
     @todo_show.autocomplete("todo_id")
-    async def todo_id_autocomplete(self, interaction: core.Interaction, current: str) -> list[app_commands.Choice[int]]:
+    async def todo_id_autocomplete(
+        self,
+        interaction: core.Interaction,
+        current: str,
+    ) -> list[discord.app_commands.Choice[int]]:
         """Autocomplete for to-do items owned by the invoking user."""
 
         query = "SELECT * FROM todos WHERE user_id = $1 ORDER BY todo_id;"
-        records = await interaction.client.db_pool.fetch(query, interaction.user.id, record_class=TodoRecord)
-
-        def shorten(record: TodoRecord) -> str:
-            return textwrap.shorten(f"{record.todo_id} - {record.todo_content}", width=100, placeholder="...")
+        records = await interaction.client.db_pool.fetch(query, interaction.user.id)
+        processed_records = [TodoRecord.from_record(record) for record in records]
 
         return [
-            app_commands.Choice(name=shorten(record), value=record.todo_id)
-            for record in records
+            discord.app_commands.Choice(name=record.summary, value=record.todo_id)
+            for record in processed_records
             if current.lower() in str(record.todo_id).lower()
         ][:25]
 
