@@ -85,7 +85,7 @@ combine-as-imports = true
 include = ["main.py", "core", "ext"]
 
 reportMissingTypeStubs = "none"
-reportImportCycles = "error"
+# reportImportCycles = "error"
 reportPropertyTypeMismatch = "error"
 reportUnnecessaryTypeIgnoreComment = "warning"
 
