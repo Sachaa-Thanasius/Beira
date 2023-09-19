@@ -2,6 +2,8 @@
 errors.py: Custom errors used by the bot.
 """
 
+from discord import app_commands
+from discord.app_commands.commands import Check as AppCheckFunc
 from discord.ext import commands
 
 
@@ -12,6 +14,7 @@ __all__ = (
     "NotInBotVoiceChannel",
     "UserIsBlocked",
     "GuildIsBlocked",
+    "CheckAnyFailure",
 )
 
 
@@ -28,12 +31,18 @@ class NotOwnerOrFriend(commands.CheckFailure):
     This inherits from :exc:`CheckFailure`.
     """
 
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "You do not own this bot, nor are you a friend of the owner.")
+
 
 class NotAdmin(commands.CheckFailure):
     """Exception raised when the message author is not an administrator of the guild in the current context.
 
     This inherits from :exc:`commands.CheckFailure`.
     """
+
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "Only someone with administrator permissions can do this.")
 
 
 class NotInBotVoiceChannel(commands.CheckFailure):
@@ -42,6 +51,9 @@ class NotInBotVoiceChannel(commands.CheckFailure):
     This inherits from :exc:`commands.CheckFailure`.
     """
 
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "You are not connected to the same voice channel as the bot.")
+
 
 class UserIsBlocked(commands.CheckFailure):
     """Exception raised when the message author is blocked from using the bot.
@@ -49,9 +61,34 @@ class UserIsBlocked(commands.CheckFailure):
     This inherits from :exc:`commands.CheckFailure`.
     """
 
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "This user is prohibited from using bot commands.")
+
 
 class GuildIsBlocked(commands.CheckFailure):
     """Exception raised when the message guild is blocked from using the bot.
 
     This inherits from :exc:`commands.CheckFailure`.
     """
+
+    def __init__(self, message: str | None = None) -> None:
+        super().__init__(message or "This guild is prohibited from using bot commands.")
+
+
+class CheckAnyFailure(app_commands.CheckFailure):
+    """Exception raised when all predicates in :func:`check_any` fail.
+
+    This inherits from :exc:`app_commands.CheckFailure`.
+
+    Attributes
+    ------------
+    errors: list[:class:`app_commands.CheckFailure`]
+        A list of errors that were caught during execution.
+    checks: List[Callable[[:class:`discord.Interaction`], :class:`bool`]]
+        A list of check predicates that failed.
+    """
+
+    def __init__(self, checks: list[AppCheckFunc], errors: list[app_commands.CheckFailure]) -> None:
+        self.checks: list[AppCheckFunc] = checks
+        self.errors: list[app_commands.CheckFailure] = errors
+        super().__init__("You do not have permission to run this command.")

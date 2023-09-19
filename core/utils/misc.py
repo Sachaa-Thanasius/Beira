@@ -6,26 +6,37 @@ from __future__ import annotations
 
 import logging
 from asyncio import iscoroutinefunction
-from collections.abc import Awaitable, Callable
+from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
 from time import perf_counter
-from typing import TYPE_CHECKING, ParamSpec, TypeGuard, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias, TypeGuard, TypeVar, overload
 
 
 if TYPE_CHECKING:
     from types import TracebackType
 
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
+
+T = TypeVar("T")
+P = ParamSpec("P")
+Coro = Coroutine[Any, Any, T]
 
 
 __all__ = ("catchtime", "benchmark")
 
-T = TypeVar("T")
-P = ParamSpec("P")
 
-
-def is_coroutine(func: Callable[P, T] | Callable[P, Awaitable[T]]) -> TypeGuard[Callable[P, Awaitable[T]]]:
+def is_awaitable_func(func: Callable[P, T] | Callable[P, Awaitable[T]]) -> TypeGuard[Callable[P, Awaitable[T]]]:
     return iscoroutinefunction(func)
+
+
+def is_coroutine_func(func: Callable[P, T] | Callable[P, Coro[T]]) -> TypeGuard[Callable[P, Coro[T]]]:
+    return iscoroutinefunction(func)
+
+
+def is_not_coroutine_func(func: Callable[P, T] | Callable[P, Coro[T]]) -> TypeGuard[Callable[P, T]]:
+    return not iscoroutinefunction(func)
 
 
 class catchtime:
@@ -58,12 +69,12 @@ class catchtime:
             self.logger.info(self.readout)
 
 
-def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to type-hint an internal overload.
+def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to type-hint this.
     """Decorates a function to benchmark it, i.e. log the time it takes to complete execution.
 
     Based on code from StackOverflow: https://stackoverflow.com/a/75439065 (and apparently this pyright thread,
-    https://github.com/microsoft/pyright/issues/2142, which shows conclusions and naming conventions I independently
-    reached, haha). This also serves as a type-hinting experiment more than anything.
+    https://github.com/microsoft/pyright/issues/2142, with conclusions and naming conventions I independently
+    reached). This serves as a type-hinting experiment more than anything.
 
     Parameters
     ----------
@@ -98,8 +109,9 @@ def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to 
         #   as different.
 
         # Pick the wrapper based on whether the given function is sync or async.
-        if is_coroutine(func):
-            wraps(func)
+        if is_awaitable_func(func):
+
+            @wraps(func)
             async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
                 with catchtime(logger):
                     return await func(*args, **kwargs)
@@ -107,7 +119,8 @@ def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to 
             return async_wrapper
 
         else:  # noqa: RET505 # Stylistic choice to differentiate the returned wrappers.
-            wraps(func)
+
+            @wraps(func)
             def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
                 with catchtime(logger):
                     return func(*args, **kwargs)
@@ -115,3 +128,37 @@ def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to 
             return sync_wrapper
 
     return decorator
+
+
+def bench_v2(
+    logger: logging.Logger,
+) -> Callable[[Callable[P, T] | Callable[P, Coro[T]]], Callable[P, T] | Callable[P, Coro[T]]]:
+    @overload
+    def decorator(func: Callable[P, Coro[T]]) -> Callable[P, Coro[T]]:
+        ...
+
+    @overload
+    def decorator(func: Callable[P, T]) -> Callable[P, T]:
+        ...
+
+    def decorator(func: Callable[P, T] | Callable[P, Coro[T]]) -> Callable[P, T] | Callable[P, Coro[T]]:
+        if iscoroutinefunction(func):
+
+            @wraps(func)
+            async def async_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+                with catchtime(logger):
+                    return await func(*args, **kwargs)
+
+            return async_wrapper
+
+        else:  # noqa: RET505 # More obvious control flow.
+            assert is_not_coroutine_func(func)  # This is dumb, but it works.
+
+            @wraps(func)
+            def sync_wrapper(*args: P.args, **kwargs: P.kwargs) -> T:
+                with catchtime(logger):
+                    return func(*args, **kwargs)
+
+            return sync_wrapper
+
+    return decorator  # type: ignore

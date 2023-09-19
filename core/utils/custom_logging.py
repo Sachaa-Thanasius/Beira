@@ -11,16 +11,18 @@ from __future__ import annotations
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeVar
+from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias, TypeVar
 
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
 
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 
-__all__ = ("CustomLogger",)
+__all__ = ("LoggingManager",)
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -46,7 +48,7 @@ class RemoveNoise(logging.Filter):
 
 
 # TODO: Personalize logging beyond Umbra's work.
-class CustomLogger:
+class LoggingManager:
     """Custom logging system.
 
     Copied from Umbra with minimal customization so far.
@@ -54,7 +56,7 @@ class CustomLogger:
     Parameters
     ----------
     stream : :class:`bool`, default=True
-        A boolean indicating whether the logs should be output to a stream.
+        Whether the logs should be output to a stream. Defaults to True.
 
     Attributes
     ----------
@@ -89,8 +91,8 @@ class CustomLogger:
         logging.getLogger("discord").setLevel(logging.INFO)
         logging.getLogger("discord.http").setLevel(logging.INFO)
         logging.getLogger("discord.state").addFilter(RemoveNoise())
-
         self.log.setLevel(logging.INFO)
+
         handler = RotatingFileHandler(
             filename=self.logging_path / "Beira.log",
             encoding="utf-8",
@@ -105,7 +107,7 @@ class CustomLogger:
 
         if self.stream:
             stream_handler = logging.StreamHandler()
-            if stream_supports_colour(stream_handler):
+            if stream_supports_colour(stream_handler.stream):
                 stream_handler.setFormatter(ColourFormatter())
             self.log.addHandler(stream_handler)
 

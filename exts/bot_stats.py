@@ -11,7 +11,6 @@ from typing import TYPE_CHECKING, Any, Literal
 import discord
 from discord.app_commands import Choice
 from discord.ext import commands
-from discord.utils import utcnow
 
 import core
 from core.utils import StatsEmbed, upsert_guilds, upsert_users
@@ -87,7 +86,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             (ctx.guild.id if ctx.guild else 0),
             ctx.channel.id,
             ctx.author.id,
-            utcnow(),
+            discord.utils.utcnow(),
             ctx.prefix,
             ctx.command.qualified_name,
             (ctx.interaction is not None),
@@ -214,7 +213,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             where_params.append(f"guild_id = ${len(query_args)}")
 
         if time_period and (time_period > 0):
-            query_args.append(utcnow() - timedelta(days=time_period))
+            query_args.append(discord.utils.utcnow() - timedelta(days=time_period))
             where_params.append(f"date_time >= ${len(query_args)}")
 
         if command:

@@ -10,18 +10,15 @@ import asyncio
 import logging
 import re
 import unicodedata
-from io import BytesIO
 from typing import TYPE_CHECKING, Any
 
 import discord
-from discord import app_commands, ui
-from discord.errors import DiscordException, Forbidden, HTTPException, NotFound
+from discord import app_commands
 from discord.ext import commands
-from PIL import Image
 
 import core
 
-from .ai_generation.utils import get_image
+from .ai_generation.utils import get_image, process_image
 
 
 if TYPE_CHECKING:
@@ -65,7 +62,7 @@ class GuildStickerFlags(commands.FlagConverter):
     )
 
 
-class AddEmojiButton(ui.Button["AddEmojisView"]):
+class AddEmojiButton(discord.ui.Button["AddEmojisView"]):
     """A button responsible for adding an emoji to a guild and deleting it from there if clicked again.
 
     Parameters
@@ -110,7 +107,7 @@ class AddEmojiButton(ui.Button["AddEmojisView"]):
             await interaction.followup.send(f"Deleted this emoji from the server: {self.emoji}", ephemeral=True)
 
 
-class AddEmojisView(ui.View):
+class AddEmojisView(discord.ui.View):
     """A view that holds buttons that can add or delete their displayed emojis from a given guild.
 
     Parameters
@@ -126,29 +123,29 @@ class AddEmojisView(ui.View):
         for emoji in emojis[:25]:
             self.add_item(AddEmojiButton(guild=guild, emoji=emoji))
 
-    async def on_error(self, interaction: discord.Interaction, error: Exception, item: ui.Item[Self]) -> None:
+    async def on_error(self, interaction: discord.Interaction, error: Exception, item: discord.ui.Item[Self]) -> None:
         assert isinstance(item, AddEmojiButton)
 
         if item.style == discord.ButtonStyle.secondary:
             descr = "The emoji could not be added: "
             if isinstance(error, ValueError):
                 descr += "This is not a custom emoji."
-            elif isinstance(error, NotFound):
+            elif isinstance(error, discord.NotFound):
                 descr += "The asset for the emoji was deleted."
-            elif isinstance(error, Forbidden):
+            elif isinstance(error, discord.Forbidden):
                 descr += "You are not allowed to create emojis."
-            elif isinstance(error, HTTPException):
+            elif isinstance(error, discord.HTTPException):
                 descr += "Downloading the asset failed or something else went wrong with the creation process."
-            elif isinstance(error, DiscordException):
+            elif isinstance(error, discord.DiscordException):
                 descr += "There was no internal connection state for the emoji."
             else:
                 descr = "An unknown error occurred."
                 LOGGER.exception("Unknown error in AddEmojiView when adding an emoji.", exc_info=error)
         else:
             descr = "The emoji could not be deleted: "
-            if isinstance(error, Forbidden):
+            if isinstance(error, discord.Forbidden):
                 descr += "you are not allowed to delete emojis."
-            elif isinstance(error, HTTPException):
+            elif isinstance(error, discord.HTTPException):
                 descr += "an error occurred."
             else:
                 descr += "an unknown error occurred."
@@ -157,15 +154,84 @@ class AddEmojisView(ui.View):
         await interaction.response.send_message(descr)
 
 
+@app_commands.context_menu(name="Add Emoji(s)")
+@app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
+@app_commands.checks.bot_has_permissions(manage_emojis_and_stickers=True)
+async def context_menu_emoji_add(interaction: core.Interaction, message: discord.Message) -> None:
+    """Context menu command for adding emojis from a message to the guild in context."""
+
+    # Regex taken from commands.PartialEmojiConverter.
+    matches = re.findall(r"<(a?):([a-zA-Z0-9\_]{1,32}):([0-9]{15,20})>", message.content)
+
+    if matches and (interaction.guild is not None):
+        extracted_emojis: list[discord.PartialEmoji] = []
+
+        for match in matches:
+            emoji_animated = bool(match[0])
+            emoji_name = match[1]
+            emoji_id = int(match[2])
+
+            converted_emoji = discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
+            extracted_emojis.append(converted_emoji)
+
+        if extracted_emojis:
+            view = discord.ui.View()
+            for emoji in extracted_emojis[:25]:
+                view.add_item(AddEmojiButton(guild=interaction.guild, emoji=emoji))
+            embed = discord.Embed(title="Click the buttons below to add the corresponding emojis!")
+            await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
+        else:
+            await interaction.response.send_message("None of the emojis could be properly parsed.", ephemeral=True)
+    else:
+        if not interaction.guild:
+            content = "This needs to be in a server to work."
+        else:
+            content = "No emojis found in this message."
+
+        await interaction.response.send_message(content, ephemeral=True)
+
+
+@app_commands.context_menu(name="Add Sticker(s)")
+@app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
+@app_commands.checks.bot_has_permissions(manage_emojis_and_stickers=True)
+async def context_menu_sticker_add(interaction: core.Interaction, message: discord.Message) -> None:
+    """Context menu command for adding stickers from a message to the guild in context."""
+
+    added_count = 0
+    errors: list[str] = []
+    if message.stickers and (interaction.guild is not None):
+        for sticker in message.stickers:
+            try:
+                sticker_file = await sticker.to_file()
+                await interaction.guild.create_sticker(
+                    name=sticker.name,
+                    description=f"{sticker.name} description.",
+                    emoji="\N{NINJA}",
+                    file=sticker_file,
+                    reason="Added with Beira.",
+                )
+                added_count += 1
+            except (discord.DiscordException, ValueError, TypeError) as err:
+                errors.append(str(err))
+
+        content = f"{added_count} sticker(s) added!\n"
+
+        if errors:
+            error_str = "\n".join(f"{i}. {err}" for i, err in enumerate(errors) if err)
+            content += f"Errors encountered:\n{error_str}"
+
+        await interaction.response.send_message(content, ephemeral=True)
+    else:
+        await interaction.response.send_message("No stickers in this message.", ephemeral=True)
+
+
 class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
     """A cog with commands for performing actions with emojis and stickers."""
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.sticker_ctx_menu = app_commands.ContextMenu(name="Add Sticker(s)", callback=self.context_menu_sticker_add)
-        self.emoji_ctx_menu = app_commands.ContextMenu(name="Add Emoji(s)", callback=self.context_menu_emoji_add)
-        self.bot.tree.add_command(self.sticker_ctx_menu)
-        self.bot.tree.add_command(self.emoji_ctx_menu)
+        self.bot.tree.add_command(context_menu_sticker_add)
+        self.bot.tree.add_command(context_menu_emoji_add)
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -174,8 +240,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         return discord.PartialEmoji(name="\N{GRINNING FACE}")
 
     async def cog_unload(self) -> None:
-        self.bot.tree.remove_command(self.sticker_ctx_menu.name, type=self.sticker_ctx_menu.type)
-        self.bot.tree.remove_command(self.emoji_ctx_menu.name, type=self.emoji_ctx_menu.type)
+        self.bot.tree.remove_command(context_menu_sticker_add.name, type=context_menu_sticker_add.type)
+        self.bot.tree.remove_command(context_menu_sticker_add.name, type=context_menu_sticker_add.type)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         """A local error handler for the emoji and sticker-related commands.
@@ -303,6 +369,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send(embed=embed, ephemeral=True)
 
     @emoji_.command("add")
+    @commands.has_guild_permissions(manage_emojis_and_stickers=True)
     async def emoji_add(
         self,
         ctx: core.GuildContext,
@@ -359,40 +426,6 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         else:
             await ctx.send("Something went wrong. The emoji could not be added.")
 
-    @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
-    async def context_menu_emoji_add(self, interaction: core.Interaction, message: discord.Message) -> None:
-        """Context menu command for adding emojis from a message to the guild in context."""
-
-        # Regex taken from commands.PartialEmojiConverter.
-        matches = re.findall(r"<(a?):([a-zA-Z0-9\_]{1,32}):([0-9]{15,20})>", message.content)
-
-        if matches and (interaction.guild is not None):
-            extracted_emojis: list[discord.PartialEmoji] = []
-
-            for match in matches:
-                emoji_animated = bool(match[0])
-                emoji_name = match[1]
-                emoji_id = int(match[2])
-
-                converted_emoji = discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
-                extracted_emojis.append(converted_emoji)
-
-            if extracted_emojis:
-                view = discord.ui.View()
-                for emoji in extracted_emojis[:25]:
-                    view.add_item(AddEmojiButton(guild=interaction.guild, emoji=emoji))
-                embed = discord.Embed(title="Click the buttons below to add the corresponding emojis!")
-                await interaction.response.send_message(embed=embed, view=view, ephemeral=True)
-            else:
-                await interaction.response.send_message("None of the emojis could be properly parsed.", ephemeral=True)
-        else:
-            if not interaction.guild:
-                content = "This needs to be in a server to work."
-            else:
-                content = "No emojis found in this message."
-
-            await interaction.response.send_message(content, ephemeral=True)
-
     @commands.hybrid_group()
     @commands.guild_only()
     async def sticker(self, ctx: core.GuildContext) -> None:
@@ -417,7 +450,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         except commands.GuildStickerNotFound:
             try:
                 conv_sticker = await self.bot.fetch_sticker(int(sticker))
-            except (ValueError, HTTPException, NotFound):
+            except (ValueError, discord.HTTPException, discord.NotFound):
                 embed = discord.Embed(title="Error", description="That is not a valid sticker name or ID, sorry!")
                 await ctx.send(embed=embed)
                 return
@@ -426,7 +459,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             discord.Embed(color=0xFFCC4D, title="Sticker Information")
             .add_field(
                 name=f"`{conv_sticker.name} — {conv_sticker.id}`",
-                value=(conv_sticker.description or ""),
+                value=conv_sticker.description,
                 inline=False,
             )
             .set_image(url=conv_sticker.url)
@@ -447,8 +480,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send(embed=embed, ephemeral=True)
 
     @sticker.command("add")
-    @commands.has_guild_permissions(manage_emojis_and_stickers=True)  # Check if one of these is redundant.
-    @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
+    @commands.has_guild_permissions(manage_emojis_and_stickers=True)
     async def sticker_add(
         self,
         ctx: core.GuildContext,
@@ -468,11 +500,6 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             Flags for a sticker's payload.
         """
 
-        def to_png_file(attach_bytes: bytes, filetypes: list[str]) -> discord.File:
-            with Image.open(attach_bytes, formats=filetypes) as image, BytesIO() as file_binary:
-                image.save(file_binary, "PING")
-                return discord.File(file_binary, "image.png")
-
         if sticker:
             conv_sticker = await commands.GuildStickerConverter().convert(ctx, sticker)
             new_sticker = await ctx.guild.create_sticker(
@@ -485,8 +512,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         elif sticker_flags.name and sticker_flags.attachment:
             attachment = sticker_flags.attachment
             if not attachment.filename.endswith((".png", ".apng")):
-                filetype = attachment.filename.rsplit(".", 1)[-1]
-                to_file = await asyncio.to_thread(to_png_file, await attachment.read(), [filetype])
+                to_bytes = await asyncio.to_thread(process_image, await attachment.read())
+                to_file = discord.File(to_bytes, description=attachment.description)
             else:
                 to_file = await attachment.to_file()
             new_sticker = await ctx.guild.create_sticker(
@@ -501,37 +528,6 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             return
 
         await ctx.send(f"Sticker successfully added: `{new_sticker.name}`.", stickers=[new_sticker])
-
-    @app_commands.checks.has_permissions(manage_emojis_and_stickers=True)
-    async def context_menu_sticker_add(self, interaction: core.Interaction, message: discord.Message) -> None:
-        """Context menu command for adding stickers from a message to the guild in context."""
-
-        added_count = 0
-        errors: list[str] = []
-        if message.stickers and (interaction.guild is not None):
-            for sticker in message.stickers:
-                try:
-                    sticker_file = await sticker.to_file()
-                    await interaction.guild.create_sticker(
-                        name=sticker.name,
-                        description=f"{sticker.name} description.",
-                        emoji="\N{NINJA}",
-                        file=sticker_file,
-                        reason="Added with Beira.",
-                    )
-                    added_count += 1
-                except (DiscordException, ValueError, TypeError, HTTPException, NotFound, Forbidden) as err:
-                    errors.append(str(err))
-
-            content = f"{added_count} sticker(s) added!\n"
-
-            if errors:
-                error_str = "\n".join(f"{i}. {err}" for i, err in enumerate(errors) if err)
-                content += f"Errors encountered:\n{error_str}"
-
-            await interaction.response.send_message(content, ephemeral=True)
-        else:
-            await interaction.response.send_message("No stickers in this message.", ephemeral=True)
 
 
 async def setup(bot: core.Beira) -> None:

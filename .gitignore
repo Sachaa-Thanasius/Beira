@@ -237,7 +237,6 @@ fabric.properties
 # Android studio 3.1+ serialized cache file
 .idea/caches/build_file_checksums.ser
 
-
 # VisualStudioCode.gitignore
 .vscode/*
 !.vscode/settings.json
@@ -255,14 +254,11 @@ fabric.properties
 # Ruff
 .ruff_cache
 
-# Bot data
+# Project specific
 data/dunk/
 logs/
-
-# Bot config
 config.json
 database/table_insertions.sql
-
-# Bot misc
+database/migration_script.py
 misc/
 test_bot.py

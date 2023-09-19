@@ -7,9 +7,10 @@ Credit to Ralph for the idea and initial implementation.
 from __future__ import annotations
 
 import asyncio
+import itertools
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any, TypeAlias
 from urllib.parse import quote, urljoin
 
 import aiohttp
@@ -24,6 +25,8 @@ from core.utils import StatsEmbed
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 
 LOGGER = logging.getLogger(__name__)
@@ -62,39 +65,43 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 class UpdateOPGGView(discord.ui.View):
     """A small view that adds an update button for OP.GG stats."""
 
-    def __init__(self, bot: core.Beira, summoner_name_list: list[str]) -> None:
-        super().__init__(timeout=180)
-        self.bot = bot
+    def __init__(self, author_id: int, cog: LoLCog, summoner_name_list: list[str], **kwargs: Any) -> None:
+        super().__init__(**kwargs)
+        self.author_id = author_id
+        self.cog = cog
         self.summoner_name_list = summoner_name_list
+
+    async def interaction_check(self, interaction: discord.Interaction, /) -> bool:
+        """Ensures that the user interacting with the view was the one who instantiated it."""
+
+        check = self.author_id == interaction.user.id
+        if not check:
+            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
+        return check
 
     @discord.ui.button(label="Update", style=discord.ButtonStyle.blurple)
     async def update(self, interaction: core.Interaction, button: discord.ui.Button[Self]) -> None:
         """Update the information in the given leaderboard."""
 
         # Change the button to show the update is in progress.
-        button.emoji = self.bot.get_emoji(1066108412930297986)
+        button.emoji = discord.PartialEmoji.from_str("<a:typing:1066108412930297986>")
         button.label = "Updating..."
         button.disabled = True
 
         await interaction.response.edit_message(view=self)
 
-        # Only activate for bot owner.
-        if interaction.user.id == self.bot.owner_id:
-            cog = self.bot.get_cog("LoLCog")
+        # Update every member's OP.GG page.
+        await update_op_gg_profiles([urljoin(self.cog.req_site, quote(name)) for name in self.summoner_name_list])
 
-            if cog and isinstance(cog, LoLCog):
-                # Update every member's OP.GG page.
-                await update_op_gg_profiles([urljoin(cog.req_site, quote(name)) for name in self.summoner_name_list])
+        # Recreate and resend the leaderboard.
+        updated_embed: StatsEmbed = await self.cog.create_lol_leaderboard(self.summoner_name_list)
 
-                # Recreate and resend the leaderboard.
-                updated_embed: StatsEmbed = await cog.create_lol_leaderboard(self.summoner_name_list)
+        # Change the button to show the update is complete.
+        button.emoji = None
+        button.label = "Update"
+        button.disabled = False
 
-                # Change the button to show the update is complete.
-                button.emoji = None
-                button.label = "Update"
-                button.disabled = False
-
-                await interaction.edit_original_response(embed=updated_embed, view=self)
+        await interaction.edit_original_response(embed=updated_embed, view=self)
 
 
 class LoLCog(commands.Cog, name="League of Legends"):
@@ -184,19 +191,17 @@ class LoLCog(commands.Cog, name="League of Legends"):
         # Append a default list of summoners if the command was called in a certain private guild.
         if ctx.guild and (ctx.guild.id == PERSONAL_GUILD):
             if summoner_names is not None:
-                summoner_name_list = summoner_names.split()
-                summoner_name_list.extend(self.default_summoners_list)
-                summoner_name_list = list(set(summoner_name_list))
+                summoner_name_list = list(set(itertools.chain(summoner_names.split(), self.default_summoners_list)))
             else:
                 summoner_name_list = self.default_summoners_list
         elif summoner_names is not None:
             summoner_name_list = summoner_names.split()
         else:
-            summoner_name_list = []
+            summoner_name_list: list[str] = []
 
         # Get the information for every user and construct the leaderboard embed.
         embed: StatsEmbed = await self.create_lol_leaderboard(summoner_name_list)
-        view = UpdateOPGGView(self.bot, summoner_name_list)
+        view = UpdateOPGGView(self.bot.owner.id, self, summoner_name_list)
 
         await ctx.send(embed=embed, view=view)
 

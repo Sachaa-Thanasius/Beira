@@ -1,7 +1,5 @@
 A Cadmean Victory Volume I
 
-![](media/image1.png){width="2.2614577865266843in" height="2.7083333333333335in"}
-
 M J Bradley
 
 # Prologue
@@ -11876,8 +11874,6 @@ Fleur placed her finger on his lips and shook her head. 'Non.'
 
 A Cadmean Victory Volume II
 
-![](media/image1.png){width="2.2614577865266843in" height="2.7083333333333335in"}
-
 M J Bradley
 
 # The Game is Afoot
@@ -22094,8 +22090,6 @@ Harry's breath tickled her cheek as he pressed her forehead against hers. He was
 
 A Cadmean Victory Volume III
 
-![](media/image1.png){width="2.2614577865266843in" height="2.7083333333333335in"}
-
 M J Bradley
 
 # Umbridge too Far
@@ -32059,8 +32053,6 @@ A shadow hovered before the dipping crescent of the red sun, the scattered, warp
 *choice. He dies. Or our dream does.*
 
 A Cadmean Victory Volume IV
-
-![](media/image1.png){width="2.2614577865266843in" height="2.7083333333333335in"}
 
 M J Bradley
 

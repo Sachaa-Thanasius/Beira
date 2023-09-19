@@ -2,6 +2,7 @@
 dice.py: The extension that holds a die roll command and all the associated utility classes.
 
 TODO: Consider adding more elements from https://wiki.roll20.net/Dice_Reference.
+TODO: Consider switching to or extending Sinbad's dicelib: https://github.com/mikeshardmind/dicelib.
 """
 
 from __future__ import annotations
@@ -120,9 +121,9 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
     evaluation = int(AEVAL(normalized_expression))  # type: ignore
 
     # Error handling.
-    if len(AEVAL.error) > 0:
-        for err in AEVAL.error:
-            LOGGER.error(err.get_error())
+    if len(AEVAL.error) > 0:  # type: ignore # To revisit and possibly replace later
+        for err in AEVAL.error:  # type: ignore # See above.
+            LOGGER.error(err.get_error())  # type: ignore # See above.
         normalized_expression += " (Error thrown while rolling, incorrect result)"
 
     return normalized_expression, evaluation
@@ -192,11 +193,15 @@ class DiceEmbed(discord.Embed):
 
                 kwargs["description"] = description.getvalue()
 
-            kwargs["colour"] = discord.Colour.from_rgb(
-                *(
-                    sum(col) // len(col)
-                    for col in zip(*(standard_dice[val].color.to_rgb() for val in rolls_info), strict=True)
-                ),
+            kwargs["colour"] = (
+                kwargs.get("colour")
+                or kwargs.get("color")
+                or discord.Colour.from_rgb(
+                    *(
+                        sum(col) // len(col)
+                        for col in zip(*(standard_dice[val].color.to_rgb() for val in rolls_info), strict=True)
+                    ),
+                )
             )
 
         elif expression_info:
@@ -209,7 +214,7 @@ class DiceEmbed(discord.Embed):
             
             Total: **{total}**"""
             kwargs["description"] = textwrap.dedent(description)
-            kwargs["colour"] = 0xD5AB88
+            kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0xD5AB88
 
         else:
             kwargs["description"] = "\N{GAME DIE} **Nothing was rolled.**"
@@ -230,7 +235,7 @@ class RerollButton(ui.Button[ui.View]):
         label = "\N{CLOCKWISE GAPPED CIRCLE ARROW}"
         style = discord.ButtonStyle.green
         custom_id = "dice:reroll_button"
-        super().__init__(label=label, style=style, custom_id=custom_id)
+        super().__init__(style=style, label=label, custom_id=custom_id)
         self.dice_info = dice_info
         self.modifier = modifier
         self.expression = expression
@@ -305,7 +310,7 @@ class DiceSelect(ui.Select["DiceView"]):
             custom_id=custom_id,
             placeholder=placeholder,
             min_values=1,
-            max_values=len(standard_dice),
+            max_values=len(options),
             options=options,
         )
 
@@ -413,7 +418,7 @@ class DiceView(ui.View):
 
     @discord.ui.button(
         label="Modifier",
-        custom_id="dice:modifier_button",
+        custom_id="dice:modifier_btn",
         style=discord.ButtonStyle.green,
         emoji="\N{HEAVY PLUS SIGN}",
         row=3,
@@ -447,7 +452,7 @@ class DiceView(ui.View):
 
     @discord.ui.button(
         label="# of Rolls",
-        custom_id="dice:set_num_button",
+        custom_id="dice:set_num_btn",
         style=discord.ButtonStyle.green,
         emoji="\N{HEAVY MULTIPLICATION X}",
         row=3,
@@ -488,7 +493,7 @@ class DiceView(ui.View):
 
     @discord.ui.button(
         label="Custom Expression",
-        custom_id="dice:set_expr_button",
+        custom_id="dice:set_expr_btn",
         style=discord.ButtonStyle.green,
         emoji="\N{ABACUS}",
         row=3,
@@ -526,7 +531,7 @@ class DiceView(ui.View):
 
     @discord.ui.button(
         label="\N{CLOCKWISE GAPPED CIRCLE ARROW}",
-        custom_id="dice:run_expr_button",
+        custom_id="dice:run_expr_btn",
         style=discord.ButtonStyle.green,
         row=3,
     )
@@ -571,9 +576,10 @@ async def roll(ctx: core.Context, expression: str | None = None) -> None:
     if not expression:
         embed = discord.Embed(
             title="Take a chance. Roll the dice!",
-            description="Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple "
-            "dice simultaneously!\n"
-            "Note: Maximum number of rolls at once is 50.",
+            description=(
+                "Click die buttons below for individual rolls, add a modifier on all rolls, or roll multiple "
+                "dice simultaneously!\nNote: Maximum number of rolls at once is 50."
+            ),
         )
         embed.set_thumbnail(
             url="https://cdn.discordapp.com/attachments/978114570717642822/1109497209143169135/7V8e0ON.gif",

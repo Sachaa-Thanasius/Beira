@@ -74,30 +74,31 @@ class CustomNotificationsCog(commands.Cog):
 
         # Check if the update is in the right server.
         if before.guild.id == self.aci_guild_id:
-            # Check if someone got a new relevant leveled role.
+            # Check if someone got a relevant leveled role.
             new_leveled_roles = [
                 role for role in after.roles if (role not in before.roles) and (role.id in self.aci_levelled_roles)
             ]
-            # Ensure the user didn't just rejoin either.
-            # - Technically, at 8 points every two minutes, it's possible to hit RC in 20h 50m, so 21 hours will be the
-            #   limit.
-            if after.joined_at is not None:
-                recently_rejoined = (discord.utils.utcnow() - after.joined_at).total_seconds() < (60 * 60 * 21)
+            if new_leveled_roles:
+                # Ensure the user didn't just rejoin either.
+                # - Technically, at 8 points every two minutes, it's possible to hit the lowest relevant leveled role in
+                #   20h 50m, so 21 hours will be the limit.
+                if after.joined_at is not None:
+                    recently_rejoined = (discord.utils.utcnow() - after.joined_at).total_seconds() < (60 * 60 * 21)
+                else:
+                    recently_rejoined = False
+
+                if new_leveled_roles and not recently_rejoined:
+                    # Send a message notifying holders of some other role(s) about this new role acquisition.
+                    role_names = [role.name for role in new_leveled_roles]
+                    content = f"<@&{self.aci_mod_role}>, {after.mention} was given the `{role_names}` role(s)."
+                    await role_log_wbhk.send(content)
             else:
-                recently_rejoined = False
-
-            if new_leveled_roles and not recently_rejoined:
-                # Send a message notifying holders of some other role(s) about this new role acquisition.
-                role_names = [role.name for role in new_leveled_roles]
-                content = f"<@&{self.aci_mod_role}>, {after.mention} was given the `{role_names}` role(s)."
-                await role_log_wbhk.send(content)
-
-            # Check if someone got a new "Server Booster" role.
-            boost_role = after.guild.premium_subscriber_role
-            if (boost_role in after.roles) and (boost_role not in before.roles):
-                # Send a message notifying holders of some other role(s) about this new role acquisition.
-                content = f"<@&{self.aci_mod_role}>, {after.mention} just boosted the server!"
-                await role_log_wbhk.send(content)
+                # Check if someone got a new "Server Booster" role.
+                boost_role = after.guild.premium_subscriber_role
+                if (boost_role in after.roles) and (boost_role not in before.roles):
+                    # Send a message notifying holders of some other role(s) about this new role acquisition.
+                    content = f"<@&{self.aci_mod_role}>, {after.mention} just boosted the server!"
+                    await role_log_wbhk.send(content)
 
     # @commands.Cog.listener("on_raw_message_delete")
     async def test_on_any_message_delete(self, payload: discord.RawMessageDeleteEvent) -> None:

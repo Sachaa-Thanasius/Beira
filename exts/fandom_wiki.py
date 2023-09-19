@@ -14,7 +14,6 @@ from urllib.parse import quote, urljoin
 
 import bs4
 import discord
-from bs4 import BeautifulSoup
 from discord.app_commands import Choice
 from discord.ext import commands
 
@@ -65,29 +64,6 @@ class AoCWikiEmbed(DTEmbed):
         )
 
 
-async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | None, str | None]:
-    """Extract the summary and image from a Fandom page."""
-
-    async with session.get(url) as response:
-        char_summary, char_thumbnail = None, None
-
-        # Extract the main content.
-        text = await response.text()
-        soup = BeautifulSoup(text, "lxml")
-        content = soup.find("div", class_="mw-parser-output")
-        if isinstance(content, bs4.Tag):
-            # Extract the image.
-            image = content.find("a", class_="image image-thumbnail")
-            if isinstance(image, bs4.Tag):
-                char_thumbnail = str(image["href"])
-
-            content = clean_fandom_page(content)
-            char_summary = content.text
-
-        # Return the remaining text.
-        return char_summary, char_thumbnail
-
-
 def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
     """Attempts to clean a Fandom wiki page.
 
@@ -122,6 +98,29 @@ def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
             element.replace_with("")
 
     return soup
+
+
+async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | None, str | None]:
+    """Extract the summary and image from a Fandom page."""
+
+    async with session.get(url) as response:
+        char_summary, char_thumbnail = None, None
+
+        # Extract the main content.
+        text = await response.text()
+        soup = bs4.BeautifulSoup(text, "lxml")
+        content = soup.find("div", class_="mw-parser-output")
+        if isinstance(content, bs4.Tag):
+            # Extract the image.
+            image = content.find("a", class_="image image-thumbnail")
+            if isinstance(image, bs4.Tag):
+                char_thumbnail = str(image["href"])
+
+            content = clean_fandom_page(content)
+            char_summary = content.text
+
+        # Return the remaining text.
+        return char_summary, char_thumbnail
 
 
 class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
@@ -184,7 +183,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
                 async with self.bot.web_session.get(directory_url) as response:
                     text = await response.text()
-                    soup = BeautifulSoup(text, "html.parser")
+                    soup = bs4.BeautifulSoup(text, "html.parser")
                     content = soup.find("div", class_="mw-allpages-body")
                     if isinstance(content, bs4.Tag):
                         for link in content.find_all("a"):
@@ -217,7 +216,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         """Autocomplete callback for the names of different wikis."""
 
         options = self.all_wikis.values()
-        return [Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
+        return [Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()][:25]
 
     @wiki.autocomplete("search_term")
     async def wiki_search_term_autocomplete(self, interaction: core.Interaction, current: str) -> list[Choice[str]]:
@@ -231,7 +230,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             wiki = "Harry Potter and the Ashes of Chaos"
 
         options = self.all_wikis[wiki]["all_pages"]
-        return [Choice(name=name, value=name) for name in options if current.lower() in name.lower()][:25]
+        return [Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()][:25]
 
     async def search_wiki(self, wiki_name: str, wiki_query: str) -> discord.Embed:
         """Search a Fandom wiki for different pages.

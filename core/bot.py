@@ -12,7 +12,9 @@ from typing import Any
 import aiohttp
 import asyncpg
 import discord
+import wavelink
 from discord.ext import commands, tasks
+from wavelink.ext import spotify
 
 from exts import EXTENSIONS
 
@@ -20,8 +22,6 @@ from .checks import is_blocked
 from .config import CONFIG
 from .context import Context
 
-
-__all__ = ("Beira",)
 
 LOGGER = logging.getLogger(__name__)
 
@@ -83,11 +83,10 @@ class Beira(commands.Bot):
         LOGGER.info(f"Logged in as {self.user} (ID: {self.user.id})")
 
     async def setup_hook(self) -> None:
-        """Loads variables from the database and local files before the bot connects to the Discord Gateway."""
-
         await self._load_guild_prefixes()
         await self._load_blocked_entities()
         await self._load_extensions()
+        await self._connect_lavalink_nodes()
         self.app_info = await self.application_info()
         self.owner_id = self.app_info.owner.id
         self.loop.create_task(self._load_special_friends())
@@ -149,6 +148,11 @@ class Beira(commands.Bot):
         except OSError:
             LOGGER.error("Couldn't load guild prefixes from the database. Ignoring for sake of defaults.")
 
+    async def _connect_lavalink_nodes(self) -> None:
+        sc = spotify.SpotifyClient(**self.config["spotify"])
+        node = wavelink.Node(**self.config["lavalink"])
+        await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
+
     async def _load_extensions(self) -> None:
         """Loads extensions/cogs.
 
@@ -190,21 +194,7 @@ class Beira(commands.Bot):
         await self.wait_until_ready()
 
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
-        """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of
-        this bot's owner.
-
-        If a :attr:`special_friends` dict is not set, it is assumed to be on purpose.
-
-        Parameters
-        -----------
-        user : :class:`discord.abc.User`
-            The user to check for.
-
-        Returns
-        --------
-        :class:`bool`
-            Whether the user is a special friend of the owner.
-        """
+        """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of this bot's owner."""
 
         if len(self.special_friends) > 0:
             return user.id in self.special_friends.values()
@@ -212,20 +202,7 @@ class Beira(commands.Bot):
         return False
 
     def is_ali(self, user: discord.abc.User, /) -> bool:
-        """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali.
-
-        If a :attr:`special_friends` dict is not set, it is assumed to be on purpose.
-
-        Parameters
-        -----------
-        user : :class:`discord.abc.User`
-            The user to check for.
-
-        Returns
-        --------
-        :class:`bool`
-            Whether the user is Ali.
-        """
+        """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali."""
 
         if len(self.special_friends) > 0:
             return user.id == self.special_friends["aeroali"]

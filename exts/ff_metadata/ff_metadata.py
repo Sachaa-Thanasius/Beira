@@ -32,6 +32,7 @@ from .utils import (
     create_ao3_work_embed,
     create_atlas_ffn_embed,
     create_fichub_embed,
+    is_ao3_work_list,
 )
 
 
@@ -45,10 +46,8 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.ao3_session: AO3.Session | None = None
-        self.atlas_client = atlas_api.AtlasClient(
-            auth=tuple(self.bot.config["atlas_fanfic"].values()),
-            session=self.bot.web_session,
-        )
+        atlas_auth: tuple[str, str] = (self.bot.config["atlas_fanfic"]["user"], self.bot.config["atlas_fanfic"]["pass"])
+        self.atlas_client = atlas_api.AtlasClient(auth=atlas_auth, session=self.bot.web_session)
         self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_session)
         self.allowed_channels_cache: dict[int, set[int]] = {}
         self.aci100_id: int = self.bot.config["discord"]["guilds"]["prod"][0]
@@ -254,7 +253,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 send_kwargs["embed"] = await create_ao3_work_embed(story_data)
             elif isinstance(story_data, AO3.Series):
                 send_kwargs["embed"] = await create_ao3_series_embed(story_data)
-                send_kwargs["view"] = AO3SeriesView(ctx.author, story_data)
+                send_kwargs["view"] = AO3SeriesView(ctx.author.id, story_data)
             else:
                 send_kwargs["embed"] = DTEmbed(
                     title="No Results",
@@ -318,7 +317,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         else:
             search = AO3.Search(any_field=name_or_url, session=self.ao3_session)
             await asyncio.to_thread(search.update)
-            story_data = search.results[0] if search.results else None
+            if results := search.results:  # type: ignore # Third party typing
+                assert is_ao3_work_list(results)
+                story_data = results[0]
+            else:
+                story_data = None
 
         return story_data
 

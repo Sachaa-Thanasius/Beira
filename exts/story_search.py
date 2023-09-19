@@ -11,7 +11,6 @@ import random
 import re
 import textwrap
 from bisect import bisect_left
-from copy import deepcopy
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, TypeAlias
 
@@ -21,7 +20,7 @@ import discord
 from discord.ext import commands
 
 import core
-from core.utils import EMOJI_URL, PaginatedEmbed, PaginatedEmbedView
+from core.utils import EMOJI_URL, PaginatedEmbedView
 
 
 if TYPE_CHECKING:
@@ -36,10 +35,10 @@ LOGGER = logging.getLogger(__name__)
 class StoryInfo:
     """A class to hold all the information about each story."""
 
-    story_acronym: str
-    story_full_name: str
-    author_name: str
-    story_link: str
+    acronym: str
+    name: str
+    author: str
+    link: str
     emoji_id: int
     text: list[str] = attrs.field(factory=list)
     chapter_index: list[int] = attrs.field(factory=list)
@@ -56,57 +55,26 @@ class StoryInfo:
         )
 
 
-class StoryQuoteEmbed(PaginatedEmbed):
-    """A subclass of :class:`PaginatedEmbed` customized to create an embed 'page' for a story, given actual data about
-    the story.
-
-    Parameters
-    ----------
-    story_data : dict, optional
-        The information about the story to be put in the author field, including the story title, author, and link.
-    **kwargs
-        Keyword arguments for the normal initialization of an :class:`PaginatedEmbed`. See that class for more info.
-    """
-
-    def __init__(self, *, story_data: dict[str, Any] | None = None, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-
-        if story_data is not None:
-            self.set_page_author(story_data)
-
-    def set_page_author(self, story_data: dict[str, Any] | None = None) -> Self:
-        """Sets the author for this embed page.
-
-        This function returns the class instance to allow for fluent-style chaining.
-        """
-
-        if story_data is None:
-            self.remove_author()
-        else:
-            name, url, emoji_id = story_data["story_full_name"], story_data["story_link"], story_data["emoji_id"]
-            self.set_author(name=name, url=url, icon_url=EMOJI_URL.format(emoji_id))
-
-        return self
-
-
-class StoryQuoteView(PaginatedEmbedView):
+class StoryQuoteView(PaginatedEmbedView[tuple[str, str, str]]):
     """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for quotes from a story.
 
     Parameters
     ----------
-    story_data : dict[str, Any]
+    *args
+        Positional arguments the normal initialization of an :class:`PaginatedEmbedView`. See that class for more info.
+    story_data : StoryInfo
         The story's data and metadata, including full name, author name, and image representation.
     **kwargs
         Keyword arguments the normal initialization of an :class:`PaginatedEmbedView`. See that class for more info.
 
     Attributes
     ----------
-    story_data : dict[str, Any]
+    story_data : StoryInfo
         The story's data and metadata, including full name, author name, and image representation.
     """
 
-    def __init__(self, *, story_data: dict[str, Any], **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+    def __init__(self, *args: Any, story_data: StoryInfo, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
         self.story_data = story_data
 
     def format_page(self) -> discord.Embed:
@@ -115,20 +83,17 @@ class StoryQuoteView(PaginatedEmbedView):
         Assumes a per_page value of 1.
         """
 
-        embed_page = StoryQuoteEmbed(story_data=self.story_data, color=0x149CDF)
+        name, url, emoji_id = self.story_data.name, self.story_data.link, self.story_data.emoji_id
+        embed_page = discord.Embed(color=0x149CDF).set_author(name=name, url=url, icon_url=EMOJI_URL.format(emoji_id))
 
         if self.total_pages == 0:
-            embed_page.set_page_content(("No quotes found!", "N/A", "N/A")).set_page_footer(0, 0)
-
-        elif self.page_cache[self.current_page - 1] is None:
-            # per_page value of 1 means parsing a list of length 1.
-            self.current_page_content = self.pages[self.current_page - 1][0]
-
-            embed_page.set_page_content(self.current_page_content).set_page_footer(self.current_page, self.total_pages)
-            self.page_cache[self.current_page - 1] = embed_page
-
+            embed_page.add_field(name="N/A", value="N/A").set_footer(text="Page 0/0").title = "No quotes found!"
         else:
-            return deepcopy(self.page_cache[self.current_page - 1])
+            # per_page value of 1 means parsing a list of length 1.
+            content = self.pages[self.page_index]
+            for title, chapter_name, quote in content:
+                embed_page.add_field(name=chapter_name, value=quote).title = title
+                embed_page.set_footer(text=f"Page {self.page_index + 1}/{self.total_pages}")
 
         return embed_page
 
@@ -293,21 +258,24 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         # Randomly choose an ACI100 story.
         story = random.choice([key for key in self.story_records if key != "acvr"])
+        story_info = self.story_records[story]
 
         # Randomly choose two paragraphs from the story.
-        b_range = random.randint(2, len(self.story_records[story].text) - 3)
-        b_sample = self.story_records[story].text[b_range : (b_range + 2)]
+        b_range = random.randint(2, len(story_info.text) - 3)
+        b_sample = story_info.text[b_range : (b_range + 2)]
 
         # Get the chapter and collection of the quote.
-        quote_year = self._binary_search_text(story, self.story_records[story].collection_index, (b_range + 2))
-        quote_chapter = self._binary_search_text(story, self.story_records[story].chapter_index, (b_range + 2))
+        quote_year = self._binary_search_text(story, story_info.collection_index, (b_range + 2))
+        quote_chapter = self._binary_search_text(story, story_info.chapter_index, (b_range + 2))
 
         # Bundle the quote in an embed.
-        embed = StoryQuoteEmbed(
-            color=0xDB05DB,
-            story_data=attrs.asdict(self.story_records[story]),
-            page_content=(quote_year, quote_chapter, "".join(b_sample)),
-        ).set_footer(text="Randomly chosen quote from an ACI100 story.")
+        embed = (
+            discord.Embed(color=0xDB05DB)
+            .set_author(name=story_info.name, url=story_info.link, icon_url=EMOJI_URL.format(story_info.emoji_id))
+            .add_field(name=quote_chapter, value="".join(b_sample))
+            .set_footer(text="Randomly chosen quote from an ACI100 story.")
+        )
+        embed.title = quote_year
 
         await ctx.send(embed=embed)
 
@@ -335,9 +303,8 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         async with ctx.typing():
             processed_text = self.process_text(story, query)
-            story_data = attrs.asdict(self.story_records[story])
-            view = StoryQuoteView(author=ctx.author, all_pages_content=processed_text, story_data=story_data)
-            message = await ctx.send(embed=view.get_starting_embed(), view=view)
+            view = StoryQuoteView(ctx.author.id, processed_text, story_data=self.story_records[story])
+            message = await ctx.send(embed=await view.get_first_page(), view=view)
             view.message = message
 
     @commands.hybrid_command()
@@ -354,9 +321,8 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         async with ctx.typing():
             processed_text = self.process_text("acvr", query)
-            story_data = attrs.asdict(self.story_records["acvr"])
-            view = StoryQuoteView(author=ctx.author, all_pages_content=processed_text, story_data=story_data)
-            message = await ctx.send(embed=view.get_starting_embed(), view=view)
+            view = StoryQuoteView(ctx.author.id, processed_text, story_data=self.story_records["acvr"])
+            message = await ctx.send(embed=await view.get_first_page(), view=view)
             view.message = message
 
 

@@ -8,12 +8,10 @@ from __future__ import annotations
 import asyncio
 import logging
 from io import BytesIO
-from pathlib import Path
 from time import perf_counter
 from typing import Literal
 
 import discord
-import openai
 from discord.ext import commands
 from PIL import Image
 
@@ -30,8 +28,8 @@ INSPIROBOT_ICON_URL = "https://pbs.twimg.com/profile_images/815624354876760064/z
 class DownloadButtonView(discord.ui.View):
     """A small view that adds download buttons to a message based on the given labels and download urls."""
 
-    def __init__(self, *button_links: tuple[str, str]) -> None:
-        super().__init__(timeout=None)
+    def __init__(self, *button_links: tuple[str, str], timeout: int | None = 180) -> None:
+        super().__init__(timeout=timeout)
         for link in button_links:
             self.add_item(discord.ui.Button(style=discord.ButtonStyle.blurple, label=link[0], url=link[1]))
 
@@ -44,16 +42,12 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.data_path = Path(__file__).resolve().parents[1].joinpath("data/dunk/general_morph")
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{ROBOT FACE}")
-
-    async def cog_load(self) -> None:
-        openai.aiosession.set(self.bot.web_session)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         """Handles any errors within this cog."""

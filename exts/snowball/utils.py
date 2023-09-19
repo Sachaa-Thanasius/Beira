@@ -3,7 +3,6 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias
 
 import asyncpg
-import attrs
 import discord
 from discord.ext import commands
 
@@ -70,8 +69,8 @@ class UserSnowballUpdate(NamedTuple):
         return await conn.fetchrow(snowball_upsert_query, *args)
 
 
-@attrs.define
-class GuildSnowballSettings:
+
+class GuildSnowballSettings(NamedTuple):
     """Record-like structure to hold a guild's snowball settings.
 
     Attributes
@@ -230,11 +229,12 @@ class SnowballSettingsView(discord.ui.View):
         The message an instance of this view is attached to.
     """
 
+    message: discord.Message
+
     def __init__(self, guild_name: str, guild_settings: GuildSnowballSettings) -> None:
         super().__init__()
         self.guild_name = guild_name
         self.settings: GuildSnowballSettings = guild_settings
-        self.message: discord.Message | None = None
 
     async def on_timeout(self) -> None:
         # Disable everything on timeout.
@@ -242,8 +242,7 @@ class SnowballSettingsView(discord.ui.View):
         for item in self.children:
             item.disabled = True  # type: ignore
 
-        if self.message:
-            await self.message.edit(view=self)
+        await self.message.edit(view=self)
 
     async def interaction_check(self, interaction: core.Interaction, /) -> bool:  # type: ignore # Needed narrowing.
         """Ensure people interacting with this view are only server administrators or bot owners."""
@@ -301,8 +300,7 @@ class SnowballSettingsView(discord.ui.View):
             self.settings = modal.new_settings
 
             # Edit the embed with the settings information.
-            if self.message:
-                await interaction.edit_original_response(embed=self.format_embed())
+            await interaction.edit_original_response(embed=self.format_embed())
 
 
 def collect_cooldown(ctx: core.Context) -> commands.Cooldown | None:

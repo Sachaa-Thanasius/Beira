@@ -23,7 +23,7 @@ __all__ = (
 
 LOGGER = logging.getLogger(__name__)
 
-FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")  # Set your own path to ffmpeg on your machine if need be.
+FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")  # Depends on the machine and its PATH.
 INSPIROBOT_API_URL = "https://inspirobot.me/api"
 
 

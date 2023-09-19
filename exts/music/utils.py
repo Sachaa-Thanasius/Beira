@@ -4,54 +4,45 @@ utils.py: A bunch of utility functions and classes for Wavelink.
 
 from __future__ import annotations
 
-from copy import deepcopy
+import functools
 from datetime import timedelta
 from typing import Any
 
 import discord
 import wavelink
 import yarl
-from discord import app_commands
 from discord.ext import commands
-from discord.utils import escape_markdown
-from wavelink import Playable
 from wavelink.ext import spotify
 
-from core.utils import PaginatedEmbed, PaginatedEmbedView
+from core.utils import EMOJI_STOCK, PaginatedEmbedView
 from core.wave import AnyTrack, AnyTrackIterable
 
+
+escape_markdown = functools.partial(discord.utils.escape_markdown, as_needed=True)
 
 __all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
 
 
-class MusicQueueView(PaginatedEmbedView):
+class MusicQueueView(PaginatedEmbedView[str]):
     """A paginated view for seeing the tracks in an embed-based music queue."""
 
     def format_page(self) -> discord.Embed:
-        embed_page = PaginatedEmbed(color=0x149CDF, title="Music Queue")
+        embed_page = discord.Embed(color=0x149CDF, title="Music Queue")
 
         if self.total_pages == 0:
-            embed_page.set_page_footer(0, 0).description = "The queue is empty."
-
-        elif self.page_cache[self.current_page - 1] is None:
-            # Expected page size of 10
-            self.current_page_content = self.pages[self.current_page - 1]
-            embed_page.description = "\n".join(
-                (
-                    f"{(i + 1) + (self.current_page - 1) * 10}. {song}"
-                    for i, song in enumerate(self.current_page_content)
-                ),
-            )
-            embed_page.set_page_footer(self.current_page, self.total_pages)
-
-            self.page_cache[self.current_page - 1] = embed_page
+            embed_page.description = "The queue is empty."
+            embed_page.set_footer(text="Page 0/0")
         else:
-            return deepcopy(self.page_cache[self.current_page - 1])
+            # Expected page size of 10
+            content = self.pages[self.page_index]
+            organized = (f"{(i + 1) + (self.page_index) * 10}. {song}" for i, song in enumerate(content))
+            embed_page.description = "\n".join(organized)
+            embed_page.set_footer(text=f"Page {self.page_index + 1}/{self.total_pages}")
 
         return embed_page
 
 
-class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], app_commands.Transformer):
+class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], discord.app_commands.Transformer):
     """Converts to what Wavelink considers a playable track (:class:`AnyPlayable` or :class:`AnyTrackIterable`).
 
     The lookup strategy is as follows (in order):
@@ -107,7 +98,7 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], a
             raise wavelink.NoTracksError(msg)
 
         # Still technically possible for tracks to be a Playlist subclass now.
-        if issubclass(search_type, Playable) and isinstance(tracks, list):
+        if issubclass(search_type, wavelink.Playable) and isinstance(tracks, list):
             tracks = tracks[0]
 
         return tracks
@@ -123,15 +114,17 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], a
         self,
         _: discord.Interaction,
         value: str,
-    ) -> list[app_commands.Choice[str]]:
+    ) -> list[discord.app_commands.Choice[str]]:
         search_type = self._get_search_type(value)
         tracks = await search_type.search(value)
-        return [app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
+        return [discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
 
 
-async def format_track_embed(embed: discord.Embed, track: AnyTrack) -> discord.Embed:
+async def format_track_embed(title: str, track: AnyTrack) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 
+    icon = EMOJI_STOCK.get(type(track).__name__, "\N{MUSICAL NOTE}")
+    title = f"{icon} {title}"
     description_template = "[{0}]({1})\n{2}\n`[0:00-{3}]`"
 
     try:
@@ -141,16 +134,18 @@ async def format_track_embed(embed: discord.Embed, track: AnyTrack) -> discord.E
 
     if isinstance(track, wavelink.Playable):
         uri = track.uri or ""
-        author = escape_markdown(track.author or "")
+        author = escape_markdown(track.author, as_needed=True) if track.author else ""
     else:
         uri = f"https://open.spotify.com/track/{track.uri.rpartition(':')[2]}"
-        author = escape_markdown(", ".join(track.artists))
+        author = escape_markdown(", ".join(track.artists), as_needed=True)
 
-    title = escape_markdown(track.title)
-    embed.description = description_template.format(title, uri, author, end_time)
+    track_title = escape_markdown(track.title, as_needed=True)
+    description = description_template.format(track_title, uri, author, end_time)
 
     if requester := getattr(track, "requester", None):
-        embed.description += f"\n\nRequested by: {requester}"
+        description += f"\n\nRequested by: {requester}"
+
+    embed = discord.Embed(color=0x149CDF, title=title, description=description)
 
     if isinstance(track, wavelink.YouTubeTrack):
         thumbnail = await track.fetch_thumbnail()
@@ -160,10 +155,7 @@ async def format_track_embed(embed: discord.Embed, track: AnyTrack) -> discord.E
 
 
 async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterable) -> str:
-    """Adds tracks to a queue even if they are contained in another object or structure.
-
-    Also, it returns the appropriate notification string.
-    """
+    """Returns the appropriate notification string for tracks or a collection of tracks being added to a queue."""
 
     if isinstance(tracks, wavelink.YouTubePlaylist | wavelink.SoundCloudPlaylist):
         return f"Added {len(tracks.tracks)} tracks from the `{tracks.name}` playlist to the queue."

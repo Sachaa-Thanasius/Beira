@@ -84,6 +84,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         error : :class:`Exception`
             The error that happened.
         """
+
         assert ctx.command is not None
 
         # Extract the original error.
@@ -146,13 +147,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     @commands.guild_only()
     @commands.dynamic_cooldown(collect_cooldown, commands.cooldowns.BucketType.user)  # type: ignore
     async def collect(self, ctx: core.GuildContext) -> None:
-        """Collects a snowball.
-
-        Parameters
-        ----------
-        ctx : :class:`core.GuildContext`
-            The invocation context where the command was called.
-        """
+        """Collects a snowball."""
 
         # Get the snowball settings for this particular guild.
         guild_snow_settings = getattr(ctx, "guild_snow_settings", GuildSnowballSettings(ctx.guild.id))
@@ -333,7 +328,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             The invocation context.
         amount : :class:`int`
             The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
-            stock cap, or brings the giver's balance below zero, the steal fails.
+            stock cap, or brings the giver's balance below zero, then the steal fails.
         victim : :class:`discord.Member`
             The user to steal snowballs from.
         """
@@ -614,7 +609,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """
 
         guild_snow_settings = await GuildSnowballSettings.from_database(ctx.db, ctx.guild.id)
-        setattr(ctx, "guild_snow_settings", guild_snow_settings)  # noqa: B010 # Dynamically setting attribute.
+        ctx.guild_snow_settings = guild_snow_settings  # type: ignore # Runtime attribute assignment.
 
     @collect.after_invoke
     @throw.after_invoke

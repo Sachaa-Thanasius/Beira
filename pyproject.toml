@@ -62,10 +62,9 @@ ignore = [
     "SIM105",  # Suppressable exception. I'm not paying the overhead of contextlib.supress for stylistic choices.
     "C90",     # McCabe complexity memes.
     "ANN204",  # Special method return types.
-    "ANN101",  # Python310 doesn't have Self in typing. I'm not importing typing_extensions everywhere.
-    "ANN102",  # See note for ANN102.
+    "ANN101",  # Not typing self everywhere.
+    "ANN102",  # Not typing cls everywhere.
     "PD011",   # Erroneous issue that triggers for any .values attribute access at all.
-    "TRY002",  # Use of Exception. To be removed later when I narrow down exception types.
     "S311",    # No need for cryptographically secure random number generation in this use case.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
 ]
@@ -83,8 +82,13 @@ lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
-include = ["core", "ext"]
+include = ["main.py", "core", "ext"]
+
 reportMissingTypeStubs = "none"
+reportImportCycles = "error"
+reportPropertyTypeMismatch = "error"
+reportUnnecessaryTypeIgnoreComment = "warning"
+
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 useLibraryCodeForTypes = true

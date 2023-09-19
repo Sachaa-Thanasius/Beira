@@ -34,7 +34,7 @@ class StarKidCog(commands.Cog, name="StarKid"):
         """Bring forth a morphed, warped image of the Lords of Black to prostrate and pray before."""
 
         embed = discord.Embed(
-            color=0x000000,
+            color=discord.Colour.default(),
             title="All hail the Lords of Black!",
             description="***Gaze upon their holy image and despair.***",
         ).set_image(url="https://cdn.discordapp.com/attachments/1029952409381912667/1059568705681502359/8w68kAT.gif")

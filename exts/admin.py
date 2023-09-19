@@ -8,9 +8,8 @@ from __future__ import annotations
 import logging
 
 import discord
-from asyncpg.exceptions import PostgresConnectionError, PostgresError, PostgresWarning
+from asyncpg import PostgresError, PostgresWarning
 from discord.ext import commands
-from discord.utils import format_dt
 
 import core
 
@@ -44,15 +43,13 @@ class AdminCog(commands.Cog, name="Administration"):
         """Get all timed out members on the server."""
 
         async with ctx.typing():
-            timed_members = filter(lambda m: m.is_timed_out(), ctx.guild.members)
-            embed = discord.Embed(
-                title=f"Members Timed Out in {ctx.guild.name}",
-                description="\n".join(
-                    f"{mem}: {format_dt(mem.timed_out_until, style='f')}"
-                    for mem in timed_members
-                    if mem.timed_out_until is not None
-                ),
+            timed_out_members = (member for member in ctx.guild.members if member.is_timed_out())
+            timeout_times = (
+                f"{mem}: {discord.utils.format_dt(mem.timed_out_until, style='f')}"
+                for mem in timed_out_members
+                if mem.timed_out_until is not None  # Unnecessary — only here for typing.
             )
+            embed = discord.Embed(title=f"Members Timed Out in {ctx.guild.name}", description="\n".join(timeout_times))
             await ctx.send(embed=embed)
 
     @commands.hybrid_group(fallback="get")
@@ -62,9 +59,8 @@ class AdminCog(commands.Cog, name="Administration"):
 
         async with ctx.typing():
             local_prefixes = await self.bot.get_prefix(ctx.message)
-            await ctx.send(
-                f"Prefixes:\n{', '.join((f'`{prefix}`' if prefix else 'None') for prefix in local_prefixes)}",
-            )
+            formatted_prefixes = ", ".join((f"`{prefix}`" if prefix else "None") for prefix in local_prefixes)
+            await ctx.send(f"Prefixes:\n{formatted_prefixes}")
 
     @prefixes.command("add")
     @commands.guild_only()
@@ -166,8 +162,7 @@ class AdminCog(commands.Cog, name="Administration"):
             error = getattr(error, "original", error)
 
         assert ctx.command
-
-        if isinstance(error, PostgresWarning | PostgresError | PostgresConnectionError):
+        if isinstance(error, PostgresWarning | PostgresError):
             if ctx.command.name == "add":
                 await ctx.send("This prefix could not be added at this time.")
             elif ctx.command.name == "remove":

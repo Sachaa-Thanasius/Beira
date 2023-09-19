@@ -1,13 +1,12 @@
 from __future__ import annotations
 
 import asyncio
-import logging
 from collections.abc import Callable, Coroutine
 from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias
 
+import discord
 from discord import Client, Interaction
 from discord.app_commands import AppCommandError, Command, CommandTree, Group, Namespace
-from discord.enums import InteractionType
 from discord.ext.commands import Cog
 
 
@@ -30,8 +29,6 @@ GroupT = TypeVar("GroupT", bound=Group | Cog)
 AppHook: TypeAlias = Callable[[GroupT, Interaction[Any]], Coro[Any]] | Callable[[Interaction[Any]], Coro[Any]]
 
 __all__ = ("before_app_invoke", "after_app_invoke", "HookableTree")
-
-LOGGER = logging.getLogger(__name__)
 
 
 def before_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
@@ -102,10 +99,7 @@ def after_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]],
 
 class HookableTree(CommandTree):
     async def _call(self, interaction: Interaction[ClientT]) -> None:  # noqa: PLR0912
-        # Copy the original logic but add hook checks and calls near the end.
-        # Note: The pre-command hooks occur before the actual command-specific checks, unlike prefix commands.
-        #       This doesn't really make sense, but the only obvious solution seems to be monkey-patching
-        #       Command._invoke_with_namespace, which doesn't seem simple.
+        ###### Copy the original logic but add hook checks/calls near the end.
 
         if not await self.interaction_check(interaction):
             interaction.command_failed = True
@@ -131,7 +125,7 @@ class HookableTree(CommandTree):
         interaction._cs_namespace = namespace  # type: ignore # Protected
 
         # Auto complete handles the namespace differently... so at this point this is where we decide where that is.
-        if interaction.type is InteractionType.autocomplete:
+        if interaction.type is discord.enums.InteractionType.autocomplete:
             focused = next((opt["name"] for opt in options if opt.get("focused")), None)
             if focused is None:
                 msg = "This should not happen, but there is no focused element. This is a Discord bug."
@@ -145,7 +139,10 @@ class HookableTree(CommandTree):
 
             return
 
-        # Look for a pre-command hook.
+        ### Look for a pre-command hook.
+        # Pre-command hooks are run before actual command-specific checks, unlike prefix commands.
+        # It doesn't really make sense, but the only solution seems to be monkey-patching
+        # Command._invoke_with_namespace, which doesn't seem feasible.
         if before_invoke := getattr(command, "_before_invoke", None):
             if instance := getattr(before_invoke, "__self__", None):
                 await before_invoke(instance, interaction)
@@ -162,48 +159,9 @@ class HookableTree(CommandTree):
             if not interaction.command_failed:
                 self.client.dispatch("app_command_completion", interaction, command)
         finally:
-            # Look for a post-command hook.
+            ### Look for a post-command hook.
             if after_invoke := getattr(command, "_after_invoke", None):
                 if instance := getattr(after_invoke, "__self__", None):
                     await after_invoke(instance, interaction)
                 else:
                     await after_invoke(interaction)
-
-
-# Example implementation of an app command class that has hook support built in.
-class _HookableCommand(Command[GroupT, P, T]):  # type: ignore
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
-        super().__init__(*args, **kwargs)
-
-        # Initialize hook variables and attach hooks if they exist already.
-        self._before_hook: AppHook[GroupT] | None = None
-        try:
-            before_invoke = self._callback.__before_invoke__  # type: ignore # Runtime attribute access.
-        except AttributeError:
-            pass
-        else:
-            self.before_invoke(before_invoke)
-
-        self._after_hook: AppHook[GroupT] | None = None
-        try:
-            after_invoke = self._callback.__after_invoke__  # type: ignore # Runtime attribute access.
-        except AttributeError:
-            pass
-        else:
-            self.after_invoke(after_invoke)
-
-    def before_invoke(self, coro: AppHook[GroupT], /) -> AppHook[GroupT]:
-        if not asyncio.iscoroutinefunction(coro):
-            msg = "The pre-invoke hook must be a coroutine."
-            raise TypeError(msg)
-
-        self._before_hook = coro
-        return coro
-
-    def after_invoke(self, coro: AppHook[GroupT], /) -> AppHook[GroupT]:
-        if not asyncio.iscoroutinefunction(coro):
-            msg = "The post-invoke hook must be a coroutine."
-            raise TypeError(msg)
-
-        self._after_hook = coro
-        return coro

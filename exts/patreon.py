@@ -8,139 +8,106 @@ from __future__ import annotations
 
 import logging
 import textwrap
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any
-from urllib.parse import urljoin
+from typing import TYPE_CHECKING, Any, TypeAlias
 
+import attrs
 import discord
-from attrs import define, field
+import yarl
 from discord.ext import commands, tasks
 
 import core
+from core.utils import PaginatedSelectView
 
 
 if TYPE_CHECKING:
     from asyncpg import Record
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 
 LOGGER = logging.getLogger(__name__)
 
 CAMPAIGN_BASE = "https://www.patreon.com/api/oauth2/v2/campaigns"
+INFO_EMOJI = discord.PartialEmoji.from_str("<:icons_info:880113401207095346>")
+ACI100_ICON_URL = "https://cdn.discordapp.com/emojis/1077980959569362994.webp?size=48&quality=lossless"
 
 
-class PatreonTierSelectView(discord.ui.View):
-    """A view that displays Patreon tiers and benefits as pages."""
-
-    def __init__(self, tiers: list[dict[str, Any]], **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.tiers = tiers
-        self._set_select_options()
-        self.current_tier = 0
-        self.page_cache: list[discord.Embed | None] = [None for _ in tiers]
-        self.message: discord.Message | None = None
-
-    async def on_timeout(self) -> None:
-        for child in self.children:
-            child.disabled = True  # type: ignore
-
-        if self.message:
-            await self.message.edit(view=self)
-
-    def _set_select_options(self) -> None:
-        for i, tier in enumerate(self.tiers):
-            label = f"{tier['tier_name']} - ${tier['tier_value']}" if i != 0 else tier["tier_name"]
-            descr = textwrap.shorten(tier["tier_info"], 100, placeholder="...")
-            self.select_tier.add_option(label=label, value=str(i), description=descr, emoji=tier["tier_emoji"])
-
-    def _increment_current_tier(self, incr: int) -> None:
-        self.current_tier += incr
-
-        if self.current_tier < 0:
-            self.current_tier = 0
-        elif self.current_tier >= len(self.tiers):
-            self.current_tier = len(self.tiers) - 1
-
-    def update_page_buttons(self) -> None:
-        """Enables and disables tier-flipping buttons based on page count and position."""
-
-        self.show_previous_tier.disabled = self.current_tier <= 0
-        self.show_next_tier.disabled = self.current_tier >= len(self.tiers) - 1
-
-    def get_starting_embed(self) -> discord.Embed:
-        """Get the embed for the first page."""
-
-        self.current_tier = 0
-        return self.format_page()
-
-    def format_page(self) -> discord.Embed:
-        """Format the page to show specific content in an embed."""
-
-        new_tier = self.tiers[self.current_tier]
-
-        if (temp := self.page_cache[self.current_tier]) is None:
-            if self.current_tier != 0:
-                # Compile the benefit information.
-                benefits = [f"> • {tier['tier_info']}" for tier in self.tiers[self.current_tier : 0 : -1]]
-                descr = "__**Benefits**__\n" + "\n".join(benefits)
-                if "†" in descr:
-                    descr += "\n\n† Provided they have been a patron at this tier for at least 3 months."
-
-                # Create the embed.
-                role, name, value = new_tier["tier_role"], new_tier["tier_name"], new_tier["tier_value"]
-                embed = discord.Embed(color=role.color, title=f"{name} - ${value}", description=descr)
-                embed.add_field(name="__Role__", value=role.mention)
-            else:
-                embed = discord.Embed(color=0x000000, title=new_tier["tier_name"], description=new_tier["tier_info"])
-
-            embed.set_thumbnail(url=new_tier["tier_emoji"].url)
-            author_icon_url = "https://cdn.discordapp.com/emojis/1077980959569362994.webp?size=48&quality=lossless"
-            embed.set_author(name="ACI100 Patreon", url="https://www.patreon.com/aci100", icon_url=author_icon_url)
-
-            self.page_cache[self.current_tier] = embed
-        else:
-            embed = deepcopy(temp)
-
-        return embed
-
-    @discord.ui.select(placeholder="Choose a Patreon tier...", min_values=1, max_values=1)
-    async def select_tier(self, interaction: discord.Interaction, select: discord.ui.Select[Self]) -> None:
-        """Dropdown that displays all the Patreon tiers and provides them as choices to navigate to."""
-
-        await interaction.response.defer()
-        self.current_tier = int(select.values[0])
-        self.update_page_buttons()
-        embed = self.format_page()
-        await interaction.edit_original_response(embed=embed, view=self)
-
-    @discord.ui.button(label="<", disabled=True)
-    async def show_previous_tier(self, interaction: discord.Interaction, _: discord.ui.Button[Self]) -> None:
-        """Button that displays the previous tier's information."""
-
-        await interaction.response.defer()
-        self._increment_current_tier(-1)
-        self.update_page_buttons()
-        embed = self.format_page()
-        await interaction.edit_original_response(embed=embed, view=self)
-
-    @discord.ui.button(label=">")
-    async def show_next_tier(self, interaction: discord.Interaction, _: discord.ui.Button[Self]) -> None:
-        """Button that displays the next tier's information."""
-
-        await interaction.response.defer()
-        self._increment_current_tier(1)
-        self.update_page_buttons()
-        embed = self.format_page()
-        await interaction.edit_original_response(embed=embed, view=self)
-
-
-@define
+@attrs.define
 class PatreonMember:
-    """Quick and dirty dataclass for patrons."""
+    """Quick and dirty dataclass for Patreon patrons."""
 
     user_id: str
     discord_id: int
-    current_tiers: list[Any] = field(factory=list)
+    current_tiers: list[Any] = attrs.field(factory=list)
+
+
+@attrs.define
+class PatreonTierInfo:
+    """Quick and dirty dataclass for necessary Patreon tiers info."""
+
+    creator: str
+    name: str
+    value: float
+    info: str
+    guild_id: int
+    role_id: int
+    emoji: discord.PartialEmoji
+    color: discord.Colour = discord.Colour.default()
+
+    @classmethod
+    def from_record(cls, record: Record) -> Self:
+        return cls(
+            record["creator_name"],
+            record["tier_name"],
+            record["tier_value"],
+            record["tier_info"],
+            record["discord_guild"],
+            record["tier_role"],
+            discord.PartialEmoji.from_str(record["tier_emoji"]),
+        )
+
+
+class PatreonTierSelectView(PaginatedSelectView[PatreonTierInfo]):
+    """A view that displays Patreon tiers and benefits as pages."""
+
+    async def on_timeout(self) -> None:
+        """Disables all items on timeout."""
+
+        for item in self.children:
+            item.disabled = True  # type: ignore
+
+        await self.message.edit(view=self)
+        self.stop()
+
+    def populate_select(self) -> None:
+        self.select_page.placeholder = "Choose a Patreon tier..."
+        for i, tier in enumerate(self.pages):
+            label = f"{tier.name} - ${tier.value}" if i != 0 else tier.name
+            descr = textwrap.shorten(tier.info, 100, placeholder="...")
+            self.select_page.add_option(label=label, value=str(i), description=descr, emoji=tier.emoji)
+
+    def format_page(self) -> discord.Embed:
+        tier_content = self.pages[self.page_index]
+
+        if self.page_index != 0:
+            # Compile the benefit information.
+            benefits = (f"> • {tier.info}" for tier in self.pages[self.page_index : 0 : -1])
+            descr = "__**Benefits**__\n" + "\n".join(benefits)
+            if "†" in descr:
+                descr += "\n\n† Provided they have been a patron at this tier for at least 3 months."
+
+            # Create the embed.
+            color, name, value = tier_content.color, tier_content.name, tier_content.value
+            embed = discord.Embed(color=color, title=f"{name} - ${value}", description=descr)
+            embed.add_field(name="__Role__", value=f"<@&{tier_content.role_id}>")
+        else:
+            embed = discord.Embed(color=0x000000, title=tier_content.name, description=tier_content.info)
+
+        embed.set_thumbnail(url=tier_content.emoji.url)
+        embed.set_author(name="ACI100 Patreon", url="https://www.patreon.com/aci100", icon_url=ACI100_ICON_URL)
+
+        return embed
 
 
 class PatreonCheckCog(commands.Cog, name="Patreon"):
@@ -193,25 +160,30 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         query = """SELECT * FROM patreon_creators WHERE creator_name = 'ACI100' ORDER BY tier_value;"""
         records: list[Record] = await self.bot.db_pool.fetch(query)
+        self.patreon_tiers_info = [PatreonTierInfo.from_record(record) for record in records]
 
-        self.patreon_tiers_info = [dict(record) for record in records]
-        temp_guild = self.bot.get_guild(self.patreon_tiers_info[0]["discord_guild"]) or await self.bot.fetch_guild(
-            self.patreon_tiers_info[0]["discord_guild"],
-        )
-        for tier in self.patreon_tiers_info:
-            tier["tier_role"] = temp_guild.get_role(tier["tier_role"])
-            tier["tier_emoji"] = discord.PartialEmoji.from_str(tier["tier_emoji"])
+        temp_guild_id = self.patreon_tiers_info[0].guild_id
+        try:
+            temp_guild = self.bot.get_guild(temp_guild_id)
+            assert temp_guild is not None
+            for info in self.patreon_tiers_info:
+                if role := temp_guild.get_role(info.role_id):
+                    info.color = role.color
+        except discord.HTTPException:
+            pass
 
-        menu_info = {
-            "creator_name": "ACI100",
-            "tier_name": "ACI100 Patreon Tiers",
-            "tier_info": (
+        menu_info = PatreonTierInfo(
+            creator="ACI100",
+            name="ACI100 Patreon Tiers",
+            value=0.0,
+            info=(
                 "Use the select menu below to explore the different tiers that ACI100 has on Patreon and what "
                 "benefits they come with."
             ),
-            "discord_guild": temp_guild.id,
-            "tier_emoji": discord.PartialEmoji.from_str("<:icons_info:880113401207095346>"),
-        }
+            guild_id=temp_guild_id,
+            role_id=0,
+            emoji=INFO_EMOJI,
+        )
         self.patreon_tiers_info.insert(0, menu_info)
 
     @commands.hybrid_command()
@@ -219,8 +191,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         """See what kind of patreon benefits and tiers ACI100 has to offer."""
 
         async with ctx.typing():
-            view = PatreonTierSelectView(tiers=self.patreon_tiers_info)
-            view.message = await ctx.send(embed=view.get_starting_embed(), view=view)
+            view = PatreonTierSelectView(author_id=ctx.author.id, pages_content=self.patreon_tiers_info)
+            view.message = await ctx.send(embed=await view.get_first_page(), view=view)
 
     @tasks.loop(minutes=15)
     async def get_current_discord_patrons(self) -> None:
@@ -244,7 +216,8 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     async def get_current_actual_patrons(self) -> None:
         """Get all active patrons from Patreon's API."""
 
-        headers = {"Authorization": f"Bearer {self.access_token}"}
+        api_token = self.bot.config["patreon"]["creator_access_token"]
+        headers = {"Authorization": f"Bearer {api_token}"}
 
         # Get campaign data.
         async with self.bot.web_session.get(CAMPAIGN_BASE, headers=headers) as response:
@@ -257,17 +230,22 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         LOGGER.info(f"Campaign: {campaigns['data'][0]}")
 
         while True:
-            async with self.bot.web_session.get(
-                urljoin(
-                    CAMPAIGN_BASE,
-                    f"/{campaign_id}/members?fields[user]=social_connections&include=user,currently_entitled_tiers&page[cursor]={cursor}",
-                ),
-                headers=headers,
-            ) as resp:
+            request_url = (
+                yarl.URL(CAMPAIGN_BASE)
+                .with_path(f"/{campaign_id}/members")
+                .with_query(
+                    {
+                        "fields[user]": "social_connections",
+                        "include": "user,currently_entitled_tiers",
+                        "page[cursor]": f"{cursor}",
+                    },
+                )
+            )
+            async with self.bot.web_session.get(request_url, headers=headers) as resp:
                 # Print an error if it exists.
                 if not resp.ok:
                     text = await resp.text()
-                    LOGGER.info(f"Resp not okay: {text}")
+                    LOGGER.info(f"Resp not okay:\n{text}")
                     resp.raise_for_status()
 
                 # Get the user's data.
@@ -277,12 +255,10 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                     user_id = member["relationships"]["user"]["data"]["id"]
                     LOGGER.info(f"User ID: {user_id}")
 
-                    user: dict[str, Any] = discord.utils.find(
-                        lambda u, uid=user_id: u["id"] == uid,
-                        resp_json["included"],
+                    user: dict[str, Any] = next(
+                        element for element in resp_json["included"] if element["id"] == user_id
                     )
                     LOGGER.info(f"User: {user}")
-
                     assert user is not None
 
                     # Check if they have any social media connected to their Patreon account, and

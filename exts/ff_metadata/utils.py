@@ -4,7 +4,7 @@ import asyncio
 import logging
 import re
 import textwrap
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import Any, TypeGuard
 
 import AO3
 import atlas_api
@@ -12,16 +12,7 @@ import attrs
 import discord
 import fichub_api
 
-from core.utils import DTEmbed
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-
-    from core import Interaction
-else:
-    Self: TypeAlias = Any
-    Interaction: TypeAlias = discord.Interaction
+from core.utils import DTEmbed, PaginatedSelectView
 
 
 __all__ = (
@@ -75,6 +66,10 @@ STORY_WEBSITE_REGEX = re.compile(
     r"(?:http://|https://|)"
     + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()),
 )
+
+
+def is_ao3_work_list(list_: list[Any]) -> TypeGuard[list[AO3.Work]]:
+    return all(isinstance(item, AO3.Work) for item in list_)
 
 
 async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
@@ -229,56 +224,28 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     return story_embed
 
 
-class AO3SeriesView(discord.ui.View):
-    """A view that wraps a dropdown item.
+class AO3SeriesView(PaginatedSelectView[AO3.Work]):
+    """A view that wraps a dropdown item for AO3 works.
 
     Parameters
     ----------
-    author : :class:`discord.User` | :class:`discord.Member`
-        The user who invoked the view.
+    author_id : :class:`int`
+        The Discord ID of the user that triggered this view. No one else can use it.
     series : :class:`AO3.Series`
         The object holding metadata about an AO3 series and the works within.
-    **kwargs
-        Arbitrary keyword arguments, primarily for :class:`View`. See that class for more information.
+    timeout: :class:`float` | None, optional
+        Timeout in seconds from last interaction with the UI before no longer accepting input.
+        If ``None`` then there is no timeout.
 
     Attributes
     ----------
-    author : :class:`discord.User` | :class:`discord.Member`
-        The user who invoked the view.
     series : :class:`AO3.Series`
         The object holding metadata about an AO3 series and the works within.
-    message : :class:`discord.Message`
-        The message this view instance is attached to.
-    choice : :class:`int`
-        The page number chosen by the author.
     """
-
-    message: discord.Message
-
-    def __init__(self, author: discord.User | discord.Member, series: AO3.Series, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.author = author
+    def __init__(self, author_id: int, series: AO3.Series, *, timeout: float | None = 180) -> None:
         self.series = series
-        self.choice = 0
-
-        # Load the options in the dropdown.
-        descr = textwrap.shorten(series.description, 100, placeholder="...")
-        self.works_dropdown.add_option(label=series.name, value="0", description=descr, emoji="\N{BOOKS}")
-
-        for i, work in enumerate(series.work_list, start=1):
-            descr = textwrap.shorten(work.summary, 100, placeholder="...")
-            self.works_dropdown.add_option(
-                label=f"{i}. {work.title}",
-                value=str(i),
-                description=descr,
-                emoji="\N{OPEN BOOK}",
-            )
-
-    async def interaction_check(self, interaction: Interaction, /) -> bool:
-        check = interaction.user.id in (self.author.id, interaction.client.owner_id)
-        if not check:
-            await interaction.response.send_message("You cannot interact with this view.", ephemeral=True)
-        return check
+        assert is_ao3_work_list(work_list := series.work_list)  # type: ignore
+        super().__init__(author_id, work_list, timeout=timeout)
 
     async def on_timeout(self) -> None:
         """Disables all items on timeout."""
@@ -286,58 +253,29 @@ class AO3SeriesView(discord.ui.View):
         for item in self.children:
             item.disabled = True  # type: ignore
 
-        if self.message:
-            await self.message.edit(view=self)
-
+        await self.message.edit(view=self)
         self.stop()
 
-    async def on_error(
-        self,
-        interaction: discord.Interaction,
-        error: Exception,
-        item: discord.ui.Item[Self],
-        /,
-    ) -> None:
-        error = getattr(error, "original", error)
-        LOGGER.error("User: %s - Item: %s", interaction.user, item, exc_info=error)
+    def populate_select(self) -> None:
+        self.select_page.placeholder = "Choose the work here..."
+        descr = textwrap.shorten(self.series.description, 100, placeholder="...")
+        self.select_page.add_option(label=self.series.name, value="0", description=descr, emoji="\N{BOOKS}")
 
-    def update_navigation_items(self) -> None:
-        """Disable specific "page" switching components based on what page we're on, chosen by the user."""
-
-        self.turn_to_previous.disabled = self.choice == 0
-        self.turn_to_next.disabled = self.choice == len(self.series.work_list)
+        for i, work in enumerate(self.pages, start=1):
+            assert isinstance(work, AO3.Work)
+            descr = textwrap.shorten(work.summary, 100, placeholder="...")
+            self.select_page.add_option(
+                label=f"{i}. {work.title}",
+                value=str(i),
+                description=descr,
+                emoji="\N{OPEN BOOK}",
+            )
 
     async def format_page(self) -> discord.Embed:
         """Makes the series/work 'page' that the user will see."""
 
-        if self.choice == 0:
-            embed_page = await create_ao3_series_embed(self.series)
+        if self.page_index != 0:
+            embed_page = await create_ao3_work_embed(self.pages[self.page_index - 1])
         else:
-            embed_page = await create_ao3_work_embed(self.series.work_list[self.choice - 1])
+            embed_page = await create_ao3_series_embed(self.series)
         return embed_page
-
-    async def update_page(self, interaction: Interaction) -> None:
-        result_embed = await self.format_page()
-        self.update_navigation_items()
-        await interaction.response.edit_message(embed=result_embed, view=self)
-
-    @discord.ui.select(placeholder="Choose the work here...", min_values=1, max_values=1)
-    async def works_dropdown(self, interaction: Interaction, select: discord.ui.Select[Any]) -> None:
-        """A dropdown of works within a series to display more information about those as embed "pages"."""
-
-        self.choice = int(select.values[0])
-        await self.update_page(interaction)
-
-    @discord.ui.button(label="<", disabled=True, style=discord.ButtonStyle.blurple)
-    async def turn_to_previous(self, interaction: Interaction, _: discord.ui.Button[Self]) -> None:
-        """A button to turn back a page between embeds."""
-
-        self.choice -= 1
-        await self.update_page(interaction)
-
-    @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)
-    async def turn_to_next(self, interaction: Interaction, _: discord.ui.Button[Self]) -> None:
-        """A button to turn forward a page between embeds."""
-
-        self.choice += 1
-        await self.update_page(interaction)

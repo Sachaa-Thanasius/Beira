@@ -9,7 +9,7 @@ https://github.com/Sachaa-Thanasius/Tatsu
 import asyncio
 import logging
 from io import BytesIO
-from typing import Any, ClassVar
+from typing import Any
 
 import discord
 import matplotlib.pyplot as plt
@@ -26,11 +26,9 @@ LOGGER = logging.getLogger(__name__)
 class TatsuCog(commands.Cog, name="Tatsu"):
     """A cog for doing stuff with Tatsu's API."""
 
-    API_KEY: ClassVar[str]
-
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.tatsu_client = tatsu.Client(self.API_KEY)
+        self.tatsu_client = tatsu.Client(bot.config["tatsu"]["key"])
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -140,5 +138,4 @@ class TatsuCog(commands.Cog, name="Tatsu"):
 async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
-    TatsuCog.API_KEY = bot.config["tatsu"]["key"]
     await bot.add_cog(TatsuCog(bot))

@@ -7,111 +7,33 @@ from __future__ import annotations
 import itertools
 import logging
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
-import discord.utils
-from discord import Embed
+import discord
 
 
 if TYPE_CHECKING:
-    from discord import Emoji, PartialEmoji
     from typing_extensions import Self
+else:
+    Self: TypeAlias = Any
 
 
-__all__ = ("EMOJI_URL", "DTEmbed", "PaginatedEmbed", "StatsEmbed")
+__all__ = ("EMOJI_URL", "DTEmbed", "StatsEmbed")
 
 LOGGER = logging.getLogger(__name__)
 
 EMOJI_URL = "https://cdn.discordapp.com/emojis/{0}.webp?size=128&quality=lossless"
 
 
-class DTEmbed(Embed):
+class DTEmbed(discord.Embed):
     """Represents a Discord embed, with a preset timestamp attribute.
 
-    Inherits from :class:`Embed`.
+    Inherits from :class:`discord.Embed`.
     """
 
     def __init__(self, **kwargs: Any) -> None:
         kwargs["timestamp"] = kwargs.get("timestamp", discord.utils.utcnow())
         super().__init__(**kwargs)
-
-
-class PaginatedEmbed(Embed):
-    """A subclass of :class:`Embed` customized to create an embed 'page'.
-
-    Parameters
-    ----------
-    page_content : :class:`tuple`, optional
-        The content of an embed page.
-    current_page : :class:`int`, optional
-        The number of the current page.
-    max_pages : :class:`int`, optional
-        The total number of pages possible.
-    **kwargs
-        Keyword arguments for the normal initialization of a discord :class:`Embed`.
-
-    See Also
-    --------
-    :class:`.paginated_views.PaginatedEmbedView`
-    """
-
-    def __init__(
-        self,
-        *,
-        page_content: tuple[Any, ...] | None = None,
-        current_page: int | None = None,
-        max_pages: int | None = None,
-        **kwargs: Any,
-    ) -> None:
-        super().__init__(**kwargs)
-
-        if page_content is not None:
-            self.set_page_content(page_content)
-
-        if (current_page is not None) and (max_pages is not None):
-            self.set_page_footer(current_page, max_pages)
-
-    def set_page_content(self, page_content: tuple[Any, ...] | None = None) -> Self:
-        """Sets the content field for this embed page.
-
-        This function returns the class instance to allow for fluent-style chaining.
-
-        Parameters
-        ----------
-        page_content : tuple
-            A tuple with 3 elements (unless overriden) that contains the content for this embed page.
-        """
-
-        if page_content is None:
-            self.title = "Nothing found"
-            if self.fields:
-                self.remove_field(0)
-
-        else:
-            self.title, chapter_name, quote = (str(item) for item in page_content[:3])
-            self.add_field(name=chapter_name, value=quote)
-
-        return self
-
-    def set_page_footer(self, current_page: int | None = None, max_pages: int | None = None) -> Self:
-        """Sets the footer for this embed page.
-
-        This function returns the class instance to allow for fluent-style chaining.
-
-        Parameters
-        ----------
-        current_page : :class:`int`
-            The number of the current page.
-        max_pages : :class:`int`
-            The total number of pages possible.
-        """
-
-        current_page = current_page or 0
-        max_pages = max_pages or 0
-
-        self.set_footer(text=f"Page {current_page}/{max_pages}")
-
-        return self
 
 
 class StatsEmbed(DTEmbed):
@@ -133,7 +55,7 @@ class StatsEmbed(DTEmbed):
         self,
         *,
         stat_names: Iterable[Any],
-        stat_emojis: Iterable[Emoji | PartialEmoji | str] = (""),
+        stat_emojis: Iterable[discord.Emoji | discord.PartialEmoji | str] = (""),
         stat_values: Iterable[Any],
         inline: bool = False,
         emoji_header_status: bool = False,
@@ -173,7 +95,7 @@ class StatsEmbed(DTEmbed):
         self,
         *,
         ldbd_content: Iterable[Sequence[Any]],
-        ldbd_emojis: Iterable[Emoji | PartialEmoji | str] = (""),
+        ldbd_emojis: Iterable[discord.Emoji | discord.PartialEmoji | str] = (""),
         name_format: str = "| {}",
         value_format: str = "{}",
         inline: bool = False,

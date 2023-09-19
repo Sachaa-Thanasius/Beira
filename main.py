@@ -3,10 +3,11 @@ import asyncio
 import aiohttp
 import asyncpg
 import discord
+import openai
 
 import core
 from core.tree import HookableTree
-from core.utils import CustomLogger, pool_init
+from core.utils import LoggingManager, pool_init
 
 
 async def main() -> None:
@@ -17,7 +18,10 @@ async def main() -> None:
         dsn=core.CONFIG["db"]["postgres_url"],
         command_timeout=30,
         init=pool_init,
-    ) as pool, CustomLogger() as _:
+    ) as pool, LoggingManager() as _:
+        openai.api_key = core.CONFIG["openai"]["api_key"]
+        openai.aiosession.set(web_session)
+
         # Set the bot's basic starting parameters.
         intents = discord.Intents.all()
         intents.presences = False

@@ -5,21 +5,29 @@ checks.py: Custom checks used by the bot.
 from __future__ import annotations
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 import discord
 from discord import app_commands
 from discord.ext import commands
-from discord.utils import maybe_coroutine
 
-from .errors import GuildIsBlocked, NotAdmin, NotInBotVoiceChannel, NotOwnerOrFriend, UserIsBlocked
+from .errors import CheckAnyFailure, GuildIsBlocked, NotAdmin, NotInBotVoiceChannel, NotOwnerOrFriend, UserIsBlocked
 
 
 if TYPE_CHECKING:
-    from discord.app_commands.commands import Check as app_Check
-    from discord.ext.commands._types import Check  # type: ignore # For the sake of type-checking?
+    from discord.app_commands.commands import Check as AppCheckFunc
+    from discord.ext.commands._types import Check
 
-    from core import Context, GuildContext
+    from .context import Context, GuildContext
+
+T = TypeVar("T")
+
+
+class AppCheck(Protocol):
+    predicate: AppCheckFunc
+
+    def __call__(self, coro_or_commands: T) -> T:
+        ...
 
 
 __all__ = ("is_owner_or_friend", "is_admin", "in_bot_vc", "in_aci100_guild", "is_blocked", "check_any")
@@ -37,8 +45,7 @@ def is_owner_or_friend() -> Check[Any]:
 
     async def predicate(ctx: Context) -> bool:
         if not (await ctx.bot.is_owner(ctx.author) or ctx.bot.is_special_friend(ctx.author)):
-            msg = "You do not own this bot, nor are you a friend of the owner."
-            raise NotOwnerOrFriend(msg)
+            raise NotOwnerOrFriend
         return True
 
     return commands.check(predicate)
@@ -53,11 +60,8 @@ def is_admin() -> Check[Any]:
     """
 
     async def predicate(ctx: GuildContext) -> bool:
-        assert ctx.guild is not None
-
         if not ctx.author.guild_permissions.administrator:
-            msg = "Only someone with administrator permissions can do this."
-            raise NotAdmin(msg)
+            raise NotAdmin
         return True
 
     return commands.check(predicate)
@@ -72,14 +76,13 @@ def in_bot_vc() -> Check[Any]:
     """
 
     async def predicate(ctx: GuildContext) -> bool:
-        vc: discord.VoiceProtocol | None = ctx.voice_client
+        vc = ctx.voice_client
 
         if not (
             ctx.author.guild_permissions.administrator
             or (vc and ctx.author.voice and (ctx.author.voice.channel == vc.channel))
         ):
-            msg = "You are not connected to the same voice channel as the bot."
-            raise NotInBotVoiceChannel(msg)
+            raise NotInBotVoiceChannel
         return True
 
     return commands.check(predicate)
@@ -110,42 +113,54 @@ def is_blocked() -> Check[Any]:
     async def predicate(ctx: Context) -> bool:
         if not (await ctx.bot.is_owner(ctx.author)):
             if ctx.author.id in ctx.bot.blocked_entities_cache["users"]:
-                msg = "This user is prohibited from using bot commands."
-                raise UserIsBlocked(msg)
+                raise UserIsBlocked
             if ctx.guild and (ctx.guild.id in ctx.bot.blocked_entities_cache["guilds"]):
-                msg = "This guild is prohibited from using bot commands."
-                raise GuildIsBlocked(msg)
+                raise GuildIsBlocked
         return True
 
     return commands.check(predicate)
 
 
-def check_any(*checks: app_Check) -> Callable[..., Any]:
-    """An attempt at making a :func:`check_any` decorator for application commands.
+# TODO: Actually check if this works.
+def check_any(*checks: AppCheck) -> Callable[[T], T]:
+    """An attempt at making a `check_any` decorator for application commands that checks if any of the checks passed
+    will pass, i.e. using logical OR.
+
+    If all checks fail then :exc:`CheckAnyFailure` is raised to signal the failure.
+    It inherits from :exc:`app_commands.CheckFailure`.
 
     Parameters
     ----------
-    checks: :class:`app_Check`
+    checks : :class:`AppCheckProtocol`
         An argument list of checks that have been decorated with :func:`app_commands.check` decorator.
 
-    Returns
-    -------
-    :class:`app_Check`
-        A predicate that condenses all given checks with logical OR.
+    Raises
+    ------
+    TypeError
+        A check passed has not been decorated with the :func:`app_commands.check` decorator.
     """
 
-    # TODO: Actually check if this works.
+    unwrapped: list[AppCheckFunc] = []
+    for wrapped in checks:
+        try:
+            pred = wrapped.predicate
+        except AttributeError:
+            msg = f"{wrapped!r} must be wrapped by app_commands.check decorator"
+            raise TypeError(msg) from None
+        else:
+            unwrapped.append(pred)
+
     async def predicate(interaction: discord.Interaction) -> bool:
-        errors: list[Exception] = []
-        for check in checks:
+        errors: list[app_commands.CheckFailure] = []
+        for func in unwrapped:
             try:
-                value = await maybe_coroutine(check, interaction)
+                value = await discord.utils.maybe_coroutine(func, interaction)
             except app_commands.CheckFailure as err:
                 errors.append(err)
             else:
                 if value:
                     return True
         # If we're here, all checks failed.
-        raise app_commands.CheckFailure(checks, errors)
+        raise CheckAnyFailure(unwrapped, errors)
 
     return app_commands.check(predicate)

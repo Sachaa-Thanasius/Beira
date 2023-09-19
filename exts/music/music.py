@@ -12,7 +12,6 @@ import discord
 import wavelink
 from discord import app_commands
 from discord.ext import commands
-from wavelink.ext import spotify
 
 import core
 from core.wave import AnyTrack, AnyTrackIterable, SkippablePlayer
@@ -34,14 +33,6 @@ class MusicCog(commands.Cog, name="Music"):
         """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{MUSICAL NOTE}")
-
-    async def cog_load(self) -> None:
-        """Create and connect to the Lavalink node(s)."""
-
-        sc = spotify.SpotifyClient(**self.bot.config["spotify"])
-        node = wavelink.Node(**self.bot.config["lavalink"])
-
-        await wavelink.NodePool.connect(client=self.bot, nodes=[node], spotify=sc)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         """Catch errors from commands inside this cog."""
@@ -84,8 +75,23 @@ class MusicCog(commands.Cog, name="Music"):
         LOGGER.info("Wavelink websocket closed: %s - %s - %s - %s", *payload_tuple)
 
     @commands.Cog.listener()
+    async def on_wavelink_track_start(self, payload: wavelink.TrackEventPayload) -> None:
+        """Called when a track starts playing.
+
+        Sends a notification about the new track to the voice channel.
+        """
+
+        if payload.original:
+            current_embed = await format_track_embed("Now Playing", payload.original)
+            if payload.player.channel:
+                await payload.player.channel.send(embed=current_embed)
+
+    @commands.Cog.listener()
     async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
-        """Called when the current track has finished playing."""
+        """Called when the current track has finished playing.
+
+        Attempts to play the next track if available.
+        """
 
         player = payload.player
 
@@ -97,14 +103,6 @@ class MusicCog(commands.Cog, name="Music"):
             await player.play(next_track)
         else:
             await player.stop()
-
-    @commands.Cog.listener()
-    async def on_wavelink_track_start(self, payload: wavelink.TrackEventPayload) -> None:
-        # Send a notification of the song now playing.
-        if original := payload.original:
-            current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), original)
-            if payload.player.channel:
-                await payload.player.channel.send(embed=current_embed)
 
     @commands.hybrid_group()
     @commands.guild_only()
@@ -122,7 +120,7 @@ class MusicCog(commands.Cog, name="Music"):
         if vc is not None and ctx.author.voice is not None:
             if vc.channel != ctx.author.voice.channel:
                 if ctx.author.guild_permissions.administrator:
-                    await vc.move_to(ctx.author.voice.channel)  # type: ignore
+                    await vc.move_to(ctx.author.voice.channel)  # type: ignore # Valid channel to move to.
                     await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
                 else:
                     await ctx.send("Voice player is currently being used in another channel.")
@@ -133,7 +131,7 @@ class MusicCog(commands.Cog, name="Music"):
         else:
             # Not sure in what circumstances a member would have a voice state without being in a valid channel.
             assert ctx.author.voice.channel
-            await ctx.author.voice.channel.connect(cls=SkippablePlayer)
+            await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore # Valid VoiceProtocol subclass.
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @music.command()
@@ -210,7 +208,7 @@ class MusicCog(commands.Cog, name="Music"):
         vc: SkippablePlayer | None = ctx.voice_client
 
         if vc and vc.current:
-            current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), vc.current)
+            current_embed = await format_track_embed("Now Playing", vc.current)
         else:
             current_embed = discord.Embed(
                 color=0x149CDF,
@@ -232,11 +230,11 @@ class MusicCog(commands.Cog, name="Music"):
         queue_embeds: list[discord.Embed] = []
         if vc:
             if vc.current:
-                current_embed = await format_track_embed(discord.Embed(color=0x149CDF, title="Now Playing"), vc.current)
+                current_embed = await format_track_embed("Now Playing", vc.current)
                 queue_embeds.append(current_embed)
 
-            view = MusicQueueView(author=ctx.author, all_pages_content=[track.title for track in vc.queue], per_page=10)
-            queue_embeds.append(view.get_starting_embed())
+            view = MusicQueueView(ctx.author.id, [track.title for track in vc.queue], 10)
+            queue_embeds.append(await view.get_first_page())
             message = await ctx.send(embeds=queue_embeds, view=view)
             view.message = message
 
@@ -436,11 +434,11 @@ class MusicCog(commands.Cog, name="Music"):
         vc: SkippablePlayer | None = ctx.voice_client
 
         if vc is None:
-            if ctx.author.voice:
+            if user_voice := ctx.author.voice:
                 # Not sure in what circumstances a member would have a voice state without being in a valid channel.
-                assert ctx.author.voice.channel
-                await ctx.author.voice.channel.connect(cls=SkippablePlayer)
+                assert user_voice.channel
+                await user_voice.channel.connect(cls=SkippablePlayer)  # type: ignore # Valid VoiceProtocol subclass.
             else:
                 await ctx.send("You are not connected to a voice channel.")
-                msg = "Author not connected to a voice channel."
+                msg = "User not connected to a voice channel."
                 raise commands.CommandError(msg)

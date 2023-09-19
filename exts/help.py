@@ -1,9 +1,9 @@
 """
 help.py: A custom help command for Beira set through a cog.
 
-References
-----------
-https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
+Notes
+-----
+The guide this was based off of: https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
 """
 
 from __future__ import annotations
@@ -11,156 +11,70 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import Mapping
-from copy import deepcopy
-from typing import TYPE_CHECKING, Any
+from typing import Any
 
 import discord
-from discord import app_commands, ui
+from discord import app_commands
 from discord.ext import commands
 
 import core
-from core.utils import PaginatedEmbed, PaginatedEmbedView
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
+from core.utils import PaginatedEmbedView
 
 
 LOGGER = logging.getLogger(__name__)
 
-
-class HelpEmbed(PaginatedEmbed):
-    """A subclass of :class:`PaginatedEmbed` customized to create an embed 'page' for a help command."""
-
-    def __init__(self, **kwargs: Any) -> None:
-        kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0x16A75D
-        super().__init__(**kwargs)
-
-    def set_page_content(self, page_content: tuple[tuple[str, str]] | None = None) -> Self:
-        if page_content is None:
-            self.clear_fields()
-        else:
-            for command_signature, command_doc in page_content:
-                self.add_field(name=command_signature, value=command_doc, inline=False)
-
-        return self
+HELP_COLOR = 0x16A75D
 
 
-class HelpCogModal(ui.Modal):
-    """A discord modal that allows users to enter a page number or cog name to jump to in a view.
-
-    Parameters
-    ----------
-    page_limit : :class:`int`
-        The maximum integer value of pages that can be entered.
-
-    Attributes
-    ----------
-    input_page_num : :class:`TextInput`
-        A UI text input element to allow users to enter a page number or cog name.
-    interaction : :class:`discord.Interaction`
-        The interaction of the user with the modal.
-    page_limit : :class:`int`
-        The maximum integer value of pages that can be entered.
-    names : list[:class:`str`]
-        The names of the cogs that can be entered.
-    """
-
-    input_page_num: ui.TextInput[ui.View] = ui.TextInput(
-        label="Page or Cog Name",
-        placeholder="Enter page number or cog name here...",
-        required=True,
-        min_length=1,
-    )
-
-    def __init__(self, page_limit: int, names: list[str]) -> None:
-        super().__init__(title="Page Jump", custom_id="help_cog_page_entry_modal")
-        self.interaction = None
-        self.page_limit = page_limit
-        self.names = names
-
-    async def on_submit(self, interaction: discord.Interaction, /) -> None:
-        """Performs validation on the input and saves the interaction for a later response."""
-        try:
-            temp = int(self.input_page_num.value)
-        except ValueError as exc:
-            temp = self.input_page_num.value
-            choice = next((i for i, name in enumerate(self.names) if temp.lower() in name.lower()), -1) + 1
-            if not choice:
-                msg = "No cogs match this name."
-                raise ValueError(msg) from exc
-        else:
-            if temp > self.page_limit or temp < 1:
-                msg = "This page number is invalid."
-                raise IndexError(msg)
-        finally:
-            self.interaction = interaction
-
-
-class HelpBotView(PaginatedEmbedView):
+class HelpBotView(PaginatedEmbedView[tuple[str, tuple[tuple[str, str], ...]]]):
     """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
 
     This is for a call to `/help`.
     """
 
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.page_modal_strings = ("Page # | Cog Name", "Enter page number or cog name here...")
+
     def format_page(self) -> discord.Embed:
-        """Makes, or retrieves from the cache, the help embed 'page' that the user will see.
+        """Makes the help embed 'page' that the user will see.
 
         Assumes a per_page value of 1.
         """
 
-        embed_page = (
-            HelpEmbed(title="Help", description="**No Category**")
-            .add_field(name="N/A", value="No cogs or commands found.", inline=False)
-            .set_page_footer(0, 0)
-        )
+        embed_page = discord.Embed(colour=HELP_COLOR, title="Help")
 
-        if self.total_pages > 0:
-            if self.page_cache[self.current_page - 1] is None:
-                # per_page value of 1 means parsing a list of length 1.
-                self.current_page_content = self.pages[self.current_page - 1][0]
-
-                embed_page.description = f"**{self.current_page_content[0]}**"
-                embed_page.remove_field(0)
-                embed_page.set_page_content(self.current_page_content[1:])
-                embed_page.set_page_footer(self.current_page, self.total_pages)
-
-                self.page_cache[self.current_page - 1] = embed_page
-
-            else:
-                return deepcopy(self.page_cache[self.current_page - 1])
+        if self.total_pages == 0:
+            embed_page.description = "**No Category**"
+            embed_page.add_field(name="N/A", value="No cogs or commands found.", inline=False)
+            embed_page.set_footer(text="Page 0/0")
+        else:
+            # per_page value of 1 means parsing a list of length 1.
+            content = self.pages[self.page_index]
+            for cog_descr, command_info in content:
+                embed_page.description = f"**{cog_descr}**"
+                for command_signature, command_doc in command_info:
+                    embed_page.add_field(name=command_signature, value=command_doc, inline=False)
+                embed_page.set_footer(text=f"Page {self.page_index + 1}/{self.total_pages}")
 
         return embed_page
 
-    @ui.button(label="📖", style=discord.ButtonStyle.green, disabled=True, custom_id="page_view:enter")
-    async def enter_page(self, interaction: discord.Interaction, _: ui.Button[Self]) -> None:
-        """Sends a modal that a user to enter a page number or cog name into."""
-
-        # Get page number from a modal.
+    def validate_page_entry(self, value: str) -> int | None:
         cog_names = [cog_tuple[0][0] for cog_tuple in self.pages]
-        modal = HelpCogModal(self.total_pages, cog_names)
-        await interaction.response.send_modal(modal)
-        modal_timed_out = await modal.wait()
 
-        if modal_timed_out or self.is_finished():
-            return
-
-        temp_value = modal.input_page_num.value
         try:
-            temp_new_page = int(temp_value)
+            temp = int(value)
         except ValueError:
-            temp_new_page = next(i for i, name in enumerate(cog_names) if temp_value.lower() in name.lower()) + 1
-            if not temp_new_page:
-                return
+            temp = value
+            choice = next((i for i, name in enumerate(cog_names) if temp.casefold() in name.casefold()), None)
+            return choice
 
-        if self.current_page == temp_new_page:
-            return
-
-        if modal.interaction:
-            await self.update_page(modal.interaction, temp_new_page)
+        if temp > self.total_pages or temp < 1 or self.page_index == (temp - 1):
+            return None
+        return temp
 
 
-class HelpCogView(PaginatedEmbedView):
+class HelpCogView(PaginatedEmbedView[tuple[str, str]]):
     """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
 
     This is for a call to `/help <cog_name>`.
@@ -176,25 +90,16 @@ class HelpCogView(PaginatedEmbedView):
         Assumes a per_page value of 1.
         """
 
-        embed_page = (
-            HelpEmbed(color=0x16A75D, title=f"{self.cog_info[0]} Help", description=self.cog_info[1])
-            .add_field(name="N/A", value="No commands found.", inline=False)
-            .set_page_footer(0, 0)
-        )
+        embed_page = discord.Embed(color=HELP_COLOR, title=f"{self.cog_info[0]} Help", description=self.cog_info[1])
 
-        if self.total_pages > 0:
-            if self.page_cache[self.current_page - 1] is None:
-                # per_page value of 1 means parsing a list of length 1.
-                self.current_page_content = self.pages[self.current_page - 1][0]
-
-                embed_page.remove_field(0)
-                embed_page.set_page_content(self.current_page_content)
-                embed_page.set_page_footer(self.current_page, self.total_pages)
-
-                self.page_cache[self.current_page - 1] = embed_page
-
-            else:
-                return deepcopy(self.page_cache[self.current_page - 1])
+        if self.total_pages == 0:
+            embed_page.add_field(name="N/A", value="No commands found.", inline=False).set_footer(text="Page 0/0")
+        else:
+            # per_page value of 1 means parsing a list of length 1.
+            content = self.pages[self.page_index]
+            for command_signature, command_doc in content:
+                embed_page.add_field(name=command_signature, value=command_doc, inline=False)
+            embed_page.set_footer(text=f"Page {self.page_index + 1}/{self.total_pages}")
 
         return embed_page
 
@@ -202,41 +107,48 @@ class HelpCogView(PaginatedEmbedView):
 class BeiraHelpCommand(commands.HelpCommand):
     """The custom help command for Beira."""
 
-    context: core.Context
+    context: core.Context  # Type narrowing
 
     async def send_bot_help(
         self,
         mapping: Mapping[commands.Cog | None, list[commands.Command[Any, ..., Any]]],
         /,
     ) -> None:
-        pages_content: list[tuple[Any]] = []
+        pages_content: dict[str, tuple[tuple[str, str], ...]] = {}
         for cog, cmds in mapping.items():
             filtered = await self.filter_commands(cmds, sort=True)
-            command_signatures = tuple((self.get_command_signature(c), c.help) for c in filtered)
+            command_signatures = tuple((self.get_command_signature(c), c.help or "") for c in filtered)
             if command_signatures:
                 cog_name: str = getattr(cog, "qualified_name", "No Category")
-                command_signatures = (cog_name, *command_signatures)
-                pages_content.append(command_signatures)
+                pages_content[cog_name] = command_signatures
 
-        view = HelpBotView(author=self.context.author, all_pages_content=pages_content)
+        view = HelpBotView(self.context.author.id, list(pages_content.items()))
 
         channel = self.get_destination()
-        view.message = await channel.send(embed=view.get_starting_embed(), view=view)
+        view.message = await channel.send(embed=await view.get_first_page(), view=view)
 
     async def send_cog_help(self, cog: commands.Cog, /) -> None:
-        pages_content = await self.format_cog_pages(cog, 5)
+        cog_name: str = getattr(cog, "qualified_name", "No Category")
+        cog_descr = self.clean_docstring(getattr(cog, "description", "..."))
 
-        cog_name = getattr(cog, "qualified_name", "No Category")
-        cog_descr = getattr(cog, "description", "No Description")
-        cog_descr = self.clean_docstring(cog_descr)
+        pages_content: list[tuple[str, str]] = []
+        filtered = await self.filter_commands(cog.get_commands(), sort=True)
+        command_signatures = [(self.get_command_signature(c), c.help or "") for c in filtered]
+        if command_signatures:
+            pages_content = command_signatures
 
-        view = HelpCogView(cog_info=(cog_name, cog_descr), author=self.context.author, all_pages_content=pages_content)
+        view = HelpCogView(self.context.author.id, pages_content, 5, cog_info=(cog_name, cog_descr))
 
         channel = self.get_destination()
-        view.message = await channel.send(embed=view.get_starting_embed(), view=view)
+        view.message = await channel.send(embed=await view.get_first_page(), view=view)
 
     async def send_group_help(self, group: commands.Group[Any, ..., Any], /) -> None:
-        embed = HelpEmbed(title=f"Help: {self.get_command_signature(group)}", description=group.help)
+        embed = discord.Embed(
+            colour=HELP_COLOR,
+            title=f"Help: {self.get_command_signature(group)}",
+            description=group.help or "",
+        )
+
         alias = group.aliases
         if alias:
             embed.add_field(name="Group Aliases", value=", ".join(alias), inline=False)
@@ -244,20 +156,24 @@ class BeiraHelpCommand(commands.HelpCommand):
         filtered = await self.filter_commands(group.walk_commands(), sort=True)
         command_signatures = tuple((self.get_command_signature(c), c.help or "") for c in filtered)
         if command_signatures:
-            embed.set_page_content(command_signatures)
+            for command_signature, command_doc in command_signatures:
+                embed.add_field(name=command_signature, value=command_doc, inline=False)
 
         channel = self.get_destination()
         await channel.send(embed=embed)
 
     async def send_command_help(self, command: commands.Command[Any, ..., Any], /) -> None:
-        embed = HelpEmbed(title=f"Help: {self.get_command_signature(command)}", description=command.help)
+        embed = discord.Embed(
+            colour=HELP_COLOR,
+            title=f"Help: {self.get_command_signature(command)}",
+            description=command.help,
+        )
 
-        alias = command.aliases
-        if alias:
-            embed.add_field(name="Aliases", value=", ".join(alias), inline=False)
+        if command.aliases:
+            embed.add_field(name="Aliases", value=", ".join(command.aliases), inline=False)
 
-        param_descriptions = "\n".join(f"`{name}`: {param.description}" for name, param in command.clean_params.items())
-        if param_descriptions:
+        if clean_params := command.clean_params:
+            param_descriptions = "\n".join(f"`{name}`: {param.description}" for name, param in clean_params.items())
             embed.add_field(name="Parameters", value=param_descriptions, inline=False)
 
         channel = self.get_destination()
@@ -270,7 +186,7 @@ class BeiraHelpCommand(commands.HelpCommand):
         return f'Command `{command.name}` has no subcommand named "{string}".'
 
     async def send_error_message(self, error: str, /) -> None:
-        embed = HelpEmbed(title="Help: Error", description=error)
+        embed = discord.Embed(colour=HELP_COLOR, title="Help: Error", description=error)
         channel = self.get_destination()
         await channel.send(embed=embed)
 
@@ -293,22 +209,6 @@ class BeiraHelpCommand(commands.HelpCommand):
         """
 
         return f"{self.context.clean_prefix}{command.qualified_name} {command.signature}"
-
-    async def format_cog_pages(self, cog: commands.Cog, page_size: int) -> list[tuple[tuple[str, str]]]:
-        """Format information about cogs into pages for an embed-based view."""
-
-        pages_content: list[tuple[tuple[str, str]]] = []
-
-        filtered = await self.filter_commands(cog.get_commands(), sort=True)
-        command_signatures = tuple((self.get_command_signature(c), c.help or "") for c in filtered)
-        if command_signatures:
-            if len(command_signatures) <= page_size:
-                pages_content.append(command_signatures)
-            else:
-                for i in range(0, len(command_signatures), page_size):
-                    pages_content.append(command_signatures[i : (i + page_size)])
-
-        return pages_content
 
     @staticmethod
     def clean_docstring(docstring: str) -> str:
@@ -333,12 +233,6 @@ class HelpCog(commands.Cog, name="Help"):
         """Resets the bot's help command to its default state before unloading the cog."""
 
         self.bot.help_command = self._old_help_command
-
-    async def cog_app_command_error(self, interaction: core.Interaction, error: app_commands.AppCommandError) -> None:
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        base_interaction_info = interaction.guild, interaction.channel, interaction.user
-        LOGGER.exception("Error in help: Guild - %s; Channel - %s; User - %s", *base_interaction_info, exc_info=error)
 
     @app_commands.command(name="help")
     async def help_(self, interaction: core.Interaction, command: str | None = None) -> None:
@@ -369,11 +263,10 @@ class HelpCog(commands.Cog, name="Help"):
                 if await help_command.filter_commands(cog.get_commands())
             ][:25]
 
-        current = current.lower()
         return [
             app_commands.Choice(name=command.qualified_name, value=command.qualified_name)
             for command in await help_command.filter_commands(self.bot.walk_commands(), sort=True)
-            if current in command.qualified_name
+            if current.casefold() in command.qualified_name
         ][:25]
 
 
