@@ -227,7 +227,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         # Get data from individual members of the campaign.
         cursor = ""
         members: list[PatreonMember] = []
-        LOGGER.info("Campaign: %s", campaigns['data'][0])
+        LOGGER.info("Campaign: %s", campaigns["data"][0])
 
         while True:
             request_url = (

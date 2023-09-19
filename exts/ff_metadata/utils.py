@@ -242,6 +242,7 @@ class AO3SeriesView(PaginatedSelectView[AO3.Work]):
     series : :class:`AO3.Series`
         The object holding metadata about an AO3 series and the works within.
     """
+
     def __init__(self, author_id: int, series: AO3.Series, *, timeout: float | None = 180) -> None:
         self.series = series
         assert is_ao3_work_list(work_list := series.work_list)  # type: ignore

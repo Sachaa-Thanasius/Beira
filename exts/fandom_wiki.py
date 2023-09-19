@@ -191,7 +191,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                     else:
                         continue
 
-        LOGGER.info("All wiki names: %s", list(self.all_wikis.keys()) )
+        LOGGER.info("All wiki names: %s", list(self.all_wikis.keys()))
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)

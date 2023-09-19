@@ -69,7 +69,6 @@ class UserSnowballUpdate(NamedTuple):
         return await conn.fetchrow(snowball_upsert_query, *args)
 
 
-
 class GuildSnowballSettings(NamedTuple):
     """Record-like structure to hold a guild's snowball settings.
 
