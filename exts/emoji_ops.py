@@ -272,7 +272,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         elif isinstance(error, commands.GuildStickerNotFound):
             embed.description = "That is not a valid sticker name or ID, sorry!"
         else:
-            LOGGER.exception(f"Error in `{ctx.command.name}` command", exc_info=error)
+            LOGGER.exception("Error in `%s` command", ctx.command.name, exc_info=error)
             embed.description = "Something went wrong. The emoji/sticker could not be added."
 
         await ctx.send(embed=embed)

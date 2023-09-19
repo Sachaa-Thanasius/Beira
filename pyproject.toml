@@ -62,10 +62,10 @@ ignore = [
     "SIM105",  # Suppressable exception. I'm not paying the overhead of contextlib.supress for stylistic choices.
     "C90",     # McCabe complexity memes.
     "ANN204",  # Special method return types.
-    "ANN101",  # Not typing self everywhere.
-    "ANN102",  # Not typing cls everywhere.
     "PD011",   # Erroneous issue that triggers for any .values attribute access at all.
     "S311",    # No need for cryptographically secure random number generation in this use case.
+    "ANN101",  # Not typing self everywhere.
+    "ANN102",  # Not typing cls everywhere.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
 ]
 unfixable = [

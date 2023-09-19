@@ -227,7 +227,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         # Get data from individual members of the campaign.
         cursor = ""
         members: list[PatreonMember] = []
-        LOGGER.info(f"Campaign: {campaigns['data'][0]}")
+        LOGGER.info("Campaign: %s", campaigns['data'][0])
 
         while True:
             request_url = (
@@ -245,20 +245,20 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
                 # Print an error if it exists.
                 if not resp.ok:
                     text = await resp.text()
-                    LOGGER.info(f"Resp not okay:\n{text}")
+                    LOGGER.info("Resp not okay:\n%s", text)
                     resp.raise_for_status()
 
                 # Get the user's data.
                 resp_json: dict[str, Any] = await resp.json()
-                LOGGER.info(f"Resp json: {resp_json}")
+                LOGGER.info("Resp json: %s", resp_json)
                 for member in resp_json["data"]:
                     user_id = member["relationships"]["user"]["data"]["id"]
-                    LOGGER.info(f"User ID: {user_id}")
+                    LOGGER.info("User ID: %s", user_id)
 
                     user: dict[str, Any] = next(
                         element for element in resp_json["included"] if element["id"] == user_id
                     )
-                    LOGGER.info(f"User: {user}")
+                    LOGGER.info("User: %s", user)
                     assert user is not None
 
                     # Check if they have any social media connected to their Patreon account, and
@@ -276,7 +276,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
                 cursor = cursors["next"]
                 total = pagination_info["total"]
-                LOGGER.info(f"{total=}")
+                LOGGER.info("total=%s", total)
 
         not_ok_members: list[str] = []
         for discord_id in self.patrons_on_discord:
@@ -284,7 +284,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
             if member is None:
                 not_ok_members.append(discord_id)
 
-        LOGGER.info(f"Remaining: {not_ok_members}")
+        LOGGER.info("Remaining: %s", not_ok_members)
 
 
 async def setup(bot: core.Beira) -> None:

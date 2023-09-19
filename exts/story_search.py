@@ -190,7 +190,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
                     ):
                         temp_coll_index.append(index)
 
-        LOGGER.info(f"Loaded file: {filepath.stem}")
+        LOGGER.info("Loaded file: %s", filepath.stem)
 
     @classmethod
     def process_text(cls, story: str, terms: str, exact: bool = True) -> list[tuple[str, str, str]]:

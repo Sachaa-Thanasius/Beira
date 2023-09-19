@@ -131,7 +131,7 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
                 except (discord.Forbidden, discord.NotFound, discord.HTTPException, ValueError, TypeError) as err:
                     LOGGER.exception("", exc_info=err)
 
-        LOGGER.info(f"on_guild_channel_pins_update(): {channel.guild}, {channel}, {last_pin}")
+        LOGGER.info("on_guild_channel_pins_update(): %s, %s, %s", channel.guild, channel, last_pin)
 
     @commands.group("pin", invoke_without_command=True)
     async def pin_(self, ctx: core.GuildContext) -> None:
@@ -348,26 +348,25 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
                         blacklisted_channels.append(channel)
 
             # Upsert the data into the database.
-            async with ctx.db.acquire() as conn:
-                async with conn.transaction():
-                    settings_command = """
-                        INSERT INTO pin_archive_settings(guild_id, pin_channel_id, pin_mode, pin_send_all)
-                        VALUES ($1, $2, $3, $4)
-                        ON CONFLICT (guild_id) DO UPDATE
-                            SET pin_channel_id = pin_archive_settings.pin_channel_id,
-                                pin_mode = pin_archive_settings.pin_mode,
-                                pin_send_all = pin_archive_settings.pin_send_all
-                        RETURNING *;
-                    """
-                    record = await conn.fetchrow(settings_command, guild_id, channel_id, mode, send_all)
+            async with ctx.db.acquire() as conn, conn.transaction():
+                settings_command = """
+                    INSERT INTO pin_archive_settings(guild_id, pin_channel_id, pin_mode, pin_send_all)
+                    VALUES ($1, $2, $3, $4)
+                    ON CONFLICT (guild_id) DO UPDATE
+                        SET pin_channel_id = pin_archive_settings.pin_channel_id,
+                            pin_mode = pin_archive_settings.pin_mode,
+                            pin_send_all = pin_archive_settings.pin_send_all
+                    RETURNING *;
+                """
+                record = await conn.fetchrow(settings_command, guild_id, channel_id, mode, send_all)
 
-                    if blacklisted_channels:
-                        blacklist_command = """
-                            INSERT INTO pin_archive_blacklisted_channels(guild_id, blacklisted_channel)
-                            VALUES ($1, $2)
-                            ON CONFLICT (blacklisted_channel) DO NOTHING;
-                        """
-                        await conn.executemany(blacklist_command, [(guild_id, ch.id) for ch in blacklisted_channels])
+                if blacklisted_channels:
+                    blacklist_command = """
+                        INSERT INTO pin_archive_blacklisted_channels(guild_id, blacklisted_channel)
+                        VALUES ($1, $2)
+                        ON CONFLICT (blacklisted_channel) DO NOTHING;
+                    """
+                    await conn.executemany(blacklist_command, [(guild_id, ch.id) for ch in blacklisted_channels])
 
             if record and not errors:
                 await ctx.send("Setup completed successfully.")

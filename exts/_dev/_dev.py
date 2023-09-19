@@ -376,7 +376,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                         await self.bot.reload_extension(extension)
                     except commands.ExtensionError as err:
                         failed.append(extension)
-                        LOGGER.error("Couldn't reload extension: %s", extension, exc_info=err)
+                        LOGGER.exception("Couldn't reload extension: %s", extension, exc_info=err)
                     else:
                         reloaded.append(extension)
                 end_time = perf_counter()

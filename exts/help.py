@@ -66,8 +66,7 @@ class HelpBotView(PaginatedEmbedView[tuple[str, tuple[tuple[str, str], ...]]]):
             temp = int(value)
         except ValueError:
             temp = value
-            choice = next((i for i, name in enumerate(cog_names) if temp.casefold() in name.casefold()), None)
-            return choice
+            return next((i for i, name in enumerate(cog_names) if temp.casefold() in name.casefold()), None)
 
         if temp > self.total_pages or temp < 1 or self.page_index == (temp - 1):
             return None
@@ -217,7 +216,7 @@ class BeiraHelpCommand(commands.HelpCommand):
         Only functional for Numpy-style docstrings with dashed headers (-----).
         """
 
-        return re.split(r"\w*\n---+\n", docstring, 1)[0]
+        return re.split(r"\w*\n---+\n", docstring, maxsplit=1)[0]
 
 
 class HelpCog(commands.Cog, name="Help"):

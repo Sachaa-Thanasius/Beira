@@ -181,7 +181,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
                 .set_footer(text=f"Generated using the OpenAI API | Total Generation Time: {morph_time:.3f}s")
             )
 
-            LOGGER.info(f"Total morph time: {morph_time:.5f}s")
+            LOGGER.info("Total morph time: %.5fs", morph_time)
 
             sent_message = await ctx.send(embed=embed, file=gif_file)
 

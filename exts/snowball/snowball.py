@@ -212,10 +212,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
             # Update the database records and prepare the response message and embed based on the outcome.
             if roll < base_hit_odds:
-                async with ctx.db.acquire() as conn:
-                    async with conn.transaction():
-                        await UserSnowballUpdate(ctx.author, hits=1, stock=-1).upsert_record(conn)  # type: ignore
-                        await UserSnowballUpdate(target, kos=1).upsert_record(conn)  # type: ignore
+                async with ctx.db.acquire() as conn, conn.transaction():
+                    await UserSnowballUpdate(ctx.author, hits=1, stock=-1).upsert_record(conn)  # type: ignore
+                    await UserSnowballUpdate(target, kos=1).upsert_record(conn)  # type: ignore
 
                 embed.description = random.choice(self.embed_data["hits"]["notes"]).format(target.mention)
                 embed.set_image(url=random.choice(self.embed_data["hits"]["gifs"]))
@@ -278,10 +277,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
-        async with ctx.db.acquire() as conn:
-            async with conn.transaction():
-                giver_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
-                receiver_record = await conn.fetchrow(query, ctx.guild.id, receiver.id)
+        async with ctx.db.acquire() as conn, conn.transaction():
+            giver_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
+            receiver_record = await conn.fetchrow(query, ctx.guild.id, receiver.id)
 
         # In case of failed transfer, send one of these messages.
         if (giver_record is not None) and (giver_record["stock"] - amount < 0):
@@ -301,10 +299,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return
 
         # Update the giver and receiver's records.
-        async with ctx.db.acquire() as conn:
-            async with conn.transaction():
-                await UserSnowballUpdate(ctx.author, stock=-amount).upsert_record(conn)  # type: ignore
-                await UserSnowballUpdate(receiver, stock=amount).upsert_record(conn)  # type: ignore
+        async with ctx.db.acquire() as conn, conn.transaction():
+            await UserSnowballUpdate(ctx.author, stock=-amount).upsert_record(conn)  # type: ignore
+            await UserSnowballUpdate(receiver, stock=amount).upsert_record(conn)  # type: ignore
 
         # Send notification message of successful transfer.
         def_embed.description = f"Transfer successful! You've given {receiver.mention} {amount} of your snowballs!"
@@ -356,10 +353,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return
 
         query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
-        async with ctx.db.acquire() as conn:
-            async with conn.transaction():
-                thief_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
-                victim_record = await conn.fetchrow(query, ctx.guild.id, victim.id)
+        async with ctx.db.acquire() as conn, conn.transaction():
+            thief_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
+            victim_record = await conn.fetchrow(query, ctx.guild.id, victim.id)
 
         # In case of failed steal, send one of these messages.
         if (
@@ -383,12 +379,11 @@ class SnowballCog(commands.Cog, name="Snowball"):
             return
 
         # Update the giver and receiver's records.
-        async with ctx.db.acquire() as conn:
-            async with conn.transaction():
-                assert victim_record is not None
-                amount_to_steal = min(victim_record["stock"], amount)
-                await UserSnowballUpdate(ctx.author, stock=amount_to_steal).upsert_record(conn)  # type: ignore
-                await UserSnowballUpdate(victim, stock=-amount_to_steal).upsert_record(conn)  # type: ignore
+        async with ctx.db.acquire() as conn, conn.transaction():
+            assert victim_record is not None
+            amount_to_steal = min(victim_record["stock"], amount)
+            await UserSnowballUpdate(ctx.author, stock=amount_to_steal).upsert_record(conn)  # type: ignore
+            await UserSnowballUpdate(victim, stock=-amount_to_steal).upsert_record(conn)  # type: ignore
 
         # Send notification message of successful theft.
         def_embed.description = f"Thievery successful! You've stolen {amount_to_steal} snowballs from {victim.mention}!"

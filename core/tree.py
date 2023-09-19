@@ -14,12 +14,12 @@ if TYPE_CHECKING:
     from discord.types.interactions import ApplicationCommandInteractionData
     from typing_extensions import TypeVar
 
-    ClientT = TypeVar("ClientT", bound=Client, covariant=True, default=Client)
+    ClientT_co = TypeVar("ClientT_co", bound=Client, covariant=True, default=Client)
 
 else:
     from typing import TypeVar
 
-    ClientT = TypeVar("ClientT", bound=Client, covariant=True)
+    ClientT_co = TypeVar("ClientT_co", bound=Client, covariant=True)
 
 P = ParamSpec("P")
 T = TypeVar("T")
@@ -98,7 +98,7 @@ def after_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]],
 
 
 class HookableTree(CommandTree):
-    async def _call(self, interaction: Interaction[ClientT]) -> None:  # noqa: PLR0912
+    async def _call(self, interaction: Interaction[ClientT_co]) -> None:  # noqa: PLR0912
         ###### Copy the original logic but add hook checks/calls near the end.
 
         if not await self.interaction_check(interaction):

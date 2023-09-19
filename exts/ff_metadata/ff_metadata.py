@@ -63,7 +63,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         try:
             self.ao3_session = await asyncio.to_thread(AO3.Session, *self.bot.config["ao3"])
         except (AO3.utils.LoginError, AttributeError, Exception) as err:
-            LOGGER.error("Couldn't log in to AO3 during cog load.", exc_info=err)
+            LOGGER.exception("Couldn't log in to AO3 during cog load.", exc_info=err)
             # Screw accessing AO3 normally. Just set it to none and go without backup.
             self.ao3_session = None
 
@@ -298,7 +298,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                     series_id = match.group("ao3_id")
                     story_data = await asyncio.to_thread(AO3.Series, series_id, self.ao3_session, True)
                 except (AttributeError, Exception) as err:
-                    LOGGER.error("", exc_info=err)
+                    LOGGER.exception("", exc_info=err)
                     story_data = None
             else:
                 try:

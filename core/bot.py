@@ -80,7 +80,7 @@ class Beira(commands.Bot):
         """Display that the bot is ready."""
 
         assert self.user
-        LOGGER.info(f"Logged in as {self.user} (ID: {self.user.id})")
+        LOGGER.info("Logged in as %s (ID: %s)", self.user, self.user.id)
 
     async def setup_hook(self) -> None:
         await self._load_guild_prefixes()
@@ -123,10 +123,9 @@ class Beira(commands.Bot):
         user_query = """SELECT user_id FROM users WHERE is_blocked;"""
         guild_query = """SELECT guild_id FROM guilds WHERE is_blocked;"""
 
-        async with self.db_pool.acquire() as conn:
-            async with conn.transaction():
-                user_records = await conn.fetch(user_query)
-                guild_records = await conn.fetch(guild_query)
+        async with self.db_pool.acquire() as conn, conn.transaction():
+            user_records = await conn.fetch(user_query)
+            guild_records = await conn.fetch(guild_query)
 
         self.blocked_entities_cache["users"] = {record["user_id"] for record in user_records}
         self.blocked_entities_cache["guilds"] = {record["guild_id"] for record in guild_records}
@@ -146,7 +145,7 @@ class Beira(commands.Bot):
             msg = f"(Re)loaded guild prefixes for {guild_id}." if guild_id else "(Re)loaded all guild prefixes."
             LOGGER.info(msg)
         except OSError:
-            LOGGER.error("Couldn't load guild prefixes from the database. Ignoring for sake of defaults.")
+            LOGGER.exception("Couldn't load guild prefixes from the database. Ignoring for sake of defaults.")
 
     async def _connect_lavalink_nodes(self) -> None:
         sc = spotify.SpotifyClient(**self.config["spotify"])
@@ -167,9 +166,9 @@ class Beira(commands.Bot):
                 start_time = time.perf_counter()
                 await self.load_extension(extension)
                 end_time = time.perf_counter()
-                LOGGER.info(f"Loaded extension: {extension} -- Time: {end_time - start_time:.5}")
+                LOGGER.info("Loaded extension: %s -- Time: %.5f", extension, end_time - start_time)
             except commands.ExtensionError as err:
-                LOGGER.exception(f"Failed to load extension: {extension}", exc_info=err)
+                LOGGER.exception("Failed to load extension: %s", extension, exc_info=err)
 
     async def _load_special_friends(self) -> None:
         await self.wait_until_ready()
