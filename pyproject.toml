@@ -82,7 +82,7 @@ lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
-include = ["main.py", "core", "ext"]
+include = ["main.py", "core", "exts"]
 
 reportMissingTypeStubs = "none"
 # reportImportCycles = "error"
