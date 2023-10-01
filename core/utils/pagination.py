@@ -33,10 +33,26 @@ class QuitButton(discord.ui.Button[discord.ui.View]):
     Default label is an X symbol, and default style is red.
     """
 
-    def __init__(**kwargs: Any):
-        kwargs["style"] = kwargs.get("style", discord.ButtonStyle.red)
-        kwargs["label"] = kwargs.get("label", "\N{MULTIPLICATION X}")
-        super().__init__(**kwargs)
+    def __init__(
+        self,
+        *,
+        style: discord.ButtonStyle = discord.ButtonStyle.red,
+        label: str = "\N{MULTIPLICATION X}",
+        disabled: bool = False,
+        custom_id: str | None = None,
+        url: str | None = None,
+        emoji: str | discord.Emoji | discord.PartialEmoji | None = None,
+        row: int | None = None,
+    ):
+        super().__init__(
+            style=style,
+            label=label,
+            disabled=disabled,
+            custom_id=custom_id,
+            url=url,
+            emoji=emoji,
+            row=row,
+        )
 
     async def callback(self, interaction: discord.Interaction) -> None:
         assert self.view is not None

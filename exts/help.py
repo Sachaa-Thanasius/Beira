@@ -231,6 +231,10 @@ class HelpCog(commands.Cog, name="Help"):
 
         self.bot.help_command = self._old_help_command
 
+    async def cog_command_error(self, ctx: commands.Context[Any], error: Exception) -> None:
+        error = getattr(error, "original", error)
+        LOGGER.exception("", exc_info=error)
+
     @app_commands.command(name="help")
     async def help_(self, interaction: core.Interaction, command: str | None = None) -> None:
         """Access the help commands through the slash system."""

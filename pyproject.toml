@@ -67,6 +67,7 @@ ignore = [
     "ANN101",  # Not typing self everywhere.
     "ANN102",  # Not typing cls everywhere.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
+    "PLR0913", # Too many parameters in a function definition doesn't matter.
 ]
 unfixable = [
     "ERA",     # I don't want anything erroneously detected deleted by this.
