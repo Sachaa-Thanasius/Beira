@@ -47,13 +47,11 @@ class TodoItem:
 
     @classmethod
     def from_record(cls, record: asyncpg.Record) -> Self:
+        attrs_ = ("todo_id", "user_id", "todo_content", "todo_created_at")
         return cls(
-            record["todo_id"],
-            record["user_id"],
-            record["todo_content"],
-            record["todo_created_at"],
-            record.get("todo_due_date", None),
-            record.get("todo_completed_at", None),
+            *(record[attr] for attr in attrs_),
+            due_date=record.get("todo_due_date"),
+            completed_at=record.get("todo_completed_at"),
         )
 
     @classmethod

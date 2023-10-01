@@ -17,6 +17,7 @@ if TYPE_CHECKING:
 else:
     Self: TypeAlias = Any
 
+AnyEmoji: TypeAlias = discord.Emoji | discord.PartialEmoji | str
 
 __all__ = ("EMOJI_URL", "DTEmbed", "StatsEmbed")
 
@@ -54,11 +55,11 @@ class StatsEmbed(DTEmbed):
     def add_stat_fields(
         self,
         *,
-        stat_names: Iterable[Any],
-        stat_emojis: Iterable[discord.Emoji | discord.PartialEmoji | str] = (""),
-        stat_values: Iterable[Any],
+        names: Iterable[Any],
+        emojis: Iterable[AnyEmoji] = ("",),
+        values: Iterable[Any],
         inline: bool = False,
-        emoji_header_status: bool = False,
+        emoji_as_header: bool = False,
     ) -> Self:
         """Add some stat fields to the embed object.
 
@@ -66,11 +67,11 @@ class StatsEmbed(DTEmbed):
 
         Parameters
         ----------
-        stat_names : Iterable[Any]
+        names : Iterable[Any]
             The names for each field.
-        stat_emojis : Iterable[:class:`Emoji` | :class:`str`]
+        emojis : Iterable[AnyEmoji]
             The emojis adorning each field. Defaults to a tuple with an empty string so there is at least one "emoji".
-        stat_values : Iterable[Any], default=("")
+        values : Iterable[Any], default=("",)
             The values for each field.
         inline : :class:`bool`, default=False
             Whether the fields should be displayed inline. Defaults to False.
@@ -78,11 +79,10 @@ class StatsEmbed(DTEmbed):
             Whether the emojis should adorn the names or the values of each field. By default, adorns the values.
         """
 
-        # Add the stat fields.
-        # - The emojis will be cycled over.
-        for name, emoji, value in zip(stat_names, itertools.cycle(stat_emojis), stat_values, strict=False):
+        # Add the stat fields - the emojis will be cycled over.
+        for name, emoji, value in zip(names, itertools.cycle(emojis), values, strict=False):
             field_name, field_value = str(name), str(value)
-            if emoji_header_status:
+            if emoji_as_header:
                 field_name = f"{emoji} | {field_name}"
             else:
                 field_value = f"{emoji} **|** {field_value}"
@@ -95,11 +95,11 @@ class StatsEmbed(DTEmbed):
         self,
         *,
         ldbd_content: Iterable[Sequence[Any]],
-        ldbd_emojis: Iterable[discord.Emoji | discord.PartialEmoji | str] = (""),
+        ldbd_emojis: Iterable[AnyEmoji] = ("",),
         name_format: str = "| {}",
         value_format: str = "{}",
         inline: bool = False,
-        ranked: bool = True,
+        is_ranked: bool = True,
     ) -> Self:
         """Add some leaderboard fields to the embed object.
 
@@ -109,7 +109,7 @@ class StatsEmbed(DTEmbed):
         ----------
         ldbd_content: Iterable[Sequence[Any]]
             The content for each leaderboard, including names and values. Assumes they're given in descending order.
-        ldbd_emojis : Iterable[:class:`Emoji` | :class:`str`], default=("")
+        ldbd_emojis : Iterable[AnyEmoji], default=("",)
             The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there
             is at least one "emoji".
         name_format : :class:`str`, default="| {}"
@@ -118,18 +118,16 @@ class StatsEmbed(DTEmbed):
             The format for the value, to be filled by information from the content.
         inline : :class:`bool`, default=False
             Whether the fields should be displayed inline.
-        ranked : :class:`bool`, default=True
+        is_ranked : :class:`bool`, default=True
             Whether the stats should be ranked in descending order.
         """
 
-        # Add the leaderboard fields.
-        # - The emojis will be cycled over.
+        # Add the leaderboard fields - the emojis will be cycled over.
         for rank, (content, emoji) in enumerate(zip(ldbd_content, itertools.cycle(ldbd_emojis), strict=False)):
-            if ranked:
-                name = f"{emoji} {rank + 1} " + name_format.format(str(content[0]))
-            else:
-                name = f"{emoji} " + name_format.format(str(content[0]))
+            field_prefix = f"{emoji} {rank + 1} " if is_ranked else f"{emoji} "
+            field_name = field_prefix + name_format.format(str(content[0]))
+            field_value = value_format.format(*content[1:])
 
-            self.add_field(name=name, value=value_format.format(*content[1:]), inline=inline)
+            self.add_field(name=field_name, value=field_value, inline=inline)
 
         return self

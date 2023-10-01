@@ -106,8 +106,6 @@ class HelpCogView(PaginatedEmbedView[tuple[str, str]]):
 class BeiraHelpCommand(commands.HelpCommand):
     """The custom help command for Beira."""
 
-    context: core.Context  # Type narrowing
-
     async def send_bot_help(
         self,
         mapping: Mapping[commands.Cog | None, list[commands.Command[Any, ..., Any]]],

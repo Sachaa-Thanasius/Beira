@@ -77,10 +77,7 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
 
     Only accepts :class:`AO3.Work` objects from Armindo Flores's AO3 package.
     """
-
-    author: AO3.User = work.authors[0]
-    await asyncio.to_thread(author.reload)
-
+    
     # Format the relevant information.
     updated = work.date_updated.strftime("%B %d, %Y") + (" (Complete)" if work.complete else "")
     author_names = ", ".join(str(author.username) for author in work.authors)

@@ -50,7 +50,7 @@ class SkippableQueue(wavelink.Queue):
             for sub_item in item:
                 sub_item.requester = requester  # type: ignore # Runtime attribute assignment.
                 await self.put_wait(sub_item)
-        elif isinstance(item, spotify.SpotifyAsyncIterator):
+        elif isinstance(item, AsyncIterator):
             # Awkward casting to satisfy pyright since wavelink isn't fully typed.
             async for sub_item in cast(AsyncIterator[spotify.SpotifyTrack], item):
                 sub_item.requester = requester  # type: ignore # Runtime attribute assignment.

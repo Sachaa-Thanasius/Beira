@@ -91,13 +91,7 @@ class GuildSnowballSettings(NamedTuple):
 
     @classmethod
     def from_record(cls: type[Self], record: asyncpg.Record) -> Self:
-        guild_id, hit_odds, stock_cap, transfer_cap = (
-            record["guild_id"],
-            record["hit_odds"],
-            record["stock_cap"],
-            record["transfer_cap"],
-        )
-        return cls(guild_id, hit_odds, stock_cap, transfer_cap)
+        return cls(record["guild_id"], record["hit_odds"], record["stock_cap"], record["transfer_cap"])
 
     @classmethod
     async def from_database(cls: type[Self], conn: Pool_alias | Connection_alias, guild_id: int) -> Self:
@@ -262,8 +256,10 @@ class SnowballSettingsView(discord.ui.View):
             discord.Embed(
                 color=0x5E9A40,
                 title=f"Snowball Settings in {self.guild_name}",
-                description="Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings "
-                "can be added on a per-guild basis, but currently don't have any effect. Fix coming soon.",
+                description=(
+                    "Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings can be "
+                    "added on a per-guild basis, but currently don't have any effect. Fix coming soon."
+                ),
             )
             .add_field(
                 name=f"Odds = {self.settings.hit_odds}",

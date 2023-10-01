@@ -44,7 +44,7 @@ class PatreonMember:
 
 @attrs.define
 class PatreonTierInfo:
-    """Quick and dirty dataclass for necessary Patreon tiers info."""
+    """Quick and dirty dataclass for Patreon tiers info."""
 
     creator: str
     name: str
@@ -57,15 +57,8 @@ class PatreonTierInfo:
 
     @classmethod
     def from_record(cls, record: Record) -> Self:
-        return cls(
-            record["creator_name"],
-            record["tier_name"],
-            record["tier_value"],
-            record["tier_info"],
-            record["discord_guild"],
-            record["tier_role"],
-            discord.PartialEmoji.from_str(record["tier_emoji"]),
-        )
+        attrs_ = ("creator_name", "tier_name", "tier_value", "tier_info", "discord_guild", "tier_role")
+        return cls(*(record[attr] for attr in attrs_), emoji=discord.PartialEmoji.from_str(record["tier_emoji"]))
 
 
 class PatreonTierSelectView(PaginatedSelectView[PatreonTierInfo]):
@@ -263,11 +256,12 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
                     # Check if they have any social media connected to their Patreon account, and
                     # if they have Discord specifically connected to their Patreon account.
-                    if (socials := user["attributes"].get("social_connections")) is not None and (
-                        discord_info := socials["discord"]
-                    ) is not None:
+                    try:
+                        discord_info = user["attributes"]["social_connections"]["discord"]
                         currently_entitled_tiers = member["relationships"]["currently_entitled_tiers"]
                         members.append(PatreonMember(user_id, int(discord_info["user_id"]), currently_entitled_tiers))
+                    except KeyError:
+                        pass
 
                 # Get page info.
                 pagination_info = resp_json["meta"]["pagination"]

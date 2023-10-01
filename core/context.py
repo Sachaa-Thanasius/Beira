@@ -7,9 +7,10 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import aiohttp
-import asyncpg
 import discord
 from discord.ext import commands
+
+from .utils.db import Pool_alias
 
 
 if TYPE_CHECKING:
@@ -44,7 +45,7 @@ class Context(commands.Context["Beira"]):
         return self.bot.web_session
 
     @property
-    def db(self) -> asyncpg.Pool[asyncpg.Record]:
+    def db(self) -> Pool_alias:
         """:class:`Pool`: Returns the asynchronous connection pool used by the bot for database management."""
 
         return self.bot.db_pool

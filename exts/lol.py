@@ -172,7 +172,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         if stats[1:2] == ("None", "None"):
             embed.description = "This player either doesn't exist or isn't ranked!"
         else:
-            embed.add_stat_fields(stat_names=stat_headers, stat_values=stats)
+            embed.add_stat_fields(names=stat_headers, values=stats)
 
         await ctx.send(embed=embed)
 

@@ -530,9 +530,3 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             LOGGER.exception("Unknown error in sync command", exc_info=error)
 
         await ctx.reply(embed=embed)
-
-
-async def setup(bot: core.Beira) -> None:
-    """Connects cog to bot."""
-
-    await bot.add_cog(DevCog(bot))

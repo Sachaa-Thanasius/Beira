@@ -156,8 +156,6 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
             records = await self.get_usage(actual_time_pd, search_factors.command, guild, search_factors.universal)
 
-            ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
-            ldbd_emojis.extend(["\N{SPORTS MEDAL}" for _ in range(6)])
             embed = StatsEmbed(color=0x193D2C, title="Commands Leaderboard", description="―――――――――――")
             assert embed.description is not None
 
@@ -167,6 +165,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
                 record_tuples = (
                     ((entity if (entity := get_strat(record[0])) else record[0]), record[1]) for record in records
                 )
+
+                ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
+                ldbd_emojis.extend("\N{SPORTS MEDAL}" for _ in range(6))
 
                 embed.add_leaderboard_fields(ldbd_content=record_tuples, ldbd_emojis=ldbd_emojis)
             else:
@@ -221,7 +222,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             where_params.append(f"command = ${len(query_args)}")
 
         # Add the WHERE clause to the query if necessary.
-        where_clause = ("WHERE " + " AND ".join(where_params) + "\n") if len(query_args) > 0 else ""
+        where_clause = f"WHERE {' AND '.join(where_params)}\n" if len(query_args) > 0 else ""
         query = query.format(where=where_clause)
         return await self.bot.db_pool.fetch(query, *query_args)
 

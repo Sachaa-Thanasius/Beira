@@ -46,13 +46,8 @@ class StoryInfo:
 
     @classmethod
     def from_record(cls, record: asyncpg.Record) -> Self:
-        return cls(
-            record["story_acronym"],
-            record["story_full_name"],
-            record["author_name"],
-            record["story_link"],
-            record["emoji_id"],
-        )
+        attrs_ = ("story_acronym", "story_full_name", "author_name", "story_link", "emoji_id")
+        return cls(*(record[attr] for attr in attrs_))
 
 
 class StoryQuoteView(PaginatedEmbedView[tuple[str, str, str]]):

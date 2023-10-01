@@ -22,7 +22,7 @@ else:
 _LT = TypeVar("_LT")
 
 
-__all__ = ("OwnedView", "PageSeekModal", "PaginatedEmbedView", "PaginatedSelectView")
+__all__ = ("QuitButton", "OwnedView", "PageSeekModal", "PaginatedEmbedView", "PaginatedSelectView")
 
 LOGGER = logging.getLogger(__name__)
 
@@ -319,7 +319,6 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
         self.populate_select()
 
         # Activate the right buttons on instantiation.
-        self.clear_items().add_page_buttons()
         self.disable_page_buttons()
 
     @property
@@ -339,7 +338,7 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
     def format_page(self) -> Any:
         """|maybecoro|
 
-        Makes the embed 'page' that the user will see.
+        Makes and returns the embed 'page' that the user will see.
         """
 
         msg = "Page formatting must be set up in a subclass."
@@ -351,18 +350,6 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
 
         msg = "Select populating must be set up in a subclass."
         raise NotImplementedError(msg)
-
-    def add_page_buttons(self) -> Self:
-        """Only adds the necessary page buttons based on how many pages there are.
-
-        This function returns the class instance to allow for fluent-style chaining.
-        """
-
-        # Done in a weird way to preserve button order.
-        if self.total_pages > 1:
-            self.add_item(self.turn_to_next).add_item(self.turn_to_previous)
-
-        return self
 
     def disable_page_buttons(self) -> None:
         """Enables and disables page-turning buttons based on page count, position, and movement."""
