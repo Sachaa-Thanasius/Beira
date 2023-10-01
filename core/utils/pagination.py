@@ -230,7 +230,7 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
 
         temp = self.page_index
         self.page_index = 0
-        embed = await maybe_coroutine(self.format_page())
+        embed = await maybe_coroutine(self.format_page)
         self.page_index = temp
         return embed
 
