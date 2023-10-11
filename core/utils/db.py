@@ -12,7 +12,9 @@ from asyncpg import Connection, Pool, Record
 
 
 if TYPE_CHECKING:
-    Connection_alias: TypeAlias = Connection[Record]
+    from asyncpg.pool import PoolConnectionProxy
+
+    Connection_alias: TypeAlias = Connection[Record] | PoolConnectionProxy[Record]
     Pool_alias: TypeAlias = Pool[Record]
 else:
     Connection_alias: TypeAlias = Connection

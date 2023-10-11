@@ -34,8 +34,8 @@ from .snow_text import (
 )
 from .utils import (
     GuildSnowballSettings,
+    SnowballRecord,
     SnowballSettingsView,
-    UserSnowballUpdate,
     collect_cooldown,
     steal_cooldown,
     transfer_cooldown,
@@ -141,14 +141,14 @@ class SnowballCog(commands.Cog, name="Snowball"):
         privilege_check = bool(ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author))
         stock_limit = base_stock_cap * 2 if privilege_check else base_stock_cap
 
-        record = await UserSnowballUpdate(ctx.author, stock=1).upsert_record(ctx.db)
+        record = await SnowballRecord.upsert_record(ctx.db, ctx.author, stock=1)
 
         embed = discord.Embed(color=0x5E62D3)
         if record:
-            if record["stock"] < stock_limit:
+            if record.stock < stock_limit:
                 embed.description = (
                     f"Slapping on your warmest pair of gloves, you gathered some snow and started shaping"
-                    f"some snowballs. You now have {record['stock']} of them—let 'em fly!"
+                    f"some snowballs. You now have {record.stock} of them—let 'em fly!"
                 )
                 embed.set_image(url=random.choice(COLLECT_SUCCEED_IMGS))
 
@@ -197,15 +197,15 @@ class SnowballCog(commands.Cog, name="Snowball"):
             # Update the database records and prepare the response message and embed based on the outcome.
             if roll < base_hit_odds:
                 async with ctx.db.acquire() as conn, conn.transaction():
-                    await UserSnowballUpdate(ctx.author, hits=1, stock=-1).upsert_record(conn)  # type: ignore
-                    await UserSnowballUpdate(target, kos=1).upsert_record(conn)  # type: ignore
+                    await SnowballRecord.upsert_record(conn, ctx.author, hits=1, stock=-1)
+                    await SnowballRecord.upsert_record(conn, target, kos=1)
 
                 embed.description = random.choice(HIT_NOTES).format(target.mention)
                 embed.set_image(url=random.choice(HIT_IMGS))
                 message = target.mention
 
             else:
-                await UserSnowballUpdate(ctx.author, misses=1).upsert_record(ctx.db)
+                await SnowballRecord.upsert_record(ctx.db, ctx.author, misses=1)
 
                 misses_text = random.choice(MISS_NOTES)
                 embed.colour = 0xFFA600
@@ -285,8 +285,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         # Update the giver and receiver's records.
         async with ctx.db.acquire() as conn, conn.transaction():
-            await UserSnowballUpdate(ctx.author, stock=-amount).upsert_record(conn)  # type: ignore
-            await UserSnowballUpdate(receiver, stock=amount).upsert_record(conn)  # type: ignore
+            await SnowballRecord.upsert_record(conn, ctx.author, stock=-amount)
+            await SnowballRecord.upsert_record(conn, receiver, stock=amount)
 
         # Send notification message of successful transfer.
         def_embed.description = f"Transfer successful! You've given {receiver.mention} {amount} of your snowballs!"
@@ -367,8 +367,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         async with ctx.db.acquire() as conn, conn.transaction():
             assert victim_record is not None
             amount_to_steal = min(victim_record["stock"], amount)
-            await UserSnowballUpdate(ctx.author, stock=amount_to_steal).upsert_record(conn)  # type: ignore
-            await UserSnowballUpdate(victim, stock=-amount_to_steal).upsert_record(conn)  # type: ignore
+            await SnowballRecord.upsert_record(conn, ctx.author, stock=amount_to_steal)
+            await SnowballRecord.upsert_record(conn, victim, stock=-amount_to_steal)
 
         # Send notification message of successful theft.
         def_embed.description = f"Thievery successful! You've stolen {amount_to_steal} snowballs from {victim.mention}!"

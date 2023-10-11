@@ -12,6 +12,7 @@ from typing import Any
 import aiohttp
 import asyncpg
 import discord
+import msgspec
 import wavelink
 from discord.ext import commands, tasks
 from wavelink.ext import spotify
@@ -19,7 +20,7 @@ from wavelink.ext import spotify
 from exts import EXTENSIONS
 
 from .checks import is_blocked
-from .config import CONFIG
+from .config import CONFIG, Config
 from .context import Context
 
 
@@ -54,7 +55,7 @@ class Beira(commands.Bot):
     ) -> None:
         super().__init__(*args, **kwargs)
         self.initial_extensions: list[str] = initial_extensions or []
-        self._config: dict[str, Any] = CONFIG
+        self._config: Config = CONFIG
 
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}
@@ -69,12 +70,6 @@ class Beira(commands.Bot):
         # Start a looped background task.
         self.set_custom_presence.start()
 
-    @property
-    def config(self) -> dict[str, Any]:
-        """dict: All configuration information from the config.json file."""
-
-        return self._config
-
     async def on_ready(self) -> None:
         """Display that the bot is ready."""
 
@@ -87,8 +82,8 @@ class Beira(commands.Bot):
         await self._load_extensions()
 
         # Connection lavalink nodes.
-        sc = spotify.SpotifyClient(**self.config["spotify"])
-        node = wavelink.Node(**self.config["lavalink"])
+        sc = spotify.SpotifyClient(**msgspec.structs.asdict(CONFIG.spotify))
+        node = wavelink.Node(**msgspec.structs.asdict(CONFIG.lavalink))
         await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
 
         # Get information about owner.
@@ -175,7 +170,7 @@ class Beira(commands.Bot):
     async def _load_special_friends(self) -> None:
         await self.wait_until_ready()
 
-        friends_ids: list[int] = self.config["discord"]["friend_ids"]
+        friends_ids: list[int] = CONFIG.discord.friend_ids
         for user_id in friends_ids:
             if user_obj := self.get_user(user_id):
                 self.special_friends[user_obj.name] = user_id

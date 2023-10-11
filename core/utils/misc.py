@@ -161,4 +161,4 @@ def bench_v2(
 
             return sync_wrapper
 
-    return decorator  # type: ignore
+    return decorator  # type: ignore # To revisit another day

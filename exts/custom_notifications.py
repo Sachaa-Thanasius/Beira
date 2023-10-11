@@ -41,7 +41,7 @@ async def on_server_boost_role_member_update(
     after: discord.Member,
 ) -> None:
     # The ID of the guild this listener is for.
-    aci_guild_id: int = bot.config["discord"]["guilds"]["prod"][0]
+    aci_guild_id: int = core.CONFIG.discord.important_guilds["prod"][0]
 
     # Check if the update is in the right server, a member got new roles, and they got a new "Server Booster" role.
     if (
@@ -68,7 +68,7 @@ async def on_leveled_role_member_update(
     """
 
     # The ID of the guild this listener is for.
-    aci_guild_id: int = bot.config["discord"]["guilds"]["prod"][0]
+    aci_guild_id: int = core.CONFIG.discord.important_guilds["prod"][0]
 
     # Check if the update is in the right server, a member got new roles, and they got a relevant leveled role.
     if (
@@ -95,7 +95,7 @@ async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessag
     # TODO: Improve.
 
     # The ID of the guild this listener is for.
-    aci_guild_id: int = bot.config["discord"]["guilds"]["prod"][0]
+    aci_guild_id: int = core.CONFIG.discord.important_guilds["prod"][0]
 
     # Only check in ACI100 server.
     if payload.guild_id == aci_guild_id:
@@ -158,7 +158,7 @@ async def setup(bot: core.Beira) -> None:
     """Connects listeners to bot."""
 
     # The webhook url that will be used to send ACI-related notifications.
-    aci_webhook_url: str = bot.config["discord"]["webhooks"][0]
+    aci_webhook_url: str = core.CONFIG.discord.webhooks[0]
     role_log_webhook = discord.Webhook.from_url(aci_webhook_url, session=bot.web_session)
 
     # Adjust the arguments for the listeners.

@@ -88,11 +88,9 @@ class AdminCog(commands.Cog, name="Administration"):
                     VALUES ($1, $2)
                     ON CONFLICT (guild_id, prefix) DO NOTHING;
                 """
-                async with self.bot.db_pool.acquire() as conn:
-                    # Update it in the database.
-                    async with conn.transaction():
-                        await conn.execute(guild_query, ctx.guild.id)
-                        await conn.execute(prefix_query, ctx.guild.id, new_prefix)
+                async with self.bot.db_pool.acquire() as conn, conn.transaction():
+                    await conn.execute(guild_query, ctx.guild.id)
+                    await conn.execute(prefix_query, ctx.guild.id, new_prefix)
                     # Update it in the cache.
                     self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
 

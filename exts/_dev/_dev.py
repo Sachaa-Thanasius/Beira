@@ -32,7 +32,7 @@ SPEC_CHOICES: list[tuple[str, str]] = [
     ("[+] —— (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.", "+"),
 ]
 
-dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in core.CONFIG["discord"]["guilds"]["dev"]]
+dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in core.CONFIG.discord.important_guilds["dev"]]
 
 # Preload the dev-guild-only app commands decorator.
 only_dev_guilds = app_commands.guilds(*dev_guilds_objects)

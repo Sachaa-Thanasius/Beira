@@ -16,6 +16,7 @@ __all__ = ("SkippableQueue", "SkippablePlayer")
 
 AnyTrack = wavelink.Playable | spotify.SpotifyTrack
 AnyTrackIterable = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
+# AnyTrackIterator = Iterator[AnyTrack] | AsyncIterator[AnyTrack]
 
 
 class SkippableQueue(wavelink.Queue):
@@ -78,4 +79,4 @@ class SkippablePlayer(wavelink.Player):
         swap_node_on_disconnect: bool = True,
     ) -> None:
         super().__init__(client, channel, nodes=nodes, swap_node_on_disconnect=swap_node_on_disconnect)
-        self.queue: SkippableQueue = SkippableQueue()
+        self.queue: SkippableQueue = SkippableQueue()  # type: ignore [reportIncompatibleVariableOverride]

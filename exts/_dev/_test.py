@@ -7,13 +7,10 @@ from discord.ext import commands
 import core
 from core.tree import after_app_invoke, before_app_invoke
 
+from ._dev import only_dev_guilds
+
 
 LOGGER = logging.getLogger(__name__)
-
-dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in core.CONFIG["discord"]["guilds"]["dev"]]
-
-# Preload the dev-guild-only app commands decorator.
-only_dev_guilds = app_commands.guilds(*dev_guilds_objects)
 
 
 async def example_before_hook(itx: discord.Interaction) -> None:
@@ -97,10 +94,3 @@ class TestCog(commands.Cog, name="_Test", command_attrs={"hidden": True}):
 
         send_msg = itx.response.send_message if not itx.response.is_done() else itx.followup.send
         await send_msg(f"In command with given argument: {arg}")
-
-    @commands.command()
-    async def test_config_toml(self, ctx: core.Context) -> None:
-        from core.config import CONFIG_TOML
-
-        wrapped = f"```\n{CONFIG_TOML}\n```"
-        await ctx.send(wrapped)

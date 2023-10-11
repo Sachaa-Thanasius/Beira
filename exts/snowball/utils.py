@@ -1,9 +1,10 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, NamedTuple, TypeAlias
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import asyncpg
 import discord
+import msgspec
 from discord.ext import commands
 
 import core
@@ -17,7 +18,7 @@ else:
 
 
 __all__ = (
-    "UserSnowballUpdate",
+    "SnowballRecord",
     "GuildSnowballSettings",
     "SnowballSettingsModal",
     "SnowballSettingsView",
@@ -27,33 +28,47 @@ __all__ = (
 )
 
 
-class UserSnowballUpdate(NamedTuple):
-    """Record-like structure that represents a member's snowball record that is being upserted into the database.
+class SnowballRecord(msgspec.Struct):
+    """Record-like structure that represents a member's snowball record.
 
     Attributes
     ----------
-    hits : :class:`int`, default=0
+    hits : :class:`int`
         The number of snowballs used that the member just hit people with.
-    misses : :class:`int`, default=0
+    misses : :class:`int`
         The number of snowballs used the member just tried to hit someone with and missed.
-    kos : :class:`int`, default=0
+    kos : :class:`int'
         The number of hits the member just took.
-    stock : :class:`int`, default=0
+    stock : :class:`int`
         The change in how many snowballs the member has in stock.
     """
 
-    member: discord.Member
-    hits: int = 0
-    misses: int = 0
-    kos: int = 0
-    stock: int = 0
+    hits: int
+    misses: int
+    kos: int
+    stock: int
 
-    async def upsert_record(self, conn: Pool_alias | Connection_alias) -> asyncpg.Record | None:
+    @classmethod
+    def from_record(cls: type[Self], record: asyncpg.Record | None) -> Self | None:
+        if record:
+            return cls(record["hits"], record["misses"], record["kos"], record["stock"])
+        return None
+
+    @classmethod
+    async def upsert_record(
+        cls,
+        conn: Pool_alias | Connection_alias,
+        member: discord.Member,
+        hits: int = 0,
+        misses: int = 0,
+        kos: int = 0,
+        stock: int = 0,
+    ) -> Self | None:
         """Upserts a user's snowball stats based on the given stat parameters."""
 
         # Upsert the relevant users and guilds to the database before adding a snowball record.
-        await upsert_users(conn, self.member)
-        await upsert_guilds(conn, self.member.guild)
+        await upsert_users(conn, member)
+        await upsert_guilds(conn, member.guild)
 
         snowball_upsert_query = """
             INSERT INTO snowball_stats (user_id, guild_id, hits, misses, kos, stock)
@@ -65,11 +80,11 @@ class UserSnowballUpdate(NamedTuple):
                     stock = snowball_stats.stock + $7
             RETURNING *;
         """
-        args = self.member.id, self.member.guild.id, self.hits, self.misses, self.kos, max(self.stock, 0), self.stock
-        return await conn.fetchrow(snowball_upsert_query, *args)
+        args = member.id, member.guild.id, hits, misses, kos, max(stock, 0), stock
+        return cls.from_record(await conn.fetchrow(snowball_upsert_query, *args))
 
 
-class GuildSnowballSettings(NamedTuple):
+class GuildSnowballSettings(msgspec.Struct):
     """Record-like structure to hold a guild's snowball settings.
 
     Attributes
@@ -306,11 +321,12 @@ def collect_cooldown(ctx: core.Context) -> commands.Cooldown | None:
 
     rate, per = 1.0, 15.0  # Default cooldown
     exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
+    testing_guild_ids: list[int] = core.CONFIG.discord.important_guilds["dev"]
 
     if ctx.author.id in exempt:
         return None
 
-    if ctx.guild and (ctx.guild.id in ctx.bot.config["discord"]["guilds"]["dev"]):  # Testing server ids
+    if ctx.guild and (ctx.guild.id in testing_guild_ids):
         per = 1.0
     return commands.Cooldown(rate, per)
 
@@ -323,7 +339,7 @@ def transfer_cooldown(ctx: core.Context) -> commands.Cooldown | None:
 
     rate, per = 1.0, 60.0  # Default cooldown
     exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
-    testing_guild_ids: list[int] = ctx.bot.config["discord"]["guilds"]["dev"]
+    testing_guild_ids: list[int] = core.CONFIG.discord.important_guilds["dev"]
 
     if ctx.author.id in exempt:
         return None
@@ -341,11 +357,11 @@ def steal_cooldown(ctx: core.Context) -> commands.Cooldown | None:
 
     rate, per = 1.0, 90.0  # Default cooldown
     exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["athenahope"]]
-    testing_guild_ids: list[int] = ctx.bot.config["discord"]["guilds"]["dev"]
+    testing_guild_ids: list[int] = core.CONFIG.discord.important_guilds["dev"]
 
     if ctx.author.id in exempt:
         return None
 
-    if ctx.guild and (ctx.guild.id in testing_guild_ids):  # Testing server ids
+    if ctx.guild and (ctx.guild.id in testing_guild_ids):
         per = 2.0
     return commands.Cooldown(rate, per)

@@ -29,7 +29,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.tatsu_client = tatsu.Client(bot.config["tatsu"]["key"])
+        self.tatsu_client = tatsu.Client(core.CONFIG.tatsu.key)
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:

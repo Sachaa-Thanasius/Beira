@@ -45,12 +45,12 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        atlas_auth: tuple[str, str] = (self.bot.config["atlas_fanfic"]["user"], self.bot.config["atlas_fanfic"]["pass"])
+        atlas_auth = (core.CONFIG.atlas.user, core.CONFIG.atlas.password)
         self.atlas_client = atlas_api.AtlasClient(auth=atlas_auth, session=self.bot.web_session)
         self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_session)
         self.ao3_client = ao3.Client(session=self.bot.web_session)
         self.allowed_channels_cache: dict[int, set[int]] = {}
-        self.aci100_id: int = self.bot.config["discord"]["guilds"]["prod"][0]
+        self.aci100_id: int = core.CONFIG.discord.important_guilds["prod"][0]
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -163,9 +163,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         async with ctx.typing():
             # Update the database.
-            async with self.bot.db_pool.acquire() as con:
-                await con.executemany(command, [(ctx.guild.id, channel.id) for channel in channels])
-                records = await con.fetch(query, ctx.guild.id)
+            async with self.bot.db_pool.acquire() as conn:
+                await conn.executemany(command, [(ctx.guild.id, channel.id) for channel in channels])
+                records = await conn.fetch(query, ctx.guild.id)
 
             # Update the cache.
             self.allowed_channels_cache.setdefault(ctx.guild.id, set()).update(record[0] for record in records)

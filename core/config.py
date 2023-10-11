@@ -2,36 +2,45 @@
 config.py: Imports configuration information, such as api keys and tokens, default prefixes, etc.
 """
 
-import json
 import pathlib
 from typing import Any
 
 import msgspec
 
 
-__all__ = ("CONFIG", "CONFIG_TOML")
+__all__ = ("CONFIG",)
 
 
-class UserPassConfig(msgspec.Struct):
+class Base(msgspec.Struct):
+    """A base class to hold some common functions."""
+
+    def to_dict(self) -> dict[str, Any]:
+        return msgspec.structs.asdict(self)
+
+    def to_tuple(self) -> tuple[Any, ...]:
+        return msgspec.structs.astuple(self)
+
+
+class UserPassConfig(Base):
     user: str
     password: str
 
 
-class KeyConfig(msgspec.Struct):
+class KeyConfig(Base):
     key: str
 
 
-class SpotifyConfig(msgspec.Struct):
+class SpotifyConfig(Base):
     client_id: str
     client_secret: str
 
 
-class LavalinkConfig(msgspec.Struct):
+class LavalinkConfig(Base):
     uri: str
     password: str
 
 
-class PatreonConfig(msgspec.Struct):
+class PatreonConfig(Base):
     client_id: str
     client_secret: str
     creator_access_token: str
@@ -39,11 +48,11 @@ class PatreonConfig(msgspec.Struct):
     patreon_guild_id: int
 
 
-class DatabaseConfig(msgspec.Struct):
+class DatabaseConfig(Base):
     pg_url: str
 
 
-class DiscordConfig(msgspec.Struct):
+class DiscordConfig(Base):
     token: str
     default_prefix: str
     friend_ids: list[int] = msgspec.field(default_factory=list)
@@ -51,16 +60,16 @@ class DiscordConfig(msgspec.Struct):
     webhooks: list[str] = msgspec.field(default_factory=list)
 
 
-class Config(msgspec.Struct):
-    DISCORD: DiscordConfig
-    DATABASE: DatabaseConfig
-    PATREON: PatreonConfig
-    LAVALINK: LavalinkConfig
-    SPOTIFY: SpotifyConfig
-    OPENAI: KeyConfig
-    TATSU: KeyConfig
-    ATLAS: UserPassConfig
-    AO3: UserPassConfig
+class Config(Base):
+    discord: DiscordConfig
+    database: DatabaseConfig
+    patreon: PatreonConfig
+    lavalink: LavalinkConfig
+    spotify: SpotifyConfig
+    openai: KeyConfig
+    tatsu: KeyConfig
+    atlas: UserPassConfig
+    ao3: UserPassConfig
 
 
 def decode(data: bytes | str) -> Config:
@@ -78,20 +87,4 @@ def encode(msg: Config) -> bytes:
 with pathlib.Path("config.toml").open(encoding="utf-8") as f:
     data = f.read()
 
-CONFIG_TOML = decode(data)
-
-
-def load_config() -> dict[str, Any]:
-    """Load data from a config file.
-
-    Returns
-    -------
-    :class:`dict`
-        A variable containing the config data.
-    """
-
-    with pathlib.Path("config.json").open() as f:
-        return json.load(f)
-
-
-CONFIG: dict[str, Any] = load_config()
+CONFIG = decode(data)

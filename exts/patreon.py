@@ -109,7 +109,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.access_token = self.bot.config["patreon"]["creator_access_token"]
+        self.access_token = core.CONFIG.patreon.creator_access_token
         self.patrons_on_discord: dict[str, list[discord.Member]] = {}
 
     @property
@@ -191,7 +191,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         LOGGER.info("Checking for new patrons, old patrons, and updated patrons!")
 
-        aci100_id = self.bot.config["patreon"]["patreon_guild_id"]
+        aci100_id = core.CONFIG.patreon.patreon_guild_id
         patreon_guild = self.bot.get_guild(aci100_id)
         assert patreon_guild is not None
 
@@ -207,7 +207,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     async def get_current_actual_patrons(self) -> None:
         """Get all active patrons from Patreon's API."""
 
-        api_token = self.bot.config["patreon"]["creator_access_token"]
+        api_token = core.CONFIG.patreon.creator_access_token
         headers = {"Authorization": f"Bearer {api_token}"}
 
         # Get campaign data.

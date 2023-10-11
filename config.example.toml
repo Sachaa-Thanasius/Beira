@@ -1,0 +1,38 @@
+[discord]
+token = ""
+default_prefix = "$"
+friend_ids = []
+important_guilds = { dev = [], prod = [] }
+webhooks = []
+
+[database]
+pg_url = ""
+
+[patreon]
+client_id = ""
+client_secret = ""
+creator_access_token = ""
+creator_refresh_token = ""
+patreon_guild_id = 0
+
+[lavalink]
+uri = ""
+password = ""
+
+[spotify]
+client_id = ""
+client_secret = ""
+
+[openai]
+key = ""
+
+[tatsu]
+key = ""
+
+[atlas]
+user = ""
+password = ""
+
+[ao3]
+user = ""
+password = ""
