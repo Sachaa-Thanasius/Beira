@@ -12,6 +12,7 @@ fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api-wrapper@5ef22a0c
 jishaku @ git+https://github.com/Gorialis/jishaku@bf26bea3c1f86993fd75744de48bf52d4925521a
 lxml>=4.9.3,<5
 matplotlib
+msgspec[toml]
 numpy
 openai>=0.27.8
 Pillow>=10.0.0
