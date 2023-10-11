@@ -1,16 +1,16 @@
 from __future__ import annotations
 
-import asyncio
 import logging
 import re
 import textwrap
-from typing import Any, TypeGuard
+from collections.abc import Callable, Coroutine
+from typing import Any
 
-import AO3
+import ao3
 import atlas_api
-import attrs
 import discord
 import fichub_api
+import msgspec
 
 from core.utils import DTEmbed, PaginatedSelectView
 
@@ -22,6 +22,7 @@ __all__ = (
     "create_ao3_series_embed",
     "create_fichub_embed",
     "create_atlas_ffn_embed",
+    "ff_embed_factory",
     "AO3SeriesView",
 )
 
@@ -37,15 +38,14 @@ SIYE_PATTERN = re.compile(r"(?:www\.|)siye\.co\.uk/(?:siye/|)viewstory\.php\?sid
 
 FFN_ICON = "https://www.fanfiction.net/static/icons3/ff-icon-128.png"
 FP_ICON = "https://www.fanfiction.net/static/icons3/ff-icon-128.png"
-AO3_ICON = "https://www.archiveofourown.com/images/ao3_logos/xlogo_42.png.pagespeed.ic.ax-awMa4j4.png"
+AO3_ICON = ao3.utils.AO3_LOGO_URL
 SB_ICON = "https://forums.spacebattles.com/data/svg/2/1/1682578744/2022_favicon_192x192.png"
 SV_ICON = "https://forums.sufficientvelocity.com/favicon-96x96.png?v=69wyvmQdJN"
 QQ_ICON = "https://forums.questionablequesting.com/favicon.ico"
 SIYE_ICON = "https://www.siye.co.uk/siye/favicon.ico"
 
 
-@attrs.define
-class StoryWebsite:
+class StoryWebsite(msgspec.Struct):
     name: str
     acronym: str
     story_regex: re.Pattern[str]
@@ -55,7 +55,7 @@ class StoryWebsite:
 StoryWebsiteStore: dict[str, StoryWebsite] = {
     "FFN": StoryWebsite("FanFiction.Net", "FFN", FFN_PATTERN, FFN_ICON),
     "FP": StoryWebsite("FictionPress", "FP", FP_PATTERN, FP_ICON),
-    "AO3": StoryWebsite("Archive of Our Own", "AO3", AO3_PATTERN, AO3_ICON),
+    "AO3": StoryWebsite("Archive of Our Own", "AO3", AO3_PATTERN, ao3.utils.AO3_LOGO_URL),
     "SB": StoryWebsite("SpaceBattles", "SB", SB_PATTERN, SB_ICON),
     "SV": StoryWebsite("Sufficient Velocity", "SV", SV_PATTERN, SV_ICON),
     "QQ": StoryWebsite("Questionable Questing", "QQ", QQ_PATTERN, QQ_ICON),
@@ -68,41 +68,41 @@ STORY_WEBSITE_REGEX = re.compile(
 )
 
 
-def is_ao3_work_list(list_: list[Any]) -> TypeGuard[list[AO3.Work]]:
-    return all(isinstance(item, AO3.Work) for item in list_)
-
-
-async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
+async def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own work.
 
-    Only accepts :class:`AO3.Work` objects from Armindo Flores's AO3 package.
+    Only accepts :class:`ao3.Work` objects.
     """
-    
+
     # Format the relevant information.
-    updated = work.date_updated.strftime("%B %d, %Y") + (" (Complete)" if work.complete else "")
-    author_names = ", ".join(str(author.username) for author in work.authors)
+    if work.date_updated:
+        updated = work.date_updated.strftime("%B %d, %Y") + (" (Complete)" if work.is_complete else "")
+    else:
+        updated = "Unknown"
+    author_names = ", ".join(str(author.name) for author in work.authors)
     fandoms = textwrap.shorten(", ".join(work.fandoms), 100, placeholder="...")
     categories = textwrap.shorten(", ".join(work.categories), 100, placeholder="...")
     characters = textwrap.shorten(", ".join(work.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
     stats_str = " • ".join(
         (
-            f"**Comments:** {work.comments:,d}",
-            f"**Kudos:** {work.kudos:,d}",
-            f"**Bookmarks:** {work.bookmarks:,d}",
-            f"**Hits:** {work.hits:,d}",
+            f"**Comments:** {work.ncomments:,d}",
+            f"**Kudos:** {work.nkudos:,d}",
+            f"**Bookmarks:** {work.nbookmarks:,d}",
+            f"**Hits:** {work.nhits:,d}",
         ),
     )
 
     # Add the info in the embed appropriately.
+    author_url = f"https://archiveofourown.org/users/{work.authors[0].name}"
     ao3_embed = (
         DTEmbed(title=work.title, url=work.url)
-        .set_author(name=author_names, url=author.url, icon_url=StoryWebsiteStore["AO3"].icon_url)
+        .set_author(name=author_names, url=author_url, icon_url=StoryWebsiteStore["AO3"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
-        .add_field(name="\N{OPEN BOOK} Length", value=f"{work.words:,d} words in {work.nchapters} chapter(s)")
+        .add_field(name="\N{OPEN BOOK} Length", value=f"{work.nwords:,d} words in {work.nchapters} chapter(s)")
         .add_field(name=f"\N{BOOKMARK} Rating: {work.rating}", value=details, inline=False)
         .add_field(name="\N{BAR CHART} Stats", value=stats_str, inline=False)
-        .set_footer(text="A substitute for displaying AO3 information, using Armindo Flores's AO3 API.")
+        .set_footer(text="A substitute for displaying AO3 information.")
     )
 
     # Use the remaining space in the embed for the truncated description.
@@ -110,27 +110,30 @@ async def create_ao3_work_embed(work: AO3.Work) -> DTEmbed:
     return ao3_embed
 
 
-async def create_ao3_series_embed(series: AO3.Series) -> DTEmbed:
+async def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own series.
 
-    Only accepts :class:`AO3.Series` objects from Armindo Flores's AO3 package.
+    Only accepts :class:`ao3.Series` objects.
     """
 
-    author: AO3.User = series.creators[0]
-    await asyncio.to_thread(author.reload)
+    author = series.creators[0]
+    author_url = f"https://archiveofourown.org/users/{author.name}"
 
     # Format the relevant information.
-    updated = series.series_updated.strftime("%B %d, %Y") + (" (Complete)" if series.complete else "")
-    author_names = ", ".join(str(creator.username) for creator in series.creators)
-    work_links = "\N{BOOKS} **Works:**\n" + "\n".join(f"[{work.title}]({work.url})" for work in series.work_list)
+    if series.date_updated:
+        updated = series.date_updated.strftime("%B %d, %Y") + (" (Complete)" if series.is_complete else "")
+    else:
+        updated = "Unknown"
+    author_names = ", ".join(str(creator.name) for creator in series.creators)
+    work_links = "\N{BOOKS} **Works:**\n" + "\n".join(f"[{work.title}]({work.url})" for work in series.works_list)
 
     # Add the info in the embed appropriately.
     ao3_embed = (
         DTEmbed(title=series.name, url=series.url, description=work_links)
-        .set_author(name=author_names, url=author.url, icon_url=StoryWebsiteStore["AO3"].icon_url)
+        .set_author(name=author_names, url=author_url, icon_url=StoryWebsiteStore["AO3"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=updated)
-        .add_field(name="\N{OPEN BOOK} Length", value=f"{series.words:,d} words in {series.nworks} work(s)")
-        .set_footer(text="A substitute for displaying AO3 information, using Armindo Flores's AO3 API.")
+        .add_field(name="\N{OPEN BOOK} Length", value=f"{series.nwords:,d} words in {series.nworks} work(s)")
+        .set_footer(text="A substitute for displaying AO3 information.")
     )
 
     # Use the remaining space in the embed for the truncated description.
@@ -221,14 +224,28 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     return story_embed
 
 
-class AO3SeriesView(PaginatedSelectView[AO3.Work]):
+EMBED_STRATEGIES: dict[Any, Callable[..., Coroutine[Any, Any, discord.Embed]]] = {
+    atlas_api.FFNStory: create_atlas_ffn_embed,
+    fichub_api.Story: create_fichub_embed,
+    ao3.Work: create_ao3_work_embed,
+    ao3.Series: create_ao3_series_embed,
+}
+
+
+async def ff_embed_factory(story_data: Any) -> discord.Embed | None:
+    if story_data is not None and (strategy := EMBED_STRATEGIES.get(type(story_data))):
+        return await strategy(story_data)
+    return None
+
+
+class AO3SeriesView(PaginatedSelectView[ao3.Work]):
     """A view that wraps a dropdown item for AO3 works.
 
     Parameters
     ----------
     author_id : :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    series : :class:`AO3.Series`
+    series : :class:`ao3.Series`
         The object holding metadata about an AO3 series and the works within.
     timeout: :class:`float` | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -236,14 +253,13 @@ class AO3SeriesView(PaginatedSelectView[AO3.Work]):
 
     Attributes
     ----------
-    series : :class:`AO3.Series`
+    series : :class:`ao3.Series`
         The object holding metadata about an AO3 series and the works within.
     """
 
-    def __init__(self, author_id: int, series: AO3.Series, *, timeout: float | None = 180) -> None:
+    def __init__(self, author_id: int, series: ao3.Series, *, timeout: float | None = 180) -> None:
         self.series = series
-        assert is_ao3_work_list(work_list := series.work_list)  # type: ignore
-        super().__init__(author_id, work_list, timeout=timeout)
+        super().__init__(author_id, list(series.works_list), timeout=timeout)
 
     async def on_timeout(self) -> None:
         """Disables all items on timeout."""
@@ -260,7 +276,6 @@ class AO3SeriesView(PaginatedSelectView[AO3.Work]):
         self.select_page.add_option(label=self.series.name, value="0", description=descr, emoji="\N{BOOKS}")
 
         for i, work in enumerate(self.pages, start=1):
-            assert isinstance(work, AO3.Work)
             descr = textwrap.shorten(work.summary, 100, placeholder="...")
             self.select_page.add_option(
                 label=f"{i}. {work.title}",

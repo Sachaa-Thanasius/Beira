@@ -180,6 +180,7 @@ cython_debug/
 data/dunk/
 logs/
 config.json
+config.toml
 database/table_insertions.sql
 database/migration_script.py
 misc/

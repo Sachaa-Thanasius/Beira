@@ -11,8 +11,8 @@ from abc import ABC, abstractmethod
 from typing import TYPE_CHECKING, Any, TypeAlias
 
 import asyncpg
-import attrs
 import discord
+import msgspec
 from discord.ext import commands
 
 import core
@@ -28,8 +28,7 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 
-@attrs.define
-class TodoItem:
+class TodoItem(msgspec.Struct):
     todo_id: int
     user_id: int
     content: str
@@ -121,7 +120,7 @@ class TodoItem:
         if self.is_deleted:
             return discord.Embed(colour=discord.Colour.default(), title="<Deleted>")
 
-        todo_id, _, content, _, due_date, completed_at = attrs.astuple(self)
+        todo_id, _, content, _, due_date, completed_at = msgspec.structs.astuple(self)
 
         todo_embed = discord.Embed(colour=discord.Colour.light_grey(), title=f"To-Do {todo_id}", description=content)
 

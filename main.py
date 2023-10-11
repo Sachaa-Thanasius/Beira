@@ -19,6 +19,7 @@ async def main() -> None:
         command_timeout=30,
         init=pool_init,
     ) as pool, LoggingManager() as _:
+        # Set up OpenAI.
         openai.api_key = core.CONFIG["openai"]["api_key"]
         openai.aiosession.set(web_session)
 
@@ -28,13 +29,9 @@ async def main() -> None:
         default_prefix: str = core.CONFIG["discord"]["default_prefix"]
 
         # Initialize and start the bot.
-        async with core.Beira(
-            command_prefix=default_prefix,
-            intents=intents,
-            db_pool=pool,
-            web_session=web_session,
-            tree_cls=HookableTree,
-        ) as bot:
+        async with core.Beira(command_prefix=default_prefix, intents=intents, tree_cls=HookableTree) as bot:
+            bot.db_pool = pool
+            bot.web_session = web_session
             await bot.start(core.CONFIG["discord"]["token"])
 
     await asyncio.sleep(0.1)

@@ -15,9 +15,9 @@ from urllib.parse import quote, urljoin
 
 import aiohttp
 import discord
-import lxml.html as lh
 from arsenic import browsers, errors, get_session, services  # type: ignore # Third-party lib typing.
 from discord.ext import commands
+from lxml import html
 
 import core
 from core.utils import StatsEmbed
@@ -262,9 +262,9 @@ class LoLCog(commands.Cog, name="League of Legends"):
                 content = await response.text()
 
             # Parse the summoner information for winrate and tier (referred to later as rank).
-            tree = lh.fromstring(content)  # type: ignore # Third-party lib typing.
-            winrate = "".join(tree.xpath("//div[@class='ratio']/text()")).removeprefix("Win Rate ")
-            rank = "".join(tree.xpath("//div[@class='tier']/text()")).capitalize()
+            tree = html.fromstring(content)
+            winrate = str(tree.xpath("//div[@class='ratio']/string()")).removeprefix("Win Rate")
+            rank = str(tree.xpath("//div[@class='tier']/string()")).capitalize()
             if not (winrate and rank):
                 winrate, rank = "None", "None"
         except (AttributeError, aiohttp.ClientError):

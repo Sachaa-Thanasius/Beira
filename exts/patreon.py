@@ -10,8 +10,8 @@ import logging
 import textwrap
 from typing import TYPE_CHECKING, Any, TypeAlias
 
-import attrs
 import discord
+import msgspec
 import yarl
 from discord.ext import commands, tasks
 
@@ -33,17 +33,15 @@ INFO_EMOJI = discord.PartialEmoji.from_str("<:icons_info:880113401207095346>")
 ACI100_ICON_URL = "https://cdn.discordapp.com/emojis/1077980959569362994.webp?size=48&quality=lossless"
 
 
-@attrs.define
-class PatreonMember:
+class PatreonMember(msgspec.Struct):
     """Quick and dirty dataclass for Patreon patrons."""
 
     user_id: str
     discord_id: int
-    current_tiers: list[Any] = attrs.field(factory=list)
+    current_tiers: list[Any] = msgspec.field(default_factory=list)
 
 
-@attrs.define
-class PatreonTierInfo:
+class PatreonTierInfo(msgspec.Struct):
     """Quick and dirty dataclass for Patreon tiers info."""
 
     creator: str

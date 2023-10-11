@@ -15,12 +15,13 @@ from io import StringIO
 from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
 import asteval
-import attrs
 import discord
+import msgspec
 from discord import ui
 from discord.ext import commands
 
 import core
+from core.utils import EMOJI_STOCK
 
 
 if TYPE_CHECKING:
@@ -33,8 +34,7 @@ LOGGER = logging.getLogger(__name__)
 AEVAL = asteval.Interpreter(use_numpy=False, minimal=True)
 
 
-@attrs.frozen
-class Die:
+class Die(msgspec.Struct, frozen=True):
     """A quick and dirty dataclass for dice-related information relevant to the roll command and associated views.
 
     Attributes
@@ -50,25 +50,26 @@ class Die:
     """
 
     value: int
-    emoji: discord.PartialEmoji
+    emoji: str | discord.PartialEmoji
     color: discord.Colour
-    label: str = attrs.field(init=False)
 
-    @label.default  # type: ignore # Pyright doesn't account for this attrs syntax.
-    def _label(self) -> str:
+    @property
+    def label(self) -> str:
         return f"D{self.value}"
 
 
 # A dict of standard dice represented via dataclasses.
+# fmt: off
 standard_dice: dict[int, Die] = {
-    4: Die(4, discord.PartialEmoji(name="d04", animated=True, id=1109234548727885884), discord.Colour(0x5971C4)),
-    6: Die(6, discord.PartialEmoji(name="d06", animated=True, id=1109234547389907017), discord.Colour(0xC5964A)),
-    8: Die(8, discord.PartialEmoji(name="d08", animated=True, id=1109234533041197196), discord.Colour(0x8DCA6F)),
-    10: Die(10, discord.PartialEmoji(name="d10", animated=True, id=1109234530348437606), discord.Colour(0xA358B4)),
-    12: Die(12, discord.PartialEmoji(name="d12", animated=True, id=1109234528431636672), discord.Colour(0xC26436)),
-    20: Die(20, discord.PartialEmoji(name="d20", animated=True, id=1109234550707593346), discord.Colour(0xD43C54)),
-    100: Die(100, discord.PartialEmoji(name="d100", animated=True, id=1109960365967687841), discord.Colour(0xB40EA9)),
+    4:      Die(4,      EMOJI_STOCK["d04"],     discord.Colour(0x5971C4)),
+    6:      Die(6,      EMOJI_STOCK["d06"],     discord.Colour(0xC5964A)),
+    8:      Die(8,      EMOJI_STOCK["d08"],     discord.Colour(0x8DCA6F)),
+    10:     Die(10,     EMOJI_STOCK["d10"],     discord.Colour(0xA358B4)),
+    12:     Die(12,     EMOJI_STOCK["d12"],     discord.Colour(0xC26436)),
+    20:     Die(20,     EMOJI_STOCK["d20"],     discord.Colour(0xD43C54)),
+    100:    Die(100,    EMOJI_STOCK["d100"],    discord.Colour(0xB40EA9)),
 }
+# fmt: on
 
 
 def replace_dice_in_expr(match: re.Match[str]) -> str:

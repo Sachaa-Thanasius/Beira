@@ -15,8 +15,8 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar, TypeAlias
 
 import asyncpg
-import attrs
 import discord
+import msgspec
 from discord.ext import commands
 
 import core
@@ -31,8 +31,7 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 
-@attrs.define
-class StoryInfo:
+class StoryInfo(msgspec.Struct):
     """A class to hold all the information about each story."""
 
     acronym: str
@@ -40,9 +39,9 @@ class StoryInfo:
     author: str
     link: str
     emoji_id: int
-    text: list[str] = attrs.field(factory=list)
-    chapter_index: list[int] = attrs.field(factory=list)
-    collection_index: list[int] = attrs.field(factory=list)
+    text: list[str] = msgspec.field(default_factory=list)
+    chapter_index: list[int] = msgspec.field(default_factory=list)
+    collection_index: list[int] = msgspec.field(default_factory=list)
 
     @classmethod
     def from_record(cls, record: asyncpg.Record) -> Self:

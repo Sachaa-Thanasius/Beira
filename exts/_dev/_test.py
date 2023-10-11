@@ -97,3 +97,10 @@ class TestCog(commands.Cog, name="_Test", command_attrs={"hidden": True}):
 
         send_msg = itx.response.send_message if not itx.response.is_done() else itx.followup.send
         await send_msg(f"In command with given argument: {arg}")
+
+    @commands.command()
+    async def test_config_toml(self, ctx: core.Context) -> None:
+        from core.config import CONFIG_TOML
+
+        wrapped = f"```\n{CONFIG_TOML}\n```"
+        await ctx.send(wrapped)

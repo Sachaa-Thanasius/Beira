@@ -43,17 +43,16 @@ class Beira(commands.Bot):
         Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.
     """
 
+    db_pool: asyncpg.Pool[asyncpg.Record]
+    web_session: aiohttp.ClientSession
+
     def __init__(
         self,
         *args: Any,
-        db_pool: asyncpg.Pool[asyncpg.Record],
-        web_session: aiohttp.ClientSession,
         initial_extensions: list[str] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
-        self.db_pool: asyncpg.Pool[asyncpg.Record] = db_pool
-        self.web_session: aiohttp.ClientSession = web_session
         self.initial_extensions: list[str] = initial_extensions or []
         self._config: dict[str, Any] = CONFIG
 
@@ -86,9 +85,17 @@ class Beira(commands.Bot):
         await self._load_guild_prefixes()
         await self._load_blocked_entities()
         await self._load_extensions()
-        await self._connect_lavalink_nodes()
+
+        # Connection lavalink nodes.
+        sc = spotify.SpotifyClient(**self.config["spotify"])
+        node = wavelink.Node(**self.config["lavalink"])
+        await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
+
+        # Get information about owner.
         self.app_info = await self.application_info()
         self.owner_id = self.app_info.owner.id
+
+        # Cache "friends".
         self.loop.create_task(self._load_special_friends())
 
     async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
@@ -146,11 +153,6 @@ class Beira(commands.Bot):
             LOGGER.info(msg)
         except OSError:
             LOGGER.exception("Couldn't load guild prefixes from the database. Ignoring for sake of defaults.")
-
-    async def _connect_lavalink_nodes(self) -> None:
-        sc = spotify.SpotifyClient(**self.config["spotify"])
-        node = wavelink.Node(**self.config["lavalink"])
-        await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
 
     async def _load_extensions(self) -> None:
         """Loads extensions/cogs.

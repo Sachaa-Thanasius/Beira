@@ -44,7 +44,7 @@ def is_owner_or_friend() -> Check[Any]:
     """
 
     async def predicate(ctx: Context) -> bool:
-        if not (await ctx.bot.is_owner(ctx.author) or ctx.bot.is_special_friend(ctx.author)):
+        if not (ctx.bot.is_special_friend(ctx.author) or await ctx.bot.is_owner(ctx.author)):
             raise NotOwnerOrFriend
         return True
 
