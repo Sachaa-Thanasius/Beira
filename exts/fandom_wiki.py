@@ -35,9 +35,9 @@ class AoCWikiEmbed(DTEmbed):
 
     Parameters
     ----------
-    author_icon_url : :class:`str`, optional
+    author_icon_url: :class:`str`, optional
         The image url for the embed's author icon. Defaults to the AoC emoji url.
-    footer_icon_url : :class:`str`, optional
+    footer_icon_url: :class:`str`, optional
         The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
     **kwargs
         Keyword arguments for the normal initialization of an :class:`DTEmbed`.
@@ -130,14 +130,14 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     Parameters
     ----------
-    bot : :class:`core.Beira`
+    bot: :class:`core.Beira`
         The main Discord bot this cog is a part of.
 
     Attributes
     ----------
-    bot : :class:`core.Beira`
+    bot: :class:`core.Beira`
         The main Discord bot this cog is a part of.
-    all_wikis : dict
+    all_wikis: dict
         The dict containing information for various wikis.
     """
 
@@ -200,11 +200,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        wiki : :class:`str`
+        wiki: :class:`str`
             The name of the wiki that's being searched.
-        search_term : :class:`str`
+        search_term: :class:`str`
             The term or phrase being searched for in the wiki.
         """
 
@@ -237,9 +237,9 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         Parameters
         ----------
-        wiki_name : :class:`str`
+        wiki_name: :class:`str`
             The wiki to search within.
-        wiki_query : :class:`str`
+        wiki_query: :class:`str`
             The text input to search with.
         """
 

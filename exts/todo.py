@@ -64,7 +64,7 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        conn : :class:`asyncpg.Pool` | :class:`asyncpg.Connection`
+        conn: :class:`asyncpg.Pool` | :class:`asyncpg.Connection`
             The connection/pool that will be used to make this database command.
         """
 
@@ -80,9 +80,9 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        conn : :class:`asyncpg.Pool` | :class:`asyncpg.Connection`
+        conn: :class:`asyncpg.Pool` | :class:`asyncpg.Connection`
             The connection/pool that will be used to make this database command.
-        updated_content : :class:`str`
+        updated_content: :class:`str`
             The new to-do content.
         """
 
@@ -95,7 +95,7 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        conn : :class:`asyncpg.Pool` | :class:`asyncpg.Connection`
+        conn: :class:`asyncpg.Pool` | :class:`asyncpg.Connection`
             The connection/pool that will be used to make this database command.
         """
 
@@ -107,7 +107,7 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        to_be_deleted : :class:`bool`, default=False
+        to_be_deleted: :class:`bool`, default=False
             Whether the given to-do item is going to be deleted from the database. Defaults to False.
 
         Returns
@@ -146,16 +146,16 @@ class TodoModal(discord.ui.Modal, title="What do you want to do?"):
 
     Parameters
     ----------
-    existing_content : :class:`str`, default=""
+    existing_content: :class:`str`, default=""
         If working with an existing to-do item, this is the current content of that item to be edited. Defaults to an
         empty string.
 
     Attributes
     ----------
-    content : :class:`discord.ui.TextInput`
+    content: :class:`discord.ui.TextInput`
         The text box that will allow a user to enter or edit a to-do item's content. If editing, existing content is
         added as "default".
-    interaction : :class:`discord.Interaction`
+    interaction: :class:`discord.Interaction`
         The interaction of the user with the modal. Only populates on submission.
     """
 
@@ -186,7 +186,7 @@ class TodoCompleteButton(discord.ui.Button["TodoViewABC"]):
 
     Parameters
     ----------
-    completed_at : :class:`datetime.datetime`, optional
+    completed_at: :class:`datetime.datetime`, optional
         An optional completion time for the to-do item in the parent view. Determines the button's initial look.
     **kwargs
         Arbitrary keywords arguments primarily for :class:`discord.ui.Button`. See that class for more information.
@@ -306,20 +306,20 @@ class TodoView(TodoViewABC):
 
     Parameters
     ----------
-    author_id : :class:`int`
+    author_id: :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    todo_item : :class:`TodoItem`
+    todo_item: :class:`TodoItem`
         The to-do item that's being viewed and interacted with.
     **kwargs
         Arbitrary keyword arguments, primarily for :class:`discord.ui.View`. See that class for more information.
 
     Attributes
     ----------
-    message : :class:`discord.Message` | None
+    message: :class:`discord.Message` | None
         The message to which the view is attached to, allowing interaction without a :class:`discord.Interaction`.
-    author : :class:`discord.User` | :class:`discord.Member`
+    author: :class:`discord.User` | :class:`discord.Member`
         The user that triggered this view. No one else can use it.
-    todo_item : :class:`TodoItem` | None
+    todo_item: :class:`TodoItem` | None
         The to-do item that's being viewed and interacted with. Might be set to None of the record is deleted.
     """
 
@@ -345,9 +345,9 @@ class TodoView(TodoViewABC):
 
         Parameters
         ----------
-        interaction : :class:`core.Interaction`
+        interaction: :class:`core.Interaction`
             The interaction that caused this state change.
-        updated_record : :class:`TodoItem`
+        updated_record: :class:`TodoItem`
             The new version of the to-do item for the view to display.
         """
 
@@ -423,9 +423,9 @@ class TodoListView(PaginatedEmbedView[TodoItem], TodoViewABC):
 
         Parameters
         ----------
-        interaction : :class:`core.Interaction`
+        interaction: :class:`core.Interaction`
             The interaction that caused this state change.
-        updated_record : :class:`TodoItem`
+        updated_record: :class:`TodoItem`
             The new version of the to-do item for the view to display.
         """
 
@@ -473,9 +473,9 @@ class TodoCog(commands.Cog, name="Todo"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        content : :class:`str`
+        content: :class:`str`
             The content of the to-do item.
         """
 
@@ -493,9 +493,9 @@ class TodoCog(commands.Cog, name="Todo"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        todo_id : :class:`int`
+        todo_id: :class:`int`
             The id of the task to do.
         """
 
@@ -517,9 +517,9 @@ class TodoCog(commands.Cog, name="Todo"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        todo_id : :class:`int`
+        todo_id: :class:`int`
             The id of the task to do.
         """
 
@@ -538,11 +538,11 @@ class TodoCog(commands.Cog, name="Todo"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        complete : :class:`bool`, default=False
+        complete: :class:`bool`, default=False
             Whether to pull completed to-do items. Defaults to False.
-        pending : :class:`bool`, default=True
+        pending: :class:`bool`, default=True
             Whether to pull pending to-do items. Defaults to True.
         """
 

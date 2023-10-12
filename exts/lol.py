@@ -156,9 +156,9 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        summoner_name : :class:`str`
+        summoner_name: :class:`str`
             The summoner name, or username, of the League of Legends player being queried.
         """
 
@@ -182,9 +182,9 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        summoner_names : list[:class:`str`]
+        summoner_names: list[:class:`str`]
             A string of summoner names to create a leaderboard from. Separate these by spaces.
         """
 
@@ -215,7 +215,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Returns
         -------
-        embed : :class:`StatsEmbed`
+        embed: :class:`StatsEmbed`
             The Discord embed with leaderboard fields for all ranked summoners.
         """
 
@@ -245,12 +245,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        summoner_name : :class:`str`
+        summoner_name: :class:`str`
             The name of the League of Legends player.
 
         Returns
         -------
-        summoner_name, winrate, rank : tuple[:class:`str`, :class:`str`, :class:`str`]
+        summoner_name, winrate, rank: tuple[:class:`str`, :class:`str`, :class:`str`]
             The stats of the LoL user, including name, winrate, and rank.
         """
 

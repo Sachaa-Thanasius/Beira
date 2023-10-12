@@ -132,11 +132,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        block_type : Literal["user", "guild"], default="user"
+        block_type: Literal["user", "guild"], default="user"
             What type of entity or entities are being blocked. Defaults to "user".
-        entities : :class:`commands.Greedy`[:class:`discord.Object`]
+        entities: :class:`commands.Greedy`[:class:`discord.Object`]
             The entities to block.
         """
 
@@ -166,11 +166,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context
-        block_type : Literal["user", "guild"], default="user"
+        block_type: Literal["user", "guild"], default="user"
             What type of entity or entities are being unblocked. Defaults to "user".
-        entities : :class:`commands.Greedy`[:class:`discord.Object`]
+        entities: :class:`commands.Greedy`[:class:`discord.Object`]
             The entities to unblock.
         """
 
@@ -244,7 +244,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context where the command was called.
         """
 
@@ -276,9 +276,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        extension : :class:`str`
+        extension: :class:`str`
             The name of the chosen extension to load, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -316,9 +316,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        extension : :class:`str`
+        extension: :class:`str`
             The name of the chosen extension to unload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -345,9 +345,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        extension : :class:`str`
+        extension: :class:`str`
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -416,12 +416,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        guilds : Greedy[:class:`discord.Object`], optional
+        guilds: Greedy[:class:`discord.Object`], optional
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
             :class:`discord.Object`s. Please provide as IDs separated by spaces.
-        spec : Choice[:class:`str`], optional
+        spec: Choice[:class:`str`], optional
             The type of sync to perform if no guilds are entered. No input means global sync.
 
         Notes
@@ -431,19 +431,19 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         Here is some elaboration on what the command would do with different arguments. Irrelevant with slash
         activation, but replace '$' with whatever your prefix is for prefix command activation:
 
-            `$sync` : Sync globally.
+            `$sync`: Sync globally.
 
-            `$sync ~` : Sync with current guild.
+            `$sync ~`: Sync with current guild.
 
-            `$sync *` : Copy all global app commands to current guild and sync.
+            `$sync *`: Copy all global app commands to current guild and sync.
 
-            `$sync ^` : Clear all commands from the current guild target and sync, thereby removing guild commands.
+            `$sync ^`: Clear all commands from the current guild target and sync, thereby removing guild commands.
 
-            `$sync -` : (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
+            `$sync -`: (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
 
-            `$sync +` : (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
+            `$sync +`: (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
 
-            `$sync <id_1> <id_2> ...` : Sync with those guilds of id_1, id_2, etc.
+            `$sync <id_1> <id_2> ...`: Sync with those guilds of id_1, id_2, etc.
 
         References
         ----------
@@ -497,9 +497,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        error : :class:`commands.CommandError`
+        error: :class:`commands.CommandError`
             The error thrown by the command.
         """
 

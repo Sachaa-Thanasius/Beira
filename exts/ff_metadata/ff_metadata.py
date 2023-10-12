@@ -148,9 +148,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+        channels: :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
             A list of channels to add, separated by spaces.
         """
 
@@ -188,9 +188,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+        channels: :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
             A list of channels to remove, separated by spaces.
         """
 
@@ -219,9 +219,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        name_or_url : :class:`str`
+        name_or_url: :class:`str`
             The search string for the story title, or the story url.
         """
 
@@ -251,9 +251,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        name_or_url : :class:`str`
+        name_or_url: :class:`str`
             The search string for the story title, or the story url.
         """
 

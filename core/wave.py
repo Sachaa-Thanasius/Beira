@@ -16,7 +16,6 @@ __all__ = ("SkippableQueue", "SkippablePlayer")
 
 AnyTrack = wavelink.Playable | spotify.SpotifyTrack
 AnyTrackIterable = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
-# AnyTrackIterator = Iterator[AnyTrack] | AsyncIterator[AnyTrack]
 
 
 class SkippableQueue(wavelink.Queue):
@@ -41,9 +40,9 @@ class SkippableQueue(wavelink.Queue):
 
         Parameters
         ----------
-        item : :class:`AnyPlayable` | :class:`AnyTrackIterable`
+        item: :class:`AnyPlayable` | :class:`AnyTrackIterable`
             The track or collection of tracks to add to the queue.
-        requester : :class:`str`, optional
+        requester: :class:`str`, optional
             A string representing the user who queued this up. Optional.
         """
 
@@ -66,7 +65,7 @@ class SkippablePlayer(wavelink.Player):
 
     Attributes
     ----------
-    queue : :class:`SkippableQueue`
+    queue: :class:`SkippableQueue`
         A version of :class:`wavelink.Queue` that can be skipped into.
     """
 

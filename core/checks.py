@@ -131,7 +131,7 @@ def check_any(*checks: AppCheck) -> Callable[[T], T]:
 
     Parameters
     ----------
-    checks : :class:`AppCheckProtocol`
+    checks: :class:`AppCheckProtocol`
         An argument list of checks that have been decorated with :func:`app_commands.check` decorator.
 
     Raises

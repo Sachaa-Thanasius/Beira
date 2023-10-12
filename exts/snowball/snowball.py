@@ -67,9 +67,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context where the error happened.
-        error : :class:`Exception`
+        error: :class:`Exception`
             The error that happened.
         """
 
@@ -169,9 +169,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        target : :class:`discord.Member`
+        target: :class:`discord.Member`
             The user to hit with a snowball.
         """
 
@@ -229,12 +229,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        amount : :class:`int`
+        amount: :class:`int`
             The number of snowballs to transfer. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, the transfer fails.
-        receiver : :class:`discord.Member`
+        receiver: :class:`discord.Member`
             The user to bestow snowballs upon.
         """
 
@@ -306,12 +306,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        amount : :class:`int`
+        amount: :class:`int`
             The number of snowballs to steal. If is greater than 10, pushes the receiver's snowball stock past the
             stock cap, or brings the giver's balance below zero, then the steal fails.
-        victim : :class:`discord.Member`
+        victim: :class:`discord.Member`
             The user to steal snowballs from.
         """
 
@@ -383,9 +383,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        target : :class:`discord.User`, default=:class:`commands.Author`
+        target: :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their stats are specifically from
             all their interactions within the guild in context.
         """
@@ -432,9 +432,9 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        target : :class:`discord.User`, default=:class:`commands.Author`
+        target: :class:`discord.User`, default=:class:`commands.Author`
             The user whose stats are to be displayed. If none, defaults to the caller. Their global stats are a
             summation of all their guild-specific stats.
         """

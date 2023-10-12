@@ -243,9 +243,9 @@ class AO3SeriesView(PaginatedSelectView[ao3.Work]):
 
     Parameters
     ----------
-    author_id : :class:`int`
+    author_id: :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    series : :class:`ao3.Series`
+    series: :class:`ao3.Series`
         The object holding metadata about an AO3 series and the works within.
     timeout: :class:`float` | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -253,7 +253,7 @@ class AO3SeriesView(PaginatedSelectView[ao3.Work]):
 
     Attributes
     ----------
-    series : :class:`ao3.Series`
+    series: :class:`ao3.Series`
         The object holding metadata about an AO3 series and the works within.
     """
 

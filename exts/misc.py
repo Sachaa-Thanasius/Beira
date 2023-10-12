@@ -140,9 +140,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        arg : :class:`str`
+        arg: :class:`str`
             The user input.
         """
 
@@ -154,9 +154,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        message : :class:`discord.Message`
+        message: :class:`discord.Message`
             The message to be quoted. It can be specified by a message link, message ID, or channel-message ID pair.
         """
 
@@ -173,7 +173,7 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
         """
 
@@ -210,9 +210,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        text : :class:`str`
+        text: :class:`str`
             The text to convert into meows.
         """
 

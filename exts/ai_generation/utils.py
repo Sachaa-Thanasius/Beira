@@ -35,12 +35,12 @@ async def temp_file_names(*extensions: str) -> AsyncGenerator[tuple[Path, ...], 
 
     Parameters
     ----------
-    *extensions : tuple[:class:`str`]
+    *extensions: tuple[:class:`str`]
         The file extensions that the generated filenames should have, e.g. py, txt, doc.
 
     Yields
     ------
-    temp_paths : tuple[:class:`Path`]
+    temp_paths: tuple[:class:`Path`]
         Filepaths with random filenames with the given file extensions, in order.
     """
 
@@ -54,9 +54,9 @@ async def get_image(session: aiohttp.ClientSession, url: str) -> bytes:
 
     Parameters
     ----------
-    session : :class:`aiohttp.ClientSession`
+    session: :class:`aiohttp.ClientSession`
         The web session with which to retrieve the image data.
-    url : :class:`str`
+    url: :class:`str`
         The url to retrieve the image from.
 
     Returns
@@ -85,12 +85,12 @@ async def create_completion(prompt: str) -> str:
 
     Parameters
     ----------
-    prompt : :class:`str`
+    prompt: :class:`str`
         The text OpenAI will generatively complete.
 
     Returns
     -------
-    text : :class:`str`
+    text: :class:`str`
         The generated text completion.
     """
 
@@ -108,14 +108,14 @@ async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
 
     Parameters
     ----------
-    prompt : :class:`str`
+    prompt: :class:`str`
         The text OpenAI will use to generate the image.
-    size : tuple[:class:`int`, :class:`int`]
+    size: tuple[:class:`int`, :class:`int`]
         The dimensions of the resulting image.
 
     Returns
     -------
-    url : :class:`str`
+    url: :class:`str`
         The url of the generated image.
     """
 
@@ -151,14 +151,14 @@ async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) ->
 
     Parameters
     ----------
-    before_img_buffer : :class:`BytesIO`
+    before_img_buffer: :class:`BytesIO`
         The starting image loaded as bytes in a buffer.
-    after_img_buffer : :class:`BytesIO`
+    after_img_buffer: :class:`BytesIO`
         The ending image loaded as bytes in a buffer.
 
     Returns
     -------
-    gif_buffer : :class:`BytesIO`
+    gif_buffer: :class:`BytesIO`
         The gif loaded as bytes in a buffer.
 
     References

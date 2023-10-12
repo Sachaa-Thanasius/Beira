@@ -56,14 +56,14 @@ class StoryQuoteView(PaginatedEmbedView[tuple[str, str, str]]):
     ----------
     *args
         Positional arguments the normal initialization of an :class:`PaginatedEmbedView`. See that class for more info.
-    story_data : StoryInfo
+    story_data: StoryInfo
         The story's data and metadata, including full name, author name, and image representation.
     **kwargs
         Keyword arguments the normal initialization of an :class:`PaginatedEmbedView`. See that class for more info.
 
     Attributes
     ----------
-    story_data : StoryInfo
+    story_data: StoryInfo
         The story's data and metadata, including full name, author name, and image representation.
     """
 
@@ -97,12 +97,12 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     Parameters
     ----------
-    bot : :class:`Beira`
+    bot: :class:`Beira`
         The main Discord bot this cog is a part of.
 
     Attributes
     ----------
-    story_records : dict
+    story_records: dict
         The dictionary holding the metadata and text for all stories being scanned.
     """
 
@@ -246,7 +246,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context where the command was called.
         """
 
@@ -287,11 +287,11 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        story : :class:`str`
+        story: :class:`str`
             The acronym or abbreviation of a story's title. Currently, there are only four choices.
-        query : :class:`str`
+        query: :class:`str`
             The string to search for in the story.
         """
 
@@ -307,9 +307,9 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        query : :class:`str`
+        query: :class:`str`
             The string to search for in the story.
         """
 

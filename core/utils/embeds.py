@@ -67,15 +67,15 @@ class StatsEmbed(DTEmbed):
 
         Parameters
         ----------
-        names : Iterable[Any]
+        names: Iterable[Any]
             The names for each field.
-        emojis : Iterable[AnyEmoji]
+        emojis: Iterable[AnyEmoji]
             The emojis adorning each field. Defaults to a tuple with an empty string so there is at least one "emoji".
-        values : Iterable[Any], default=("",)
+        values: Iterable[Any], default=("",)
             The values for each field.
-        inline : :class:`bool`, default=False
+        inline: :class:`bool`, default=False
             Whether the fields should be displayed inline. Defaults to False.
-        emoji_header_status : :class:`bool`, default=False
+        emoji_header_status: :class:`bool`, default=False
             Whether the emojis should adorn the names or the values of each field. By default, adorns the values.
         """
 
@@ -109,16 +109,16 @@ class StatsEmbed(DTEmbed):
         ----------
         ldbd_content: Iterable[Sequence[Any]]
             The content for each leaderboard, including names and values. Assumes they're given in descending order.
-        ldbd_emojis : Iterable[AnyEmoji], default=("",)
+        ldbd_emojis: Iterable[AnyEmoji], default=("",)
             The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there
             is at least one "emoji".
-        name_format : :class:`str`, default="| {}"
+        name_format: :class:`str`, default="| {}"
             The format for the name, to be filled by information from the content.
-        value_format : :class:`str`, default="{}"
+        value_format: :class:`str`, default="{}"
             The format for the value, to be filled by information from the content.
-        inline : :class:`bool`, default=False
+        inline: :class:`bool`, default=False
             Whether the fields should be displayed inline.
-        is_ranked : :class:`bool`, default=True
+        is_ranked: :class:`bool`, default=True
             Whether the stats should be ranked in descending order.
         """
 

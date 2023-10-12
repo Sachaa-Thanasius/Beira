@@ -149,9 +149,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        channel : :class:`discord.abc.GuildChannel` | None, optional
+        channel: :class:`discord.abc.GuildChannel` | None, optional
             The channel to check for pins. Defaults to current.
         """
         async with ctx.typing():
@@ -173,9 +173,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        channel : PinnableGuildChannel | None
+        channel: PinnableGuildChannel | None
             The channel to archive pins in.
         """
 
@@ -203,9 +203,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        active : :class:`bool`, default=False
+        active: :class:`bool`, default=False
             Whether this should be active or not. Defaults to false.
         """
         async with ctx.typing():
@@ -229,9 +229,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        mode : Literal["oldest", "newest"] | None, optional
+        mode: Literal["oldest", "newest"] | None, optional
             What to set the mode to, if you'd like to do that. If None, just retrieves the current setting. "Oldest"
             means that every time a pin is made and no pin spots are left, the oldest pin is migrated to the pin
             archive. "Newest" means the same thing, but the newest pin is migrated instead.
@@ -266,9 +266,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`], optional
+        channels: :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`], optional
             The channels that are being blacklisted.
         """
         async with ctx.typing():
@@ -308,9 +308,9 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
 
         Parameters
         ----------
-        ctx : :class:`core.Context`
+        ctx: :class:`core.Context`
             The invocation context.
-        channels : :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+        channels: :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
             The channels that are being removed from the blacklist. Required.
         """
 

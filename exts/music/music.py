@@ -145,9 +145,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        search : :class:`str`
+        search: :class:`str`
             A url or search query.
         """
 
@@ -245,9 +245,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        entry : :class:`int`
+        entry: :class:`int`
             The track's position.
         """
 
@@ -281,11 +281,11 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        before : :class:`int`
+        before: :class:`int`
             The index of the song you want moved.
-        after : :class:`int`
+        after: :class:`int`
             The index you want to move it to.
         """
 
@@ -311,7 +311,7 @@ class MusicCog(commands.Cog, name="Music"):
         ----------
         ctx: :class:`core.GuildContext`
             The invocation context.
-        index : :class:`int`
+        index: :class:`int`
             The place in the queue to skip to.
         """
 
@@ -350,9 +350,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        loop : Literal["All Tracks", "Current Track", "Off"]
+        loop: Literal["All Tracks", "Current Track", "Off"]
             The loop settings. "All Tracks" loops everything in the queue, "Current Track" loops the playing track, and
             "Off" resets all looping.
         """
@@ -377,9 +377,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        position : :class:`str`
+        position: :class:`str`
             The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
         """
 
@@ -412,9 +412,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        volume : :class:`int`, optional
+        volume: :class:`int`, optional
             The volume to change to, with a maximum of 1000.
         """
 

@@ -70,9 +70,9 @@ class AdminCog(commands.Cog, name="Administration"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        new_prefix : :class:`str`
+        new_prefix: :class:`str`
             The prefix to be added.
         """
 
@@ -104,9 +104,9 @@ class AdminCog(commands.Cog, name="Administration"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
-        old_prefix : :class:`str`
+        old_prefix: :class:`str`
             The prefix to be removed.
         """
 
@@ -134,7 +134,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
         Parameters
         ----------
-        ctx : :class:`core.GuildContext`
+        ctx: :class:`core.GuildContext`
             The invocation context.
         """
 

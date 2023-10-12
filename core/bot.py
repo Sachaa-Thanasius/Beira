@@ -34,11 +34,11 @@ class Beira(commands.Bot):
     ----------
     *args
         Variable length argument list, primarily for :class:`commands.Bot`.
-    db_pool : :class:`asyncpg.Pool`
+    db_pool: :class:`asyncpg.Pool`
         A connection pool for a PostgreSQL database.
-    web_session : :class:`aiohttp.ClientSession`
+    web_session: :class:`aiohttp.ClientSession`
         An HTTP session for making async HTTP requests.
-    initial_extensions : list[:class:`str`], optional
+    initial_extensions: list[:class:`str`], optional
         A list of extension names that the bot will initially load.
     **kwargs
         Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.

@@ -68,7 +68,7 @@ class OwnedView(discord.ui.View):
 
     Parameters
     ----------
-    author : :class:`int`
+    author: :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
     timeout: :class:`float` | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -93,11 +93,11 @@ class PageSeekModal(discord.ui.Modal, title="Page Jump"):
 
     Attributes
     ----------
-    input_page_num : :class:`TextInput`
+    input_page_num: :class:`TextInput`
         A UI text input element to allow users to enter a page number.
-    parent : :class:`PaginatedEmbedView`
+    parent: :class:`PaginatedEmbedView`
         The paginated view that this modal was called from.
-    interaction : :class:`discord.Interaction`
+    interaction: :class:`discord.Interaction`
         The interaction of the user with the modal. Only populates on submission.
     """
 
@@ -131,11 +131,11 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
 
     Parameters
     ----------
-    author_id : :class:`int`
+    author_id: :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    pages_content : list[Any]
+    pages_content: list[Any]
         The content for every possible page.
-    per : :class:`int`
+    per: :class:`int`
         The number of entries to be displayed per page.
     timeout: :class:`float`, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -143,15 +143,15 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
 
     Attributes
     ----------
-    message : :class:`discord.Message`
+    message: :class:`discord.Message`
         The message to which the view is attached to, allowing interaction without a :class:`discord.Interaction`.
-    per_page : :class:`int`
+    per_page: :class:`int`
         The number of entries to be displayed per page.
-    pages : list[Any]
+    pages: list[Any]
         A list of content for pages, split according to how much content is wanted per page.
-    page_index : :class:`int`
+    page_index: :class:`int`
         The index for the current page.
-    page_modal_strings : tuple[:class:`str`, ...], default=()
+    page_modal_strings: tuple[:class:`str`, ...], default=()
         Tuple of strings to modify the page seek modal with if necessary. Empty by default.
     total_pages
     """
@@ -306,9 +306,9 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
 
     Parameters
     ----------
-    author_id : :class:`int`
+    author_id: :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    pages_content : list[Any]
+    pages_content: list[Any]
         The content for every possible page.
     timeout: :class:`float` | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -316,11 +316,11 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
 
     Attributes
     ----------
-    message : :class:`discord.Message`
+    message: :class:`discord.Message`
         The message to which the view is attached to, allowing interaction without a :class:`discord.Interaction`.
-    pages : list[Any]
+    pages: list[Any]
         A list of content for pages.
-    page_index : :class:`int`
+    page_index: :class:`int`
         The index for the current page.
     total_pages
     """

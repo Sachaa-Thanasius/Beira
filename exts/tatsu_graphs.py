@@ -56,14 +56,14 @@ class TatsuCog(commands.Cog, name="Tatsu"):
         colors = np.concatenate((np.tile(raw_colors, length), np.array(raw_colors[:leftover])))
 
         # Plot the data with matplotlib.
-        _, ax = plt.subplots()
+        _, ax = plt.subplots()  # type: ignore [reportUnknownMemberType]
         ax.scatter(data["rank"], data["score_rate"], c=colors, s=1.5)
         ax.set_xlabel("Current Rank")
         ax.set_ylabel("Average Score Per Day")
         ax.set_title("The Average Points per Day Earned\nby the Top 500 Active Server Members")
 
         buff = BytesIO()
-        plt.savefig(buff, format="png")
+        plt.savefig(buff, format="png")  # type: ignore [reportUnknownMemberType]
         buff.seek(0)
         return buff
 
@@ -101,7 +101,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
     def process_data_3d(data: np.ndarray[Any, Any]) -> BytesIO:
         plt.style.use("_mpl-gallery")
 
-        _, ax = plt.subplots(subplot_kw={"projection": "3d"})
+        _, ax = plt.subplots(subplot_kw={"projection": "3d"})  # type: ignore [reportUnknownMemberType]
         ax.scatter(
             data["r"],
             data["g"],
@@ -111,7 +111,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
             ),
         )
         buff = BytesIO()
-        plt.savefig(buff, format="png")
+        plt.savefig(buff, format="png")  # type: ignore [reportUnknownMemberType]
         buff.seek(0)
         plt.style.use("default")
         return buff

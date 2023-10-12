@@ -46,7 +46,7 @@ class catchtime:
 
     Parameters
     ----------
-    logger : :class:`logging.Logger`, optional
+    logger: :class:`logging.Logger`, optional
         The logging channel to send the time to, if relevant. Optional.
     """
 
@@ -78,12 +78,12 @@ def benchmark(logger: logging.Logger):  # noqa: ANN201  # I have no idea how to 
 
     Parameters
     ----------
-    logger : :class:`logging.Logger`
+    logger: :class:`logging.Logger`
         The logger being used to display the benchmark.
 
     Returns
     -------
-    decorator : Callable[P, T] | Callable[P, Awaitable[T]]
+    decorator: Callable[P, T] | Callable[P, Awaitable[T]]
         A modified function decorated with a benchmark logging mechanism.
 
     Notes
