@@ -33,7 +33,7 @@ from .utils import (
 )
 
 
-StoryData: TypeAlias = atlas_api.FFNStory | fichub_api.Story | ao3.Work | ao3.Series
+StoryData: TypeAlias = atlas_api.Story | fichub_api.Story | ao3.Work | ao3.Series
 
 
 LOGGER = logging.getLogger(__name__)
@@ -45,8 +45,8 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        atlas_auth = (core.CONFIG.atlas.user, core.CONFIG.atlas.password)
-        self.atlas_client = atlas_api.AtlasClient(auth=atlas_auth, session=self.bot.web_session)
+        atlas_auth = aiohttp.BasicAuth(core.CONFIG.atlas.user, core.CONFIG.atlas.password)
+        self.atlas_client = atlas_api.Client(auth=atlas_auth, session=self.bot.web_session)
         self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_session)
         self.ao3_client = ao3.Client(session=self.bot.web_session)
         self.allowed_channels_cache: dict[int, set[int]] = {}
@@ -259,7 +259,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         async with ctx.typing():
             story_data = await self.search_ffn(name_or_url)
-            if isinstance(story_data, atlas_api.FFNStory):
+            if isinstance(story_data, atlas_api.Story):
                 ffn_embed = await create_atlas_ffn_embed(story_data)
             elif isinstance(story_data, fichub_api.Story):
                 ffn_embed = await create_fichub_embed(story_data)
@@ -302,7 +302,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         return story_data
 
-    async def search_ffn(self, name_or_url: str) -> atlas_api.FFNStory | fichub_api.Story | None:
+    async def search_ffn(self, name_or_url: str) -> atlas_api.Story | fichub_api.Story | None:
         """More generically search FFN for works based on a partial title or full url."""
 
         if fic_id := atlas_api.extract_fic_id(name_or_url):

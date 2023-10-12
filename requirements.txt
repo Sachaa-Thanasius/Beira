@@ -4,7 +4,7 @@ arsenic
 asteval
 asyncpg==0.28.0
 asyncpg-stubs==0.28.0
-atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper@b9596d6f0240c42457a0f42e45f29f7cd8b445ee
+atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper@main
 beautifulsoup4>=4.12.2
 discord.py[speed,voice]>=2.3.2
 fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api-wrapper@5ef22a0cd4c6aeacc67028f52fe328eacf3e9922
@@ -15,7 +15,7 @@ msgspec[toml]
 numpy
 openai
 Pillow>=10.0.0
-tatsu @ git+https://github.com/Sachaa-Thanasius/Tatsu@main
+tatsu @ git+https://github.com/Sachaa-Thanasius/Tatsu@73ac1353c73cbdc9200ba923b3e6119e50210086
 typing_extensions>=4.5.0,<5
 Wavelink>=2.6.1,<3
 yarl>=1.8.2,<2

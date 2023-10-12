@@ -64,8 +64,8 @@ ignore = [
     "ANN204",  # Special method return types.
     "PD011",   # Erroneous issue that triggers for any .values attribute access at all.
     "S311",    # No need for cryptographically secure random number generation in this use case.
-    "ANN101",  # Not typing self everywhere.
-    "ANN102",  # Not typing cls everywhere.
+    "ANN101",  # Type of self is implicit.
+    "ANN102",  # Type of cls is implicit.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
     "PLR0913", # Too many parameters in a function definition doesn't matter.
 ]
@@ -75,8 +75,7 @@ unfixable = [
 ]
 
 [tool.ruff.extend-per-file-ignores]
-"__init__.py" = ["F403", "PLC0414"]  # Importing internal modules usually throws these.
-"core/utils/embeds.py" = ["PLR0913"] # For StatsEmbed. It needs to be refactored at some point.
+"__init__.py" = ["F403", "PLC0414"] # Importing internal modules usually throws these.
 
 [tool.ruff.isort]
 lines-after-imports = 2

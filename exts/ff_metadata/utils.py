@@ -142,10 +142,10 @@ async def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
     return ao3_embed
 
 
-async def create_atlas_ffn_embed(story: atlas_api.FFNStory) -> DTEmbed:
+async def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for a FanFiction.Net story.
 
-    Only accepts :class:`atlas_api.FFNStory` objects from my own Atlas wrapper.
+    Only accepts :class:`atlas_api.Story` objects from my own Atlas wrapper.
     """
 
     # Format the relevant information.
@@ -225,7 +225,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
 
 EMBED_STRATEGIES: dict[Any, Callable[..., Coroutine[Any, Any, discord.Embed]]] = {
-    atlas_api.FFNStory: create_atlas_ffn_embed,
+    atlas_api.Story: create_atlas_ffn_embed,
     fichub_api.Story: create_fichub_embed,
     ao3.Work: create_ao3_work_embed,
     ao3.Series: create_ao3_series_embed,
