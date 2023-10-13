@@ -47,7 +47,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         self.bot = bot
         atlas_auth = aiohttp.BasicAuth(core.CONFIG.atlas.user, core.CONFIG.atlas.password)
         self.atlas_client = atlas_api.Client(auth=atlas_auth, session=self.bot.web_session)
-        self.fichub_client = fichub_api.FicHubClient(session=self.bot.web_session)
+        self.fichub_client = fichub_api.Client(session=self.bot.web_session)
         self.ao3_client = ao3.Client(session=self.bot.web_session)
         self.allowed_channels_cache: dict[int, set[int]] = {}
         self.aci100_id: int = core.CONFIG.discord.important_guilds["prod"][0]
