@@ -18,7 +18,7 @@ async def main() -> None:
         dsn=core.CONFIG.database.pg_url,
         command_timeout=30,
         init=pool_init,
-    ) as pool, LoggingManager(session=web_session) as logging_manager:
+    ) as pool, LoggingManager() as logging_manager:
         # Set up OpenAI.
         openai.api_key = core.CONFIG.openai.key
         openai.aiosession.set(web_session)

@@ -10,21 +10,16 @@ from __future__ import annotations
 
 import asyncio
 import logging
-import queue
-from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
+from logging.handlers import QueueHandler, RotatingFileHandler
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 
-import discord
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
-
-import core
 
 
 if TYPE_CHECKING:
     from types import TracebackType
 
-    from aiohttp import ClientSession
     from typing_extensions import Self
 else:
     Self: TypeAlias = Any
@@ -53,18 +48,6 @@ class RemoveNoise(logging.Filter):
         return True
 
 
-class DiscordWebhookHandler(logging.Handler):
-    def __init__(self, webhook: discord.Webhook, level: int = 0) -> None:
-        super().__init__(level)
-        self.webhook = webhook
-        self.sent: asyncio.Task[None] | None = None
-
-    def emit(self, record: logging.LogRecord) -> None:
-        embed: discord.Embed | None = record.__dict__.get("embed")
-        if embed:
-            self.sent = asyncio.create_task(self.webhook.send(embed=embed))
-
-
 # TODO: Personalize logging beyond Umbra's work.
 class LoggingManager:
     """Custom logging system.
@@ -88,13 +71,13 @@ class LoggingManager:
         A boolean indicating whether the logs should be output to a stream.
     """
 
-    def __init__(self, *, session: ClientSession, stream: bool = True) -> None:
-        self.session = session
+    def __init__(self, *, stream: bool = True) -> None:
         self.log: logging.Logger = logging.getLogger()
         self.max_bytes: int = 32 * 1024 * 1024  # 32MiB
         self.logging_path = Path("./logs/")
         self.logging_path.mkdir(exist_ok=True)
         self.stream: bool = stream
+        self.log_queue: asyncio.Queue[logging.LogRecord] = asyncio.Queue()
 
     async def __aenter__(self) -> Self:
         return self.__enter__()
@@ -128,15 +111,9 @@ class LoggingManager:
                 stream_handler.setFormatter(ColourFormatter())
             self.log.addHandler(stream_handler)
 
-        # Add a queue handler and listener.
-        log_queue: queue.Queue[logging.LogRecord] = queue.Queue()
-        queue_handler = QueueHandler(log_queue)
-        webhook = discord.Webhook.from_url(core.CONFIG.discord.logging_webhook, session=self.session)
-        webhook_handler = DiscordWebhookHandler(webhook)
-        self.queue_listener = QueueListener(log_queue, webhook_handler)
-
+        # Add a queue handler.
+        queue_handler = QueueHandler(self.log_queue)
         self.log.addHandler(queue_handler)
-        self.queue_listener.start()
 
         return self
 
@@ -146,7 +123,6 @@ class LoggingManager:
     def __exit__(self, exc_type: type[BE] | None, exc_val: BE | None, traceback: TracebackType | None) -> None:
         """Close and remove all logging handlers."""
 
-        self.queue_listener.stop()
         handlers = self.log.handlers[:]
         for hdlr in handlers:
             hdlr.close()
