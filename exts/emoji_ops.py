@@ -69,7 +69,7 @@ class AddEmojiButton(discord.ui.Button["AddEmojisView"]):
     ----------
     guild: :class:`discord.Guild`
         The guild that an emoji could be added to.
-    emoji: :class:`discord.PartialEmoji` | :class:`discord.Emoji`
+    emoji: :class:`discord.PartialEmoji`
         The emoji that this button will display and that could be added to the attached guild.
 
     Attributes
@@ -164,15 +164,9 @@ async def context_menu_emoji_add(interaction: core.Interaction, message: discord
     matches = re.findall(r"<(a?):([a-zA-Z0-9\_]{1,32}):([0-9]{15,20})>", message.content)
 
     if matches and (interaction.guild is not None):
-        extracted_emojis: list[discord.PartialEmoji] = []
-
-        for match in matches:
-            emoji_animated = bool(match[0])
-            emoji_name = match[1]
-            emoji_id = int(match[2])
-
-            converted_emoji = discord.PartialEmoji(animated=emoji_animated, name=emoji_name, id=emoji_id)
-            extracted_emojis.append(converted_emoji)
+        extracted_emojis: list[discord.PartialEmoji] = [
+            discord.PartialEmoji(animated=bool(match[0]), name=match[1], id=int(match[2])) for match in matches
+        ]
 
         if extracted_emojis:
             view = discord.ui.View()

@@ -1,13 +1,12 @@
 aiofiles
-ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py@main
+ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py.git
 arsenic
-asteval
 asyncpg==0.28.0
 asyncpg-stubs==0.28.0
-atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper
+atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper.git
 beautifulsoup4>=4.12.2
 discord.py[speed,voice]>=2.3.2
-fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api-wrapper
+fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api-wrapper.git
 jishaku @ git+https://github.com/Gorialis/jishaku@bf26bea3c1f86993fd75744de48bf52d4925521a
 lxml>=4.9.3
 matplotlib

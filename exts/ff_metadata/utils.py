@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import re
 import textwrap
-from collections.abc import Callable, Coroutine
+from collections.abc import Callable
 from typing import Any
 
 import ao3
@@ -55,7 +55,7 @@ class StoryWebsite(msgspec.Struct):
 StoryWebsiteStore: dict[str, StoryWebsite] = {
     "FFN": StoryWebsite("FanFiction.Net", "FFN", FFN_PATTERN, FFN_ICON),
     "FP": StoryWebsite("FictionPress", "FP", FP_PATTERN, FP_ICON),
-    "AO3": StoryWebsite("Archive of Our Own", "AO3", AO3_PATTERN, ao3.utils.AO3_LOGO_URL),
+    "AO3": StoryWebsite("Archive of Our Own", "AO3", AO3_PATTERN, AO3_ICON),
     "SB": StoryWebsite("SpaceBattles", "SB", SB_PATTERN, SB_ICON),
     "SV": StoryWebsite("Sufficient Velocity", "SV", SV_PATTERN, SV_ICON),
     "QQ": StoryWebsite("Questionable Questing", "QQ", QQ_PATTERN, QQ_ICON),
@@ -68,7 +68,7 @@ STORY_WEBSITE_REGEX = re.compile(
 )
 
 
-async def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
+def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own work.
 
     Only accepts :class:`ao3.Work` objects.
@@ -110,21 +110,20 @@ async def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
     return ao3_embed
 
 
-async def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
+def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own series.
 
     Only accepts :class:`ao3.Series` objects.
     """
 
-    author = series.creators[0]
-    author_url = f"https://archiveofourown.org/users/{author.name}"
+    author_url = f"https://archiveofourown.org/users/{series.creators[0].name}"
 
     # Format the relevant information.
     if series.date_updated:
         updated = series.date_updated.strftime("%B %d, %Y") + (" (Complete)" if series.is_complete else "")
     else:
         updated = "Unknown"
-    author_names = ", ".join(str(creator.name) for creator in series.creators)
+    author_names = ", ".join(name for creator in series.creators if (name := creator.name))
     work_links = "\N{BOOKS} **Works:**\n" + "\n".join(f"[{work.title}]({work.url})" for work in series.works_list)
 
     # Add the info in the embed appropriately.
@@ -142,7 +141,7 @@ async def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
     return ao3_embed
 
 
-async def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
+def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for a FanFiction.Net story.
 
     Only accepts :class:`atlas_api.Story` objects from my own Atlas wrapper.
@@ -173,7 +172,7 @@ async def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
     return ffn_embed
 
 
-async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
+def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     """Create an embed that holds all the relevant metadata for a few different types of online fiction story.
 
     Only accepts :class:`fichub_api.Story` objects from my own FicHub wrapper.
@@ -224,7 +223,7 @@ async def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
     return story_embed
 
 
-EMBED_STRATEGIES: dict[Any, Callable[..., Coroutine[Any, Any, discord.Embed]]] = {
+EMBED_STRATEGIES: dict[Any, Callable[..., discord.Embed]] = {
     atlas_api.Story: create_atlas_ffn_embed,
     fichub_api.Story: create_fichub_embed,
     ao3.Work: create_ao3_work_embed,
@@ -232,9 +231,9 @@ EMBED_STRATEGIES: dict[Any, Callable[..., Coroutine[Any, Any, discord.Embed]]] =
 }
 
 
-async def ff_embed_factory(story_data: Any) -> discord.Embed | None:
+def ff_embed_factory(story_data: Any) -> discord.Embed | None:
     if story_data is not None and (strategy := EMBED_STRATEGIES.get(type(story_data))):
-        return await strategy(story_data)
+        return strategy(story_data)
     return None
 
 
@@ -259,7 +258,7 @@ class AO3SeriesView(PaginatedSelectView[ao3.Work]):
 
     def __init__(self, author_id: int, series: ao3.Series, *, timeout: float | None = 180) -> None:
         self.series = series
-        super().__init__(author_id, list(series.works_list), timeout=timeout)
+        super().__init__(author_id, series.works_list, timeout=timeout)
 
     async def on_timeout(self) -> None:
         """Disables all items on timeout."""
@@ -284,11 +283,11 @@ class AO3SeriesView(PaginatedSelectView[ao3.Work]):
                 emoji="\N{OPEN BOOK}",
             )
 
-    async def format_page(self) -> discord.Embed:
+    def format_page(self) -> discord.Embed:
         """Makes the series/work 'page' that the user will see."""
 
         if self.page_index != 0:
-            embed_page = await create_ao3_work_embed(self.pages[self.page_index - 1])
+            embed_page = create_ao3_work_embed(self.pages[self.page_index - 1])
         else:
-            embed_page = await create_ao3_series_embed(self.series)
+            embed_page = create_ao3_series_embed(self.series)
         return embed_page

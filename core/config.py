@@ -55,6 +55,7 @@ class DatabaseConfig(Base):
 class DiscordConfig(Base):
     token: str
     default_prefix: str
+    logging_webhook: str
     friend_ids: list[int] = msgspec.field(default_factory=list)
     important_guilds: dict[str, list[int]] = msgspec.field(default_factory=dict)
     webhooks: list[str] = msgspec.field(default_factory=list)

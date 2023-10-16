@@ -5,24 +5,28 @@ bot.py: The main bot code.
 from __future__ import annotations
 
 import logging
-import random
 import time
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import aiohttp
+import ao3
 import asyncpg
+import atlas_api
 import discord
-import msgspec
+import fichub_api
 import wavelink
-from discord.ext import commands, tasks
+from discord.ext import commands
 from wavelink.ext import spotify
 
 from exts import EXTENSIONS
 
 from .checks import is_blocked
-from .config import CONFIG, Config
+from .config import CONFIG
 from .context import Context
 
+
+if TYPE_CHECKING:
+    from core.utils import LoggingManager
 
 LOGGER = logging.getLogger(__name__)
 
@@ -44,18 +48,26 @@ class Beira(commands.Bot):
         Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.
     """
 
-    db_pool: asyncpg.Pool[asyncpg.Record]
-    web_session: aiohttp.ClientSession
+    logging_manager: LoggingManager
 
     def __init__(
         self,
         *args: Any,
+        db_pool: asyncpg.Pool[asyncpg.Record],
+        web_session: aiohttp.ClientSession,
         initial_extensions: list[str] | None = None,
         **kwargs: Any,
     ) -> None:
         super().__init__(*args, **kwargs)
+        self.db_pool = db_pool
+        self.web_session = web_session
         self.initial_extensions: list[str] = initial_extensions or []
-        self._config: Config = CONFIG
+
+        # Various webfiction-related clients.
+        atlas_auth = aiohttp.BasicAuth(**CONFIG.atlas.to_dict())
+        self.atlas_client = atlas_api.Client(auth=atlas_auth, session=self.web_session)
+        self.fichub_client = fichub_api.Client(session=self.web_session)
+        self.ao3_client = ao3.Client(session=self.web_session)
 
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}
@@ -66,9 +78,6 @@ class Beira(commands.Bot):
 
         # Add a global check for blocked members.
         self.add_check(is_blocked().predicate)
-
-        # Start a looped background task.
-        self.set_custom_presence.start()
 
     async def on_ready(self) -> None:
         """Display that the bot is ready."""
@@ -82,8 +91,8 @@ class Beira(commands.Bot):
         await self._load_extensions()
 
         # Connection lavalink nodes.
-        sc = spotify.SpotifyClient(**msgspec.structs.asdict(CONFIG.spotify))
-        node = wavelink.Node(**msgspec.structs.asdict(CONFIG.lavalink))
+        sc = spotify.SpotifyClient(**CONFIG.spotify.to_dict())
+        node = wavelink.Node(**CONFIG.lavalink.to_dict())
         await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
 
         # Get information about owner.
@@ -108,10 +117,6 @@ class Beira(commands.Bot):
     ) -> Context:
         # Figure out if there's a way to type-hint this better to allow cls to actually work.
         return await super().get_context(origin, cls=Context)
-
-    async def close(self) -> None:
-        self.set_custom_presence.cancel()
-        await super().close()
 
     @property
     def owner(self) -> discord.User:
@@ -174,20 +179,6 @@ class Beira(commands.Bot):
         for user_id in friends_ids:
             if user_obj := self.get_user(user_id):
                 self.special_friends[user_obj.name] = user_id
-
-    @tasks.loop(minutes=5)
-    async def set_custom_presence(self) -> None:
-        """A looping task that changes the custom presence text of the bot every 5 minutes."""
-
-        normal_text = ("Dreaming of", "Sifting through", "Digging up", "Chronicling")
-        eldritch_text = "s̷͙̗̻̳̲͓͉̲̖̺̠̯̲̉̈́̊͋͌̈̓̔̇́́̾̒͜ͅt̷̼͇̬̜̉̽͠a̸̧͈̼̎̐̿̈̀́̐̅r̴̦̯̹̱̅͐̐̏͒̍l̷͔̣͕̫̘̀̓̕̚e̴̢̢̦͙̬̫͎̤̤̘͒̈́̎̂̔̎̀́̈́̆́̓͋͝s̵̫̱̮̺̐̆̏̐͂̎̂̑̎̏̍̚͜s̷̢̫͈̯̟͉̖̲̖̘̟̓̾̿̒͊̒͋́̀͒ ̸̨̦̮̳̎̾͜m̸̖̰̦̪͕͔͇̲̞̅̈͛̀̑͊́͛̏̽̅̏́͜e̶̹̯̺̮̯̒̑̈́̑̈̍͒̃͗͘͝m̸͍̋̉̃͆o̶̗͚͗͑̈́̿͛̎͛͗́͗̉̈́r̵̛̮̖̣̦̎̐͒͒ḭ̶̩̲̘͔̮͆͝ẽ̷͓̟̳̳̬͗́̍̓͋̐̐́s̴͖̯̠͔͓̑̓"
-
-        activity = discord.CustomActivity(name=f"{random.choice(normal_text)} {eldritch_text}")
-        await self.change_presence(activity=activity)
-
-    @set_custom_presence.before_loop
-    async def set_custom_presence_before(self) -> None:
-        await self.wait_until_ready()
 
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of this bot's owner."""

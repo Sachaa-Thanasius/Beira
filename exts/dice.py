@@ -11,10 +11,10 @@ import logging
 import random
 import re
 import textwrap
+from ast import literal_eval
 from io import StringIO
 from typing import TYPE_CHECKING, Any, TypeAlias, cast
 
-import asteval
 import discord
 import msgspec
 from discord import ui
@@ -31,7 +31,6 @@ else:
 
 
 LOGGER = logging.getLogger(__name__)
-AEVAL = asteval.Interpreter(use_numpy=False, minimal=True)
 
 
 class Die(msgspec.Struct, frozen=True):
@@ -119,12 +118,10 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
     """
 
     normalized_expression = re.sub(r"(\d*)d(\d+)", replace_dice_in_expr, expression)
-    evaluation = int(AEVAL(normalized_expression))  # type: ignore
-
-    # Error handling.
-    if len(AEVAL.error) > 0:  # type: ignore # To revisit and possibly replace later
-        for err in AEVAL.error:  # type: ignore # See above.
-            LOGGER.error(err.get_error())  # type: ignore # See above.
+    try:
+        evaluation = int(literal_eval(normalized_expression))
+    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
+        evaluation = 0
         normalized_expression += " (Error thrown while rolling, incorrect result)"
 
     return normalized_expression, evaluation
@@ -233,10 +230,11 @@ class RerollButton(ui.Button[ui.View]):
         modifier: int = 0,
         expression: str | None = None,
     ) -> None:
-        label = "\N{CLOCKWISE GAPPED CIRCLE ARROW}"
-        style = discord.ButtonStyle.green
-        custom_id = "dice:reroll_button"
-        super().__init__(style=style, label=label, custom_id=custom_id)
+        super().__init__(
+            style=discord.ButtonStyle.green,
+            label="\N{CLOCKWISE GAPPED CIRCLE ARROW}",
+            custom_id="dice:reroll_button",
+        )
         self.dice_info = dice_info
         self.modifier = modifier
         self.expression = expression
@@ -275,10 +273,13 @@ class DiceButton(ui.Button["DiceView"]):
     """
 
     def __init__(self, die: Die) -> None:
-        style = discord.ButtonStyle.blurple
-        custom_id = f"dice:{die.label}_button"
-        row = 0 if die.value <= 10 else 1
-        super().__init__(style=style, label=die.label, custom_id=custom_id, emoji=die.emoji, row=row)
+        super().__init__(
+            style=discord.ButtonStyle.blurple,
+            label=die.label,
+            custom_id=f"dice:{die.label}_button",
+            emoji=die.emoji,
+            row=0 if die.value <= 10 else 1,
+        )
         self.response_colour = die.color
         self.value = die.value
 
@@ -302,14 +303,12 @@ class DiceSelect(ui.Select["DiceView"]):
     """A dropdown specifically meant to handle rolling multiple dice."""
 
     def __init__(self) -> None:
-        custom_id = "dice:select"
-        placeholder = "Choose multiple dice to roll..."
         options = [
             discord.SelectOption(label=die.label, value=str(num), emoji=die.emoji) for num, die in standard_dice.items()
         ]
         super().__init__(
-            custom_id=custom_id,
-            placeholder=placeholder,
+            custom_id="dice:select",
+            placeholder="Choose multiple dice to roll...",
             min_values=1,
             max_values=len(options),
             options=options,

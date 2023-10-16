@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import logging
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
 
 import discord
@@ -308,7 +309,7 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
     ----------
     author_id: :class:`int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    pages_content: list[Any]
+    pages_content: Sequence[Any]
         The content for every possible page.
     timeout: :class:`float` | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
@@ -327,7 +328,7 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
 
     message: discord.Message
 
-    def __init__(self, author_id: int, pages_content: list[_LT], *, timeout: float | None = 180) -> None:
+    def __init__(self, author_id: int, pages_content: Sequence[_LT], *, timeout: float | None = 180) -> None:
         super().__init__(author_id, timeout=timeout)
         self.pages = pages_content
         self.page_index: int = 0

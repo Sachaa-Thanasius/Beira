@@ -170,7 +170,7 @@ async def setup(bot: core.Beira) -> None:
     bot.add_listener(aci_server_boost_role_listener, "on_member_update")
 
     """
-    # If I ever come back to trying to log delete messages correctly:
+    # If I ever come back to trying to log deleted messages correctly:
 
     aci_deleted_msg_listener = partial(test_on_any_message_delete, bot)
     bot.add_listener(aci_deleted_msg_listener, "on_raw_message_delete")

@@ -21,6 +21,7 @@ else:
 
 T = TypeVar("T")
 P = ParamSpec("P")
+BE = TypeVar("BE", bound=BaseException)
 Coro = Coroutine[Any, Any, T]
 
 
@@ -57,12 +58,7 @@ class catchtime:
         self.time = perf_counter()
         return self
 
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_value: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
+    def __exit__(self, exc_type: type[BE] | None, exc_value: BE | None, traceback: TracebackType | None) -> None:
         self.time = perf_counter() - self.time
         self.readout = f"Time: {self.time:.3f} seconds"
         if self.logger:
@@ -162,3 +158,50 @@ def bench_v2(
             return sync_wrapper
 
     return decorator  # type: ignore # To revisit another day
+
+
+class bench_v3:
+    def __init__(self, logger: logging.Logger | None = None) -> None:
+        self.logger = logger
+
+    async def __aenter__(self) -> Self:
+        return self.__enter__()
+
+    def __enter__(self) -> Self:
+        self.time = perf_counter()
+        return self
+
+    async def __aexit__(self, exc_type: type[BE] | None, exc_value: BE | None, traceback: TracebackType | None) -> None:
+        return self.__exit__(exc_type, exc_value, traceback)
+
+    def __exit__(self, exc_type: type[BE] | None, exc_value: BE | None, traceback: TracebackType | None) -> None:
+        self.time = perf_counter() - self.time
+        self.readout = f"Time: {self.time:.3f} seconds"
+        if self.logger:
+            self.logger.info(self.readout)
+
+    @overload
+    def __call__(self, func: Callable[P, Coro[T]]) -> Callable[P, Coro[T]]:
+        ...
+
+    @overload
+    def __call__(self, func: Callable[P, T]) -> Callable[P, T]:
+        ...
+
+    def __call__(self, func: Callable[P, Coro[T]] | Callable[P, T]) -> Callable[P, Coro[T]] | Callable[P, T]:
+        if iscoroutinefunction(func):
+
+            @wraps(func)
+            async def inner(*args: P.args, **kwargs: P.kwargs) -> T: # type: ignore
+                with self:
+                    return await func(*args, **kwargs)
+
+        else:
+            assert is_not_coroutine_func(func)
+
+            @wraps(func)
+            def inner(*args: P.args, **kwargs: P.kwargs) -> T:
+                with self:
+                    return func(*args, **kwargs)
+
+        return inner

@@ -5,17 +5,16 @@ first.
 
 from __future__ import annotations
 
-import json
+import asyncio
 import logging
-import pathlib
 import textwrap
 from typing import TYPE_CHECKING, Any
-from urllib.parse import quote, urljoin
+from urllib.parse import quote as uriquote, urljoin
 
-import bs4
 import discord
 from discord.app_commands import Choice
 from discord.ext import commands
+from lxml import etree, html
 
 import core
 from core.utils import EMOJI_URL, DTEmbed
@@ -26,6 +25,11 @@ if TYPE_CHECKING:
 
 
 LOGGER = logging.getLogger(__name__)
+
+WIKIS_TO_LOAD = {
+    "Harry Potter and the Ashes of Chaos": "https://ashes-of-chaos.fandom.com",
+    "Team StarKid": "https://starkid.fandom.com",
+}
 
 AOC_EMOJI_URL, JARE_EMOJI_URL = EMOJI_URL.format(770620658501025812), EMOJI_URL.format(1061029880059400262)
 
@@ -41,11 +45,9 @@ class AoCWikiEmbed(DTEmbed):
         The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
     **kwargs
         Keyword arguments for the normal initialization of an :class:`DTEmbed`.
-
-    See Also
-    --------
-    :class:`FandomWikiSearchCog`
     """
+
+    aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
 
     def __init__(
         self,
@@ -55,16 +57,39 @@ class AoCWikiEmbed(DTEmbed):
     ) -> None:
         super().__init__(**kwargs)
 
-        aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
-
-        self.set_author(name="Harry Potter and the Ashes of Chaos Wiki", url=aoc_wiki_url, icon_url=author_icon_url)
+        self.set_author(
+            name="Harry Potter and the Ashes of Chaos Wiki",
+            url=self.aoc_wiki_url,
+            icon_url=author_icon_url,
+        )
         self.set_footer(
             text="Special Thanks to Messrs. Jare (i.e. zare and Mr. Josh) for maintaining the wiki!",
             icon_url=footer_icon_url,
         )
 
 
-def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
+async def load_wiki_all_pages(session: ClientSession, wiki_url: str) -> dict[str, str]:
+    pages_dict: dict[str, str] = {}
+    next_path: str = urljoin(wiki_url, "/wiki/Special:AllPages")
+    while True:
+        async with session.get(next_path) as response:
+            text = await response.text()
+            element = html.fromstring(text)
+        pages_dict.update(
+            {
+                el.attrib["title"]: urljoin(wiki_url, el.attrib["href"])
+                for el in element.findall(".//div[@class='mw-allpages-body']//a")
+            },
+        )
+        next_page = element.xpath(".//div[@class='mw-allpages-nav']/a[contains(text(), 'Next')]")
+        if len(next_page) > 0:  # type: ignore # typing of lxml xpath result is too wide.
+            next_path = urljoin(wiki_url, str(next_page[0].attrib["href"]))  # type: ignore # Known list based on XPath.
+        else:
+            break
+    return pages_dict
+
+
+def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignore [reportPrivateUsage]
     """Attempts to clean a Fandom wiki page.
 
     Removes everything from a Fandom wiki page that isn't the first few lines, if possible.
@@ -73,31 +98,31 @@ def clean_fandom_page(soup: bs4.Tag) -> bs4.Tag:
     summary_end_index = 0
 
     # Clean the content.
-    infoboxes = soup.find_all("aside", class_="portable-infobox", recursive=True)
+    infoboxes = element.findall("//aside[@class='portable-infobox']")
     for box in infoboxes:
-        box.replace_with("")
+        box.getparent().remove(box)  # type: ignore [reportOptionalMemberAccess]
 
-    toc = soup.find("div", id="toc", recursive=True)
-    if isinstance(toc, bs4.Tag):
-        if soup.index(toc) > summary_end_index:
-            summary_end_index = soup.index(toc)
-        toc.decompose()
+    toc = element.find("//div[@id='toc']")
+    if toc is not None:
+        if element.index(toc) > summary_end_index:
+            summary_end_index = element.index(toc)
+        toc.getparent().remove(toc)  # type: ignore [reportOptionalMemberAccess]
 
-    subheading = soup.find("h2")
-    if isinstance(subheading, bs4.Tag):
-        if soup.index(subheading) > summary_end_index:
-            summary_end_index = soup.index(subheading)
-        subheading.decompose()
+    subheading = element.find("//h2")
+    if subheading is not None:
+        if element.index(subheading) > summary_end_index:
+            summary_end_index = element.index(subheading)
+        subheading.getparent().remove(subheading)  # type: ignore [reportOptionalMemberAccess]
 
     if summary_end_index != 0:
-        for element in soup.contents[summary_end_index + 1 :]:
-            element.replace_with("")
+        for el in list(element[summary_end_index + 1 :]):
+            el.getparent().remove(el)  # type: ignore [reportOptionalMemberAccess]
 
-    for element in soup.contents:
-        if element.text == "\n":
-            element.replace_with("")
+    for el in list(element):
+        if el.text and el.text == "\n":
+            el.getparent().remove(el)  # type: ignore [reportOptionalMemberAccess]
 
-    return soup
+    return element
 
 
 async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | None, str | None]:
@@ -108,13 +133,13 @@ async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | N
 
         # Extract the main content.
         text = await response.text()
-        soup = bs4.BeautifulSoup(text, "lxml")
-        content = soup.find("div", class_="mw-parser-output")
-        if isinstance(content, bs4.Tag):
+        element = html.fromstring(text)
+        content = element.find(".//div[@class='mw-parser-output']")
+        if content is not None:
             # Extract the image.
-            image = content.find("a", class_="image image-thumbnail")
-            if isinstance(image, bs4.Tag):
-                char_thumbnail = str(image["href"])
+            image = content.find("//a[@class='image image-thumbnail']")
+            if image is not None:
+                char_thumbnail = str(image.attrib["href"])
 
             content = clean_fandom_page(content)
             char_summary = content.text
@@ -143,7 +168,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        self.all_wikis: dict[str, Any] = {}
+        self.all_wikis: dict[str, dict[str, str]] = {}
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -154,7 +179,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     async def cog_load(self) -> None:
         """Perform any necessary tasks before the bot connects to the Websocket, like loading wiki directions."""
 
-        await self.load_all_wiki_pages()
+        # Load a dictionary of all the webpage links for a predetermined set of fandom wikis.
+        coros = [load_wiki_all_pages(self.bot.web_session, wiki_url) for wiki_url in WIKIS_TO_LOAD.values()]
+        self.all_wikis = dict(zip(WIKIS_TO_LOAD.keys(), await asyncio.gather(*coros), strict=True))
+
+        LOGGER.info("All wiki names: %s", list(self.all_wikis.keys()))
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
@@ -163,35 +192,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             error = getattr(error, "original", error)
 
         LOGGER.exception("", exc_info=error)
-
-    async def load_all_wiki_pages(self) -> None:
-        """Load a dictionary of all the webpage links for a predetermined set of fandom wikis."""
-
-        # Load the file with the wiki information and directories.
-        try:
-            with pathlib.Path("data/fandom_wiki_data.json").open(encoding="utf-8") as data_file:
-                self.all_wikis.update(json.load(data_file))
-        except FileNotFoundError as err:
-            LOGGER.exception("JSON File wasn't found", exc_info=err)
-
-        # Walk through all wiki pages linked on the directory page(s).
-        for wiki_data in self.all_wikis.values():
-            wiki_data["all_pages"] = {}
-
-            for url in wiki_data["pages_directory"]:
-                directory_url = urljoin(wiki_data["base_url"], url)
-
-                async with self.bot.web_session.get(directory_url) as response:
-                    text = await response.text()
-                    soup = bs4.BeautifulSoup(text, "html.parser")
-                    content = soup.find("div", class_="mw-allpages-body")
-                    if isinstance(content, bs4.Tag):
-                        for link in content.find_all("a"):
-                            wiki_data["all_pages"][link["title"]] = link["href"]
-                    else:
-                        continue
-
-        LOGGER.info("All wiki names: %s", list(self.all_wikis.keys()))
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
@@ -215,7 +215,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     async def wiki_autocomplete(self, _: core.Interaction, current: str) -> list[Choice[str]]:
         """Autocomplete callback for the names of different wikis."""
 
-        options = self.all_wikis.values()
+        options = self.all_wikis.keys()
         return [Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()][:25]
 
     @wiki.autocomplete("search_term")
@@ -229,7 +229,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         if wiki not in self.all_wikis:
             wiki = "Harry Potter and the Ashes of Chaos"
 
-        options = self.all_wikis[wiki]["all_pages"]
+        options = self.all_wikis[wiki]
         return [Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()][:25]
 
     async def search_wiki(self, wiki_name: str, wiki_query: str) -> discord.Embed:
@@ -246,9 +246,9 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         failed_embed = discord.Embed(title="Wiki Unavailable")
 
         # Check if the wiki name is valid.
-        get_wiki_name: dict[str, Any] | None = self.all_wikis.get(wiki_name)
+        wiki_pages = self.all_wikis.get(wiki_name)
 
-        if get_wiki_name is None:
+        if wiki_pages is None:
             entries_list = self.all_wikis.keys()
             possible_results = [name for name in entries_list if wiki_name.lower() in name.lower()][:25]
 
@@ -259,48 +259,36 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
                 return failed_embed
 
             wiki_name = possible_results[0]
-            get_wiki_name = self.all_wikis[wiki_name]
-
-        assert isinstance(get_wiki_name, dict)
-
-        # --------------------------------
-        # Check if the wiki has any recorded pages.
-        get_wiki_pages: dict[str, Any] | None = get_wiki_name.get("all_pages")
-
-        if get_wiki_pages is None:
-            failed_embed.description = "Error: No Pages on Record for This Wiki. It is unavailable at this time."
-            return failed_embed
+            wiki_pages = self.all_wikis[wiki_name]
 
         # --------------------------------
         # Check if the wiki has the requested query as a page.
         final_embed = AoCWikiEmbed() if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed()
 
-        get_specific_wiki_page: str | None = get_wiki_pages.get(wiki_query)
+        specific_wiki_page = wiki_pages.get(wiki_query)
 
-        if get_specific_wiki_page is None:
-            entries_list = self.all_wikis[wiki_name]["all_pages"].keys()
+        if specific_wiki_page is None:
+            entries_list = self.all_wikis[wiki_name].keys()
             possible_results = [name for name in entries_list if wiki_query.lower() in name.lower()][:25]
 
             if len(possible_results) == 0:
-                encoded_query = quote(wiki_query)
+                encoded_query = uriquote(wiki_query)
                 final_embed.title = f"No pages found for '{wiki_query}'. Click here for search results."
                 final_embed.description = "Sorry, we couldn't find anything with this search term(s)."
-                final_embed.url = f"{self.all_wikis[wiki_name]['base_url']}/wiki/Special:Search?query={encoded_query}"
+                final_embed.url = f"{WIKIS_TO_LOAD[wiki_name]}/wiki/Special:Search?query={encoded_query}"
 
                 return final_embed
 
             wiki_query = possible_results[0]
-            get_specific_wiki_page = get_wiki_pages.get(wiki_query)
-
-        wiki_page_link = urljoin(self.all_wikis[wiki_name]["base_url"], get_specific_wiki_page)
+            specific_wiki_page = wiki_pages[wiki_query]
 
         # --------------------------------
         # Add the primary embed parameters.
         final_embed.title = wiki_query
-        final_embed.url = wiki_page_link
+        final_embed.url = specific_wiki_page
 
         # Fetch information from the character webpage to populate the rest of the embed.
-        summary, thumbnail = await process_fandom_page(self.bot.web_session, wiki_page_link)
+        summary, thumbnail = await process_fandom_page(self.bot.web_session, specific_wiki_page)
 
         if summary:
             final_embed.description = textwrap.shorten(summary, 4096, placeholder="...")

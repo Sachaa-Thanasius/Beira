@@ -71,7 +71,6 @@ ignore = [
 ]
 unfixable = [
     "ERA",     # I don't want anything erroneously detected deleted by this.
-    "PLC0414", # This causes issues when declaring module imports in __init__ files. Disallow erroneous deletion.
 ]
 
 [tool.ruff.extend-per-file-ignores]
@@ -83,11 +82,10 @@ combine-as-imports = true
 
 [tool.pyright]
 include = ["main.py", "core", "exts"]
+pythonVersion = "3.10"
+typeCheckingMode = "strict"
+useLibraryCodeForTypes = true
 
 reportMissingTypeStubs = "none"
 reportPropertyTypeMismatch = "error"
 reportUnnecessaryTypeIgnoreComment = "warning"
-
-pythonVersion = "3.10"
-typeCheckingMode = "strict"
-useLibraryCodeForTypes = true

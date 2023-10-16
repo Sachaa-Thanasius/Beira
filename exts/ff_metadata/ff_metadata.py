@@ -11,7 +11,6 @@ import re
 from collections.abc import AsyncGenerator
 from typing import Any, TypeAlias
 
-import aiohttp
 import ao3
 import atlas_api
 import discord
@@ -45,12 +44,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
-        atlas_auth = aiohttp.BasicAuth(core.CONFIG.atlas.user, core.CONFIG.atlas.password)
-        self.atlas_client = atlas_api.Client(auth=atlas_auth, session=self.bot.web_session)
-        self.fichub_client = fichub_api.Client(session=self.bot.web_session)
-        self.ao3_client = ao3.Client(session=self.bot.web_session)
-        self.allowed_channels_cache: dict[int, set[int]] = {}
+        self.atlas_client = bot.atlas_client
+        self.fichub_client = bot.fichub_client
+        self.ao3_client = bot.ao3_client
         self.aci100_id: int = core.CONFIG.discord.important_guilds["prod"][0]
+        self.allowed_channels_cache: dict[int, set[int]] = {}
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
@@ -60,15 +58,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     async def cog_load(self) -> None:
         # FIXME: Setup logging into AO3 via ao3.py.
-
         # Load a cache of channels to auto-respond in.
         query = """SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;"""
         records = await self.bot.db_pool.fetch(query)
         for record in records:
             self.allowed_channels_cache.setdefault(record["guild_id"], set()).add(record["channel_id"])
-
-    async def cog_unload(self) -> None:
-        await self.ao3_client.close()
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing
         # Extract the original error.
@@ -99,7 +93,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 # Send an embed for every valid link.
                 async for story_data in self.get_ff_data_from_links(message.content, message.guild.id):
                     if story_data is not None:
-                        embed = await ff_embed_factory(story_data)
+                        embed = ff_embed_factory(story_data)
                         if embed is not None:
                             await message.channel.send(embed=embed)
 
@@ -229,11 +223,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             story_data = await self.search_ao3(name_or_url)
             send_kwargs: dict[str, Any] = {}
             if isinstance(story_data, fichub_api.Story):
-                send_kwargs["embed"] = await create_fichub_embed(story_data)
+                send_kwargs["embed"] = create_fichub_embed(story_data)
             elif isinstance(story_data, ao3.Work):
-                send_kwargs["embed"] = await create_ao3_work_embed(story_data)
+                send_kwargs["embed"] = create_ao3_work_embed(story_data)
             elif isinstance(story_data, ao3.Series):
-                send_kwargs["embed"] = await create_ao3_series_embed(story_data)
+                send_kwargs["embed"] = create_ao3_series_embed(story_data)
                 send_kwargs["view"] = AO3SeriesView(ctx.author.id, story_data)
             else:
                 send_kwargs["embed"] = DTEmbed(
@@ -260,9 +254,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         async with ctx.typing():
             story_data = await self.search_ffn(name_or_url)
             if isinstance(story_data, atlas_api.Story):
-                ffn_embed = await create_atlas_ffn_embed(story_data)
+                ffn_embed = create_atlas_ffn_embed(story_data)
             elif isinstance(story_data, fichub_api.Story):
-                ffn_embed = await create_fichub_embed(story_data)
+                ffn_embed = create_fichub_embed(story_data)
             else:
                 ffn_embed = DTEmbed(
                     title="No Results",
@@ -278,21 +272,21 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
                 try:
                     series_id = match.group("ao3_id")
                     story_data = await self.ao3_client.get_series(int(series_id))
-                except (AttributeError, Exception) as err:
-                    LOGGER.exception("", exc_info=err)
+                except ao3.AO3Exception:
+                    LOGGER.exception("")
                     story_data = None
             else:
                 try:
                     url = match.group(0)
                     story_data = await self.fichub_client.get_story_metadata(url)
-                except (KeyError, fichub_api.FicHubException, aiohttp.ClientResponseError) as err:
-                    msg = "Retrieval with Fichub client failed. Trying Armindo Flores's AO3 library now."
+                except fichub_api.FicHubException as err:
+                    msg = "Retrieval with Fichub client failed. Trying the AO3 scraping library now."
                     LOGGER.warning(msg, exc_info=err)
                     try:
                         work_id = match.group("ao3_id")
                         story_data = await self.ao3_client.get_work(int(work_id))
-                    except (AttributeError, Exception) as err:
-                        msg = "Retrieval with Fichub client and AO3 library failed. Returning None."
+                    except ao3.AO3Exception as err:
+                        msg = "Retrieval with Fichub client and AO3 scraping library failed. Returning None."
                         LOGGER.warning(msg, exc_info=err)
                         story_data = None
         else:
@@ -308,12 +302,12 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         if fic_id := atlas_api.extract_fic_id(name_or_url):
             try:
                 story_data = await self.atlas_client.get_story_metadata(fic_id)
-            except (atlas_api.AtlasException, aiohttp.ClientResponseError) as err:
+            except atlas_api.AtlasException as err:
                 msg = "Retrieval with Atlas client failed. Trying FicHub now."
                 LOGGER.warning(msg, exc_info=err)
                 try:
                     story_data = await self.fichub_client.get_story_metadata(name_or_url)
-                except (fichub_api.FicHubException, aiohttp.ClientResponseError) as err:
+                except fichub_api.FicHubException as err:
                     msg = "Retrieval with Atlas and Fichub clients failed. Returning None."
                     LOGGER.warning(msg, exc_info=err)
                     story_data = None
