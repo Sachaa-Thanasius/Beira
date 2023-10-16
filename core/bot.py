@@ -142,7 +142,7 @@ class Beira(commands.Bot):
                 inline=False,
             )
         )
-        LOGGER.exception("Ignoring exception in %s", event_method, extra={"embed": embed})
+        LOGGER.exception("Exception in event %s", event_method, extra={"embed": embed})
 
     async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore [reportIncompatibleMethodOverride]
         assert context.command  # Pre-condition for being here.
@@ -157,17 +157,22 @@ class Beira(commands.Bot):
                 colour=discord.Colour.dark_magenta(),
                 timestamp=discord.utils.utcnow(),
             )
-            .set_author(name=context.author, icon_url=context.author.display_avatar.url)
+            .set_author(name=str(context.author.global_name), icon_url=context.author.display_avatar.url)
             .add_field(name="Name", value=context.command.qualified_name, inline=False)
             .add_field(
-                name="Parameters",
-                value=f"```json\n{context.args}\n{context.kwargs.items()}\n```",
+                name="Args",
+                value="```py\n" + "\n".join(f"{i}: {arg!r}" for i, arg in enumerate(context.args)) + "\n```",
+                inline=False,
+            )
+            .add_field(
+                name="Kwargs",
+                value="```py\n" + "\n".join(f"{name}: {kwarg!r}" for name, kwarg in context.kwargs.items()) + "\n```",
                 inline=False,
             )
             .add_field(name="Guild", value=f"{context.guild.name if context.guild else '-----'}", inline=False)
             .add_field(name="Channel", value=f"{context.channel}", inline=False)
         )
-        LOGGER.exception("Ignoring exception in command %s", context.command, extra={"embed": embed})
+        LOGGER.exception("Exception in command %s", context.command, extra={"embed": embed})
 
     @property
     def owner(self) -> discord.User:
