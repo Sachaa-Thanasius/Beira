@@ -64,7 +64,7 @@ class Beira(commands.Bot):
         self.initial_extensions: list[str] = initial_extensions or []
 
         # Various webfiction-related clients.
-        atlas_auth = aiohttp.BasicAuth(**CONFIG.atlas.to_dict())
+        atlas_auth = aiohttp.BasicAuth(CONFIG.atlas.user, CONFIG.atlas.password)
         self.atlas_client = atlas_api.Client(auth=atlas_auth, session=self.web_session)
         self.fichub_client = fichub_api.Client(session=self.web_session)
         self.ao3_client = ao3.Client(session=self.web_session)
