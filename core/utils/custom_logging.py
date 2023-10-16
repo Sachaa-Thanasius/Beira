@@ -17,15 +17,13 @@ from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
 import discord
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
 
-from core import CONFIG
+import core
 
 
 if TYPE_CHECKING:
     from types import TracebackType
 
     from typing_extensions import Self
-
-    from core import Beira
 else:
     Self: TypeAlias = Any
 
@@ -88,7 +86,7 @@ class LoggingManager:
         A boolean indicating whether the logs should be output to a stream.
     """
 
-    def __init__(self, bot: Beira, *, stream: bool = True) -> None:
+    def __init__(self, bot: core.Beira, *, stream: bool = True) -> None:
         self.bot = bot
         self.log: logging.Logger = logging.getLogger()
         self.max_bytes: int = 32 * 1024 * 1024  # 32MiB
@@ -131,7 +129,7 @@ class LoggingManager:
         # Add a queue handler and listener.
         queue: asyncio.Queue[logging.LogRecord] = asyncio.Queue()
         queue_handler = QueueHandler(queue)
-        webhook = discord.Webhook.from_url(CONFIG.discord.logging_webhook, client=self.bot)
+        webhook = discord.Webhook.from_url(core.CONFIG.discord.logging_webhook, client=self.bot)
         webhook_handler = DiscordWebhookHandler(webhook)
         self.queue_listener = QueueListener(queue, webhook_handler)
 

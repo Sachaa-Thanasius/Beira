@@ -192,7 +192,7 @@ class bench_v3:
         if iscoroutinefunction(func):
 
             @wraps(func)
-            async def inner(*args: P.args, **kwargs: P.kwargs) -> T: # type: ignore
+            async def inner(*args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore
                 with self:
                     return await func(*args, **kwargs)
 

@@ -8,7 +8,10 @@ from typing import Any
 import msgspec
 
 
-__all__ = ("CONFIG",)
+__all__ = (
+    "CONFIG",
+    "Config",
+)
 
 
 class Base(msgspec.Struct):

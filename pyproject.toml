@@ -70,7 +70,7 @@ ignore = [
     "PLR0913", # Too many parameters in a function definition doesn't matter.
 ]
 unfixable = [
-    "ERA",     # I don't want anything erroneously detected deleted by this.
+    "ERA", # I don't want anything erroneously detected deleted by this.
 ]
 
 [tool.ruff.extend-per-file-ignores]
@@ -87,5 +87,6 @@ typeCheckingMode = "strict"
 useLibraryCodeForTypes = true
 
 reportMissingTypeStubs = "none"
+reportImportCycles = "warning"
 reportPropertyTypeMismatch = "error"
 reportUnnecessaryTypeIgnoreComment = "warning"
