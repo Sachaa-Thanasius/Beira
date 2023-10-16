@@ -98,17 +98,17 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
     summary_end_index = 0
 
     # Clean the content.
-    infoboxes = element.findall("//aside[@class='portable-infobox']")
+    infoboxes = element.findall(".//aside[@class='portable-infobox']")
     for box in infoboxes:
         box.getparent().remove(box)  # type: ignore [reportOptionalMemberAccess]
 
-    toc = element.find("//div[@id='toc']")
+    toc = element.find(".//div[@id='toc']")
     if toc is not None:
         if element.index(toc) > summary_end_index:
             summary_end_index = element.index(toc)
         toc.getparent().remove(toc)  # type: ignore [reportOptionalMemberAccess]
 
-    subheading = element.find("//h2")
+    subheading = element.find(".//h2")
     if subheading is not None:
         if element.index(subheading) > summary_end_index:
             summary_end_index = element.index(subheading)
@@ -137,7 +137,7 @@ async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | N
         content = element.find(".//div[@class='mw-parser-output']")
         if content is not None:
             # Extract the image.
-            image = content.find("//a[@class='image image-thumbnail']")
+            image = content.find(".//a[@class='image image-thumbnail']")
             if image is not None:
                 char_thumbnail = str(image.attrib["href"])
 
