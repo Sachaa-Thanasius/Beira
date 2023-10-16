@@ -23,6 +23,7 @@ import core
 if TYPE_CHECKING:
     from types import TracebackType
 
+    from aiohttp import ClientSession
     from typing_extensions import Self
 else:
     Self: TypeAlias = Any
@@ -86,8 +87,8 @@ class LoggingManager:
         A boolean indicating whether the logs should be output to a stream.
     """
 
-    def __init__(self, bot: core.Beira, *, stream: bool = True) -> None:
-        self.bot = bot
+    def __init__(self, *, session: ClientSession, stream: bool = True) -> None:
+        self.session = session
         self.log: logging.Logger = logging.getLogger()
         self.max_bytes: int = 32 * 1024 * 1024  # 32MiB
         self.logging_path = Path("./logs/")
@@ -129,7 +130,7 @@ class LoggingManager:
         # Add a queue handler and listener.
         queue: asyncio.Queue[logging.LogRecord] = asyncio.Queue()
         queue_handler = QueueHandler(queue)
-        webhook = discord.Webhook.from_url(core.CONFIG.discord.logging_webhook, client=self.bot)
+        webhook = discord.Webhook.from_url(core.CONFIG.discord.logging_webhook, session=self.session)
         webhook_handler = DiscordWebhookHandler(webhook)
         self.queue_listener = QueueListener(queue, webhook_handler)
 

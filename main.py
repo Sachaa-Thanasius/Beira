@@ -18,7 +18,7 @@ async def main() -> None:
         dsn=core.CONFIG.database.pg_url,
         command_timeout=30,
         init=pool_init,
-    ) as pool:
+    ) as pool, LoggingManager(session=web_session) as logging_manager:
         # Set up OpenAI.
         openai.api_key = core.CONFIG.openai.key
         openai.aiosession.set(web_session)
@@ -35,7 +35,7 @@ async def main() -> None:
             web_session=web_session,
             intents=intents,
             tree_cls=HookableTree,
-        ) as bot, LoggingManager(bot) as logging_manager:
+        ) as bot:
             bot.logging_manager = logging_manager
             await bot.start(core.CONFIG.discord.token)
 
