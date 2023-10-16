@@ -141,7 +141,7 @@ class Beira(commands.Bot):
                 value="```py\n" + "\n".join(f"{name}: {kwarg!r}" for name, kwarg in kwargs.items()) + "\n```",
                 inline=False,
             )
-        LOGGER.exception("Exception in event %s", event_method, extra={"embed": embed})
+        LOGGER.error("Exception in event %s", event_method, extra={"embed": embed})
 
     async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore [reportIncompatibleMethodOverride]
         assert context.command  # Pre-condition for being here.
@@ -173,7 +173,7 @@ class Beira(commands.Bot):
             )
         embed.add_field(name="Guild", value=f"{context.guild.name if context.guild else '-----'}", inline=False)
         embed.add_field(name="Channel", value=f"{context.channel}", inline=False)
-        LOGGER.exception("Exception in command %s", context.command, extra={"embed": embed})
+        LOGGER.error("Exception in command %s", context.command, extra={"embed": embed})
 
     @property
     def owner(self) -> discord.User:
