@@ -5,7 +5,9 @@ bot.py: The main bot code.
 from __future__ import annotations
 
 import logging
+import sys
 import time
+import traceback
 from typing import TYPE_CHECKING, Any
 
 import aiohttp
@@ -117,6 +119,55 @@ class Beira(commands.Bot):
     ) -> Context:
         # Figure out if there's a way to type-hint this better to allow cls to actually work.
         return await super().get_context(origin, cls=Context)
+
+    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
+        exc_type, exception, tb = sys.exc_info()
+        tb_text = "".join(traceback.format_exception(exc_type, exception, tb, chain=False))
+        embed = (
+            discord.Embed(
+                title="Event Error",
+                description=f"```py\n{tb_text}\n```",
+                colour=discord.Colour.dark_gold(),
+                timestamp=discord.utils.utcnow(),
+            )
+            .add_field(name="Event", value=event_method, inline=False)
+            .add_field(
+                name="Args",
+                value="```py\n" + "\n".join(f"{i}: {arg!r}" for i, arg in enumerate(args)) + "\n```",
+                inline=False,
+            )
+            .add_field(
+                name="Kwargs",
+                value="```py\n" + "\n".join(f"{name}: {kwarg!r}" for name, kwarg in kwargs.items()) + "\n```",
+                inline=False,
+            )
+        )
+        LOGGER.exception("Ignoring exception in %s", event_method, extra={"embed": embed})
+
+    async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore [reportIncompatibleMethodOverride]
+        assert context.command  # Pre-condition for being here.
+
+        exception = getattr(exception, "original", exception)
+
+        tb_text = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__, chain=False))
+        embed = (
+            discord.Embed(
+                title="Command Error",
+                description=f"```py\n{tb_text}\n```",
+                colour=discord.Colour.dark_magenta(),
+                timestamp=discord.utils.utcnow(),
+            )
+            .set_author(name=context.author, icon_url=context.author.display_avatar.url)
+            .add_field(name="Name", value=context.command.qualified_name, inline=False)
+            .add_field(
+                name="Parameters",
+                value=f"```json\n{context.args}\n{context.kwargs.items()}\n```",
+                inline=False,
+            )
+            .add_field(name="Guild", value=f"{context.guild.name if context.guild else '-----'}", inline=False)
+            .add_field(name="Channel", value=f"{context.channel}", inline=False)
+        )
+        LOGGER.exception("Ignoring exception in command %s", context.command, extra={"embed": embed})
 
     @property
     def owner(self) -> discord.User:
