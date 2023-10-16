@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
+import queue
 from logging.handlers import QueueHandler, QueueListener, RotatingFileHandler
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
@@ -128,11 +129,11 @@ class LoggingManager:
             self.log.addHandler(stream_handler)
 
         # Add a queue handler and listener.
-        queue: asyncio.Queue[logging.LogRecord] = asyncio.Queue()
-        queue_handler = QueueHandler(queue)
+        log_queue: queue.Queue[logging.LogRecord] = queue.Queue()
+        queue_handler = QueueHandler(log_queue)
         webhook = discord.Webhook.from_url(core.CONFIG.discord.logging_webhook, session=self.session)
         webhook_handler = DiscordWebhookHandler(webhook)
-        self.queue_listener = QueueListener(queue, webhook_handler)
+        self.queue_listener = QueueListener(log_queue, webhook_handler)
 
         self.log.addHandler(queue_handler)
         self.queue_listener.start()
