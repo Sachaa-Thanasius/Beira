@@ -123,25 +123,24 @@ class Beira(commands.Bot):
     async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
         exc_type, exception, tb = sys.exc_info()
         tb_text = "".join(traceback.format_exception(exc_type, exception, tb, chain=False))
-        embed = (
-            discord.Embed(
-                title="Event Error",
-                description=f"```py\n{tb_text}\n```",
-                colour=discord.Colour.dark_gold(),
-                timestamp=discord.utils.utcnow(),
-            )
-            .add_field(name="Event", value=event_method, inline=False)
-            .add_field(
+        embed = discord.Embed(
+            title="Event Error",
+            description=f"```py\n{tb_text}\n```",
+            colour=discord.Colour.dark_gold(),
+            timestamp=discord.utils.utcnow(),
+        ).add_field(name="Event", value=event_method, inline=False)
+        if args:
+            embed.add_field(
                 name="Args",
                 value="```py\n" + "\n".join(f"{i}: {arg!r}" for i, arg in enumerate(args)) + "\n```",
                 inline=False,
             )
-            .add_field(
+        if kwargs:
+            embed.add_field(
                 name="Kwargs",
                 value="```py\n" + "\n".join(f"{name}: {kwarg!r}" for name, kwarg in kwargs.items()) + "\n```",
                 inline=False,
             )
-        )
         LOGGER.exception("Exception in event %s", event_method, extra={"embed": embed})
 
     async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore [reportIncompatibleMethodOverride]
@@ -159,19 +158,21 @@ class Beira(commands.Bot):
             )
             .set_author(name=str(context.author.global_name), icon_url=context.author.display_avatar.url)
             .add_field(name="Name", value=context.command.qualified_name, inline=False)
-            .add_field(
+        )
+        if context.args:
+            embed.add_field(
                 name="Args",
                 value="```py\n" + "\n".join(f"{i}: {arg!r}" for i, arg in enumerate(context.args)) + "\n```",
                 inline=False,
             )
-            .add_field(
+        if context.kwargs:
+            embed.add_field(
                 name="Kwargs",
                 value="```py\n" + "\n".join(f"{name}: {kwarg!r}" for name, kwarg in context.kwargs.items()) + "\n```",
                 inline=False,
             )
-            .add_field(name="Guild", value=f"{context.guild.name if context.guild else '-----'}", inline=False)
-            .add_field(name="Channel", value=f"{context.channel}", inline=False)
-        )
+        embed.add_field(name="Guild", value=f"{context.guild.name if context.guild else '-----'}", inline=False)
+        embed.add_field(name="Channel", value=f"{context.channel}", inline=False)
         LOGGER.exception("Exception in command %s", context.command, extra={"embed": embed})
 
     @property
