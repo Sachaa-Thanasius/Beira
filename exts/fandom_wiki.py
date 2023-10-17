@@ -162,7 +162,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     ----------
     bot: :class:`core.Beira`
         The main Discord bot this cog is a part of.
-    all_wikis: dict
+    all_wikis: dict[:class:`str`, dict[:class:`str`, :class:`str`]]
         The dict containing information for various wikis.
     """
 
@@ -181,7 +181,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         # Load a dictionary of all the webpage links for a predetermined set of fandom wikis.
         coros = [load_wiki_all_pages(self.bot.web_session, wiki_url) for wiki_url in WIKIS_TO_LOAD.values()]
-        self.all_wikis = dict(zip(WIKIS_TO_LOAD.keys(), await asyncio.gather(*coros), strict=True))
+        self.all_wikis.update(dict(zip(WIKIS_TO_LOAD.keys(), await asyncio.gather(*coros), strict=True)))
 
         LOGGER.info("All wiki names: %s", list(self.all_wikis.keys()))
 

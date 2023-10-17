@@ -1,18 +1,15 @@
 from __future__ import annotations
 
 import random
-from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands, tasks
 
-
-if TYPE_CHECKING:
-    from core import Beira
+import core
 
 
 class PresenceCog(commands.Cog):
-    def __init__(self, bot: Beira) -> None:
+    def __init__(self, bot: core.Beira) -> None:
         self.bot = bot
         self.set_custom_presence.start()
 
@@ -34,5 +31,5 @@ class PresenceCog(commands.Cog):
         await self.bot.wait_until_ready()
 
 
-async def setup(bot: Beira) -> None:
+async def setup(bot: core.Beira) -> None:
     await bot.add_cog(PresenceCog(bot))

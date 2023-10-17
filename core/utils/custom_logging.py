@@ -72,11 +72,11 @@ class LoggingManager:
     """
 
     def __init__(self, *, stream: bool = True) -> None:
-        self.log: logging.Logger = logging.getLogger()
-        self.max_bytes: int = 32 * 1024 * 1024  # 32MiB
+        self.log = logging.getLogger()
+        self.max_bytes = 32 * 1024 * 1024  # 32MiB
         self.logging_path = Path("./logs/")
         self.logging_path.mkdir(exist_ok=True)
-        self.stream: bool = stream
+        self.stream = stream
         self.log_queue: asyncio.Queue[logging.LogRecord] = asyncio.Queue()
 
     async def __aenter__(self) -> Self:

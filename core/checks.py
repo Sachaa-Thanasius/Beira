@@ -30,7 +30,14 @@ class AppCheck(Protocol):
         ...
 
 
-__all__ = ("is_owner_or_friend", "is_admin", "in_bot_vc", "in_aci100_guild", "is_blocked", "check_any")
+__all__ = (
+    "is_owner_or_friend",
+    "is_admin",
+    "in_bot_vc",
+    "in_aci100_guild",
+    "is_blocked",
+    "check_any",
+)
 
 
 def is_owner_or_friend() -> Check[Any]:

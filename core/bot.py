@@ -8,7 +8,7 @@ import logging
 import sys
 import time
 import traceback
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 import aiohttp
 import ao3
@@ -29,6 +29,8 @@ from .context import Context
 
 if TYPE_CHECKING:
     from core.utils import LoggingManager
+else:
+    LoggingManager: TypeAlias = Any
 
 LOGGER = logging.getLogger(__name__)
 
@@ -141,9 +143,9 @@ class Beira(commands.Bot):
                 value="```py\n" + "\n".join(f"{name}: {kwarg!r}" for name, kwarg in kwargs.items()) + "\n```",
                 inline=False,
             )
-        LOGGER.error("Exception in event %s", event_method, extra={"embed": embed})
+        LOGGER.error("Exception in event %s", event_method, exc_info=exception, extra={"embed": embed})
 
-    async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore [reportIncompatibleMethodOverride]
+    async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore
         assert context.command  # Pre-condition for being here.
 
         exception = getattr(exception, "original", exception)
@@ -173,7 +175,7 @@ class Beira(commands.Bot):
             )
         embed.add_field(name="Guild", value=f"{context.guild.name if context.guild else '-----'}", inline=False)
         embed.add_field(name="Channel", value=f"{context.channel}", inline=False)
-        LOGGER.error("Exception in command %s", context.command, extra={"embed": embed})
+        LOGGER.error("Exception in command %s", context.command, exc_info=exception, extra={"embed": embed})
 
     @property
     def owner(self) -> discord.User:
