@@ -180,7 +180,7 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     # Format the relevant information.
     updated = story.updated.strftime("%B %d, %Y")
     fandoms = textwrap.shorten(", ".join(story.fandoms), 100, placeholder="...")
-    categories_list = story.more_meta.get("category", [])
+    categories_list = story.tags.category if isinstance(story, fichub_api.AO3Story) else ()
     categories = textwrap.shorten(", ".join(categories_list), 100, placeholder="...")
     characters = textwrap.shorten(", ".join(story.characters), 100, placeholder="...")
     details = " • ".join((fandoms, categories, characters))
@@ -191,18 +191,12 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
         None,
     )
 
-    if "fanfiction.net" in story.url:
+    if isinstance(story, fichub_api.FFNStory):
         stats_names = ("reviews", "favorites", "follows")
-        stats_str = " • ".join(f"**{name.capitalize()}:** {story.stats[name]:,d}" for name in stats_names)
-    elif "archiveofourown.org" in story.url:
+        stats_str = " • ".join(f"**{name.capitalize()}:** {getattr(story.stats, name):,d}" for name in stats_names)
+    elif isinstance(story, fichub_api.AO3Story):
         stats_names = ("comments", "kudos", "bookmarks", "hits")
-        # Account for absent extended metadata.
-        stats = (
-            f"**{stat_name.capitalize()}:** {ind_stat:,d}"
-            for stat_name in stats_names
-            if (ind_stat := story.stats.get(stat_name)) is not None
-        )
-        stats_str = " • ".join(stats)
+        stats_str = " • ".join(f"**{name.capitalize()}:** {getattr(story.stats, name):,d}" for name in stats_names)
     else:
         stats_str = "No stats available at this time."
 
