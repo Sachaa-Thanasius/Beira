@@ -12,7 +12,7 @@ import re
 import textwrap
 from bisect import bisect_left
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar, TypeAlias
+from typing import TYPE_CHECKING, Any, ClassVar
 
 import asyncpg
 import discord
@@ -26,7 +26,7 @@ from core.utils import EMOJI_URL, PaginatedEmbedView
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 LOGGER = logging.getLogger(__name__)
 

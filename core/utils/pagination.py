@@ -9,7 +9,7 @@ import asyncio
 import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Generic, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import discord
 from discord.utils import maybe_coroutine
@@ -18,7 +18,7 @@ from discord.utils import maybe_coroutine
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 _LT = TypeVar("_LT")
 
@@ -184,7 +184,7 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
         self.stop()
 
     @abstractmethod
-    def format_page(self) -> Any:
+    def format_page(self) -> discord.Embed:
         """|maybecoro|
 
         Makes, or retrieves from the cache, the embed 'page' that the user will see.
@@ -352,7 +352,7 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
         self.stop()
 
     @abstractmethod
-    def format_page(self) -> Any:
+    def format_page(self) -> discord.Embed:
         """|maybecoro|
 
         Makes and returns the embed 'page' that the user will see.
@@ -390,8 +390,8 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
         self.disable_page_buttons()
         await interaction.response.edit_message(embed=embed_page, view=self)
 
-    @discord.ui.select()
-    async def select_page(self, interaction: discord.Interaction, select: discord.ui.Select[Any]) -> None:
+    @discord.ui.select(cls=discord.ui.Select[Self])
+    async def select_page(self, interaction: discord.Interaction, select: discord.ui.Select[Self]) -> None:
         """Dropdown that displays all the Patreon tiers and provides them as choices to navigate to."""
 
         self.page_index = int(select.values[0])

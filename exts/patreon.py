@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import logging
 import textwrap
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any
 
 import discord
 import msgspec
@@ -23,7 +23,7 @@ if TYPE_CHECKING:
     from asyncpg import Record
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Record = Self = object
 
 
 LOGGER = logging.getLogger(__name__)

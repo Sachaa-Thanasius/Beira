@@ -26,4 +26,6 @@ class LoggingCog(commands.Cog):
 
 
 async def setup(bot: core.Beira) -> None:
+    """Connects cog to bot."""
+
     await bot.add_cog(LoggingCog(bot))

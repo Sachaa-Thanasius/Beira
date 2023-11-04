@@ -1,4 +1,10 @@
-__all__ = ("EMOJI_STOCK",)
+from __future__ import annotations
+
+
+__all__ = (
+    "EMOJI_STOCK",
+    "EMOJI_URL",
+)
 
 # fmt: off
 EMOJI_STOCK: dict[str, str] = {
@@ -27,3 +33,5 @@ EMOJI_STOCK: dict[str, str] = {
     "d100":                 "<a:d100:1109960365967687841>",
 }
 # fmt: on
+
+EMOJI_URL = "https://cdn.discordapp.com/emojis/{0}.webp?size=128&quality=lossless"

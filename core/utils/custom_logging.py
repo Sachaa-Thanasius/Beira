@@ -9,10 +9,11 @@ https://github.com/AbstractUmbra/Mipha/blob/main/bot.py#L91
 from __future__ import annotations
 
 import asyncio
+import copy
 import logging
-from logging.handlers import QueueHandler, RotatingFileHandler
+from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, TypeAlias, TypeVar
+from typing import TYPE_CHECKING, Any, TypeVar
 
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
 
@@ -22,11 +23,38 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    TracebackType = Self = object
 
 BE = TypeVar("BE", bound=BaseException)
 
 __all__ = ("LoggingManager",)
+
+
+class AsyncQueueHandler(logging.Handler):
+    # Copy implementation of QueueHandler.
+    def __init__(self, queue: asyncio.Queue[Any]) -> None:
+        logging.Handler.__init__(self)
+        self.queue = queue
+
+    def enqueue(self, record: logging.LogRecord) -> None:
+        self.queue.put_nowait(record)
+
+    def prepare(self, record: logging.LogRecord) -> logging.LogRecord:
+        msg = self.format(record)
+        record = copy.copy(record)
+        record.message = msg
+        record.msg = msg
+        record.args = None
+        record.exc_info = None
+        record.exc_text = None
+        record.stack_info = None
+        return record
+
+    def emit(self, record: logging.LogRecord) -> None:
+        try:
+            self.enqueue(self.prepare(record))
+        except Exception:  # noqa: BLE001
+            self.handleError(record)
 
 
 class RemoveNoise(logging.Filter):
@@ -112,7 +140,7 @@ class LoggingManager:
             self.log.addHandler(stream_handler)
 
         # Add a queue handler.
-        queue_handler = QueueHandler(self.log_queue)
+        queue_handler = AsyncQueueHandler(self.log_queue)
         self.log.addHandler(queue_handler)
 
         return self

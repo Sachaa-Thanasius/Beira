@@ -8,7 +8,7 @@ import datetime
 import logging
 import textwrap
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any
 
 import asyncpg
 import discord
@@ -23,7 +23,7 @@ from core.utils.db import Connection_alias, Pool_alias
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 LOGGER = logging.getLogger(__name__)
 

@@ -8,7 +8,7 @@ import logging
 import sys
 import time
 import traceback
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any
 
 import aiohttp
 import ao3
@@ -30,7 +30,7 @@ from .context import Context
 if TYPE_CHECKING:
     from core.utils import LoggingManager
 else:
-    LoggingManager: TypeAlias = Any
+    LoggingManager = object
 
 LOGGER = logging.getLogger(__name__)
 
@@ -222,6 +222,7 @@ class Beira(commands.Bot):
         await self.load_extension("jishaku")
 
         exts_to_load = self.initial_extensions or EXTENSIONS
+        all_exts_start_time = time.perf_counter()
         for extension in exts_to_load:
             try:
                 start_time = time.perf_counter()
@@ -230,6 +231,8 @@ class Beira(commands.Bot):
                 LOGGER.info("Loaded extension: %s -- Time: %.5f", extension, end_time - start_time)
             except commands.ExtensionError as err:
                 LOGGER.exception("Failed to load extension: %s", extension, exc_info=err)
+        all_exts_end_time = time.perf_counter()
+        LOGGER.info("Total extension loading time: Time: %.5f",  all_exts_start_time - all_exts_end_time)
 
     async def _load_special_friends(self) -> None:
         await self.wait_until_ready()

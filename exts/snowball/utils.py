@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING
 
 import asyncpg
 import discord
@@ -14,7 +14,7 @@ from core.utils.db import Connection_alias, Pool_alias, upsert_guilds, upsert_us
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 
 __all__ = (

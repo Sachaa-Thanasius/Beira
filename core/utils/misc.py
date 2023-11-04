@@ -9,7 +9,7 @@ from asyncio import iscoroutinefunction
 from collections.abc import Awaitable, Callable, Coroutine
 from functools import wraps
 from time import perf_counter
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias, TypeGuard, TypeVar, overload
+from typing import TYPE_CHECKING, Any, ParamSpec, TypeGuard, TypeVar, overload
 
 
 if TYPE_CHECKING:
@@ -17,7 +17,7 @@ if TYPE_CHECKING:
 
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    TracebackType = Self = object
 
 T = TypeVar("T")
 P = ParamSpec("P")
@@ -205,3 +205,10 @@ class bench_v3:
                     return func(*args, **kwargs)
 
         return inner
+
+
+def take_annotation_from(original: Callable[P, T]) -> Callable[[Callable[P, T]], Callable[P, T]]:
+    def wrapped(new: Callable[P, T]) -> Callable[P, T]:
+        return new
+
+    return wrapped

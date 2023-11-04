@@ -9,7 +9,7 @@ from __future__ import annotations
 import logging
 import re
 from collections.abc import AsyncGenerator
-from typing import Any, TypeAlias
+from typing import Literal, TypeAlias
 
 import ao3
 import atlas_api
@@ -18,21 +18,16 @@ import fichub_api
 from discord.ext import commands
 
 import core
-from core.utils import DTEmbed
 
 from .utils import (
     STORY_WEBSITE_REGEX,
+    STORY_WEBSITE_STORE,
     AO3SeriesView,
-    StoryWebsiteStore,
-    create_ao3_series_embed,
-    create_ao3_work_embed,
-    create_atlas_ffn_embed,
-    create_fichub_embed,
     ff_embed_factory,
 )
 
 
-StoryData: TypeAlias = atlas_api.Story | fichub_api.Story | ao3.Work | ao3.Series
+StoryDataType: TypeAlias = atlas_api.Story | fichub_api.Story | ao3.Work | ao3.Series
 
 
 LOGGER = logging.getLogger(__name__)
@@ -208,66 +203,45 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    async def ao3(self, ctx: core.Context, *, name_or_url: str) -> None:
-        """Search Archive of Our Own for a fic with a certain title.
+    async def ff_search(self, ctx: core.Context, platform: Literal["ao3", "ffn", "other"], *, name_or_url: str) -> None:
+        """Search available platforms for a fic with a certain title or url. Note: Only urls are accepted for `other`.
 
         Parameters
         ----------
         ctx: :class:`core.Context`
             The invocation context.
+        platform: Literal["ao3", "ffn", "other"]
+            The platform to search.
         name_or_url: :class:`str`
             The search string for the story title, or the story url.
         """
 
         async with ctx.typing():
-            story_data = await self.search_ao3(name_or_url)
-            send_kwargs: dict[str, Any] = {}
-            if isinstance(story_data, fichub_api.Story):
-                send_kwargs["embed"] = create_fichub_embed(story_data)
-            elif isinstance(story_data, ao3.Work):
-                send_kwargs["embed"] = create_ao3_work_embed(story_data)
-            elif isinstance(story_data, ao3.Series):
-                send_kwargs["embed"] = create_ao3_series_embed(story_data)
-                send_kwargs["view"] = AO3SeriesView(ctx.author.id, story_data)
+            if platform == "ao3":
+                story_data = await self.search_ao3(name_or_url)
+            elif platform == "ffn":
+                story_data = await self.search_ffn(name_or_url)
             else:
-                send_kwargs["embed"] = DTEmbed(
-                    title="No Results",
-                    description="No results found. You may need to edit your search.",
-                )
+                story_data = await self.search_other(name_or_url)
 
-            message = await ctx.reply(**send_kwargs)
-            if "view" in send_kwargs:
-                send_kwargs["view"].message = message
+        embed = ff_embed_factory(story_data)
+        if embed is None:
+            embed = discord.Embed(
+                title="No Results",
+                description="No results found. You may need to edit your search.",
+                timestamp=discord.utils.utcnow(),
+            )
 
-    @commands.hybrid_command()
-    async def ffn(self, ctx: core.Context, *, name_or_url: str) -> None:
-        """Search FanFiction.Net for a fic with a certain title or url.
-
-        Parameters
-        ----------
-        ctx: :class:`core.Context`
-            The invocation context.
-        name_or_url: :class:`str`
-            The search string for the story title, or the story url.
-        """
-
-        async with ctx.typing():
-            story_data = await self.search_ffn(name_or_url)
-            if isinstance(story_data, atlas_api.Story):
-                ffn_embed = create_atlas_ffn_embed(story_data)
-            elif isinstance(story_data, fichub_api.Story):
-                ffn_embed = create_fichub_embed(story_data)
-            else:
-                ffn_embed = DTEmbed(
-                    title="No Results",
-                    description="No results found. You may need to edit your search.",
-                )
-            await ctx.reply(embed=ffn_embed)
+        if isinstance(story_data, ao3.Series):
+            view = AO3SeriesView(ctx.author.id, story_data)
+            view.message = await ctx.send(embed=embed, view=view)
+        else:
+            await ctx.send(embed=embed)
 
     async def search_ao3(self, name_or_url: str) -> ao3.Work | ao3.Series | fichub_api.Story | None:
         """More generically search AO3 for works based on a partial title or full url."""
 
-        if match := re.search(StoryWebsiteStore["AO3"].story_regex, name_or_url):
+        if match := re.search(STORY_WEBSITE_STORE["AO3"].story_regex, name_or_url):
             if match.group("type") == "series":
                 try:
                     series_id = match.group("ao3_id")
@@ -322,7 +296,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         return await self.fichub_client.get_story_metadata(url)
 
-    async def get_ff_data_from_links(self, text: str, guild_id: int) -> AsyncGenerator[StoryData | None, None]:
+    async def get_ff_data_from_links(self, text: str, guild_id: int) -> AsyncGenerator[StoryDataType | None, None]:
         for match_obj in re.finditer(STORY_WEBSITE_REGEX, text):
             # Attempt to get the story data from whatever method.
             if match_obj.lastgroup == "FFN":

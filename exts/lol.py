@@ -10,7 +10,7 @@ import asyncio
 import itertools
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, Any
 from urllib.parse import quote, urljoin
 
 import aiohttp
@@ -26,7 +26,7 @@ from core.utils import StatsEmbed
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 
 LOGGER = logging.getLogger(__name__)

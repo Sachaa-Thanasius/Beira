@@ -13,7 +13,7 @@ import re
 import textwrap
 from ast import literal_eval
 from io import StringIO
-from typing import TYPE_CHECKING, Any, TypeAlias, cast
+from typing import TYPE_CHECKING, Any, cast
 
 import discord
 import msgspec
@@ -27,7 +27,7 @@ from core.utils import EMOJI_STOCK
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 
 LOGGER = logging.getLogger(__name__)

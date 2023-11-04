@@ -23,6 +23,8 @@ from .ai_generation.utils import get_image, process_image
 
 if TYPE_CHECKING:
     from typing_extensions import Self
+else:
+    Self = object
 
 LOGGER = logging.getLogger(__name__)
 

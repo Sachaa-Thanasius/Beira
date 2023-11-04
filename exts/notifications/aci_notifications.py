@@ -4,9 +4,9 @@ custom_notifications.py: One or more listenerrs for sending custom notifications
 
 from __future__ import annotations
 
+import functools
 import logging
-from functools import partial
-from typing import TypeAlias
+from typing import Any, TypeAlias
 
 import discord
 from discord import CategoryChannel, ForumChannel, StageChannel, TextChannel, VoiceChannel
@@ -154,7 +154,7 @@ async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessag
             await delete_log_channel.send(content)
 
 
-async def setup(bot: core.Beira) -> None:
+def setup_listeners(bot: core.Beira) -> tuple[tuple[functools.partial[Any], str], ...]:
     """Connects listeners to bot."""
 
     # The webhook url that will be used to send ACI-related notifications.
@@ -162,16 +162,7 @@ async def setup(bot: core.Beira) -> None:
     role_log_webhook = discord.Webhook.from_url(aci_webhook_url, session=bot.web_session)
 
     # Adjust the arguments for the listeners.
-    aci_leveled_role_listener = partial(on_leveled_role_member_update, bot, role_log_webhook)
-    aci_server_boost_role_listener = partial(on_server_boost_role_member_update, bot, role_log_webhook)
+    aci_leveled_role_listener = functools.partial(on_leveled_role_member_update, bot, role_log_webhook)
+    aci_server_boost_role_listener = functools.partial(on_server_boost_role_member_update, bot, role_log_webhook)
 
-    # Add the listeners to the bot.
-    bot.add_listener(aci_leveled_role_listener, "on_member_update")
-    bot.add_listener(aci_server_boost_role_listener, "on_member_update")
-
-    """
-    # If I ever come back to trying to log deleted messages correctly:
-
-    aci_deleted_msg_listener = partial(test_on_any_message_delete, bot)
-    bot.add_listener(aci_deleted_msg_listener, "on_raw_message_delete")
-    """
+    return ((aci_leveled_role_listener, "on_member_update"), (aci_server_boost_role_listener, "on_member_update"))

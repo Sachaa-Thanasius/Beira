@@ -17,7 +17,7 @@ from discord.ext import commands
 from lxml import etree, html
 
 import core
-from core.utils import EMOJI_URL, DTEmbed
+from core.utils import EMOJI_URL
 
 
 if TYPE_CHECKING:
@@ -34,8 +34,8 @@ WIKIS_TO_LOAD = {
 AOC_EMOJI_URL, JARE_EMOJI_URL = EMOJI_URL.format(770620658501025812), EMOJI_URL.format(1061029880059400262)
 
 
-class AoCWikiEmbed(DTEmbed):
-    """A subclass of :class:`DTEmbed` that is set up for representing Ashes of Chaos wiki pages.
+class AoCWikiEmbed(discord.Embed):
+    """A subclass of :class:`discord.Embed` that is set up for representing Ashes of Chaos wiki pages.
 
     Parameters
     ----------
@@ -263,7 +263,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         # --------------------------------
         # Check if the wiki has the requested query as a page.
-        final_embed = AoCWikiEmbed() if wiki_name == "Harry Potter and the Ashes of Chaos" else DTEmbed()
+        final_embed = AoCWikiEmbed() if wiki_name == "Harry Potter and the Ashes of Chaos" else discord.Embed()
 
         specific_wiki_page = wiki_pages.get(wiki_query)
 
@@ -286,6 +286,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         # Add the primary embed parameters.
         final_embed.title = wiki_query
         final_embed.url = specific_wiki_page
+        final_embed.timestamp = discord.utils.utcnow()
 
         # Fetch information from the character webpage to populate the rest of the embed.
         summary, thumbnail = await process_fandom_page(self.bot.web_session, specific_wiki_page)

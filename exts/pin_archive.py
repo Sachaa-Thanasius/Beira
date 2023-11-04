@@ -105,33 +105,34 @@ class PinArchiveCog(commands.Cog, name="Pin Archive"):
     ) -> None:
         """Listen to guild-level pin events and display them."""
 
-        # Avoid a db call by checking if the channel can even have pins and if those at the limit.
-        if isinstance(channel, discord.TextChannel | discord.Thread) and (len(pins := await channel.pins()) >= 49):
-            query = "SELECT * FROM pin_archive_settings WHERE guild_id = $1;"
-            record = await self.bot.db_pool.fetchrow(query, channel.guild.id)
+        if channel.guild.id == core.CONFIG.discord.important_guilds["dev"][0]:  # TODO: Lock to testing server for now.
+            # Avoid a db call by checking if the channel can even have pins and if those at the limit.
+            if isinstance(channel, discord.TextChannel | discord.Thread) and (len(pins := await channel.pins()) >= 49):
+                query = "SELECT * FROM pin_archive_settings WHERE guild_id = $1;"
+                record = await self.bot.db_pool.fetchrow(query, channel.guild.id)
 
-            # We now have a guild, a channel, and settings to work with.
-            if record and (archive_channel := channel.guild.get_channel(record["pin_channel_id"])):
-                try:
-                    if record["pin_send_all"]:
-                        for pin in pins:
+                # We now have a guild, a channel, and settings to work with.
+                if record and (archive_channel := channel.guild.get_channel(record["pin_channel_id"])):
+                    try:
+                        if record["pin_send_all"]:
+                            for pin in pins:
+                                await pin.unpin(reason="Moving pins to archive channel.")
+                                embed = create_pin_embed(pin)
+                                await archive_channel.send(embed=embed)  # type: ignore
+                        elif record["pin_mode"] == 1:
+                            pin = pins[-1]
                             await pin.unpin(reason="Moving pins to archive channel.")
                             embed = create_pin_embed(pin)
                             await archive_channel.send(embed=embed)  # type: ignore
-                    elif record["pin_mode"] == 1:
-                        pin = pins[-1]
-                        await pin.unpin(reason="Moving pins to archive channel.")
-                        embed = create_pin_embed(pin)
-                        await archive_channel.send(embed=embed)  # type: ignore
-                    elif record["pin_mode"] == 2:
-                        pin = pins[0]
-                        await pin.unpin(reason="Moving pins to archive channel.")
-                        embed = create_pin_embed(pin)
-                        await archive_channel.send(embed=embed)  # type: ignore
-                except (discord.Forbidden, discord.NotFound, discord.HTTPException, ValueError, TypeError) as err:
-                    LOGGER.exception("", exc_info=err)
+                        elif record["pin_mode"] == 2:
+                            pin = pins[0]
+                            await pin.unpin(reason="Moving pins to archive channel.")
+                            embed = create_pin_embed(pin)
+                            await archive_channel.send(embed=embed)  # type: ignore
+                    except (discord.Forbidden, discord.NotFound, discord.HTTPException, ValueError, TypeError) as err:
+                        LOGGER.exception("", exc_info=err)
 
-        LOGGER.info("on_guild_channel_pins_update(): %s, %s, %s", channel.guild, channel, last_pin)
+            LOGGER.info("on_guild_channel_pins_update(): %s, %s, %s", channel.guild, channel, last_pin)
 
     @commands.group("pin", invoke_without_command=True)
     async def pin_(self, ctx: core.GuildContext) -> None:

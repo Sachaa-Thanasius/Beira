@@ -15,49 +15,39 @@ import discord
 if TYPE_CHECKING:
     from typing_extensions import Self
 else:
-    Self: TypeAlias = Any
+    Self = object
 
 AnyEmoji: TypeAlias = discord.Emoji | discord.PartialEmoji | str
 
-__all__ = ("EMOJI_URL", "DTEmbed", "StatsEmbed")
+__all__ = ("StatsEmbed",)
 
 LOGGER = logging.getLogger(__name__)
 
-EMOJI_URL = "https://cdn.discordapp.com/emojis/{0}.webp?size=128&quality=lossless"
 
-
-class DTEmbed(discord.Embed):
-    """Represents a Discord embed, with a preset timestamp attribute.
-
-    Inherits from :class:`discord.Embed`.
-    """
-
-    def __init__(self, **kwargs: Any) -> None:
-        kwargs["timestamp"] = kwargs.get("timestamp", discord.utils.utcnow())
-        super().__init__(**kwargs)
-
-
-class StatsEmbed(DTEmbed):
+class StatsEmbed(discord.Embed):
     """A subclass of :class:`DTEmbed` that displays given statistics for a user.
 
-    This has a default colour of 0x2f3136 and, due to inheritance, a default timestamp for right now in UTC.
+    This has a default colour of 0x2f3136 and a default timestamp for right now in UTC.
 
     Parameters
     ----------
+    *args
+        Positional arguments
     **kwargs
         Keyword arguments for the normal initialization of a discord :class:`Embed`.
     """
 
-    def __init__(self, **kwargs: Any) -> None:
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
         kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0x2F3136
-        super().__init__(**kwargs)
+        kwargs["timestamp"] = kwargs.get("timestamp", discord.utils.utcnow())
+        super().__init__(*args, **kwargs)
 
     def add_stat_fields(
         self,
         *,
-        names: Iterable[Any],
+        names: Iterable[object],
         emojis: Iterable[AnyEmoji] = ("",),
-        values: Iterable[Any],
+        values: Iterable[object],
         inline: bool = False,
         emoji_as_header: bool = False,
     ) -> Self:
@@ -67,11 +57,11 @@ class StatsEmbed(DTEmbed):
 
         Parameters
         ----------
-        names: Iterable[Any]
+        names: Iterable[object]
             The names for each field.
         emojis: Iterable[AnyEmoji]
             The emojis adorning each field. Defaults to a tuple with an empty string so there is at least one "emoji".
-        values: Iterable[Any], default=("",)
+        values: Iterable[object], default=("",)
             The values for each field.
         inline: :class:`bool`, default=False
             Whether the fields should be displayed inline. Defaults to False.
@@ -94,7 +84,7 @@ class StatsEmbed(DTEmbed):
     def add_leaderboard_fields(
         self,
         *,
-        ldbd_content: Iterable[Sequence[Any]],
+        ldbd_content: Iterable[Sequence[object]],
         ldbd_emojis: Iterable[AnyEmoji] = ("",),
         name_format: str = "| {}",
         value_format: str = "{}",
@@ -107,7 +97,7 @@ class StatsEmbed(DTEmbed):
 
         Parameters
         ----------
-        ldbd_content: Iterable[Sequence[Any]]
+        ldbd_content: Iterable[Sequence[object]]
             The content for each leaderboard, including names and values. Assumes they're given in descending order.
         ldbd_emojis: Iterable[AnyEmoji], default=("",)
             The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there

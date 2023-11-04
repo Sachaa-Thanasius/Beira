@@ -4,19 +4,18 @@ import logging
 import re
 import textwrap
 from collections.abc import Callable
-from typing import Any
+from typing import Any, NamedTuple
 
 import ao3
 import atlas_api
 import discord
 import fichub_api
-import msgspec
 
-from core.utils import DTEmbed, PaginatedSelectView
+from core.utils import PaginatedSelectView
 
 
 __all__ = (
-    "StoryWebsiteStore",
+    "STORY_WEBSITE_STORE",
     "STORY_WEBSITE_REGEX",
     "create_ao3_work_embed",
     "create_ao3_series_embed",
@@ -45,14 +44,14 @@ QQ_ICON = "https://forums.questionablequesting.com/favicon.ico"
 SIYE_ICON = "https://www.siye.co.uk/siye/favicon.ico"
 
 
-class StoryWebsite(msgspec.Struct):
+class StoryWebsite(NamedTuple):
     name: str
     acronym: str
     story_regex: re.Pattern[str]
     icon_url: str
 
 
-StoryWebsiteStore: dict[str, StoryWebsite] = {
+STORY_WEBSITE_STORE: dict[str, StoryWebsite] = {
     "FFN": StoryWebsite("FanFiction.Net", "FFN", FFN_PATTERN, FFN_ICON),
     "FP": StoryWebsite("FictionPress", "FP", FP_PATTERN, FP_ICON),
     "AO3": StoryWebsite("Archive of Our Own", "AO3", AO3_PATTERN, AO3_ICON),
@@ -64,11 +63,11 @@ StoryWebsiteStore: dict[str, StoryWebsite] = {
 
 STORY_WEBSITE_REGEX = re.compile(
     r"(?:http://|https://|)"
-    + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in StoryWebsiteStore.items()),
+    + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in STORY_WEBSITE_STORE.items()),
 )
 
 
-def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
+def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own work.
 
     Only accepts :class:`ao3.Work` objects.
@@ -96,8 +95,8 @@ def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
     # Add the info in the embed appropriately.
     author_url = f"https://archiveofourown.org/users/{work.authors[0].name}"
     ao3_embed = (
-        DTEmbed(title=work.title, url=work.url)
-        .set_author(name=author_names, url=author_url, icon_url=StoryWebsiteStore["AO3"].icon_url)
+        discord.Embed(title=work.title, url=work.url, timestamp=discord.utils.utcnow())
+        .set_author(name=author_names, url=author_url, icon_url=STORY_WEBSITE_STORE["AO3"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{work.nwords:,d} words in {work.nchapters} chapter(s)")
         .add_field(name=f"\N{BOOKMARK} Rating: {work.rating}", value=details, inline=False)
@@ -110,7 +109,7 @@ def create_ao3_work_embed(work: ao3.Work) -> DTEmbed:
     return ao3_embed
 
 
-def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
+def create_ao3_series_embed(series: ao3.Series) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own series.
 
     Only accepts :class:`ao3.Series` objects.
@@ -128,8 +127,8 @@ def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
 
     # Add the info in the embed appropriately.
     ao3_embed = (
-        DTEmbed(title=series.name, url=series.url, description=work_links)
-        .set_author(name=author_names, url=author_url, icon_url=StoryWebsiteStore["AO3"].icon_url)
+        discord.Embed(title=series.name, url=series.url, description=work_links, timestamp=discord.utils.utcnow())
+        .set_author(name=author_names, url=author_url, icon_url=STORY_WEBSITE_STORE["AO3"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=updated)
         .add_field(name="\N{OPEN BOOK} Length", value=f"{series.nwords:,d} words in {series.nworks} work(s)")
         .set_footer(text="A substitute for displaying AO3 information.")
@@ -141,7 +140,7 @@ def create_ao3_series_embed(series: ao3.Series) -> DTEmbed:
     return ao3_embed
 
 
-def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
+def create_atlas_ffn_embed(story: atlas_api.Story) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for a FanFiction.Net story.
 
     Only accepts :class:`atlas_api.Story` objects from my own Atlas wrapper.
@@ -158,8 +157,8 @@ def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
 
     # Add the info to the embed appropriately.
     ffn_embed = (
-        DTEmbed(title=story.title, url=story.url, description=story.description)
-        .set_author(name=story.author.name, url=story.author.url, icon_url=StoryWebsiteStore["FFN"].icon_url)
+        discord.Embed(title=story.title, url=story.url, description=story.description, timestamp=discord.utils.utcnow())
+        .set_author(name=story.author.name, url=story.author.url, icon_url=STORY_WEBSITE_STORE["FFN"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=updated)
         .add_field(name="\N{OPEN BOOK} Length", value=f"{story.words:,d} words in {story.chapters} chapter(s)")
         .add_field(name=f"\N{BOOKMARK} Rating: Fiction {story.rating}", value=details, inline=False)
@@ -172,7 +171,7 @@ def create_atlas_ffn_embed(story: atlas_api.Story) -> DTEmbed:
     return ffn_embed
 
 
-def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
+def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for a few different types of online fiction story.
 
     Only accepts :class:`fichub_api.Story` objects from my own FicHub wrapper.
@@ -188,7 +187,7 @@ def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
     # Get site-specific information, since FicHub works for multiple websites.
     icon_url = next(
-        (value.icon_url for value in StoryWebsiteStore.values() if re.search(value.story_regex, story.url)),
+        (value.icon_url for value in STORY_WEBSITE_STORE.values() if re.search(value.story_regex, story.url)),
         None,
     )
 
@@ -209,7 +208,7 @@ def create_fichub_embed(story: fichub_api.Story) -> DTEmbed:
 
     # Add the info to the embed appropriately.
     story_embed = (
-        DTEmbed(title=story.title, url=story.url, description=story.description)
+        discord.Embed(title=story.title, url=story.url, description=story.description, timestamp=discord.utils.utcnow())
         .set_author(name=story.author.name, url=story.author.url, icon_url=icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated} ({story.status.capitalize()})")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{story.words:,d} words in {story.chapters} chapter(s)")

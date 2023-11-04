@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Any, Literal
+from typing import TYPE_CHECKING, Literal
 
 import discord
 from discord.app_commands import Choice
@@ -18,6 +18,8 @@ from core.utils import StatsEmbed, upsert_guilds, upsert_users
 
 if TYPE_CHECKING:
     from asyncpg import Record
+else:
+    Record = object
 
 
 LOGGER = logging.getLogger(__name__)
@@ -184,7 +186,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
     ) -> list[Record]:
         """Queries the database for command usage."""
 
-        query_args: list[Any] = []  # Holds the query args as objects.
+        query_args: list[object] = []  # Holds the query args as objects.
         where_params: list[str] = []  # Holds the query param placeholders as formatted strings.
 
         # Create the base queries.
