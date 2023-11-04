@@ -74,7 +74,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         Must be triggered in an allowed channel.
         """
 
-        if (message.author == self.bot.user) or (not message.guild):
+        if (message.author == self.bot.user) or (not message.guild) or message.guild.id == self.aci100_id:
             return
 
         # Listen to the allowed channels in the allowed guilds for valid fanfic links.
@@ -301,7 +301,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             # Attempt to get the story data from whatever method.
             if match_obj.lastgroup == "FFN":
                 story_data = await self.atlas_client.get_story_metadata(int(match_obj.group("ffn_id")))
-            elif match_obj.lastgroup == "AO3" and (guild_id != self.aci100_id):
+            elif match_obj.lastgroup == "AO3":
                 story_data = await self.search_ao3(match_obj.group(0))
             elif match_obj.lastgroup and (match_obj.lastgroup != "AO3"):
                 story_data = await self.search_other(match_obj.group(0))
