@@ -101,7 +101,7 @@ async def create_image(client: openai.AsyncOpenAI, prompt: str, size: tuple[int,
         prompt=prompt,
         n=1,
         response_format="url",
-        size=f"{size[0]}x{size[1]}",
+        size=f"{size[0]}x{size[1]}",  # type: ignore # FIXME: Find a way to pass in a literal.
     )
 
     url = image_response.data[0].url
