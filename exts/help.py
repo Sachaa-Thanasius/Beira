@@ -267,7 +267,7 @@ class HelpCog(commands.Cog, name="Help"):
         return [
             app_commands.Choice(name=command.qualified_name, value=command.qualified_name)
             for command in await help_command.filter_commands(self.bot.walk_commands(), sort=True)
-            if current.casefold() in command.qualified_name
+            if current.casefold() in command.qualified_name.casefold()
         ][:25]
 
 

@@ -7,7 +7,7 @@ from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias
 import discord
 from discord import Client, Interaction
 from discord.app_commands import AppCommandError, Command, CommandTree, Group, Namespace
-from discord.ext.commands import Cog
+from discord.ext import commands
 
 
 if TYPE_CHECKING:
@@ -25,7 +25,7 @@ P = ParamSpec("P")
 T = TypeVar("T")
 Coro: TypeAlias = Coroutine[Any, Any, T]
 CoroFunc: TypeAlias = Callable[..., Coro[Any]]
-GroupT = TypeVar("GroupT", bound=Group | Cog)
+GroupT = TypeVar("GroupT", bound=Group | commands.Cog)
 AppHook: TypeAlias = Callable[[GroupT, Interaction[Any]], Coro[Any]] | Callable[[Interaction[Any]], Coro[Any]]
 
 __all__ = ("before_app_invoke", "after_app_invoke", "HookableTree")

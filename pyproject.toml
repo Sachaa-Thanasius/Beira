@@ -17,7 +17,7 @@ target-version = ["py310"]
 
 [tool.ruff]
 # Credit to @mikeshardmind for most of this setup.
-include = ["main.py", "core/*.py", "exts/*.pyi", "**/pyproject.toml"]
+include = ["main.py", "core/*.py", "exts/*.py", "**/pyproject.toml"]
 line-length = 120
 target-version = "py310"
 select = [
@@ -85,9 +85,9 @@ combine-as-imports = true
 include = ["main.py", "core", "exts"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
-useLibraryCodeForTypes = true
+# useLibraryCodeForTypes = true
 
 reportMissingTypeStubs = "none"
-reportImportCycles = "warning"
+# reportImportCycles = "warning"
 reportPropertyTypeMismatch = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"

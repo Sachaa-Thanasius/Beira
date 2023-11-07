@@ -4,8 +4,7 @@ wave.py: Custom subclasses or extras related to wavelink.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterator, Iterable
-from typing import cast
+from collections.abc import AsyncIterable, Iterable
 
 import discord
 import wavelink
@@ -15,7 +14,8 @@ from wavelink.ext import spotify
 __all__ = ("SkippableQueue", "SkippablePlayer")
 
 AnyTrack = wavelink.Playable | spotify.SpotifyTrack
-AnyTrackIterable = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
+AnyTrackIterator = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
+AnyTrackIterable = Iterable[wavelink.Playable] | Iterable[spotify.SpotifyTrack] | AsyncIterable[spotify.SpotifyTrack]
 
 
 class SkippableQueue(wavelink.Queue):
@@ -50,9 +50,8 @@ class SkippableQueue(wavelink.Queue):
             for sub_item in item:
                 sub_item.requester = requester  # type: ignore # Runtime attribute assignment.
                 await self.put_wait(sub_item)
-        elif isinstance(item, AsyncIterator):
-            # Awkward casting to satisfy pyright since wavelink isn't fully typed.
-            async for sub_item in cast(AsyncIterator[spotify.SpotifyTrack], item):
+        elif isinstance(item, AsyncIterable):
+            async for sub_item in item:
                 sub_item.requester = requester  # type: ignore # Runtime attribute assignment.
                 await self.put_wait(sub_item)
         else:
@@ -66,7 +65,7 @@ class SkippablePlayer(wavelink.Player):
     Attributes
     ----------
     queue: :class:`SkippableQueue`
-        A version of :class:`wavelink.Queue` that can be skipped into.
+        A subclass of :class:`wavelink.Queue` that can be skipped into.
     """
 
     def __init__(

@@ -15,7 +15,7 @@ from discord.ext import commands
 from wavelink.ext import spotify
 
 from core.utils import EMOJI_STOCK, PaginatedEmbedView
-from core.wave import AnyTrack, AnyTrackIterable
+from core.wave import AnyTrack, AnyTrackIterator
 
 
 escape_markdown = functools.partial(discord.utils.escape_markdown, as_needed=True)
@@ -42,7 +42,7 @@ class MusicQueueView(PaginatedEmbedView[str]):
         return embed_page
 
 
-class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], discord.app_commands.Transformer):
+class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterator], discord.app_commands.Transformer):
     """Converts to what Wavelink considers a playable track (:class:`AnyPlayable` or :class:`AnyTrackIterable`).
 
     The lookup strategy is as follows (in order):
@@ -81,7 +81,7 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], d
 
         return search_type
 
-    async def _convert(self, argument: str) -> AnyTrack | AnyTrackIterable:
+    async def _convert(self, argument: str) -> AnyTrack | AnyTrackIterator:
         """Attempt to convert a string into a Wavelink track or list of tracks."""
 
         search_type = self._get_search_type(argument)
@@ -104,10 +104,10 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], d
         return tracks
 
     # Who needs narrowing anyway?
-    async def convert(self, ctx: commands.Context[Any], argument: str) -> AnyTrack | AnyTrackIterable:
+    async def convert(self, ctx: commands.Context[Any], argument: str) -> AnyTrack | AnyTrackIterator:
         return await self._convert(argument)
 
-    async def transform(self, _: discord.Interaction, value: str, /) -> AnyTrack | AnyTrackIterable:
+    async def transform(self, _: discord.Interaction, value: str, /) -> AnyTrack | AnyTrackIterator:
         return await self._convert(value)
 
     async def autocomplete(  # type: ignore # Narrowing the types of the input value and return value, I guess.
@@ -117,7 +117,13 @@ class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterable], d
     ) -> list[discord.app_commands.Choice[str]]:
         search_type = self._get_search_type(value)
         tracks = await search_type.search(value)
-        return [discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
+        if isinstance(tracks, list):
+            choices = [
+                discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks
+            ][:25]
+        else:
+            choices = [discord.app_commands.Choice(name=tracks.name, value=tracks.uri or tracks.name)]
+        return choices
 
 
 async def format_track_embed(title: str, track: AnyTrack) -> discord.Embed:
@@ -154,7 +160,7 @@ async def format_track_embed(title: str, track: AnyTrack) -> discord.Embed:
     return embed
 
 
-async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterable) -> str:
+async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterator) -> str:
     """Returns the appropriate notification string for tracks or a collection of tracks being added to a queue."""
 
     if isinstance(tracks, wavelink.YouTubePlaylist | wavelink.SoundCloudPlaylist):
@@ -164,6 +170,6 @@ async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterable) 
     if isinstance(tracks, list):
         return f"Added `{tracks[0].title}` to the queue."
     if isinstance(tracks, spotify.SpotifyAsyncIterator):
-        return f"Added `{tracks._count}` tracks to the queue."  # type: ignore # This avoids iterating through it again.
+        return f"Added `{tracks._count}` tracks to the queue."  # This avoids iterating through it again.
 
     return f"Added `{tracks.title}` to the queue."

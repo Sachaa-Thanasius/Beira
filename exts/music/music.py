@@ -14,7 +14,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import core
-from core.wave import AnyTrack, AnyTrackIterable, SkippablePlayer
+from core.wave import AnyTrack, AnyTrackIterator, SkippablePlayer
 
 from .utils import MusicQueueView, WavelinkSearchConverter, format_track_embed, generate_tracks_add_notification
 
@@ -139,7 +139,7 @@ class MusicCog(commands.Cog, name="Music"):
         self,
         ctx: core.GuildContext,
         *,
-        search: app_commands.Transform[AnyTrack | AnyTrackIterable, WavelinkSearchConverter],
+        search: app_commands.Transform[AnyTrack | AnyTrackIterator, WavelinkSearchConverter],
     ) -> None:
         """Play audio from a YouTube url or search term.
 
@@ -196,7 +196,7 @@ class MusicCog(commands.Cog, name="Music"):
         """Stop playback and disconnect the bot from voice."""
 
         if vc := ctx.voice_client:
-            await vc.disconnect()  # type: ignore # Incomplete wavelink typing
+            await vc.disconnect()
             await ctx.send("Disconnected from voice channel.")
         else:
             await ctx.send("No player to perform this on.")
