@@ -16,6 +16,7 @@ import asyncpg
 import atlas_api
 import discord
 import fichub_api
+import openai
 import wavelink
 from discord.ext import commands
 from wavelink.ext import spotify
@@ -72,6 +73,8 @@ class Beira(commands.Bot):
         self.atlas_client = atlas_api.Client(auth=atlas_auth, session=self.web_session)
         self.fichub_client = fichub_api.Client(session=self.web_session)
         self.ao3_client = ao3.Client(session=self.web_session)
+
+        self.openai_client = openai.AsyncOpenAI(api_key=CONFIG.openai.key)
 
         # Things to load before connecting to the Gateway.
         self.prefix_cache: dict[int, list[str]] = {}

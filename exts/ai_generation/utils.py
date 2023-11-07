@@ -12,12 +12,12 @@ from PIL import Image
 
 
 __all__ = (
-    "temp_file_names",
     "get_image",
     "process_image",
     "create_completion",
     "create_image",
     "create_inspiration",
+    "temp_file_names",
     "create_morph",
 )
 
@@ -25,28 +25,6 @@ LOGGER = logging.getLogger(__name__)
 
 FFMPEG = Path("C:/ffmpeg/bin/ffmpeg.exe")  # Depends on the machine and its PATH.
 INSPIROBOT_API_URL = "https://inspirobot.me/api"
-
-
-@asynccontextmanager
-async def temp_file_names(*extensions: str) -> AsyncGenerator[tuple[Path, ...], None]:
-    """Create temporary filesystem paths to generated filenames in a temporary folder.
-
-    Upon completion, the folder is removed.
-
-    Parameters
-    ----------
-    *extensions: tuple[:class:`str`]
-        The file extensions that the generated filenames should have, e.g. py, txt, doc.
-
-    Yields
-    ------
-    temp_paths: tuple[:class:`Path`]
-        Filepaths with random filenames with the given file extensions, in order.
-    """
-
-    async with aiofiles.tempfile.TemporaryDirectory() as temp_dir:
-        temp_paths = tuple(Path(temp_dir).joinpath(f"temp_output{i}." + ext) for i, ext in enumerate(extensions))
-        yield temp_paths
 
 
 async def get_image(session: aiohttp.ClientSession, url: str) -> bytes:
@@ -80,7 +58,7 @@ def process_image(image_bytes: bytes) -> BytesIO:
     return output_buffer
 
 
-async def create_completion(prompt: str) -> str:
+async def create_completion(client: openai.AsyncOpenAI, prompt: str) -> str:
     """Makes a call to OpenAI's API to generate text based on given input.
 
     Parameters
@@ -94,16 +72,16 @@ async def create_completion(prompt: str) -> str:
         The generated text completion.
     """
 
-    completion_response = await openai.Completion.acreate(  # type: ignore # Possible args are weird.
-        prompt=prompt,
+    completion_response = await client.completions.create(
         model="text-davinci-003",
+        prompt=prompt,
         max_tokens=150,
         temperature=0,
     )
-    return completion_response.choices[0].text  # type: ignore
+    return completion_response.choices[0].text
 
 
-async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
+async def create_image(client: openai.AsyncOpenAI, prompt: str, size: tuple[int, int] = (256, 256)) -> str:
     """Makes a call to OpenAI's API to generate an image based on given inputs.
 
     Parameters
@@ -119,12 +97,16 @@ async def create_image(prompt: str, size: tuple[int, int] = (256, 256)) -> str:
         The url of the generated image.
     """
 
-    image_response = await openai.Image.acreate(  # type: ignore # Possible args are weird.
+    image_response = await client.images.generate(
         prompt=prompt,
         n=1,
+        response_format="url",
         size=f"{size[0]}x{size[1]}",
     )
-    return image_response.data[0].url  # type: ignore
+
+    url = image_response.data[0].url
+    assert url
+    return url
 
 
 async def create_inspiration(session: aiohttp.ClientSession) -> str:
@@ -144,6 +126,28 @@ async def create_inspiration(session: aiohttp.ClientSession) -> str:
     async with session.get(url=INSPIROBOT_API_URL, params={"generate": "true"}) as response:
         response.raise_for_status()
         return await response.text()
+
+
+@asynccontextmanager
+async def temp_file_names(*extensions: str) -> AsyncGenerator[tuple[Path, ...], None]:
+    """Create temporary filesystem paths to generated filenames in a temporary folder.
+
+    Upon completion, the folder is removed.
+
+    Parameters
+    ----------
+    *extensions: tuple[:class:`str`]
+        The file extensions that the generated filenames should have, e.g. py, txt, doc.
+
+    Yields
+    ------
+    temp_paths: tuple[:class:`Path`]
+        Filepaths with random filenames with the given file extensions, in order.
+    """
+
+    async with aiofiles.tempfile.TemporaryDirectory() as temp_dir:
+        temp_paths = tuple(Path(temp_dir).joinpath(f"temp_output{i}." + ext) for i, ext in enumerate(extensions))
+        yield temp_paths
 
 
 async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) -> BytesIO:

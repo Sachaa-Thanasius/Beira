@@ -91,10 +91,11 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
         avatar_buffer = BytesIO()
         await target.display_avatar.replace(size=256, format="png", static_format="png").save(avatar_buffer)
 
+        # Verify what the new size is.
         with Image.open(avatar_buffer) as avatar_image:
             file_size = avatar_image.size
 
-        ai_url = await create_image(prompt, file_size)
+        ai_url = await create_image(self.bot.openai_client, prompt, file_size)
         ai_bytes = await get_image(self.bot.web_session, ai_url)
         ai_buffer = await asyncio.to_thread(process_image, ai_bytes)
         gif_buffer = await create_morph(avatar_buffer, ai_buffer)
@@ -217,7 +218,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             if generation_type == "image":
                 log_start_time = perf_counter()
-                ai_url = await create_image(prompt, (512, 512))
+                ai_url = await create_image(self.bot.openai_client, prompt, (512, 512))
                 ai_bytes = await get_image(ctx.session, ai_url)
                 ai_buffer = await asyncio.to_thread(process_image, ai_bytes)
                 creation_time = perf_counter() - log_start_time
@@ -238,7 +239,7 @@ class AIGenerationCog(commands.Cog, name="AI Generation"):
 
             elif generation_type == "text":
                 log_start_time = perf_counter()
-                ai_text = await create_completion(prompt)
+                ai_text = await create_completion(self.bot.openai_client, prompt)
                 creation_time = perf_counter() - log_start_time
 
                 # Send the generated image in an embed.

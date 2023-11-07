@@ -3,7 +3,6 @@ import asyncio
 import aiohttp
 import asyncpg
 import discord
-import openai
 
 import core
 from core.tree import HookableTree
@@ -19,10 +18,6 @@ async def main() -> None:
         command_timeout=30,
         init=pool_init,
     ) as pool, LoggingManager() as logging_manager:
-        # Set up OpenAI.
-        openai.api_key = core.CONFIG.openai.key
-        openai.aiosession.set(web_session)
-
         # Set the bot's basic starting parameters.
         intents = discord.Intents.all()
         intents.presences = False
