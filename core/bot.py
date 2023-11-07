@@ -235,7 +235,7 @@ class Beira(commands.Bot):
             except commands.ExtensionError as err:
                 LOGGER.exception("Failed to load extension: %s", extension, exc_info=err)
         all_exts_end_time = time.perf_counter()
-        LOGGER.info("Total extension loading time: Time: %.5f",  all_exts_start_time - all_exts_end_time)
+        LOGGER.info("Total extension loading time: Time: %.5f", all_exts_start_time - all_exts_end_time)
 
     async def _load_special_friends(self) -> None:
         await self.wait_until_ready()
