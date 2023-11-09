@@ -204,7 +204,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     @commands.hybrid_command()
     async def ff_search(self, ctx: core.Context, platform: Literal["ao3", "ffn", "other"], *, name_or_url: str) -> None:
-        """Search available platforms for a fic with a certain title or url. Note: Only urls are accepted for `other`.
+        """Search available platforms for a fic with a certain title or url.
+
+        Note: Only urls are accepted for `other`.
 
         Parameters
         ----------
