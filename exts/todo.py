@@ -71,7 +71,7 @@ class TodoItem(msgspec.Struct):
         command = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
         new_date = discord.utils.utcnow() if self.completed_at is None else None
         record = await conn.fetchrow(command, new_date, self.todo_id)
-        return self.from_record(record) if record else TodoItem.generate_deleted()
+        return self.from_record(record) if record else type(self).generate_deleted()
 
     async def update(self, conn: Pool_alias | Connection_alias, updated_content: str) -> Self:
         """Changes the to-do content of the record, giving back the new version of the record.
@@ -88,7 +88,7 @@ class TodoItem(msgspec.Struct):
 
         command = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
         record = await conn.fetchrow(command, updated_content, self.todo_id)
-        return self.from_record(record) if record else TodoItem.generate_deleted()
+        return self.from_record(record) if record else type(self).generate_deleted()
 
     async def delete(self, conn: Pool_alias | Connection_alias) -> None:
         """Deletes the record from the database.

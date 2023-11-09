@@ -317,7 +317,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send_help(ctx.command)
 
     @emoji_.command("info")
-    async def emoji_info(self, ctx: core.GuildContext, entity: str) -> None:
+    async def emoji_info(self, ctx: core.GuildContext, entity: str, *, ephemeral: bool = True) -> None:
         """Identify a particular emoji and see information about it.
 
         Parameters
@@ -326,6 +326,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
             The invocation context.
         entity: :class:`str`
             The emoji to provide information about.
+        ephemeral: :class:`bool`, default=True
+            Whether you want others to see the emoji info.
         """
 
         embed = discord.Embed(color=0xFFCC4D, title="Emoji Information")
@@ -362,7 +364,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         else:
             embed.description = "Not found. Please enter a valid emoji or unicode character."
 
-        await ctx.send(embed=embed, ephemeral=True)
+        await ctx.send(embed=embed, ephemeral=ephemeral)
 
     @emoji_.command("add")
     @commands.has_guild_permissions(manage_emojis_and_stickers=True)
@@ -430,7 +432,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
         await ctx.send_help(ctx.command)
 
     @sticker.command("info")
-    async def sticker_info(self, ctx: core.GuildContext, sticker: str) -> None:
+    async def sticker_info(self, ctx: core.GuildContext, sticker: str, *, ephemeral: bool = True) -> None:
         """Identify a particular sticker and see information about it.
 
         Parameters
@@ -473,7 +475,7 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                 .set_image(url=conv_sticker.url)
             )
 
-        await ctx.send(embed=embed, ephemeral=True)
+        await ctx.send(embed=embed, ephemeral=ephemeral)
 
     @sticker.command("add")
     @commands.has_guild_permissions(manage_emojis_and_stickers=True)
