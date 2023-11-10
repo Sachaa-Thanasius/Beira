@@ -15,7 +15,7 @@ from typing import Any
 import discord
 import matplotlib.pyplot as plt
 import numpy as np
-import tatsu
+import tatsu_api as tatsu
 from discord.ext import commands
 
 import core

@@ -40,6 +40,12 @@ async def on_server_boost_role_member_update(
     before: discord.Member,
     after: discord.Member,
 ) -> None:
+    """Listener that sends a notification if members of the ACI100 server earn certain roles.
+
+    Condition for activating:
+    - Boost the server and earn the premium subscriber, or "Server Booster", role.
+    """
+
     # The ID of the guild this listener is for.
     aci_guild_id: int = core.CONFIG.discord.important_guilds["prod"][0]
 
@@ -62,9 +68,8 @@ async def on_leveled_role_member_update(
 ) -> None:
     """Listener that sends a notification if members of the ACI100 server earn certain roles.
 
-    Conditions for activating are:
-        1) Earn a Tatsu leveled role above "The Ears".
-        2) Boost the server and earn the premium subscriber, or "Server Booster", role.
+    Condition for activating:
+    - Earn a Tatsu leveled role above "The Ears".
     """
 
     # The ID of the guild this listener is for.
@@ -154,7 +159,7 @@ async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessag
             await delete_log_channel.send(content)
 
 
-def setup_listeners(bot: core.Beira) -> tuple[tuple[functools.partial[Any], str], ...]:
+def make_listeners(bot: core.Beira) -> tuple[tuple[functools.partial[Any], str], ...]:
     """Connects listeners to bot."""
 
     # The webhook url that will be used to send ACI-related notifications.

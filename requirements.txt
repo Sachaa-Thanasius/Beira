@@ -14,7 +14,7 @@ msgspec[toml]
 numpy
 openai>=1.1.0
 Pillow>=10.0.0
-tatsu @ git+https://github.com/Sachaa-Thanasius/Tatsu.git
+tatsu-api>=1.0.0
 typing_extensions>=4.5.0,<5
 wavelink>=2.6.3,<3
 wavelink-stubs
