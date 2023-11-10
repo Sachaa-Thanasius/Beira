@@ -25,7 +25,7 @@ BE = TypeVar("BE", bound=BaseException)
 Coro = Coroutine[Any, Any, T]
 
 
-__all__ = ("catchtime", "benchmark")
+__all__ = ("catchtime", "benchmark", "take_annotation_from")
 
 
 def is_awaitable_func(func: Callable[P, T] | Callable[P, Awaitable[T]]) -> TypeGuard[Callable[P, Awaitable[T]]]:
@@ -192,19 +192,21 @@ class bench_v3:
         if iscoroutinefunction(func):
 
             @wraps(func)
-            async def inner(*args: P.args, **kwargs: P.kwargs) -> T:  # type: ignore
+            async def async_inner(*args: P.args, **kwargs: P.kwargs) -> T:
                 with self:
                     return await func(*args, **kwargs)
 
-        else:
+            return async_inner
+
+        else:  # noqa: RET505
             assert is_not_coroutine_func(func)
 
             @wraps(func)
-            def inner(*args: P.args, **kwargs: P.kwargs) -> T:
+            def sync_inner(*args: P.args, **kwargs: P.kwargs) -> T:
                 with self:
                     return func(*args, **kwargs)
 
-        return inner
+            return sync_inner
 
 
 def take_annotation_from(original: Callable[P, T]) -> Callable[[Callable[P, T]], Callable[P, T]]:

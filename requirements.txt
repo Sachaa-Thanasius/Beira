@@ -7,7 +7,7 @@ atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper.git
 beautifulsoup4>=4.12.2
 discord.py[speed,voice]>=2.3.2
 fichub-api
-jishaku @ git+https://github.com/Gorialis/jishaku@bf26bea3c1f86993fd75744de48bf52d4925521a
+jishaku @ git+https://github.com/Gorialis/jishaku@a6661e2813124fbfe53326913e54f7c91e5d0dec
 lxml>=4.9.3
 matplotlib
 msgspec[toml]
