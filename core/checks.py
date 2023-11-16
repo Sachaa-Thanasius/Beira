@@ -16,7 +16,7 @@ from .errors import CheckAnyFailure, GuildIsBlocked, NotAdmin, NotInBotVoiceChan
 
 if TYPE_CHECKING:
     from discord.app_commands.commands import Check as AppCheckFunc
-    from discord.ext.commands._types import Check
+    from discord.ext.commands._types import Check  # type: ignore [reportMissingTypeStubs]
 
     from .context import Context, GuildContext
 

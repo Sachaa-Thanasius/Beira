@@ -121,7 +121,7 @@ class TatsuCog(commands.Cog, name="Tatsu"):
     async def graph_roles(self, ctx: core.Context, guild_id: int | None = None) -> None:
         async with ctx.typing():
             # Check that there's a guild ID to work with.
-            query_id = guild_id or (ctx.guild.id if ctx.guild else None)
+            query_id = guild_id or (ctx.guild.id if ctx.guild else 0)
             if not query_id:
                 await ctx.send("You must do this in a guild or provide a valid guild ID.")
                 return

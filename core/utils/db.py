@@ -9,19 +9,19 @@ from typing import TYPE_CHECKING, TypeAlias
 
 import discord
 from asyncpg import Connection, Pool, Record
+from asyncpg.pool import PoolConnectionProxy
 
 
 if TYPE_CHECKING:
-    from asyncpg.pool import PoolConnectionProxy
-
     Connection_alias: TypeAlias = Connection[Record] | PoolConnectionProxy[Record]
     Pool_alias: TypeAlias = Pool[Record]
 else:
-    Connection_alias: TypeAlias = Connection
+    Connection_alias: TypeAlias = Connection | PoolConnectionProxy
     Pool_alias: TypeAlias = Pool
 
 UserObject: TypeAlias = discord.abc.User | discord.Object | tuple[int, bool]
 GuildObject: TypeAlias = discord.Guild | discord.Object | tuple[int, bool]
+
 
 __all__ = ("pool_init", "upsert_users", "upsert_guilds")
 

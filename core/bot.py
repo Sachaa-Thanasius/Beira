@@ -19,7 +19,7 @@ import fichub_api
 import openai
 import wavelink
 from discord.ext import commands
-from wavelink.ext import spotify
+from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 from exts import EXTENSIONS
 
@@ -125,7 +125,7 @@ class Beira(commands.Bot):
         # Figure out if there's a way to type-hint this better to allow cls to actually work.
         return await super().get_context(origin, cls=Context)
 
-    async def on_error(self, event_method: str, /, *args: Any, **kwargs: Any) -> None:
+    async def on_error(self, event_method: str, /, *args: object, **kwargs: object) -> None:
         exc_type, exception, tb = sys.exc_info()
         tb_text = "".join(traceback.format_exception(exc_type, exception, tb, chain=False))
         embed = discord.Embed(
@@ -150,6 +150,9 @@ class Beira(commands.Bot):
 
     async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore
         assert context.command  # Pre-condition for being here.
+
+        if isinstance(exception, commands.CommandNotFound):
+            return
 
         exception = getattr(exception, "original", exception)
 

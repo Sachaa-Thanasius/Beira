@@ -7,7 +7,7 @@ from __future__ import annotations
 import itertools
 import logging
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 import discord
 
@@ -18,6 +18,7 @@ else:
     Self = object
 
 AnyEmoji: TypeAlias = discord.Emoji | discord.PartialEmoji | str
+
 
 __all__ = ("StatsEmbed",)
 
@@ -32,12 +33,12 @@ class StatsEmbed(discord.Embed):
     Parameters
     ----------
     *args
-        Positional arguments
+        Positional arguments for the normal initialization of a discord :class:`Embed`.
     **kwargs
         Keyword arguments for the normal initialization of a discord :class:`Embed`.
     """
 
-    def __init__(self, *args: Any, **kwargs: Any) -> None:
+    def __init__(self, *args: object, **kwargs: object) -> None:
         kwargs["colour"] = kwargs.get("colour") or kwargs.get("color") or 0x2F3136
         kwargs["timestamp"] = kwargs.get("timestamp", discord.utils.utcnow())
         super().__init__(*args, **kwargs)

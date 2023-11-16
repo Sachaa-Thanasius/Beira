@@ -3,7 +3,6 @@ from __future__ import annotations
 import logging
 import re
 import textwrap
-from collections.abc import Callable
 from typing import Any, NamedTuple
 
 import ao3
@@ -216,17 +215,19 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     return story_embed
 
 
-EMBED_STRATEGIES: dict[Any, Callable[..., discord.Embed]] = {
-    atlas_api.Story: create_atlas_ffn_embed,
-    fichub_api.Story: create_fichub_embed,
-    ao3.Work: create_ao3_work_embed,
-    ao3.Series: create_ao3_series_embed,
-}
+def ff_embed_factory(story_data: Any | None) -> discord.Embed | None:
+    if story_data is None:
+        return None
 
+    if isinstance(story_data, atlas_api.Story):
+        return create_atlas_ffn_embed(story_data)
+    if isinstance(story_data, fichub_api.Story):
+        return create_fichub_embed(story_data)
+    if isinstance(story_data, ao3.Work):
+        return create_ao3_work_embed(story_data)
+    if isinstance(story_data, ao3.Series):
+        return create_ao3_series_embed(story_data)
 
-def ff_embed_factory(story_data: Any) -> discord.Embed | None:
-    if story_data is not None and (strategy := EMBED_STRATEGIES.get(type(story_data))):
-        return strategy(story_data)
     return None
 
 

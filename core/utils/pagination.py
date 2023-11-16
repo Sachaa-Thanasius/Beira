@@ -31,7 +31,7 @@ LOGGER = logging.getLogger(__name__)
 class QuitButton(discord.ui.Button[discord.ui.View]):
     """A button subclass that deletes original message it's attached to after a short delay.
 
-    Default label is an X symbol, and default style is red.
+    Default label is an X symbol and default style is red.
     """
 
     def __init__(
@@ -281,10 +281,11 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
 
         assert modal.interaction is not None  # The modal had to be submitted to reach this point.
 
-        if (actual_value := self.validate_page_entry(modal.input_page_num.value)) is None:
+        validated_value = self.validate_page_entry(modal.input_page_num.value)
+        if validated_value is None:
             return
 
-        self.page_index = actual_value - 1
+        self.page_index = validated_value - 1
         await self.update_page(modal.interaction)
 
     @discord.ui.button(label=">", style=discord.ButtonStyle.blurple)

@@ -355,8 +355,8 @@ class DiceModifierModal(ui.Modal):
         """Store the interaction and ensure the input is an integer."""
 
         self.interaction = interaction
-        if value := self.modifier_input.value:
-            _ = int(value)
+        if self.modifier_input.value:
+            int(self.modifier_input.value)
 
 
 class DiceExpressionModal(ui.Modal):

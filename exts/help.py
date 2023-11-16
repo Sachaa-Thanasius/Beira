@@ -169,8 +169,10 @@ class BeiraHelpCommand(commands.HelpCommand):
         if command.aliases:
             embed.add_field(name="Aliases", value=", ".join(command.aliases), inline=False)
 
-        if clean_params := command.clean_params:
-            param_descriptions = "\n".join(f"`{name}`: {param.description}" for name, param in clean_params.items())
+        if command.clean_params:
+            param_descriptions = "\n".join(
+                f"`{name}`: {param.description}" for name, param in command.clean_params.items()
+            )
             embed.add_field(name="Parameters", value=param_descriptions, inline=False)
 
         channel = self.get_destination()

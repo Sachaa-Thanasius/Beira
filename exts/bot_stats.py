@@ -164,9 +164,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             if records:
                 get_strat = self.bot.get_user if guild else self.bot.get_guild
 
-                record_tuples = (
-                    ((entity if (entity := get_strat(record[0])) else record[0]), record[1]) for record in records
-                )
+                record_tuples = (((get_strat(record[0]) or record[0]), record[1]) for record in records)
 
                 ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
                 ldbd_emojis.extend("\N{SPORTS MEDAL}" for _ in range(6))

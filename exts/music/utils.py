@@ -12,7 +12,7 @@ import discord
 import wavelink
 import yarl
 from discord.ext import commands
-from wavelink.ext import spotify
+from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 from core.utils import EMOJI_STOCK, PaginatedEmbedView
 from core.wave import AnyTrack, AnyTrackIterator
@@ -165,8 +165,8 @@ async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterator) 
 
     if isinstance(tracks, wavelink.YouTubePlaylist | wavelink.SoundCloudPlaylist):
         return f"Added {len(tracks.tracks)} tracks from the `{tracks.name}` playlist to the queue."
-    if isinstance(tracks, list) and (length := len(tracks)) > 1:
-        return f"Added `{length}` tracks to the queue."
+    if isinstance(tracks, list) and len(tracks) > 1:
+        return f"Added `{len(tracks)}` tracks to the queue."
     if isinstance(tracks, list):
         return f"Added `{tracks[0].title}` to the queue."
     if isinstance(tracks, spotify.SpotifyAsyncIterator):

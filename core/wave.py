@@ -8,7 +8,7 @@ from collections.abc import AsyncIterable, Iterable
 
 import discord
 import wavelink
-from wavelink.ext import spotify
+from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 
 __all__ = ("SkippableQueue", "SkippablePlayer")

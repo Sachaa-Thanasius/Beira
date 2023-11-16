@@ -104,9 +104,7 @@ async def create_image(client: openai.AsyncOpenAI, prompt: str, size: tuple[int,
         size=f"{size[0]}x{size[1]}",  # type: ignore # FIXME: Find a way to pass in a literal.
     )
 
-    url = image_response.data[0].url
-    assert url
-    return url
+    return image_response.data[0].url or ""
 
 
 async def create_inspiration(session: aiohttp.ClientSession) -> str:

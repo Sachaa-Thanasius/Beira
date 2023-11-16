@@ -98,7 +98,7 @@ def after_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]],
 
 
 class HookableTree(CommandTree):
-    async def _call(self, interaction: Interaction[ClientT_co]) -> None:  # noqa: PLR0912
+    async def _call(self, interaction: Interaction[ClientT_co]) -> None:
         ###### Copy the original logic but add hook checks/calls near the end.
 
         if not await self.interaction_check(interaction):
@@ -143,8 +143,10 @@ class HookableTree(CommandTree):
         # Pre-command hooks are run before actual command-specific checks, unlike prefix commands.
         # It doesn't really make sense, but the only solution seems to be monkey-patching
         # Command._invoke_with_namespace, which doesn't seem feasible.
-        if before_invoke := getattr(command, "_before_invoke", None):
-            if instance := getattr(before_invoke, "__self__", None):
+        before_invoke = getattr(command, "_before_invoke", None)
+        if before_invoke:
+            instance = getattr(before_invoke, "__self__", None)
+            if instance:
                 await before_invoke(instance, interaction)
             else:
                 await before_invoke(interaction)
@@ -160,8 +162,10 @@ class HookableTree(CommandTree):
                 self.client.dispatch("app_command_completion", interaction, command)
         finally:
             ### Look for a post-command hook.
-            if after_invoke := getattr(command, "_after_invoke", None):
-                if instance := getattr(after_invoke, "__self__", None):
+            after_invoke = getattr(command, "_after_invoke", None)
+            if after_invoke:
+                instance = getattr(after_invoke, "__self__", None)
+                if instance:
                     await after_invoke(instance, interaction)
                 else:
                     await after_invoke(interaction)

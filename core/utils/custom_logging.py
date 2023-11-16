@@ -27,11 +27,12 @@ else:
 
 BE = TypeVar("BE", bound=BaseException)
 
+
 __all__ = ("LoggingManager",)
 
 
 class AsyncQueueHandler(logging.Handler):
-    # Copy implementation of QueueHandler.
+    # Copied api and implementation of stdlib QueueHandler.
     def __init__(self, queue: asyncio.Queue[Any]) -> None:
         logging.Handler.__init__(self)
         self.queue = queue
