@@ -9,13 +9,13 @@ from typing import TYPE_CHECKING, Any, Protocol, TypeVar
 
 import discord
 from discord import app_commands
+from discord.app_commands.commands import Check as AppCheckFunc
 from discord.ext import commands
 
 from .errors import CheckAnyFailure, GuildIsBlocked, NotAdmin, NotInBotVoiceChannel, NotOwnerOrFriend, UserIsBlocked
 
 
 if TYPE_CHECKING:
-    from discord.app_commands.commands import Check as AppCheckFunc
     from discord.ext.commands._types import Check  # type: ignore [reportMissingTypeStubs]
 
     from .context import Context, GuildContext

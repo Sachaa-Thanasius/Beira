@@ -6,13 +6,11 @@ easy navigation.
 from __future__ import annotations
 
 import asyncio
-import logging
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any, Generic, TypeVar
 
 import discord
-from discord.utils import maybe_coroutine
 
 
 if TYPE_CHECKING:
@@ -24,8 +22,6 @@ _LT = TypeVar("_LT")
 
 
 __all__ = ("QuitButton", "OwnedView", "PageSeekModal", "PaginatedEmbedView", "PaginatedSelectView")
-
-LOGGER = logging.getLogger(__name__)
 
 
 class QuitButton(discord.ui.Button[discord.ui.View]):
@@ -231,14 +227,14 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
 
         temp = self.page_index
         self.page_index = 0
-        embed = await maybe_coroutine(self.format_page)
+        embed = await discord.utils.maybe_coroutine(self.format_page)
         self.page_index = temp
         return embed
 
     async def update_page(self, interaction: discord.Interaction) -> None:
         """Update and display the view for the given page."""
 
-        embed_page = await maybe_coroutine(self.format_page)
+        embed_page = await discord.utils.maybe_coroutine(self.format_page)
         self.disable_page_buttons()
         await interaction.response.edit_message(embed=embed_page, view=self)
 
@@ -380,14 +376,14 @@ class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
 
         temp = self.page_index
         self.page_index = 0
-        embed = await maybe_coroutine(self.format_page)
+        embed = await discord.utils.maybe_coroutine(self.format_page)
         self.page_index = temp
         return embed
 
     async def update_page(self, interaction: discord.Interaction) -> None:
         """Update and display the view for the given page."""
 
-        embed_page = await maybe_coroutine(self.format_page)
+        embed_page = await discord.utils.maybe_coroutine(self.format_page)
         self.disable_page_buttons()
         await interaction.response.edit_message(embed=embed_page, view=self)
 

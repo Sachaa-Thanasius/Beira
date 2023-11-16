@@ -5,17 +5,20 @@ wave.py: Custom subclasses or extras related to wavelink.
 from __future__ import annotations
 
 from collections.abc import AsyncIterable, Iterable
+from typing import TypeAlias
 
 import discord
 import wavelink
 from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 
-__all__ = ("SkippableQueue", "SkippablePlayer")
+__all__ = ("AnyTrack", "AnyTrackIterator", "AnyTrackIterable", "SkippableQueue", "SkippablePlayer")
 
-AnyTrack = wavelink.Playable | spotify.SpotifyTrack
-AnyTrackIterator = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
-AnyTrackIterable = Iterable[wavelink.Playable] | Iterable[spotify.SpotifyTrack] | AsyncIterable[spotify.SpotifyTrack]
+AnyTrack: TypeAlias = wavelink.Playable | spotify.SpotifyTrack
+AnyTrackIterator: TypeAlias = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
+AnyTrackIterable: TypeAlias = (
+    Iterable[wavelink.Playable] | Iterable[spotify.SpotifyTrack] | AsyncIterable[spotify.SpotifyTrack]
+)
 
 
 class SkippableQueue(wavelink.Queue):
