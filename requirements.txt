@@ -16,6 +16,5 @@ openai>=1.1.0
 Pillow>=10.0.0
 tatsu-api>=1.0.0
 typing_extensions>=4.5.0,<5
-wavelink>=2.6.3,<3
-wavelink-stubs
+wavelink>=3.0.0
 yarl>=1.8.2,<2
