@@ -14,9 +14,16 @@ from discord import app_commands
 from discord.ext import commands
 
 import core
-from core.wave import AnyTrack, AnyTrackIterator, SkippablePlayer
+from core.wave import ExtraPlayer
 
-from .utils import MusicQueueView, WavelinkSearchConverter, format_track_embed, generate_tracks_add_notification
+from .utils import (
+    InvalidShortTimeFormat,
+    MusicQueueView,
+    ShortTime,
+    WavelinkSearchTransform,
+    create_track_embed,
+    generate_tracks_add_notification,
+)
 
 
 LOGGER = logging.getLogger(__name__)
@@ -48,6 +55,8 @@ class MusicCog(commands.Cog, name="Music"):
             embed.description = "You don't have permission to do this."
         elif isinstance(error, core.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
+        elif isinstance(error, InvalidShortTimeFormat):
+            embed.description = error.args[0]
         elif isinstance(error, app_commands.TransformerError):
             if err := error.__cause__:
                 embed.description = err.args[0]
@@ -59,50 +68,34 @@ class MusicCog(commands.Cog, name="Music"):
         await ctx.send(embed=embed)
 
     @commands.Cog.listener()
-    async def on_wavelink_node_ready(self, node: wavelink.Node) -> None:
+    async def on_wavelink_node_ready(self, payload: wavelink.NodeReadyEventPayload) -> None:
         """Called when the Node you are connecting to has initialised and successfully connected to Lavalink.
 
         Note: If this cog is reloaded, this will not trigger. Duh.
         """
 
-        LOGGER.info("Wavelink node %s is ready!", node.id)
+        LOGGER.info("Wavelink node %s is ready!", payload.node.identifier)
 
     @commands.Cog.listener()
-    async def on_wavelink_websocket_closed(self, payload: wavelink.WebsocketClosedPayload) -> None:
+    async def on_wavelink_websocket_closed(self, payload: wavelink.WebsocketClosedEventPayload) -> None:
         """Called when the websocket to the voice server is closed."""
 
-        payload_tuple = (payload.code, payload.by_discord, payload.reason, payload.player)
+        payload_tuple = (payload.code, payload.by_remote, payload.reason, payload.player)
         LOGGER.info("Wavelink websocket closed: %s - %s - %s - %s", *payload_tuple)
 
     @commands.Cog.listener()
-    async def on_wavelink_track_start(self, payload: wavelink.TrackEventPayload) -> None:
+    async def on_wavelink_track_start(self, payload: wavelink.TrackStartEventPayload) -> None:
         """Called when a track starts playing.
 
         Sends a notification about the new track to the voice channel.
         """
 
-        if payload.original:
-            current_embed = await format_track_embed("Now Playing", payload.original)
-            if payload.player.channel:
-                await payload.player.channel.send(embed=current_embed)
-
-    @commands.Cog.listener()
-    async def on_wavelink_track_end(self, payload: wavelink.TrackEventPayload) -> None:
-        """Called when the current track has finished playing.
-
-        Attempts to play the next track if available.
-        """
-
         player = payload.player
+        if not player:
+            return
 
-        if player.is_connected():
-            if player.queue.loop or player.queue.loop_all:
-                next_track = player.queue.get()
-            else:
-                next_track = await player.queue.get_wait()
-            await player.play(next_track)
-        else:
-            await player.stop()
+        current_embed = create_track_embed("Now Playing", payload.original or payload.track)
+        await player.channel.send(embed=current_embed)
 
     @commands.hybrid_group()
     @commands.guild_only()
@@ -115,12 +108,12 @@ class MusicCog(commands.Cog, name="Music"):
     async def connect(self, ctx: core.GuildContext) -> None:
         """Join a voice channel."""
 
-        vc: SkippablePlayer | None = ctx.voice_client
+        vc: ExtraPlayer | None = ctx.voice_client
 
         if vc is not None and ctx.author.voice is not None:
             if vc.channel != ctx.author.voice.channel:
                 if ctx.author.guild_permissions.administrator:
-                    await vc.move_to(ctx.author.voice.channel)  # type: ignore # Valid channel to move to.
+                    await vc.move_to(ctx.author.voice.channel)
                     await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
                 else:
                     await ctx.send("Voice player is currently being used in another channel.")
@@ -131,7 +124,7 @@ class MusicCog(commands.Cog, name="Music"):
         else:
             # Not sure in what circumstances a member would have a voice state without being in a valid channel.
             assert ctx.author.voice.channel
-            await ctx.author.voice.channel.connect(cls=SkippablePlayer)  # type: ignore # Valid VoiceProtocol subclass.
+            await ctx.author.voice.channel.connect(cls=ExtraPlayer)
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @music.command()
@@ -139,7 +132,7 @@ class MusicCog(commands.Cog, name="Music"):
         self,
         ctx: core.GuildContext,
         *,
-        search: app_commands.Transform[AnyTrack | AnyTrackIterator, WavelinkSearchConverter],
+        search: WavelinkSearchTransform,
     ) -> None:
         """Play audio from a YouTube url or search term.
 
@@ -152,16 +145,19 @@ class MusicCog(commands.Cog, name="Music"):
         """
 
         assert ctx.voice_client  # Ensured by this command's before_invoke.
-        vc: SkippablePlayer = ctx.voice_client
+        vc: ExtraPlayer = ctx.voice_client
 
         async with ctx.typing():
-            await vc.queue.put_all_wait(search, ctx.author.mention)
-            notif_text = await generate_tracks_add_notification(search)
+            if isinstance(search, wavelink.Playable):
+                search.requester = ctx.author.mention  # type: ignore # Runtime attribute assignment.
+            else:
+                search.track_extras(requester=ctx.author.mention)
+            await vc.queue.put_wait(search)
+            notif_text = generate_tracks_add_notification(search)
             await ctx.send(notif_text)
 
-            if not vc.is_playing():
-                first_track = vc.queue.get()
-                await vc.play(first_track)
+            if not vc.playing:
+                await vc.play(vc.queue.get())
 
     @music.command()
     @core.in_bot_vc()
@@ -169,12 +165,9 @@ class MusicCog(commands.Cog, name="Music"):
         """Pause the audio."""
 
         if vc := ctx.voice_client:
-            if vc.is_paused():
-                await vc.resume()
-                await ctx.send("Resumed playback.")
-            else:
-                await vc.pause()
-                await ctx.send("Paused playback.")
+            pause_changed_status = "Resumed" if vc.paused else "Paused"
+            await vc.pause(not vc.paused)
+            await ctx.send(pause_changed_status)
         else:
             await ctx.send("No player to perform this on.")
 
@@ -184,9 +177,11 @@ class MusicCog(commands.Cog, name="Music"):
         """Resume the audio if paused."""
 
         if vc := ctx.voice_client:
-            if vc.is_paused():
-                await vc.resume()
+            if vc.paused:
+                await vc.pause(False)
                 await ctx.send("Resumed playback.")
+            else:
+                await ctx.send("The music player is not paused.")
         else:
             await ctx.send("No player to perform this on.")
 
@@ -205,10 +200,10 @@ class MusicCog(commands.Cog, name="Music"):
     async def current(self, ctx: core.GuildContext) -> None:
         """Display the current track."""
 
-        vc: SkippablePlayer | None = ctx.voice_client
+        vc: ExtraPlayer | None = ctx.voice_client
 
         if vc and vc.current:
-            current_embed = await format_track_embed("Now Playing", vc.current)
+            current_embed = create_track_embed("Now Playing", vc.current)
         else:
             current_embed = discord.Embed(
                 color=0x149CDF,
@@ -225,12 +220,12 @@ class MusicCog(commands.Cog, name="Music"):
         Use `play` to add things to the queue.
         """
 
-        vc: SkippablePlayer | None = ctx.voice_client
+        vc: ExtraPlayer | None = ctx.voice_client
 
         queue_embeds: list[discord.Embed] = []
         if vc:
             if vc.current:
-                current_embed = await format_track_embed("Now Playing", vc.current)
+                current_embed = create_track_embed("Now Playing", vc.current)
                 queue_embeds.append(current_embed)
 
             view = MusicQueueView(ctx.author.id, [track.title for track in vc.queue], 10)
@@ -252,10 +247,10 @@ class MusicCog(commands.Cog, name="Music"):
         """
 
         if vc := ctx.voice_client:
-            if entry > vc.queue.count or entry < 1:
+            if entry > len(vc.queue) or entry < 1:
                 await ctx.send("That track does not exist and cannot be removed.")
             else:
-                del vc.queue[entry - 1]
+                await vc.queue.delete(entry - 1)
                 await ctx.send(f"Removed {entry} from the queue.")
         else:
             await ctx.send("No player to perform this on.")
@@ -266,7 +261,7 @@ class MusicCog(commands.Cog, name="Music"):
         """Empty the queue."""
 
         if vc := ctx.voice_client:
-            if not vc.queue.is_empty:
+            if vc.queue:
                 vc.queue.clear()
                 await ctx.send("Queue cleared.")
             else:
@@ -290,15 +285,12 @@ class MusicCog(commands.Cog, name="Music"):
         """
 
         if vc := ctx.voice_client:
-            for num in (before, after):
-                if num > len(vc.queue) or num < 1:
-                    await ctx.send("Please enter valid queue indices.")
-                    return
-
-            if before != after:
-                vc.queue.put_at_index(after - 1, vc.queue[before - 1])
-                del vc.queue[before]
-            await ctx.send(f"Successfully moved the track at {before} to {after} in the queue.")
+            try:
+                vc.queue.move(before - 1, after - 1)
+            except IndexError:
+                await ctx.send("Please enter valid queue indices.")
+            else:
+                await ctx.send(f"Successfully moved the track at {before} to {after} in the queue.")
         else:
             await ctx.send("No player to perform this on.")
 
@@ -316,16 +308,17 @@ class MusicCog(commands.Cog, name="Music"):
         """
 
         if vc := ctx.voice_client:
-            if vc.queue.is_empty:
+            if not vc.queue:
                 await ctx.send("The queue is empty and can't be skipped into.")
-            elif index > vc.queue.count or index < 1:
+                return
+
+            try:
+                vc.queue.skip_to(index - 1)
+            except IndexError:
                 await ctx.send("Please enter a valid queue index.")
             else:
-                if index > 1:
-                    vc.queue.remove_before_index(index - 1)
-                vc.queue.loop = False
-                await vc.stop()
-                await ctx.send(f"Skipped to the song at position {index}")
+                await vc.skip()
+                await ctx.send(f"Skipped to the track at position {index}")
         else:
             await ctx.send("No player to perform this on.")
 
@@ -335,7 +328,7 @@ class MusicCog(commands.Cog, name="Music"):
         """Shuffle the tracks in the queue."""
 
         if vc := ctx.voice_client:
-            if not vc.queue.is_empty:
+            if vc.queue:
                 vc.queue.shuffle()
                 await ctx.send("Shuffled the queue.")
             else:
@@ -359,20 +352,20 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc := ctx.voice_client:
             if loop == "All Tracks":
-                vc.queue.loop, vc.queue.loop_all = False, True
+                vc.queue.mode = wavelink.QueueMode.loop
                 await ctx.send("Looping over all tracks in the queue until disabled.")
             elif loop == "Current Track":
-                vc.queue.loop, vc.queue.loop_all = True, False
+                vc.queue.mode = wavelink.QueueMode.loop_all
                 await ctx.send("Looping the current track until disabled.")
             else:
-                vc.queue.loop, vc.queue.loop_all = False, False
+                vc.queue.mode = wavelink.QueueMode.normal
                 await ctx.send("Reset the looping settings.")
         else:
             await ctx.send("No player to perform this on.")
 
     @music.command()
     @core.in_bot_vc()
-    async def seek(self, ctx: core.GuildContext, *, position: str) -> None:
+    async def seek(self, ctx: core.GuildContext, *, position: ShortTime) -> None:
         """Seek to a particular position in the current track, provided with a `hours:minutes:seconds` string.
 
         Parameters
@@ -386,18 +379,11 @@ class MusicCog(commands.Cog, name="Music"):
         if vc := ctx.voice_client:
             if vc.current:
                 if vc.current.is_seekable:
-                    pos_time = int(
-                        sum(
-                            x * float(t)
-                            for x, t in zip([1, 60, 3600, 86400], reversed(position.split(":")), strict=False)
-                        )
-                        * 1000,
-                    )
-                    if pos_time > vc.current.duration or pos_time < 0:
-                        await ctx.send("Invalid position to seek.")
+                    if position.seconds > vc.current.length or position.seconds < 0:
+                        await ctx.send("The track length doesn't support that position.")
                     else:
-                        await vc.seek(pos_time)
-                        await ctx.send(f"Jumped to position `{position}` in the current track.")
+                        await vc.seek(position.seconds)
+                        await ctx.send(f"Jumped to position `{position.original}` in the current track.")
                 else:
                     await ctx.send("This track doesn't allow seeking, sorry.")
             else:
@@ -431,13 +417,13 @@ class MusicCog(commands.Cog, name="Music"):
     async def ensure_voice(self, ctx: core.GuildContext) -> None:
         """Ensures that the voice client automatically connects the right channel."""
 
-        vc: SkippablePlayer | None = ctx.voice_client
+        vc: ExtraPlayer | None = ctx.voice_client
 
         if vc is None:
-            if user_voice := ctx.author.voice:
+            if ctx.author.voice:
                 # Not sure in what circumstances a member would have a voice state without being in a valid channel.
-                assert user_voice.channel
-                await user_voice.channel.connect(cls=SkippablePlayer)  # type: ignore # Valid VoiceProtocol subclass.
+                assert ctx.author.voice.channel
+                await ctx.author.voice.channel.connect(cls=ExtraPlayer)
             else:
                 await ctx.send("You are not connected to a voice channel.")
                 msg = "User not connected to a voice channel."

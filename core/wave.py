@@ -4,80 +4,78 @@ wave.py: Custom subclasses or extras related to wavelink.
 
 from __future__ import annotations
 
-from collections.abc import AsyncIterable, Iterable
-from typing import TypeAlias
-
 import discord
 import wavelink
-from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 
-__all__ = ("AnyTrack", "AnyTrackIterator", "AnyTrackIterable", "SkippableQueue", "SkippablePlayer")
-
-AnyTrack: TypeAlias = wavelink.Playable | spotify.SpotifyTrack
-AnyTrackIterator: TypeAlias = list[wavelink.Playable] | list[spotify.SpotifyTrack] | spotify.SpotifyAsyncIterator
-AnyTrackIterable: TypeAlias = (
-    Iterable[wavelink.Playable] | Iterable[spotify.SpotifyTrack] | AsyncIterable[spotify.SpotifyTrack]
-)
+__all__ = ("ExtraQueue", "ExtraPlayer")
 
 
-class SkippableQueue(wavelink.Queue):
-    """A version of :class:`wavelink.Queue` that can skip to a specific index."""
+class ExtraQueue(wavelink.Queue):
+    """A version of :class:`wavelink.Queue` with extra operations."""
 
-    def remove_before_index(self, index: int) -> None:
-        """Remove all members from the queue before a certain index.
+    def put_at(self, index: int, item: wavelink.Playable, /) -> None:
+        if index >= len(self._queue) or index < 0:
+            msg = "The index is out of range."
+            raise IndexError(msg)
+        self._queue.rotate(-index)
+        self._queue.appendleft(item)
+        self._queue.rotate(index)
 
-        Credit to Chillymosh for the implementation.
-        """
+    def skip_to(self, index: int, /) -> None:
+        if index >= len(self._queue) or index < 0:
+            msg = "The index is out of range."
+            raise IndexError(msg)
+        for _ in range(index - 1):
+            self.get()
 
-        for _ in range(index):
-            try:
-                del self[0]
-            except IndexError:
-                break
+    def swap(self, first: int, second: int, /) -> None:
+        if first >= len(self._queue) or second >= len(self._queue):
+            msg = "One of the given indices is out of range."
+            raise IndexError(msg)
+        if first == second:
+            msg = "These are the same index; swapping will have no effect."
+            raise IndexError(msg)
+        self._queue.rotate(-first)
+        first_item = self._queue[0]
+        self._queue.rotate(first - second)
+        second_item = self._queue.popleft()
+        self._queue.appendleft(first_item)
+        self._queue.rotate(second - first)
+        self._queue.popleft()
+        self._queue.appendleft(second_item)
+        self._queue.rotate(first)
 
-    async def put_all_wait(self, item: AnyTrack | AnyTrackIterable, requester: str | None = None) -> None:
-        """Put items individually or from an iterable into the queue asynchronously using await.
-
-        This can include some playlist subclasses.
-
-        Parameters
-        ----------
-        item: :class:`AnyPlayable` | :class:`AnyTrackIterable`
-            The track or collection of tracks to add to the queue.
-        requester: :class:`str`, optional
-            A string representing the user who queued this up. Optional.
-        """
-
-        if isinstance(item, Iterable):
-            for sub_item in item:
-                sub_item.requester = requester  # type: ignore # Runtime attribute assignment.
-                await self.put_wait(sub_item)
-        elif isinstance(item, AsyncIterable):
-            async for sub_item in item:
-                sub_item.requester = requester  # type: ignore # Runtime attribute assignment.
-                await self.put_wait(sub_item)
-        else:
-            item.requester = requester  # type: ignore # Runtime attribute assignment.
-            await self.put_wait(item)
+    def move(self, before: int, after: int, /) -> None:
+        if before >= len(self._queue) or after >= len(self._queue):
+            msg = "One of the given indices is out of range."
+            raise IndexError(msg)
+        if before == after:
+            msg = "These are the same index; swapping will have no effect."
+            raise IndexError(msg)
+        self._queue.rotate(-before)
+        item = self._queue.popleft()
+        self._queue.rotate(before - after)
+        self._queue.appendleft(item)
+        self._queue.rotate(after)
 
 
-class SkippablePlayer(wavelink.Player):
+class ExtraPlayer(wavelink.Player):
     """A version of :class:`wavelink.Player` with a different queue.
 
     Attributes
     ----------
-    queue: :class:`SkippableQueue`
-        A subclass of :class:`wavelink.Queue` that can be skipped into.
+    queue: :class:`ExtraQueue`
+        A version of :class:`wavelink.Queue` with extra operations.
     """
 
     def __init__(
         self,
         client: discord.Client = discord.utils.MISSING,
-        channel: discord.VoiceChannel | discord.StageChannel = discord.utils.MISSING,
+        channel: discord.abc.Connectable = discord.utils.MISSING,
         *,
         nodes: list[wavelink.Node] | None = None,
-        swap_node_on_disconnect: bool = True,
     ) -> None:
-        super().__init__(client, channel, nodes=nodes, swap_node_on_disconnect=swap_node_on_disconnect)
-        self.queue: SkippableQueue = SkippableQueue()  # type: ignore [reportIncompatibleVariableOverride]
+        super().__init__(client, channel, nodes=nodes)
+        self.autoplay = wavelink.AutoPlayMode.partial
+        self.queue: ExtraQueue = ExtraQueue()  # type: ignore [reportIncompatibleVariableOverride]

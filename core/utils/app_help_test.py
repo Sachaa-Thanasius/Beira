@@ -7,11 +7,25 @@ from discord import app_commands
 from discord._types import ClientT
 
 
+class SampleTree(app_commands.CommandTree):
+    def get_nested_command(
+        self,
+        name: str,
+        *,
+        guild: discord.abc.Snowflake | None = None,
+    ) -> app_commands.Command[Any, ..., Any] | app_commands.Group | None:
+        ...
+
+
+class SampleClient(discord.Client):
+    tree: SampleTree
+
+
 def get_nested_command(
     tree: app_commands.CommandTree[ClientT],
     name: str,
     *,
-    guild: discord.Guild | None,
+    guild: discord.Guild | None = None,
 ) -> app_commands.Command[Any, ..., Any] | app_commands.Group | None:
     key, *keys = name.split(" ")
     cmd = tree.get_command(key, guild=guild) or tree.get_command(key)
@@ -51,9 +65,9 @@ async def _help(itx: discord.Interaction[ClientT], command: str) -> None:
 
 
 @_help.autocomplete("command")
-async def help_autocomplete(itx: discord.Interaction[ClientT], current: str) -> list[app_commands.Choice[str]]:
+async def help_autocomplete(itx: discord.Interaction[SampleClient], current: str) -> list[app_commands.Choice[str]]:
     # Known to exist at runtime, else autocomplete would not trigger.
-    tree: app_commands.CommandTree = getattr(itx.client, "tree")  # noqa: B009
+    tree = itx.client.tree
 
     commands = list(tree.walk_commands(guild=None, type=discord.AppCommandType.chat_input))
 
@@ -69,3 +83,77 @@ async def help_autocomplete(itx: discord.Interaction[ClientT], current: str) -> 
     # Only show unique commands
     choices = sorted(set(choices), key=lambda c: c.name)
     return choices[:25]
+
+
+class CommandTransformer(app_commands.Transformer):
+    async def autocomplete(  # type: ignore # Narrowing interaction and choice
+        self,
+        itx: discord.Interaction[SampleClient],
+        current: str,
+        /,
+    ) -> list[app_commands.Choice[str]]:
+        # Known to exist at runtime, else autocomplete would not trigger.
+        tree = itx.client.tree
+
+        return [
+            app_commands.Choice(name=command.qualified_name, value=command.qualified_name)
+            for command in tree.walk_commands()
+            if command.qualified_name.casefold() in current.casefold()
+        ][:25]
+
+    async def transform(  # type: ignore # Narrowing interaction
+        self,
+        itx: discord.Interaction[SampleClient],
+        value: str,
+        /,
+    ) -> app_commands.Command[Any, ..., Any] | app_commands.Group:
+        # Known to exist at runtime, else transform would never be invoked.
+        tree = itx.client.tree
+        command = tree.get_command(value)
+        if command is None:
+            msg = f"Command {value} not found."
+            raise ValueError(msg)
+
+        return command
+
+
+class CommandTransformer2(app_commands.Transformer):
+    async def autocomplete(  # type: ignore # Narrowing interaction and choice.
+        self,
+        itx: discord.Interaction[SampleClient],
+        current: str,
+        /,
+    ) -> list[app_commands.Choice[str]]:
+        commands = list(itx.client.tree.walk_commands(guild=None, type=discord.AppCommandType.chat_input))
+
+        if itx.guild is not None:
+            commands.extend(itx.client.tree.walk_commands(guild=itx.guild, type=discord.AppCommandType.chat_input))
+
+        choices = [
+            app_commands.Choice(name=name, value=name)
+            for cmd in commands
+            if current.casefold() in (name := cmd.qualified_name.casefold())
+        ]
+
+        # Only show unique commands
+        choices = sorted(set(choices), key=lambda c: c.name)
+        return choices[:25]
+
+    async def transform(  # type: ignore # Narrowing interaction.
+        self,
+        itx: discord.Interaction[SampleClient],
+        value: str,
+        /,
+    ) -> app_commands.Command[Any, ..., Any] | app_commands.Group:
+        command = itx.client.tree.get_nested_command(value)
+        if command is None:
+            msg = f"Command {value} not found."
+            raise ValueError(msg)
+
+        return command
+
+
+CommandTransform2 = app_commands.Transform[
+    app_commands.Command[Any, ..., Any] | app_commands.Group | None,
+    CommandTransformer2,
+]

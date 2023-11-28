@@ -6,21 +6,68 @@ from __future__ import annotations
 
 import functools
 from datetime import timedelta
-from typing import Any
+from typing import TYPE_CHECKING, Any, NamedTuple
 
 import discord
 import wavelink
-import yarl
 from discord.ext import commands
-from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 from core.utils import EMOJI_STOCK, PaginatedEmbedView
-from core.wave import AnyTrack, AnyTrackIterator
+
+
+if TYPE_CHECKING:
+    from typing_extensions import Self
+else:
+    Self = object
 
 
 escape_markdown = functools.partial(discord.utils.escape_markdown, as_needed=True)
 
-__all__ = ("MusicQueueView", "WavelinkSearchConverter", "format_track_embed", "generate_tracks_add_notification")
+__all__ = (
+    "WavelinkSearchError",
+    "InvalidShortTimeFormat",
+    "ShortTime",
+    "MusicQueueView",
+    "WavelinkSearchConverter",
+    "WavelinkSearchTransform",
+    "create_track_embed",
+    "generate_tracks_add_notification",
+)
+
+
+class WavelinkSearchError(discord.app_commands.TransformerError, commands.BadArgument):
+    """Exception raised when a wavelink search fails to find any tracks.
+
+    This inherits from :exc:`discord.app_commands.TransformerError` and :exc:`commands.BadArgument`.
+    """
+
+
+class InvalidShortTimeFormat(discord.app_commands.AppCommandError):
+    """Exception raised when a given input does not match the short time format needed as a command parameter.
+
+    This inherits from :exc:`app_commands.AppCommandError`.
+    """
+
+    def __init__(self, value: str, *args: object) -> None:
+        message = f"Failed to convert {value}. Make sure you're using the `<hours>:<minutes>:<seconds>` format."
+        super().__init__(message, *args)
+
+
+class ShortTime(NamedTuple):
+    """A tuple meant to hold the string representation of a time and the total number of seconds it represents."""
+
+    original: str
+    seconds: int
+
+    @classmethod
+    async def transform(cls: type[Self], _: discord.Interaction, position_str: str, /) -> Self:
+        try:
+            zipped_time_segments = zip((1, 60, 3600, 86400), reversed(position_str.split(":")), strict=False)
+            position_seconds = int(sum(x * float(t) for x, t in zipped_time_segments) * 1000)
+        except ValueError:
+            raise InvalidShortTimeFormat(position_str) from None
+        else:
+            return cls(position_str, position_seconds)
 
 
 class MusicQueueView(PaginatedEmbedView[str]):
@@ -35,141 +82,85 @@ class MusicQueueView(PaginatedEmbedView[str]):
         else:
             # Expected page size of 10
             content = self.pages[self.page_index]
-            organized = (f"{(i + 1) + (self.page_index) * 10}. {song}" for i, song in enumerate(content))
+            organized = (f"{i + (self.page_index) * 10}. {song}" for i, song in enumerate(content, start=1))
             embed_page.description = "\n".join(organized)
             embed_page.set_footer(text=f"Page {self.page_index + 1}/{self.total_pages}")
 
         return embed_page
 
 
-class WavelinkSearchConverter(commands.Converter[AnyTrack | AnyTrackIterator], discord.app_commands.Transformer):
-    """Converts to what Wavelink considers a playable track (:class:`AnyPlayable` or :class:`AnyTrackIterable`).
+class WavelinkSearchConverter(
+    commands.Converter[wavelink.Playable | wavelink.Playlist],
+    discord.app_commands.Transformer,
+):
+    """Transforms command argument to a wavelink track or collection of tracks."""
 
-    The lookup strategy is as follows (in order):
-
-    1. Lookup by :class:`wavelink.YouTubeTrack` if the argument has no url "scheme".
-    2. Lookup by first valid wavelink track class if the argument matches the search/url format.
-    3. Lookup by assuming argument to be a direct url or local file address.
-    """
-
-    @staticmethod
-    def _get_search_type(argument: str) -> type[AnyTrack]:
-        """Get the searchable wavelink class that matches the argument string closest."""
-
-        check = yarl.URL(argument)
-
-        if (
-            (not check.host and not check.scheme)
-            or (check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "v" in check.query)
-            or check.scheme == "ytsearch"
-        ):
-            search_type = wavelink.YouTubeTrack
-        elif (
-            check.host in ("youtube.com", "www.youtube.com", "m.youtube.com") and "list" in check.query
-        ) or check.scheme == "ytpl":
-            search_type = wavelink.YouTubePlaylist
-        elif check.host == "music.youtube.com" or check.scheme == "ytmsearch":
-            search_type = wavelink.YouTubeMusicTrack
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") and "sets" in check.parts:
-            search_type = wavelink.SoundCloudPlaylist
-        elif check.host in ("soundcloud.com", "www.soundcloud.com") or check.scheme == "scsearch":
-            search_type = wavelink.SoundCloudTrack
-        elif check.host in ("spotify.com", "open.spotify.com"):
-            search_type = spotify.SpotifyTrack
-        else:
-            search_type = wavelink.GenericTrack
-
-        return search_type
-
-    async def _convert(self, argument: str) -> AnyTrack | AnyTrackIterator:
-        """Attempt to convert a string into a Wavelink track or list of tracks."""
-
-        search_type = self._get_search_type(argument)
-        if issubclass(search_type, spotify.SpotifyTrack):
-            try:
-                tracks = search_type.iterator(query=argument)
-            except TypeError:
-                tracks = await search_type.search(argument)
-        else:
-            tracks = await search_type.search(argument)
-
+    async def _convert(self, query: str) -> wavelink.Playable | wavelink.Playlist:
+        tracks: wavelink.Search = await wavelink.Playable.search(query)
         if not tracks:
-            msg = f"Your search query `{argument}` returned no tracks."
-            raise wavelink.NoTracksError(msg)
-
-        # Still technically possible for tracks to be a Playlist subclass now.
-        if issubclass(search_type, wavelink.Playable) and isinstance(tracks, list):
-            tracks = tracks[0]
-
-        return tracks
+            raise WavelinkSearchError(query, self.type, self)
+        return tracks if isinstance(tracks, wavelink.Playlist) else tracks[0]
 
     # Who needs narrowing anyway?
-    async def convert(self, ctx: commands.Context[Any], argument: str) -> AnyTrack | AnyTrackIterator:
-        return await self._convert(argument)
+    async def convert(self, ctx: commands.Context[Any], argument: str) -> wavelink.Playable | wavelink.Playlist:
+        # Searching can take a while sometimes.
+        async with ctx.typing():
+            return await self._convert(argument)
 
-    async def transform(self, _: discord.Interaction, value: str, /) -> AnyTrack | AnyTrackIterator:
+    async def transform(self, itx: discord.Interaction, value: str, /) -> wavelink.Playable | wavelink.Playlist:
+        # Searching can take a while sometimes.
+        await itx.response.defer()
         return await self._convert(value)
 
-    async def autocomplete(  # type: ignore # Narrowing the types of the input value and return value, I guess.
-        self,
-        _: discord.Interaction,
-        value: str,
-    ) -> list[discord.app_commands.Choice[str]]:
-        search_type = self._get_search_type(value)
-        tracks = await search_type.search(value)
-        if isinstance(tracks, list):
-            choices = [
-                discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks
-            ][:25]
-        else:
-            choices = [discord.app_commands.Choice(name=tracks.name, value=tracks.uri or tracks.name)]
-        return choices
+    async def autocomplete(self, _: discord.Interaction, value: str) -> list[discord.app_commands.Choice[str]]:  # type: ignore # Narrowing.
+        tracks: wavelink.Search = await wavelink.Playable.search(value)
+        return [discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
 
 
-async def format_track_embed(title: str, track: AnyTrack) -> discord.Embed:
+WavelinkSearchTransform = discord.app_commands.Transform[wavelink.Playable | wavelink.Playlist, WavelinkSearchConverter]
+
+
+def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
     """Modify an embed to show information about a Wavelink track."""
 
     icon = EMOJI_STOCK.get(type(track).__name__, "\N{MUSICAL NOTE}")
     title = f"{icon} {title}"
-    description_template = "[{0}]({1})\n{2}\n`[0:00-{3}]`"
+    uri = track.uri or ""
+    author = escape_markdown(track.author)
+    track_title = escape_markdown(track.title)
 
     try:
-        end_time = timedelta(seconds=track.duration // 1000)
+        end_time = timedelta(seconds=track.length // 1000)
     except OverflowError:
         end_time = "\N{INFINITY}"
 
-    if isinstance(track, wavelink.Playable):
-        uri = track.uri or ""
-        author = escape_markdown(track.author, as_needed=True) if track.author else ""
-    else:
-        uri = f"https://open.spotify.com/track/{track.uri.rpartition(':')[2]}"
-        author = escape_markdown(", ".join(track.artists), as_needed=True)
+    description = f"[{track_title}]({uri})\n{author}\n`[0:00-{end_time}]`"
 
-    track_title = escape_markdown(track.title, as_needed=True)
-    description = description_template.format(track_title, uri, author, end_time)
+    embed = discord.Embed(color=0x76C3A2, title=title, description=description)
+
+    if track.artwork:
+        embed.set_thumbnail(url=track.artwork)
+
+    if track.album.name:
+        embed.add_field(name="Album", value=track.album.name)
 
     if requester := getattr(track, "requester", None):
-        description += f"\n\nRequested by: {requester}"
-
-    embed = discord.Embed(color=0x149CDF, title=title, description=description)
-
-    if isinstance(track, wavelink.YouTubeTrack):
-        thumbnail = await track.fetch_thumbnail()
-        embed.set_thumbnail(url=thumbnail)
+        embed.add_field(name="Requested By", value=requester)
 
     return embed
 
 
-async def generate_tracks_add_notification(tracks: AnyTrack | AnyTrackIterator) -> str:
-    """Returns the appropriate notification string for tracks or a collection of tracks being added to a queue."""
+def generate_tracks_add_notification(tracks: wavelink.Playable | wavelink.Playlist | list[wavelink.Playable]) -> str:
+    """Return the appropriate notification string for tracks being added to a queue.
 
-    if isinstance(tracks, wavelink.YouTubePlaylist | wavelink.SoundCloudPlaylist):
-        return f"Added {len(tracks.tracks)} tracks from the `{tracks.name}` playlist to the queue."
-    if isinstance(tracks, list) and len(tracks) > 1:
+    This accounts for the tracks being indvidual, in a playlist, or in a sequence — no others.
+    """
+
+    if isinstance(tracks, wavelink.Playlist):
+        return f"Added {len(tracks)} tracks from the `{tracks.name}` playlist to the queue."
+    if isinstance(tracks, list) and (len(tracks)) > 1:
         return f"Added `{len(tracks)}` tracks to the queue."
     if isinstance(tracks, list):
         return f"Added `{tracks[0].title}` to the queue."
-    if isinstance(tracks, spotify.SpotifyAsyncIterator):
-        return f"Added `{tracks._count}` tracks to the queue."  # This avoids iterating through it again.
 
     return f"Added `{tracks.title}` to the queue."

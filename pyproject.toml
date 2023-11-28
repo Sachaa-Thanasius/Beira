@@ -87,6 +87,6 @@ include = ["main.py", "core", "exts"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 
-reportImportCycles = "warning"
+# reportImportCycles = "warning"
 reportPropertyTypeMismatch = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"

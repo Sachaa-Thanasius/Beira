@@ -15,7 +15,7 @@ from .utils.db import Pool_alias
 
 if TYPE_CHECKING:
     from .bot import Beira
-    from .wave import SkippablePlayer
+    from .wave import ExtraPlayer
 
 
 __all__ = ("Context", "GuildContext", "Interaction")
@@ -32,7 +32,7 @@ class Context(commands.Context["Beira"]):
     db
     """
 
-    voice_client: SkippablePlayer | None  # type: ignore # Type lie for narrowing
+    voice_client: ExtraPlayer | None  # type: ignore # Type lie for narrowing
 
     def __init__(self, **kwargs: Any) -> None:
         super().__init__(**kwargs)

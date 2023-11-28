@@ -19,7 +19,6 @@ import fichub_api
 import openai
 import wavelink
 from discord.ext import commands
-from wavelink.ext import spotify  # type: ignore [reportMissingTypeStubs]
 
 from exts import EXTENSIONS
 
@@ -98,9 +97,8 @@ class Beira(commands.Bot):
         await self._load_extensions()
 
         # Connection lavalink nodes.
-        sc = spotify.SpotifyClient(**CONFIG.spotify.to_dict())
-        node = wavelink.Node(**CONFIG.lavalink.to_dict())
-        await wavelink.NodePool.connect(client=self, nodes=[node], spotify=sc)
+        node = wavelink.Node(uri=CONFIG.lavalink.uri, password=CONFIG.lavalink.password)
+        await wavelink.Pool.connect(client=self, nodes=[node])
 
         # Get information about owner.
         self.app_info = await self.application_info()
@@ -148,7 +146,7 @@ class Beira(commands.Bot):
             )
         LOGGER.error("Exception in event %s", event_method, exc_info=exception, extra={"embed": embed})
 
-    async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore
+    async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore # Narrowing
         assert context.command  # Pre-condition for being here.
 
         if isinstance(exception, commands.CommandNotFound):

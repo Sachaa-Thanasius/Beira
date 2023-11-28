@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 import asyncio
+import logging
+import traceback
 from collections.abc import Callable, Coroutine
 from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias
 
@@ -15,7 +17,6 @@ if TYPE_CHECKING:
     from typing_extensions import TypeVar
 
     ClientT_co = TypeVar("ClientT_co", bound=Client, covariant=True, default=Client)
-
 else:
     from typing import TypeVar
 
@@ -27,6 +28,8 @@ Coro: TypeAlias = Coroutine[Any, Any, T]
 CoroFunc: TypeAlias = Callable[..., Coro[Any]]
 GroupT = TypeVar("GroupT", bound=Group | commands.Cog)
 AppHook: TypeAlias = Callable[[GroupT, Interaction[Any]], Coro[Any]] | Callable[[Interaction[Any]], Coro[Any]]
+
+LOGGER = logging.getLogger(__name__)
 
 __all__ = ("before_app_invoke", "after_app_invoke", "HookableTree")
 
@@ -98,6 +101,36 @@ def after_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]],
 
 
 class HookableTree(CommandTree):
+    async def on_error(self, interaction: Interaction[Client], error: AppCommandError, /) -> None:
+        command = interaction.command
+
+        error = getattr(error, "original", error)
+
+        tb_text = "".join(traceback.format_exception(type(error), error, error.__traceback__, chain=False))
+        embed = discord.Embed(
+            title="App Command Error",
+            description=f"```py\n{tb_text}\n```",
+            colour=discord.Colour.dark_magenta(),
+            timestamp=discord.utils.utcnow(),
+        ).set_author(name=str(interaction.user.global_name), icon_url=interaction.user.display_avatar.url)
+
+        if command is not None:
+            embed.add_field(name="Name", value=command.qualified_name, inline=False)
+
+        if interaction.namespace:
+            embed.add_field(
+                name="Args",
+                value="```py\n" + "\n".join(f"{name}: {arg!r}" for name, arg in iter(interaction.namespace)) + "\n```",
+                inline=False,
+            )
+        embed.add_field(name="Guild", value=f"{interaction.guild.name if interaction.guild else '-----'}", inline=False)
+        embed.add_field(name="Channel", value=f"{interaction.channel}", inline=False)
+
+        if command is not None:
+            LOGGER.error("Exception in command %r", command.name, exc_info=error, extra={"embed": embed})
+        else:
+            LOGGER.error("Exception in command tree", exc_info=error, extra={"embed": embed})
+
     async def _call(self, interaction: Interaction[ClientT_co]) -> None:
         ###### Copy the original logic but add hook checks/calls near the end.
 
