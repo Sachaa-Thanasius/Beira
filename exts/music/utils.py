@@ -93,7 +93,10 @@ class WavelinkSearchConverter(
     commands.Converter[wavelink.Playable | wavelink.Playlist],
     discord.app_commands.Transformer,
 ):
-    """Transforms command argument to a wavelink track or collection of tracks."""
+    """Transforms command argument to a wavelink track or collection of tracks.
+
+    Note: Make sure anything that uses this accounts for the defer/typing call.
+    """
 
     async def _convert(self, query: str) -> wavelink.Playable | wavelink.Playlist:
         tracks: wavelink.Search = await wavelink.Playable.search(query)
@@ -104,8 +107,8 @@ class WavelinkSearchConverter(
     # Who needs narrowing anyway?
     async def convert(self, ctx: commands.Context[Any], argument: str) -> wavelink.Playable | wavelink.Playlist:
         # Searching can take a while sometimes.
-        async with ctx.typing():
-            return await self._convert(argument)
+        await ctx.typing()
+        return await self._convert(argument)
 
     async def transform(self, itx: discord.Interaction, value: str, /) -> wavelink.Playable | wavelink.Playlist:
         # Searching can take a while sometimes.

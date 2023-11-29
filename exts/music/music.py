@@ -128,12 +128,7 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @music.command()
-    async def play(
-        self,
-        ctx: core.GuildContext,
-        *,
-        search: WavelinkSearchTransform,
-    ) -> None:
+    async def play(self, ctx: core.GuildContext, *, search: WavelinkSearchTransform) -> None:
         """Play audio from a YouTube url or search term.
 
         Parameters
@@ -147,17 +142,16 @@ class MusicCog(commands.Cog, name="Music"):
         assert ctx.voice_client  # Ensured by this command's before_invoke.
         vc: ExtraPlayer = ctx.voice_client
 
-        async with ctx.typing():
-            if isinstance(search, wavelink.Playable):
-                search.requester = ctx.author.mention  # type: ignore # Runtime attribute assignment.
-            else:
-                search.track_extras(requester=ctx.author.mention)
-            await vc.queue.put_wait(search)
-            notif_text = generate_tracks_add_notification(search)
-            await ctx.send(notif_text)
+        if isinstance(search, wavelink.Playable):
+            search.requester = ctx.author.mention  # type: ignore # Runtime attribute assignment.
+        else:
+            search.track_extras(requester=ctx.author.mention)
+        await vc.queue.put_wait(search)
+        notif_text = generate_tracks_add_notification(search)
+        await ctx.send(notif_text)
 
-            if not vc.playing:
-                await vc.play(vc.queue.get())
+        if not vc.playing:
+            await vc.play(vc.queue.get())
 
     @music.command()
     @core.in_bot_vc()
