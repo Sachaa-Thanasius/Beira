@@ -20,9 +20,7 @@ from .utils import (
     InvalidShortTimeFormat,
     MusicQueueView,
     ShortTime,
-    WavelinkSearchTransform,
     create_track_embed,
-    generate_tracks_add_notification,
 )
 
 
@@ -128,30 +126,58 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @music.command()
-    async def play(self, ctx: core.GuildContext, *, search: WavelinkSearchTransform) -> None:
-        """Play audio from a YouTube url or search term.
+    async def play(self, ctx: core.GuildContext, *, query: str) -> None:
+        """Play audio from a url or search term.
 
         Parameters
         ----------
         ctx: :class:`core.GuildContext`
             The invocation context.
         search: :class:`str`
-            A url or search query.
+            A search term/url that is converted into a track or playlist.
         """
 
         assert ctx.voice_client  # Ensured by this command's before_invoke.
         vc: ExtraPlayer = ctx.voice_client
 
-        if isinstance(search, wavelink.Playable):
-            search.requester = ctx.author.mention  # type: ignore # Runtime attribute assignment.
-        else:
-            search.track_extras(requester=ctx.author.mention)
-        await vc.queue.put_wait(search)
-        notif_text = generate_tracks_add_notification(search)
-        await ctx.send(notif_text)
+        async with ctx.typing():
+            tracks: wavelink.Search = await wavelink.Playable.search(query)
+            if not tracks:
+                await ctx.send(f"Could not find any tracks based on the given query: `{query}`.")
 
-        if not vc.playing:
-            await vc.play(vc.queue.get())
+            if isinstance(tracks, wavelink.Playlist):
+                tracks.track_extras(requester=ctx.author.mention)
+                added = await vc.queue.put_wait(tracks)
+                await ctx.send(f"Added {added} tracks from the `{tracks.name}` playlist to the queue.")
+            else:
+                track = tracks[0]
+                track.requester = ctx.author.mention  # type: ignore # Runtime attribute assignment.
+                await vc.queue.put_wait(track)
+                await ctx.send(f"Added `{track.title}` to the queue.")
+
+            if not vc.playing:
+                await vc.play(vc.queue.get())
+
+    @play.autocomplete("query")
+    async def play_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        tracks: wavelink.Search = await wavelink.Playable.search(current)
+        return [discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
+
+    @play.before_invoke
+    async def ensure_voice(self, ctx: core.GuildContext) -> None:
+        """Ensures that the voice client automatically connects the right channel."""
+
+        vc: ExtraPlayer | None = ctx.voice_client
+
+        if vc is None:
+            if ctx.author.voice:
+                # Not sure in what circumstances a member would have a voice state without being in a valid channel.
+                assert ctx.author.voice.channel
+                await ctx.author.voice.channel.connect(cls=ExtraPlayer)
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+                msg = "User not connected to a voice channel."
+                raise commands.CommandError(msg)
 
     @music.command()
     @core.in_bot_vc()
@@ -406,19 +432,3 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.send(f"Changed volume to {volume}.")
         else:
             await ctx.send("No player to perform this on.")
-
-    @play.before_invoke
-    async def ensure_voice(self, ctx: core.GuildContext) -> None:
-        """Ensures that the voice client automatically connects the right channel."""
-
-        vc: ExtraPlayer | None = ctx.voice_client
-
-        if vc is None:
-            if ctx.author.voice:
-                # Not sure in what circumstances a member would have a voice state without being in a valid channel.
-                assert ctx.author.voice.channel
-                await ctx.author.voice.channel.connect(cls=ExtraPlayer)
-            else:
-                await ctx.send("You are not connected to a voice channel.")
-                msg = "User not connected to a voice channel."
-                raise commands.CommandError(msg)
