@@ -11,11 +11,14 @@ import random
 import re
 import textwrap
 from bisect import bisect_left
+from functools import lru_cache
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, ClassVar
 
+import aiohttp
 import asyncpg
 import discord
+import lxml.html
 import msgspec
 from discord.ext import commands
 
@@ -29,6 +32,22 @@ else:
     Self = object
 
 LOGGER = logging.getLogger(__name__)
+
+
+@lru_cache
+async def get_ao3_html(session: aiohttp.ClientSession, url: str) -> lxml.html.HtmlElement | None:
+    async with session.get(url) as response:
+        text = await response.text()
+    element = lxml.html.fromstring(text)
+    download_btn = element.find(".//li[@class='download']//[li='HTML']")
+    if download_btn:
+        download_link = download_btn.attrib["href"]
+        if download_link:
+            async with session.get(url) as response:
+                story_text = await response.text()
+            element = lxml.html.fromstring(story_text)
+            return element
+    return None
 
 
 class StoryInfo(msgspec.Struct):
@@ -318,6 +337,24 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             view = StoryQuoteView(ctx.author.id, processed_text, story_data=self.story_records["acvr"])
             message = await ctx.send(embed=await view.get_first_page(), view=view)
             view.message = message
+
+    @commands.hybrid_command()
+    async def search_ao3_link(self, ctx: core.Context, url: str, query: str) -> None:
+        """Search the text of an ao3 link."""
+
+        element = await get_ao3_html(ctx.session, url)
+
+        title = title_el.text if (element is not None and (title_el := element.find("h1"))) else ""
+
+        if element is not None:
+            results: list[tuple[str, str | None, str]] = []
+            for div in element.iter("div[@id='chapters']/div[@class='userstuff']"):
+                for para in div.iter("p"):
+                    if para.text and (query.casefold() in para.text.casefold()):
+                        header = next(
+                            sibling.findtext("h2") for sibling in div.itersiblings("div[@class='meta group']")
+                        )
+                        results.append((title or "", header, para.text))
 
 
 async def setup(bot: core.Beira) -> None:

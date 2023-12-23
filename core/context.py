@@ -4,7 +4,7 @@ context.py: For the custom context and interaction subclasses. Mainly used for t
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any, TypeAlias
+from typing import TYPE_CHECKING, TypeAlias
 
 import aiohttp
 import discord
@@ -33,10 +33,6 @@ class Context(commands.Context["Beira"]):
     """
 
     voice_client: ExtraPlayer | None  # type: ignore # Type lie for narrowing
-
-    def __init__(self, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
-        self.error_handled = False
 
     @property
     def session(self) -> aiohttp.ClientSession:

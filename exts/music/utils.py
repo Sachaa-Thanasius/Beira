@@ -27,6 +27,7 @@ __all__ = (
     "ShortTime",
     "MusicQueueView",
     "create_track_embed",
+    "get_common_filters",
 )
 
 
@@ -87,7 +88,7 @@ def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
     track_title = escape_markdown(track.title)
 
     try:
-        end_time = timedelta(seconds=track.length // 1000)
+        end_time = str(timedelta(seconds=track.length // 1000))
     except OverflowError:
         end_time = "\N{INFINITY}"
 
@@ -105,3 +106,14 @@ def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
         embed.add_field(name="Requested By", value=requester)
 
     return embed
+
+
+@functools.cache
+def get_common_filters() -> dict[str, wavelink.Filters]:
+    common_filters: dict[str, wavelink.Filters] = {}
+
+    nightcore = wavelink.Filters()
+    nightcore.timescale.set(speed=1.25, pitch=1.3)
+    common_filters["nightcore"] = nightcore
+
+    return common_filters

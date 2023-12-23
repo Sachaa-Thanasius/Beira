@@ -100,8 +100,8 @@ def after_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]],
     return decorator
 
 
-class HookableTree(CommandTree):
-    async def on_error(self, interaction: Interaction[Client], error: AppCommandError, /) -> None:
+class HookableTree(CommandTree[ClientT_co]):
+    async def on_error(self, interaction: Interaction[ClientT_co], error: AppCommandError, /) -> None:
         command = interaction.command
 
         error = getattr(error, "original", error)

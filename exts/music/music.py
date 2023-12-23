@@ -21,6 +21,7 @@ from .utils import (
     MusicQueueView,
     ShortTime,
     create_track_embed,
+    get_common_filters,
 )
 
 
@@ -430,5 +431,14 @@ class MusicCog(commands.Cog, name="Music"):
             else:
                 await vc.set_volume(volume)
                 await ctx.send(f"Changed volume to {volume}.")
+        else:
+            await ctx.send("No player to perform this on.")
+
+    @music.command("filter")
+    @core.in_bot_vc()
+    async def _filter(self, ctx: core.GuildContext, name: Literal["nightcore", "reset"]) -> None:
+        if vc := ctx.voice_client:
+            filters = get_common_filters().get(name)
+            await vc.set_filters(filters)
         else:
             await ctx.send("No player to perform this on.")
