@@ -439,6 +439,8 @@ class MusicCog(commands.Cog, name="Music"):
     async def _filter(self, ctx: core.GuildContext, name: str) -> None:
         """Set a filter on the incoming audio.
 
+        Parameters
+        ----------
         ctx: :class:`core.GuildContext`
             The invocation context.
         name: :class:`str`
