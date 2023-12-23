@@ -436,27 +436,36 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command("filter")
     @core.in_bot_vc()
-    async def _filter(self, ctx: core.GuildContext, name: Literal["nightcore", "reset"]) -> None:
+    async def _filter(self, ctx: core.GuildContext, name: str) -> None:
         """Set a filter on the incoming audio.
 
         ctx: :class:`core.GuildContext`
             The invocation context.
-        name: Literal["nightcore", "reset"]
-            The name of the filter to use. Currently, only "nightcore" is available. "reset" resets the filters.
+        name: :class:`str`
+            The name of the filter to use. "reset" resets the filters.
         """
 
         if vc := ctx.voice_client:
             if name == "reset":
                 filters = None
-                message = "Reseting the filters."
+                message = "Resetting the filters."
             else:
-                filters = get_common_filters().get(name)
-                if filters is None:
+                try:
+                    filters = get_common_filters()[name]
+                    message = f"Using the `{name}` filter now."
+                except KeyError:
                     message = "Couldn't find a filter with that name. Making no changes."
                     filters = vc.filters
-                else:
-                    message = f"Using the `{name}` filter now."
+
             await vc.set_filters(filters)
             await ctx.send(message)
         else:
             await ctx.send("No player to perform this on.")
+
+    @_filter.autocomplete("name")
+    async def _filter_name_autocomplete(self, _: core.Interaction, current: str) -> list[app_commands.Choice[str]]:
+        return [
+            app_commands.Choice(name=name, value=name)
+            for name in get_common_filters()
+            if current.casefold() in name.casefold()
+        ][:25]
