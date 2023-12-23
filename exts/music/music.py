@@ -186,7 +186,7 @@ class MusicCog(commands.Cog, name="Music"):
         """Pause the audio."""
 
         if vc := ctx.voice_client:
-            pause_changed_status = "Resumed" if vc.paused else "Paused"
+            pause_changed_status = "Resumed." if vc.paused else "Paused."
             await vc.pause(not vc.paused)
             await ctx.send(pause_changed_status)
         else:
@@ -437,8 +437,26 @@ class MusicCog(commands.Cog, name="Music"):
     @music.command("filter")
     @core.in_bot_vc()
     async def _filter(self, ctx: core.GuildContext, name: Literal["nightcore", "reset"]) -> None:
+        """Set a filter on the incoming audio.
+
+        ctx: :class:`core.GuildContext`
+            The invocation context.
+        name: Literal["nightcore", "reset"]
+            The name of the filter to use. Currently, only "nightcore" is available. "reset" resets the filters.
+        """
+
         if vc := ctx.voice_client:
-            filters = get_common_filters().get(name)
+            if name == "reset":
+                filters = None
+                message = "Reseting the filters."
+            else:
+                filters = get_common_filters().get(name)
+                if filters is None:
+                    message = "Couldn't find a filter with that name. Making no changes."
+                    filters = vc.filters
+                else:
+                    message = f"Using the `{name}` filter now."
             await vc.set_filters(filters)
+            await ctx.send(message)
         else:
             await ctx.send("No player to perform this on.")
