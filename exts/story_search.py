@@ -45,8 +45,7 @@ async def get_ao3_html(session: aiohttp.ClientSession, url: str) -> lxml.html.Ht
         if download_link:
             async with session.get(url) as response:
                 story_text = await response.text()
-            element = lxml.html.fromstring(story_text)
-            return element
+            return lxml.html.fromstring(story_text)
     return None
 
 

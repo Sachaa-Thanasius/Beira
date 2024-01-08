@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import discord
 import wavelink
+from wavelink.types.filters import FilterPayload
 
 from core.utils import EMOJI_STOCK, PaginatedEmbedView
 
@@ -27,8 +28,13 @@ __all__ = (
     "ShortTime",
     "MusicQueueView",
     "create_track_embed",
-    "get_common_filters",
+    "COMMON_FILTERS",
 )
+
+COMMON_FILTERS: dict[str, FilterPayload] = {
+    "nightcore": {"timescale": {"speed": 1.25, "pitch": 1.3}},
+    "vaporwave": {"timescale": {"speed": 0.8, "pitch": 0.8}},
+}
 
 
 class InvalidShortTimeFormat(discord.app_commands.AppCommandError):
@@ -49,7 +55,7 @@ class ShortTime(NamedTuple):
     seconds: int
 
     @classmethod
-    async def transform(cls: type[Self], _: discord.Interaction, position_str: str, /) -> Self:
+    async def transform(cls, _: discord.Interaction, position_str: str, /) -> Self:
         try:
             zipped_time_segments = zip((1, 60, 3600, 86400), reversed(position_str.split(":")), strict=False)
             position_seconds = int(sum(x * float(t) for x, t in zipped_time_segments) * 1000)
@@ -107,13 +113,3 @@ def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
 
     return embed
 
-
-@functools.cache
-def get_common_filters() -> dict[str, wavelink.Filters]:
-    common_filters: dict[str, wavelink.Filters] = {}
-
-    nightcore = wavelink.Filters()
-    nightcore.timescale.set(speed=1.25, pitch=1.3)
-    common_filters["nightcore"] = nightcore
-
-    return common_filters

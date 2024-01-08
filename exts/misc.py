@@ -181,15 +181,15 @@ class MiscCog(commands.Cog, name="Misc"):
 
         with catchtime() as ct:
             await ctx.typing()
-        typing_ping = ct.time * 1000
+        typing_ping = ct.total_time * 1000
 
         with catchtime() as ct:
             await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
-        db_ping = ct.time * 1000
+        db_ping = ct.total_time * 1000
 
         with catchtime() as ct:
             message = await ctx.send(embed=discord.Embed(title="Ping..."))
-        msg_ping = ct.time * 1000
+        msg_ping = ct.total_time * 1000
 
         pong_embed = (
             discord.Embed(title="Pong! \N{TABLE TENNIS PADDLE AND BALL}")

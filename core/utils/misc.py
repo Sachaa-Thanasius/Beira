@@ -12,15 +12,12 @@ from typing import TYPE_CHECKING, Any, ParamSpec, TypeGuard, TypeVar
 
 
 if TYPE_CHECKING:
-    from types import TracebackType
-
     from typing_extensions import Self
 else:
-    TracebackType = Self = object
+    Self = object
 
 T = TypeVar("T")
 P = ParamSpec("P")
-BE = TypeVar("BE", bound=BaseException)
 Coro = Coroutine[Any, Any, T]
 
 
@@ -54,13 +51,10 @@ class catchtime:
         self.logger = logger
 
     def __enter__(self) -> Self:
-        self.time = time.perf_counter()
+        self.total_time = time.perf_counter()
         return self
 
-    def __exit__(self, exc_type: type[BE] | None, exc_value: BE | None, traceback: TracebackType | None) -> None:
-        self.time = time.perf_counter() - self.time
-        self.readout = f"Time: {self.time:.3f} seconds"
+    def __exit__(self, *exc: object) -> None:
+        self.total_time = time.perf_counter() - self.total_time
         if self.logger:
-            self.logger.info(self.readout)
-
-
+            self.logger.info("Time: %.3f seconds", self.total_time)

@@ -5,7 +5,9 @@ with Wavelink.
 
 from __future__ import annotations
 
+import json
 import logging
+from io import BytesIO
 from typing import Literal
 
 import discord
@@ -17,11 +19,11 @@ import core
 from core.wave import ExtraPlayer
 
 from .utils import (
+    COMMON_FILTERS,
     InvalidShortTimeFormat,
     MusicQueueView,
     ShortTime,
     create_track_embed,
-    get_common_filters,
 )
 
 
@@ -163,22 +165,6 @@ class MusicCog(commands.Cog, name="Music"):
     async def play_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         tracks: wavelink.Search = await wavelink.Playable.search(current)
         return [discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
-
-    @play.before_invoke
-    async def ensure_voice(self, ctx: core.GuildContext) -> None:
-        """Ensures that the voice client automatically connects the right channel."""
-
-        vc: ExtraPlayer | None = ctx.voice_client
-
-        if vc is None:
-            if ctx.author.voice:
-                # Not sure in what circumstances a member would have a voice state without being in a valid channel.
-                assert ctx.author.voice.channel
-                await ctx.author.voice.channel.connect(cls=ExtraPlayer)
-            else:
-                await ctx.send("You are not connected to a voice channel.")
-                msg = "User not connected to a voice channel."
-                raise commands.CommandError(msg)
 
     @music.command()
     @core.in_bot_vc()
@@ -436,7 +422,7 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command("filter")
     @core.in_bot_vc()
-    async def _filter(self, ctx: core.GuildContext, name: str) -> None:
+    async def muse_filter(self, ctx: core.GuildContext, name: str) -> None:
         """Set a filter on the incoming audio.
 
         Parameters
@@ -449,25 +435,111 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc := ctx.voice_client:
             if name == "reset":
-                filters = None
+                filters = wavelink.Filters()
                 message = "Resetting the filters."
             else:
                 try:
-                    filters = get_common_filters()[name]
+                    filters = wavelink.Filters(data=COMMON_FILTERS[name])
                     message = f"Using the `{name}` filter now."
                 except KeyError:
-                    message = "Couldn't find a filter with that name. Making no changes."
                     filters = vc.filters
+                    message = "Couldn't find a filter with that name. Making no changes."
 
             await vc.set_filters(filters)
             await ctx.send(message)
         else:
             await ctx.send("No player to perform this on.")
 
-    @_filter.autocomplete("name")
-    async def _filter_name_autocomplete(self, _: core.Interaction, current: str) -> list[app_commands.Choice[str]]:
+    @muse_filter.autocomplete("name")
+    async def muse_filter_name_autocomplete(self, _: core.Interaction, current: str) -> list[app_commands.Choice[str]]:
         return [
             app_commands.Choice(name=name, value=name)
-            for name in get_common_filters()
+            for name in COMMON_FILTERS
             if current.casefold() in name.casefold()
         ][:25]
+
+    @music.command(name="export")
+    @commands.guild_only()
+    @core.in_bot_vc()
+    async def muse_export(self, ctx: core.GuildContext) -> None:
+        """Export the current queue to a file. Can be re-imported later to recreate the queue."""
+
+        if vc := ctx.voice_client:
+            raw_data = [track.raw_data for track in vc.queue]
+            data_buffer = BytesIO(json.dumps(raw_data).encode())
+            file = discord.File(
+                data_buffer,
+                filename=f"music_queue_export_{discord.utils.utcnow(): %Y-%m-%d_%H-%M}.json",
+                description="The exported music queue information.",
+                spoiler=True,
+            )
+            await ctx.send("Exported current queue to file:", file=file)
+        else:
+            await ctx.send("No player to perform this on.")
+
+    @music.command(name="import")
+    @commands.guild_only()
+    async def muse_import(self, ctx: core.GuildContext, import_file: discord.Attachment) -> None:
+        """Import a file with track information to recreate a music queue. May be created with /export.
+
+        Parameters
+        ----------
+        ctx: core.GuildContext
+            The invocation context.
+        import_file: discord.Attachment
+            A JSON file with track information to recreate the queue with. May be created by /export.
+        """
+
+        if vc := ctx.voice_client:
+            # Depending on the size of the file, this might take some time.
+            async with ctx.typing():
+                filename = import_file.filename
+                if not filename.endswith(".json"):
+                    await ctx.send("Bad input: Given file must end with .json.")
+                    return
+
+                raw_data = await import_file.read()
+                loaded_data = json.loads(raw_data)
+                converted_tracks = [wavelink.Playable(data) for data in loaded_data]
+
+                # Set up the queue now.
+                vc.queue.clear()
+                vc.queue._queue.extend(converted_tracks)  # pyright: ignore [reportPrivateUsage]  # Seems like the quickest way.
+
+                await ctx.send(f"Imported track information from `{filename}`. Starting queue now.")
+                if not vc.playing:
+                    await vc.play(vc.queue.get())
+        else:
+            await ctx.send("No player to perform this on.")
+
+    @muse_import.error
+    async def muse_import_error(self, ctx: core.Context, error: commands.CommandError) -> None:
+        """Error handler for /music import. Provides better error messages for users."""
+
+        actual_error = error.__cause__ or error
+
+        if isinstance(actual_error, discord.HTTPException):
+            error_text = f"Bad input: {actual_error.text}"
+        elif isinstance(actual_error, json.JSONDecodeError):
+            error_text = "Bad input: Given attachment is formatted incorrectly."
+        else:
+            error_text = "Error: Failed to import attachment."
+
+        await ctx.send(error_text)
+
+    @play.before_invoke
+    @muse_import.before_invoke
+    async def ensure_voice(self, ctx: core.GuildContext) -> None:
+        """Ensures that the voice client automatically connects the right channel."""
+
+        vc: ExtraPlayer | None = ctx.voice_client
+
+        if vc is None:
+            if ctx.author.voice:
+                # Not sure in what circumstances a member would have a voice state without being in a valid channel.
+                assert ctx.author.voice.channel
+                await ctx.author.voice.channel.connect(cls=ExtraPlayer)
+            else:
+                await ctx.send("You are not connected to a voice channel.")
+                msg = "User not connected to a voice channel."
+                raise commands.CommandError(msg)
