@@ -97,7 +97,7 @@ async def on_bad_twitter_link(bot: core.Beira, message: discord.Message) -> None
     if message.author == bot.user or (not message.guild or message.guild.id != aci_guild_id):
         return
 
-    if links := re.findall(r"(?:http(?:s)://|(?<!\S))twitter\.com/.+", message.content):
+    if links := re.findall(r"(?:http(?:s)?://|(?<!\S))(?:twitter|x)\.com/.+", message.content):
         new_links = "\n".join(re.sub(r"twitter\.com/(.+)", r"fxtwitter.com/\1", link) for link in links)
         content = (
             f"*Corrected Twitter link(s)*\n"
