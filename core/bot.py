@@ -96,7 +96,7 @@ class Beira(commands.Bot):
         await self._load_blocked_entities()
         await self._load_extensions()
 
-        # Connection lavalink nodes.
+        # Connect to lavalink node(s).
         node = wavelink.Node(uri=CONFIG.lavalink.uri, password=CONFIG.lavalink.password)
         await wavelink.Pool.connect(client=self, nodes=[node])
 

@@ -6,6 +6,7 @@ from __future__ import annotations
 
 import functools
 import logging
+import re
 from typing import Any, TypeAlias
 
 import discord
@@ -33,6 +34,8 @@ ACI_LEVELED_ROLES = {
 #  The mod role(s) to ping when sending notifications.
 ACI_MOD_ROLE = 780904973004570654
 
+aci_guild_id = core.CONFIG.discord.important_guilds["prod"][0]
+
 
 async def on_server_boost_role_member_update(
     bot: core.Beira,
@@ -45,9 +48,6 @@ async def on_server_boost_role_member_update(
     Condition for activating:
     - Boost the server and earn the premium subscriber, or "Server Booster", role.
     """
-
-    # The ID of the guild this listener is for.
-    aci_guild_id: int = core.CONFIG.discord.important_guilds["prod"][0]
 
     # Check if the update is in the right server, a member got new roles, and they got a new "Server Booster" role.
     if (
@@ -72,9 +72,6 @@ async def on_leveled_role_member_update(
     - Earn a Tatsu leveled role above "The Ears".
     """
 
-    # The ID of the guild this listener is for.
-    aci_guild_id: int = core.CONFIG.discord.important_guilds["prod"][0]
-
     # Check if the update is in the right server, a member got new roles, and they got a relevant leveled role.
     if (
         before.guild.id == aci_guild_id
@@ -94,6 +91,23 @@ async def on_leveled_role_member_update(
             role_names = tuple(role.name for role in new_leveled_roles)
             content = f"<@&{ACI_MOD_ROLE}>, {after.mention} was given the `{role_names}` role(s)."
             await role_log_wbhk.send(content)
+
+
+async def on_bad_twitter_link(bot: core.Beira, message: discord.Message) -> None:
+    if message.author == bot.user or (not message.guild or message.guild.id != aci_guild_id):
+        return
+
+    if links := re.findall(r"(?:http(?:s)://|(?<!\S))twitter\.com/.+", message.content):
+        new_links = "\n".join(re.sub(r"twitter\.com/(.+)", r"fxtwitter.com/\1", link) for link in links)
+        content = (
+            f"*Corrected Twitter link(s)*\n"
+            f"Reposted from {message.author.mention} ({message.author.name} - {message.author.id}):\n\n"
+            f"{new_links}"
+        )
+        await message.reply(
+            content,
+            allowed_mentions=discord.AllowedMentions(users=False, replied_user=False),
+        )
 
 
 async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessageDeleteEvent) -> None:
@@ -159,15 +173,16 @@ async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessag
             await delete_log_channel.send(content)
 
 
-def make_listeners(bot: core.Beira) -> tuple[tuple[functools.partial[Any], str], ...]:
+def make_listeners(bot: core.Beira) -> tuple[tuple[str, functools.partial[Any]], ...]:
     """Connects listeners to bot."""
 
     # The webhook url that will be used to send ACI-related notifications.
     aci_webhook_url: str = core.CONFIG.discord.webhooks[0]
     role_log_webhook = discord.Webhook.from_url(aci_webhook_url, session=bot.web_session)
 
-    # Adjust the arguments for the listeners.
-    aci_leveled_role_listener = functools.partial(on_leveled_role_member_update, bot, role_log_webhook)
-    aci_server_boost_role_listener = functools.partial(on_server_boost_role_member_update, bot, role_log_webhook)
-
-    return ((aci_leveled_role_listener, "on_member_update"), (aci_server_boost_role_listener, "on_member_update"))
+    # Adjust the arguments for the listeners and provide corresponding event name.
+    return (
+        ("on_member_update", functools.partial(on_leveled_role_member_update, bot, role_log_webhook)),
+        ("on_member_update", functools.partial(on_server_boost_role_member_update, bot, role_log_webhook)),
+        ("on_message", functools.partial(on_bad_twitter_link, bot)),
+    )
