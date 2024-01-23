@@ -8,11 +8,11 @@ from __future__ import annotations
 
 import logging
 import textwrap
+import urllib.parse
 from typing import TYPE_CHECKING, Any
 
 import discord
 import msgspec
-import yarl
 from discord.ext import commands, tasks
 
 import core
@@ -221,17 +221,18 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         LOGGER.info("Campaign: %s", campaigns["data"][0])
 
         while True:
-            request_url = (
-                yarl.URL(CAMPAIGN_BASE)
-                .with_path(f"/{campaign_id}/members")
-                .with_query(
-                    {
-                        "fields[user]": "social_connections",
-                        "include": "user,currently_entitled_tiers",
-                        "page[cursor]": f"{cursor}",
-                    },
-                )
+            # Don't need yarl for this.
+            query_str = urllib.parse.urlencode(
+                {
+                    "fields[user]": "social_connections",
+                    "include": "user,currently_entitled_tiers",
+                    "page[cursor]": f"{cursor}",
+                },
+                doseq=True,
+                encoding="utf-8",
             )
+            request_url = f"{CAMPAIGN_BASE}/{campaign_id}/members?{query_str}"
+
             async with self.bot.web_session.get(request_url, headers=headers) as resp:
                 # Print an error if it exists.
                 if not resp.ok:

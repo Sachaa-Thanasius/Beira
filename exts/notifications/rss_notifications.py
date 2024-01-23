@@ -19,7 +19,7 @@ else:
 
 
 class NotificationRecord(msgspec.Struct):
-    id: int  # noqa: A003
+    id: int
     url: str
     last_notif: str
     webhook: discord.Webhook

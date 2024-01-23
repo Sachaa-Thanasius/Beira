@@ -1,20 +1,16 @@
 aiofiles
 ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py.git
 arsenic
-asyncpg==0.28.0
-asyncpg-stubs==0.28.0
+asyncpg==0.29.0
+asyncpg-stubs==0.29.1
 atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper.git
 beautifulsoup4>=4.12.2
 discord.py[speed,voice]>=2.3.2
 fichub-api
 jishaku @ git+https://github.com/Gorialis/jishaku@a6661e2813124fbfe53326913e54f7c91e5d0dec
 lxml>=4.9.3
-matplotlib
 msgspec[toml]
-numpy
-openai>=1.1.0
+openai>=1.8.0
 Pillow>=10.0.0
 tatsu-api>=1.0.0
-typing_extensions>=4.5.0,<5
 wavelink>=3.0.0
-yarl>=1.8.2,<2

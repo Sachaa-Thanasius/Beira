@@ -13,7 +13,7 @@ Homepage = "https://github.com/Sachaa-Thanasius/Beira"
 
 [tool.ruff]
 # Credit to @mikeshardmind for most of this setup.
-include = ["main.py", "core/*.py", "exts/*.py", "**/pyproject.toml"]
+include = ["main.py", "core/*.py", "exts/*.py", "typings/*.*", "**/pyproject.toml"]
 line-length = 120
 target-version = "py310"
 select = [
@@ -64,27 +64,31 @@ extend-ignore = [
     "ANN101",  # Type of self is implicit.
     "ANN102",  # Type of cls is implicit.
     "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
-    "PLR",     # complexity things
-    "COM812",  # recommended by ruff when using ruff format
-    "COM819",  # recommended by ruff when using ruff format
-    "E501",    # recommended by ruff when using ruff format
-    "ISC001",  # recommended by ruff when using ruff format
-    "Q003",    # recommended by ruff when using ruff format
+    "PLR",     # Complexity things.
+    # Recommended by Ruff when using Ruff format.
+    "COM812",
+    "COM819",
+    "E501",
+    "ISC001",
+    "Q003",
 ]
 unfixable = [
     "ERA", # I don't want anything erroneously detected deleted by this.
 ]
 
 [tool.ruff.per-file-ignores]
-"__init__.py" = ["F403", "PLC0414"] # Importing internal modules with star usually throws these.
-"misc/**" = ["T201", "ERA001"]
+"__init__.py" = ["F403", "PLC0414"] # Start import usually throws these.
+"misc/**" = [
+    "T201",   # Leave prints alone.
+    "ERA001", # Leave commented code alone.
+]
 
 [tool.ruff.isort]
 lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
-include = ["main.py", "core", "exts"]
+include = ["main.py", "core", "exts", "typings"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 
