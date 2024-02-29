@@ -12,11 +12,18 @@ import msgspec
 import core
 
 
+HEADERS = {
+    "User-Agent": (
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+        "AppleWebKit/537.36 (KHTML, like Gecko) "
+        "Chrome/104.0.0.0 Safari/537.36"
+    )
+}
 private_guild_with_9gag_links = 1097976528832307271
 
 
 async def get_9gag_mp4(session: aiohttp.ClientSession, link: str) -> str | None:
-    async with session.get(link) as response:
+    async with session.get(link, headers=HEADERS) as response:
         data = lxml.html.fromstring(await response.read())
         element = data.find(".//script[type='application/ld+json']")
         if element and element.text:
