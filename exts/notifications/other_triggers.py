@@ -26,13 +26,13 @@ async def get_9gag_mp4(session: aiohttp.ClientSession, link: str) -> str | None:
     async with session.get(link, headers=HEADERS) as response:
         data = lxml.html.fromstring(await response.read())
         element = data.find(".//script[@type='application/ld+json']")
-        if element and element.text:
+        if element is not None and element.text:
             return msgspec.json.decode(element.text)["video"]["contentUrl"]
         return None
 
 
 async def on_bad_9gag_link(bot: core.Beira, message: discord.Message) -> None:
-    if message.author == bot.user or (not message.guild or message.guild.id != private_guild_with_9gag_links):
+    if message.author == bot.user or ((not message.guild) or message.guild.id != private_guild_with_9gag_links):
         return
 
     if links := re.findall(r"(?:http(?:s)?://)9gag\.com/gag/[\S]*", message.content):
