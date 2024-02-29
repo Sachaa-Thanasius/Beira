@@ -249,7 +249,7 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    story_embed.description = textwrap.shorten(story.description, 6000 - len(story_embed), placeholder="...")
+    story_embed.description = textwrap.shorten(description, 6000 - len(story_embed), placeholder="...")
     return story_embed
 
 
