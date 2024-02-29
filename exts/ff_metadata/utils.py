@@ -235,11 +235,11 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     else:
         stats_str = "No stats available at this time."
 
-    description = html_to_markdown(story.description)
+    markdown_description = html_to_markdown(story.description)
 
     # Add the info to the embed appropriately.
     story_embed = (
-        discord.Embed(title=story.title, url=story.url, description=description, timestamp=discord.utils.utcnow())
+        discord.Embed(title=story.title, url=story.url, timestamp=discord.utils.utcnow())
         .set_author(name=story.author.name, url=story.author.url, icon_url=icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated} ({story.status.capitalize()})")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{story.words:,d} words in {story.chapters} chapter(s)")
@@ -249,7 +249,12 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    story_embed.description = textwrap.shorten(description, 6000 - len(story_embed), placeholder="...")
+    story_embed.description = textwrap.shorten(
+        markdown_description,
+        6000 - len(story_embed),
+        placeholder="...",
+        replace_whitespace=False,
+    )
     return story_embed
 
 
