@@ -53,16 +53,14 @@ class RSSNotificationsCog(commands.Cog):
     async def check_url(self, rec: NotificationRecord) -> str | None:
         """Check if there's a new item since the last one."""
 
-        ...
-
     def process_new_item(self, text: str) -> discord.Embed:
         """Turn new item/update into a nicely formatted discord Embed."""
-
         ...
 
     @tasks.loop(seconds=10)
     async def notification_check_loop(self) -> None:
         """Continuously check urls for updates and send notifications to webhooks accordingly."""
+
         notif_tasks: list[asyncio.Task[str | None]] = [asyncio.create_task(self.check_url(rec) for rec in self.records)]
         results: list[str | None] = await asyncio.gather(*notif_tasks)
         to_update = ((result, rec) for result, rec in zip(results, self.records, strict=True) if result is not None)

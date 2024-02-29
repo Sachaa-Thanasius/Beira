@@ -1,6 +1,7 @@
 aiofiles
 ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py.git
 arsenic
+async-lru
 asyncpg==0.29.0
 asyncpg-stubs==0.29.1
 atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper.git
@@ -12,5 +13,4 @@ lxml>=4.9.3
 msgspec[toml]
 openai>=1.8.0
 Pillow>=10.0.0
-tatsu-api>=1.0.0
 wavelink>=3.0.0

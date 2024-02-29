@@ -1,6 +1,7 @@
 CREATE TABLE IF NOT EXISTS users (
     user_id     BIGINT  PRIMARY KEY,
-    is_blocked  BOOLEAN DEFAULT FALSE
+    is_blocked  BOOLEAN DEFAULT FALSE,
+    timezone    TEXT    DEFAULT "UTC"
 );
 
 CREATE TRIGGER minimize_users_updates BEFORE UPDATE ON users FOR EACH ROW EXECUTE FUNCTION suppress_redundant_updates_trigger();

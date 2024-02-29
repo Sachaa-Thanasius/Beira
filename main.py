@@ -6,7 +6,7 @@ import discord
 
 import core
 from core.tree import HookableTree
-from core.utils import LoggingManager, pool_init
+from core.utils import LoggingManager, conn_init
 
 
 async def main() -> None:
@@ -15,7 +15,7 @@ async def main() -> None:
     # Initialize a connection to a PostgreSQL database, an asynchronous web session, and a custom logger setup.
     async with (
         aiohttp.ClientSession() as web_session,
-        asyncpg.create_pool(dsn=core.CONFIG.database.pg_url, command_timeout=30, init=pool_init) as pool,
+        asyncpg.create_pool(dsn=core.CONFIG.database.pg_url, command_timeout=30, init=conn_init) as pool,
         LoggingManager() as logging_manager,
     ):
         # Set the bot's basic starting parameters.

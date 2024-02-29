@@ -50,8 +50,8 @@ class Calendar:
     def inc(
         self,
         source: struct_time,
-        month: float | int | None = None,
-        year: float | int | None = None,
+        month: float | None = None,
+        year: float | None = None,
     ) -> struct_time: ...
     def nlp(
         self,

@@ -13,7 +13,7 @@ import copy
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, TypeVar
+from typing import TYPE_CHECKING, Any
 
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
 
@@ -24,8 +24,6 @@ if TYPE_CHECKING:
     from typing_extensions import Self
 else:
     TracebackType = Self = object
-
-BE = TypeVar("BE", bound=BaseException)
 
 
 __all__ = ("LoggingManager",)
@@ -146,10 +144,20 @@ class LoggingManager:
 
         return self
 
-    async def __aexit__(self, exc_type: type[BE] | None, exc_val: BE | None, traceback: TracebackType | None) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         return self.__exit__(exc_type, exc_val, traceback)
 
-    def __exit__(self, exc_type: type[BE] | None, exc_val: BE | None, traceback: TracebackType | None) -> None:
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        traceback: TracebackType | None,
+    ) -> None:
         """Close and remove all logging handlers."""
 
         handlers = self.log.handlers[:]

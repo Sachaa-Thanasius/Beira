@@ -1,2 +1,4 @@
-[isort]
+extend = "../pyproject.toml"
+
+[lint.isort]
 lines-after-imports = 1

@@ -3,7 +3,7 @@ name = "Beira"
 version = "0.0.1"
 description = "An personal Discord bot made in Python."
 readme = "README.md"
-license = "MIT"
+license = { file = "LICENSE" }
 requires-python = ">=3.10"
 authors = [{ name = "Sachaa-Thanasius", email = "111999343+Sachaa-Thanasius@users.noreply.github.com" }]
 
@@ -12,10 +12,11 @@ Homepage = "https://github.com/Sachaa-Thanasius/Beira"
 "Bug Tracker" = "https://github.com/Sachaa-Thanasius/Beira/issues"
 
 [tool.ruff]
-# Credit to @mikeshardmind for most of this setup.
 include = ["main.py", "core/*.py", "exts/*.py", "typings/*.*", "**/pyproject.toml"]
 line-length = 120
 target-version = "py310"
+
+[tool.ruff.lint]
 select = [
     "F",
     "E",
@@ -36,7 +37,7 @@ select = [
     "INP",
     "PIE",
     "T20",
-    "Q003",
+    "PYI",
     "RSE",
     "RET",
     "SIM",
@@ -44,46 +45,48 @@ select = [
     "PTH",
     "ERA",
     "PD",
-    "PLC",
-    "PLE",
-    "PLR",
-    "PLW",
+    "PL",
     "TRY",
     "NPY",
     "RUF",
 ]
 extend-ignore = [
-    "G002",    # Erroneous issue with %-logging when logging can be configured for % logging.
-    "S101",    # Use of assert here is a known quantity. Blame typing memes.
-    "PLR2004", # Magic value comparison. May remove later.
-    "SIM105",  # Suppressable exception. I'm not paying the overhead of contextlib.suppress for stylistic choices.
-    "C90",     # McCabe complexity memes.
-    "ANN204",  # Special method return types.
-    "PD011",   # Erroneous issue that triggers for any .values attribute access at all.
-    "S311",    # No need for cryptographically secure random number generation in this use case.
-    "ANN101",  # Type of self is implicit.
-    "ANN102",  # Type of cls is implicit.
-    "ANN401",  # Not sure how else to type *args and **kwargs when they could be anything.
-    "PLR",     # Complexity things.
+    "S101", # Use of assert here is a known quantity. Blame typing memes.
+    # "PLR2004", # Magic value comparison. May remove later.
+    "SIM105", # Suppressable exception. I'm not paying the overhead of contextlib.suppress for stylistic choices.
+    "C90",    # McCabe complexity memes.
+    "PD011",  # Erroneous issue that triggers for any .values attribute access at all.
+    "S311",   # No need for cryptographically secure random number generation in this use case.
+    "ANN101", # Type of self is implicit.
+    "ANN102", # Type of cls is implicit.
+    "ANN204", # Special method return types are known by type checker.
+    "ANN401", # Not sure how else to type *args and **kwargs when they could be anything.
+    "PLR",    # Complexity things.
+    "PYI036", # Bug with annotations for __exit__.
     # Recommended by Ruff when using Ruff format.
+    "E111",
+    "E114",
+    "E117",
+    "Q003",
     "COM812",
     "COM819",
-    "E501",
+    # "E501",
     "ISC001",
-    "Q003",
+    "ISC002",
 ]
 unfixable = [
     "ERA", # I don't want anything erroneously detected deleted by this.
 ]
 
-[tool.ruff.per-file-ignores]
-"__init__.py" = ["F403", "PLC0414"] # Start import usually throws these.
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F403", "PLC0414"] # Star import usually throws these.
+"typings/parsedatetime/parsedatetime.pyi" = ["F403"] # Star import usually throws these.
 "misc/**" = [
     "T201",   # Leave prints alone.
     "ERA001", # Leave commented code alone.
 ]
 
-[tool.ruff.isort]
+[tool.ruff.lint.isort]
 lines-after-imports = 2
 combine-as-imports = true
 

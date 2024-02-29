@@ -5,8 +5,11 @@ with Wavelink.
 
 from __future__ import annotations
 
+import datetime
+import functools
 import json
 import logging
+import re
 from io import BytesIO
 from typing import Literal
 
@@ -14,20 +17,113 @@ import discord
 import wavelink
 from discord import app_commands
 from discord.ext import commands
+from wavelink.types.filters import FilterPayload
 
 import core
-from core.wave import ExtraPlayer
-
-from .utils import (
-    COMMON_FILTERS,
-    InvalidShortTimeFormat,
-    MusicQueueView,
-    ShortTime,
-    create_track_embed,
-)
+from core.utils import EMOJI_STOCK, PaginatedEmbedView
 
 
 LOGGER = logging.getLogger(__name__)
+
+
+escape_markdown = functools.partial(discord.utils.escape_markdown, as_needed=True)
+
+
+COMMON_FILTERS: dict[str, FilterPayload] = {
+    "nightcore": {"timescale": {"speed": 1.25, "pitch": 1.3}},
+    "vaporwave": {"timescale": {"speed": 0.8, "pitch": 0.8}},
+}
+
+
+def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
+    """Modify an embed to show information about a Wavelink track."""
+
+    icon = EMOJI_STOCK.get(type(track).__name__, "\N{MUSICAL NOTE}")
+    title = f"{icon} {title}"
+    uri = track.uri or ""
+    author = escape_markdown(track.author)
+    track_title = escape_markdown(track.title)
+
+    try:
+        end_time = str(datetime.timedelta(milliseconds=track.length))
+    except OverflowError:
+        end_time = "\N{INFINITY}"
+
+    description = f"[{track_title}]({uri})\n{author}\n`[0:00-{end_time}]`"
+
+    embed = discord.Embed(color=0x76C3A2, title=title, description=description)
+
+    if track.artwork:
+        embed.set_thumbnail(url=track.artwork)
+
+    if track.album.name:
+        embed.add_field(name="Album", value=track.album.name)
+
+    # FIXME: Test whether setting on a playlist's extras will set on contained tracks' extras.
+    if requester := getattr(track.extras, "requester", None):
+        embed.add_field(name="Requested By", value=requester)
+
+    return embed
+
+
+class InvalidShortTimeFormat(app_commands.AppCommandError):
+    """Exception raised when a given input does not match the short time format needed as a command parameter.
+
+    This inherits from :exc:`app_commands.AppCommandError`.
+    """
+
+    def __init__(self, value: str, *args: object) -> None:
+        self.message = f"Failed to convert {value}. Make sure you're using the `<hours>:<minutes>:<seconds>` format."
+        super().__init__(self.message, *args)
+
+
+class ShortDurationTransformer(app_commands.Transformer):
+    """A tuple meant to hold the string representation of a time and the total number of seconds it represents."""
+
+    # Source of regex: https://stackoverflow.com/a/8318367
+    SHORT_DURATION_EXPR = re.compile(r"^(?:(?:(?P<hours>\d{1,5}):)?(?P<minutes>[0-5]?\d):)?(?P<seconds>[0-5]?\d)$")
+
+    async def transform(self, itx: discord.Interaction, value: str) -> datetime.timedelta:
+        match = self.SHORT_DURATION_EXPR.match(value)
+        if match:
+            try:
+                return datetime.timedelta(**{k: int(v) for k, v in match.groupdict().items()})
+            except OverflowError:
+                raise InvalidShortTimeFormat(value) from None
+        raise InvalidShortTimeFormat(value)
+
+
+class MusicQueueView(PaginatedEmbedView[str]):
+    """A paginated view for seeing the tracks in an embed-based music queue."""
+
+    def format_page(self) -> discord.Embed:
+        embed_page = discord.Embed(color=0x149CDF, title="Music Queue")
+
+        if self.total_pages == 0:
+            embed_page.description = "The queue is empty."
+            embed_page.set_footer(text="Page 0/0")
+        else:
+            # Expected page size of 10
+            content = self.pages[self.page_index]
+            organized = (f"{i + (self.page_index) * 10}. {song}" for i, song in enumerate(content, start=1))
+            embed_page.description = "\n".join(organized)
+            embed_page.set_footer(text=f"Page {self.page_index + 1}/{self.total_pages}")
+
+        return embed_page
+
+
+class ExtraPlayer(wavelink.Player):
+    """A version of :class:`wavelink.Player` with autoplay set to partial."""
+
+    def __init__(
+        self,
+        client: discord.Client = discord.utils.MISSING,
+        channel: discord.abc.Connectable = discord.utils.MISSING,
+        *,
+        nodes: list[wavelink.Node] | None = None,
+    ) -> None:
+        super().__init__(client, channel, nodes=nodes)
+        self.autoplay = wavelink.AutoPlayMode.partial
 
 
 class MusicCog(commands.Cog, name="Music"):
@@ -57,7 +153,7 @@ class MusicCog(commands.Cog, name="Music"):
         elif isinstance(error, core.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
         elif isinstance(error, InvalidShortTimeFormat):
-            embed.description = error.args[0]
+            embed.description = error.message
         elif isinstance(error, app_commands.TransformerError):
             if err := error.__cause__:
                 embed.description = err.args[0]
@@ -109,7 +205,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def connect(self, ctx: core.GuildContext) -> None:
         """Join a voice channel."""
 
-        vc: ExtraPlayer | None = ctx.voice_client
+        vc: wavelink.Player | None = ctx.voice_client
 
         if vc is not None and ctx.author.voice is not None:
             if vc.channel != ctx.author.voice.channel:
@@ -141,7 +237,7 @@ class MusicCog(commands.Cog, name="Music"):
         """
 
         assert ctx.voice_client  # Ensured by this command's before_invoke.
-        vc: ExtraPlayer = ctx.voice_client
+        vc: wavelink.Player = ctx.voice_client
 
         async with ctx.typing():
             tracks: wavelink.Search = await wavelink.Playable.search(query)
@@ -149,12 +245,12 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.send(f"Could not find any tracks based on the given query: `{query}`.")
 
             if isinstance(tracks, wavelink.Playlist):
-                tracks.track_extras(requester=ctx.author.mention)
+                tracks.extras = {"requester": ctx.author.mention}
                 added = await vc.queue.put_wait(tracks)
                 await ctx.send(f"Added {added} tracks from the `{tracks.name}` playlist to the queue.")
             else:
                 track = tracks[0]
-                track.requester = ctx.author.mention  # type: ignore # Runtime attribute assignment.
+                track.extras = {"requester": ctx.author.mention}
                 await vc.queue.put_wait(track)
                 await ctx.send(f"Added `{track.title}` to the queue.")
 
@@ -164,7 +260,7 @@ class MusicCog(commands.Cog, name="Music"):
     @play.autocomplete("query")
     async def play_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
         tracks: wavelink.Search = await wavelink.Playable.search(current)
-        return [discord.app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
+        return [app_commands.Choice(name=track.title, value=track.uri or track.title) for track in tracks][:25]
 
     @music.command()
     @core.in_bot_vc()
@@ -207,7 +303,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def current(self, ctx: core.GuildContext) -> None:
         """Display the current track."""
 
-        vc: ExtraPlayer | None = ctx.voice_client
+        vc: wavelink.Player | None = ctx.voice_client
 
         if vc and vc.current:
             current_embed = create_track_embed("Now Playing", vc.current)
@@ -227,7 +323,7 @@ class MusicCog(commands.Cog, name="Music"):
         Use `play` to add things to the queue.
         """
 
-        vc: ExtraPlayer | None = ctx.voice_client
+        vc: wavelink.Player | None = ctx.voice_client
 
         queue_embeds: list[discord.Embed] = []
         if vc:
@@ -257,7 +353,7 @@ class MusicCog(commands.Cog, name="Music"):
             if entry > len(vc.queue) or entry < 1:
                 await ctx.send("That track does not exist and cannot be removed.")
             else:
-                await vc.queue.delete(entry - 1)
+                vc.queue.delete(entry - 1)
                 await ctx.send(f"Removed {entry} from the queue.")
         else:
             await ctx.send("No player to perform this on.")
@@ -293,7 +389,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         if vc := ctx.voice_client:
             try:
-                vc.queue.move(before - 1, after - 1)
+                temp = vc.queue[before - 1]
+                del vc.queue[before - 1]
+                vc.queue.put_at(after - 1, temp)
             except IndexError:
                 await ctx.send("Please enter valid queue indices.")
             else:
@@ -319,13 +417,14 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.send("The queue is empty and can't be skipped into.")
                 return
 
-            try:
-                vc.queue.skip_to(index - 1)
-            except IndexError:
-                await ctx.send("Please enter a valid queue index.")
-            else:
+            if index <= 0 or index > len(vc.queue):
+                await ctx.send("Please enter a valid queue index; the given one is too big or too small.")
+                return
+
+            for _ in range(index):
                 await vc.skip()
-                await ctx.send(f"Skipped to the track at position {index}")
+
+            await ctx.send(f"Skipped to the track at position {index}")
         else:
             await ctx.send("No player to perform this on.")
 
@@ -372,7 +471,12 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     @core.in_bot_vc()
-    async def seek(self, ctx: core.GuildContext, *, position: ShortTime) -> None:
+    async def seek(
+        self,
+        ctx: core.GuildContext,
+        *,
+        position: app_commands.Transform[datetime.timedelta, ShortDurationTransformer],
+    ) -> None:
         """Seek to a particular position in the current track, provided with a `hours:minutes:seconds` string.
 
         Parameters
@@ -386,11 +490,12 @@ class MusicCog(commands.Cog, name="Music"):
         if vc := ctx.voice_client:
             if vc.current:
                 if vc.current.is_seekable:
-                    if position.seconds > vc.current.length or position.seconds < 0:
+                    given_total_seconds = position.total_seconds()
+                    if given_total_seconds > vc.current.length or given_total_seconds < 0:
                         await ctx.send("The track length doesn't support that position.")
                     else:
-                        await vc.seek(position.seconds)
-                        await ctx.send(f"Jumped to position `{position.original}` in the current track.")
+                        await vc.seek(int(given_total_seconds * 1000))
+                        await ctx.send(f"Jumped to position `{position}` in the current track.")
                 else:
                     await ctx.send("This track doesn't allow seeking, sorry.")
             else:
@@ -504,7 +609,7 @@ class MusicCog(commands.Cog, name="Music"):
 
                 # Set up the queue now.
                 vc.queue.clear()
-                vc.queue._queue.extend(converted_tracks)  # pyright: ignore [reportPrivateUsage]  # Seems like the quickest way.
+                vc.queue.put(converted_tracks)
 
                 await ctx.send(f"Imported track information from `{filename}`. Starting queue now.")
                 if not vc.playing:
@@ -532,7 +637,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def ensure_voice(self, ctx: core.GuildContext) -> None:
         """Ensures that the voice client automatically connects the right channel."""
 
-        vc: ExtraPlayer | None = ctx.voice_client
+        vc: wavelink.Player | None = ctx.voice_client
 
         if vc is None:
             if ctx.author.voice:
@@ -543,3 +648,9 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.send("You are not connected to a voice channel.")
                 msg = "User not connected to a voice channel."
                 raise commands.CommandError(msg)
+
+
+async def setup(bot: core.Beira) -> None:
+    """Connects cog to bot."""
+
+    await bot.add_cog(MusicCog(bot))

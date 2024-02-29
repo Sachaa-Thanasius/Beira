@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-import logging
 import re
 import textwrap
 from typing import Any, NamedTuple
@@ -23,8 +22,6 @@ __all__ = (
     "ff_embed_factory",
     "AO3SeriesView",
 )
-
-LOGGER = logging.getLogger(__name__)
 
 FFN_PATTERN = re.compile(r"(?:www\.|m\.|)fanfiction\.net/s/(?P<ffn_id>\d+)")
 FP_PATTERN = re.compile(r"(?:www\.|m\.|)fictionpress\.com/s/\d+")

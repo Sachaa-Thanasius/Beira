@@ -9,9 +9,11 @@ import sys
 import time
 import traceback
 from typing import TYPE_CHECKING, Any
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import aiohttp
 import ao3
+import async_lru
 import asyncpg
 import atlas_api
 import discord
@@ -246,6 +248,22 @@ class Beira(commands.Bot):
         for user_id in friends_ids:
             if user_obj := self.get_user(user_id):
                 self.special_friends[user_obj.name] = user_id
+
+    @async_lru.alru_cache()
+    async def get_user_timezone(self, user_id: int) -> str | None:
+        query = "SELECT timezone FROM users WHERE user_id = $1;"
+        record = await self.db_pool.fetchrow(query, user_id)
+        return record["timezone"] if record else None
+
+    async def get_user_tzinfo(self, user_id: int) -> ZoneInfo:
+        tz = await self.get_user_timezone(user_id)
+
+        if tz is None:
+            return ZoneInfo("UTC")
+        try:
+            return ZoneInfo(tz)
+        except ZoneInfoNotFoundError:
+            return ZoneInfo("UTC")
 
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
         """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of this bot's owner."""

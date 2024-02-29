@@ -4,10 +4,10 @@ db.py: Utility functions for interacting with the database.
 
 from __future__ import annotations
 
-import json
 from typing import TYPE_CHECKING, TypeAlias
 
 import discord
+import msgspec
 from asyncpg import Connection, Pool, Record
 from asyncpg.pool import PoolConnectionProxy
 
@@ -16,7 +16,7 @@ UserObject: TypeAlias = discord.abc.User | discord.Object | tuple[int, bool]
 GuildObject: TypeAlias = discord.Guild | discord.Object | tuple[int, bool]
 
 
-__all__ = ("Connection_alias", "Pool_alias", "pool_init", "upsert_users", "upsert_guilds")
+__all__ = ("Connection_alias", "Pool_alias", "conn_init", "upsert_users", "upsert_guilds")
 
 if TYPE_CHECKING:
     Connection_alias: TypeAlias = Connection[Record] | PoolConnectionProxy[Record]
@@ -26,10 +26,15 @@ else:
     Pool_alias: TypeAlias = Pool
 
 
-async def pool_init(connection: Connection_alias) -> None:
+async def conn_init(connection: Connection_alias) -> None:
     """Sets up codecs for Postgres connection."""
 
-    await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json.dumps, decoder=json.loads)
+    await connection.set_type_codec(
+        "jsonb",
+        schema="pg_catalog",
+        encoder=msgspec.json.encode,
+        decoder=msgspec.json.decode,
+    )
 
 
 async def upsert_users(conn: Pool_alias | Connection_alias, *users: UserObject) -> None:

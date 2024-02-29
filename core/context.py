@@ -8,6 +8,7 @@ from typing import TYPE_CHECKING, TypeAlias
 
 import aiohttp
 import discord
+import wavelink
 from discord.ext import commands
 
 from .utils.db import Pool_alias
@@ -15,7 +16,6 @@ from .utils.db import Pool_alias
 
 if TYPE_CHECKING:
     from .bot import Beira
-    from .wave import ExtraPlayer
 
 
 __all__ = ("Context", "GuildContext", "Interaction")
@@ -32,7 +32,7 @@ class Context(commands.Context["Beira"]):
     db
     """
 
-    voice_client: ExtraPlayer | None  # type: ignore # Type lie for narrowing
+    voice_client: wavelink.Player | None  # type: ignore # Type lie for narrowing
 
     @property
     def session(self) -> aiohttp.ClientSession:
