@@ -130,7 +130,7 @@ def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
     # Add the info in the embed appropriately.
     author_url = f"https://archiveofourown.org/users/{work.authors[0].name}"
     ao3_embed = (
-        discord.Embed(title=work.title, url=work.url, timestamp=discord.utils.utcnow())
+        discord.Embed(title=work.title, url=work.url, description=work.summary, timestamp=discord.utils.utcnow())
         .set_author(name=author_names, url=author_url, icon_url=STORY_WEBSITE_STORE["AO3"].icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated}")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{work.nwords:,d} words in {work.nchapters} chapter(s)")
@@ -140,7 +140,8 @@ def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    ao3_embed.description = textwrap.shorten(work.summary, 6000 - len(ao3_embed), placeholder="...")
+    if len(ao3_embed) > 6000:
+        ao3_embed.description = work.summary[: 6000 - len(ao3_embed) - 3] + "..."
     return ao3_embed
 
 
@@ -170,8 +171,9 @@ def create_ao3_series_embed(series: ao3.Series) -> discord.Embed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    series_descr = textwrap.shorten(series.description + "\n\n", 6000 - len(ao3_embed), placeholder="...\n\n")
-    ao3_embed.description = series_descr + (ao3_embed.description or "")
+    if len(ao3_embed) > 6000:
+        series_descr = series.description[: 6000 - len(ao3_embed) - 5] + "...\n\n"
+        ao3_embed.description = series_descr + (ao3_embed.description or "")
     return ao3_embed
 
 
@@ -202,7 +204,8 @@ def create_atlas_ffn_embed(story: atlas_api.Story) -> discord.Embed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    ffn_embed.description = textwrap.shorten(story.description, 6000 - len(ffn_embed), placeholder="...")
+    if len(ffn_embed) > 6000:
+        ffn_embed.description = story.description[: 6000 - len(ffn_embed) - 3] + "..."
     return ffn_embed
 
 
@@ -235,11 +238,11 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     else:
         stats_str = "No stats available at this time."
 
-    markdown_description = html_to_markdown(story.description)
+    md_description = html_to_markdown(story.description)
 
     # Add the info to the embed appropriately.
     story_embed = (
-        discord.Embed(title=story.title, url=story.url, timestamp=discord.utils.utcnow())
+        discord.Embed(title=story.title, url=story.url, description=md_description, timestamp=discord.utils.utcnow())
         .set_author(name=story.author.name, url=story.author.url, icon_url=icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated} ({story.status.capitalize()})")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{story.words:,d} words in {story.chapters} chapter(s)")
@@ -249,12 +252,8 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     )
 
     # Use the remaining space in the embed for the truncated description.
-    story_embed.description = textwrap.shorten(
-        markdown_description,
-        6000 - len(story_embed),
-        placeholder="...",
-        replace_whitespace=False,
-    )
+    if len(story_embed) > 6000:
+        story_embed.description = md_description[: 6000 - len(story_embed) - 3] + "..."
     return story_embed
 
 
