@@ -25,7 +25,7 @@ private_guild_with_9gag_links = 1097976528832307271
 async def get_9gag_mp4(session: aiohttp.ClientSession, link: str) -> str | None:
     async with session.get(link, headers=HEADERS) as response:
         data = lxml.html.fromstring(await response.read())
-        element = data.find(".//script[type='application/ld+json']")
+        element = data.find(".//script[@type='application/ld+json']")
         if element and element.text:
             return msgspec.json.decode(element.text)["video"]["contentUrl"]
         return None
