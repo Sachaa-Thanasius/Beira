@@ -1,11 +1,11 @@
 import asyncio
 import logging
-from collections.abc import AsyncGenerator
-from contextlib import asynccontextmanager
+import tempfile
+from collections.abc import Generator
+from contextlib import contextmanager
 from io import BytesIO
 from pathlib import Path
 
-import aiofiles
 import aiohttp
 import openai
 from PIL import Image
@@ -126,8 +126,8 @@ async def create_inspiration(session: aiohttp.ClientSession) -> str:
         return await response.text()
 
 
-@asynccontextmanager
-async def temp_file_names(*extensions: str) -> AsyncGenerator[tuple[Path, ...], None]:
+@contextmanager
+def temp_file_names(*extensions: str) -> Generator[tuple[Path, ...], None, None]:
     """Create temporary filesystem paths to generated filenames in a temporary folder.
 
     Upon completion, the folder is removed.
@@ -143,7 +143,7 @@ async def temp_file_names(*extensions: str) -> AsyncGenerator[tuple[Path, ...], 
         Filepaths with random filenames with the given file extensions, in order.
     """
 
-    async with aiofiles.tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory() as temp_dir:
         temp_paths = tuple(Path(temp_dir).joinpath(f"temp_output{i}." + ext) for i, ext in enumerate(extensions))
         yield temp_paths
 
@@ -168,13 +168,13 @@ async def create_morph(before_img_buffer: BytesIO, after_img_buffer: BytesIO) ->
     Source of the ffmpeg command: https://stackoverflow.com/questions/71178068/video-morph-between-two-images-ffmpeg-minterpolate
     """
 
-    async with temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
+    with temp_file_names("png", "png", "mp4", "gif") as (avatar_temp, ai_temp, mp4_temp, gif_temp):
         # Save the input images to temporary files.
-        async with aiofiles.open(avatar_temp, "wb") as file:
-            await file.write(before_img_buffer.getvalue())
+        with avatar_temp.open("wb") as file:
+            file.write(before_img_buffer.getvalue())
 
-        async with aiofiles.open(ai_temp, "wb") as file:
-            await file.write(after_img_buffer.getvalue())
+        with ai_temp.open("wb") as file:
+            file.write(after_img_buffer.getvalue())
 
         # Run an ffmpeg command to create and save the morph mp4 from the temp images.
         # fmt: off
