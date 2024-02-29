@@ -66,22 +66,23 @@ STORY_WEBSITE_REGEX = re.compile(
 
 
 def html_to_markdown(raw_text: str, *, include_spans: bool = False, base_url: str | None = None) -> str:
-    # Source: https://github.com/Rapptz/RoboDanny/blob/6e54be1985793ed29fca6b7c5259677904b8e1ad/cogs/dictionary.py#L532
+    # Modified from RoboDanny code:
+    # https://github.com/Rapptz/RoboDanny/blob/6e54be1985793ed29fca6b7c5259677904b8e1ad/cogs/dictionary.py#L532
 
     text: list[str] = []
     italics_marker: str = "_"
 
     node = lxml.html.fromstring(raw_text)
 
-    for child in node:
+    for child in node.iter():
         child_text = child.text.strip() if child.text else ""
-        if child.tag == "i":
+
+        if child.tag in {"i", "em"}:
             text.append(f"{italics_marker}{child_text}{italics_marker}")
             italics_marker = "_" if italics_marker == "*" else "*"  # type: ignore
-        elif child.tag == "b":
+        elif child.tag in {"b", "strong"}:
             if text and text[-1].endswith("*"):
                 text.append("\u200b")
-
             text.append(f"**{child_text.strip()}**")
         elif child.tag == "a":
             # No markup for links
@@ -90,6 +91,8 @@ def html_to_markdown(raw_text: str, *, include_spans: bool = False, base_url: st
             else:
                 url = urljoin(base_url, child.attrib["href"])
                 text.append(f"[{child.text}]({url})")
+        elif child.tag == "p":
+            text.append(f"\n{child_text}\n")
         elif include_spans and child.tag == "span":
             text.append(child_text)
 
