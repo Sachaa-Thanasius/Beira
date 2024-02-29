@@ -3,11 +3,13 @@ from __future__ import annotations
 import re
 import textwrap
 from typing import Any, NamedTuple
+from urllib.parse import urljoin
 
 import ao3
 import atlas_api
 import discord
 import fichub_api
+import lxml.html
 
 from core.utils import PaginatedSelectView
 
@@ -61,6 +63,40 @@ STORY_WEBSITE_REGEX = re.compile(
     r"(?:http://|https://|)"
     + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in STORY_WEBSITE_STORE.items()),
 )
+
+
+def html_to_markdown(raw_text: str, *, include_spans: bool = False, base_url: str | None = None) -> str:
+    # Source: https://github.com/Rapptz/RoboDanny/blob/6e54be1985793ed29fca6b7c5259677904b8e1ad/cogs/dictionary.py#L532
+
+    text: list[str] = []
+    italics_marker: str = "_"
+
+    node = lxml.html.fromstring(raw_text)
+
+    for child in node:
+        child_text = child.text.strip() if child.text else ""
+        if child.tag == "i":
+            text.append(f"{italics_marker}{child_text}{italics_marker}")
+            italics_marker = "_" if italics_marker == "*" else "*"  # type: ignore
+        elif child.tag == "b":
+            if text and text[-1].endswith("*"):
+                text.append("\u200b")
+
+            text.append(f"**{child_text.strip()}**")
+        elif child.tag == "a":
+            # No markup for links
+            if base_url is None:
+                text.append(child_text)
+            else:
+                url = urljoin(base_url, child.attrib["href"])
+                text.append(f"[{child.text}]({url})")
+        elif include_spans and child.tag == "span":
+            text.append(child_text)
+
+        if child.tail:
+            text.append(child.tail)
+
+    return "".join(text).strip()
 
 
 def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
@@ -196,9 +232,11 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     else:
         stats_str = "No stats available at this time."
 
+    description = html_to_markdown(story.description)
+
     # Add the info to the embed appropriately.
     story_embed = (
-        discord.Embed(title=story.title, url=story.url, description=story.description, timestamp=discord.utils.utcnow())
+        discord.Embed(title=story.title, url=story.url, description=description, timestamp=discord.utils.utcnow())
         .set_author(name=story.author.name, url=story.author.url, icon_url=icon_url)
         .add_field(name="\N{SCROLL} Last Updated", value=f"{updated} ({story.status.capitalize()})")
         .add_field(name="\N{OPEN BOOK} Length", value=f"{story.words:,d} words in {story.chapters} chapter(s)")

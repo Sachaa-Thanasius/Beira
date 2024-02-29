@@ -82,8 +82,8 @@ async def load_wiki_all_pages(session: ClientSession, wiki_url: str) -> dict[str
             },
         )
         next_page = element.xpath(".//div[@class='mw-allpages-nav']/a[contains(text(), 'Next')]")
-        if len(next_page) > 0:  # type: ignore # typing of lxml xpath result is too wide.
-            next_path = urljoin(wiki_url, str(next_page[0].attrib["href"]))  # type: ignore # Known list based on XPath.
+        if len(next_page) > 0:  # typing of lxml xpath result is too wide.
+            next_path = urljoin(wiki_url, str(next_page[0].attrib["href"]))  # Known list based on XPath.
         else:
             break
     return pages_dict
