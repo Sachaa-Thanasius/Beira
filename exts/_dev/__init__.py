@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from core import Beira
 
 from ._dev import DevCog
 from ._test import TestCog
-
-
-if TYPE_CHECKING:
-    from core import Beira
 
 
 async def setup(bot: Beira) -> None:

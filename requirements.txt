@@ -11,5 +11,6 @@ lxml>=4.9.3
 types-lxml
 msgspec[toml]
 openai>=1.8.0
+parsedatetime-stubs @ git+https://github.com/Sachaa-Thanasius/parsedatetime-stubs
 Pillow>=10.0.0
 wavelink>=3.0.0
