@@ -19,6 +19,8 @@ from lxml import etree, html
 import core
 from core.utils import EMOJI_URL
 
+from .ff_metadata.utils import html_to_markdown
+
 
 if TYPE_CHECKING:
     from aiohttp import ClientSession
@@ -122,7 +124,7 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
         else:
             if index > summary_end_index:
                 summary_end_index = index
-        subheading.getparent().remove(subheading)  # type: ignore [reportOptionalMemberAccess]
+            subheading.getparent().remove(subheading)  # type: ignore [reportOptionalMemberAccess]
 
     if summary_end_index != 0:
         for el in list(element[summary_end_index + 1 :]):
@@ -142,8 +144,7 @@ async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | N
         char_summary, char_thumbnail = None, None
 
         # Extract the main content.
-        text = await response.text()
-        element = html.fromstring(text)
+        element = html.fromstring(await response.text())
         content = element.find(".//div[@class='mw-parser-output']")
         if content is not None:
             # Extract the image.
@@ -151,8 +152,25 @@ async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | N
             if image is not None:
                 char_thumbnail = str(image.attrib["href"])
 
-            content = clean_fandom_page(content)
-            char_summary = content.text
+            # Filter the content text.
+            summary_end_index = 0
+            to_look_for = [".//aside[contains(@class, 'portable-infobox')]", ".//div[@id='toc']", ".//h2"]
+
+            for index, node in enumerate(content.xpath(" | ".join(to_look_for))):
+                if (node.tag == "div" or node.tag == "h2") and summary_end_index == 0 and index > summary_end_index:
+                    summary_end_index = index
+
+                node.getparent().remove(node)
+
+            if summary_end_index != 0:
+                for el in list(content[summary_end_index:]):
+                    content.remove(el)
+
+            char_summary = html_to_markdown(
+                content,
+                include_spans=True,
+                base_url="".join(url.partition(".com/wiki/")[0:-1]),
+            )
 
         # Return the remaining text.
         return char_summary, char_thumbnail
