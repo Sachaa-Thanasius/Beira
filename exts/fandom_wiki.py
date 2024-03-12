@@ -104,14 +104,24 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
 
     toc = element.find(".//div[@id='toc']")
     if toc is not None:
-        if element.index(toc) > summary_end_index:
-            summary_end_index = element.index(toc)
+        try:
+            index = element.index(toc)
+        except ValueError:
+            pass
+        else:
+            if index > summary_end_index:
+                summary_end_index = index
         toc.getparent().remove(toc)  # type: ignore [reportOptionalMemberAccess]
 
     subheading = element.find(".//h2")
     if subheading is not None:
-        if element.index(subheading) > summary_end_index:
-            summary_end_index = element.index(subheading)
+        try:
+            index = element.index(subheading)
+        except ValueError:
+            pass
+        else:
+            if index > summary_end_index:
+                summary_end_index = index
         subheading.getparent().remove(subheading)  # type: ignore [reportOptionalMemberAccess]
 
     if summary_end_index != 0:
