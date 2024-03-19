@@ -1,3 +1,4 @@
+aiohttp
 ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py.git@main
 arsenic
 async-lru
