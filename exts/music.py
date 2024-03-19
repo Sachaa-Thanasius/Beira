@@ -123,7 +123,7 @@ class ExtraPlayer(wavelink.Player):
         nodes: list[wavelink.Node] | None = None,
     ) -> None:
         super().__init__(client, channel, nodes=nodes)
-        self.autoplay = wavelink.AutoPlayMode.partial
+        self.autoplay = wavelink.AutoPlayMode.partial # type: ignore
 
 
 class MusicCog(commands.Cog, name="Music"):

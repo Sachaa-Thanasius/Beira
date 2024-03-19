@@ -216,8 +216,8 @@ class TodoCompleteButton(discord.ui.Button["TodoViewABC"]):
             self.label = "Mark as complete"
             completion_status = "incomplete"
         else:
-            self.style = discord.ButtonStyle.grey
-            self.label = "Mark as incomplete"
+            self.style = discord.ButtonStyle.grey  # type: ignore
+            self.label = "Mark as incomplete"  # type: ignore
             completion_status = "complete"
 
         # Adjust the view to have and display the updated to-do item, and let the user know it's updated.

@@ -84,9 +84,8 @@ class AddEmojiButton(discord.ui.Button["AddEmojisView"]):
     """
 
     def __init__(self, *, guild: discord.Guild, emoji: discord.PartialEmoji, **kwargs: Any) -> None:
-        super().__init__(**kwargs)
+        super().__init__(emoji=emoji, **kwargs)
         self.guild = guild
-        self.emoji = emoji
         self.new_emoji: discord.Emoji | None = None
 
     async def callback(self, interaction: discord.Interaction) -> None:
@@ -104,7 +103,7 @@ class AddEmojiButton(discord.ui.Button["AddEmojisView"]):
         else:
             await self.new_emoji.delete()
 
-            self.style = discord.ButtonStyle.secondary
+            self.style = discord.ButtonStyle.secondary  # type: ignore
             await interaction.response.edit_message(view=self.view)
             await interaction.followup.send(f"Deleted this emoji from the server: {self.emoji}", ephemeral=True)
 
