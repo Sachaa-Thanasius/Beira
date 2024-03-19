@@ -7,8 +7,9 @@ from io import BytesIO
 from pathlib import Path
 
 import aiohttp
-import openai
 from PIL import Image
+
+import core
 
 
 __all__ = (
@@ -58,7 +59,7 @@ def process_image(image_bytes: bytes) -> BytesIO:
     return output_buffer
 
 
-async def create_completion(client: openai.AsyncOpenAI, prompt: str) -> str:
+async def create_completion(session: aiohttp.ClientSession, prompt: str) -> str:
     """Makes a call to OpenAI's API to generate text based on given input.
 
     Parameters
@@ -69,19 +70,27 @@ async def create_completion(client: openai.AsyncOpenAI, prompt: str) -> str:
     Returns
     -------
     text: :class:`str`
-        The generated text completion.
+        The generated text completion, or an empty string if it failed.
     """
 
-    completion_response = await client.completions.create(
-        model="text-davinci-003",
-        prompt=prompt,
-        max_tokens=150,
-        temperature=0,
-    )
-    return completion_response.choices[0].text
+    async with session.post(
+        "https://api.openai.com/v1/completions",
+        headers={"Authorization": f"Bearer {core.CONFIG}"},
+        json={
+            "model": "gpt-3.5-turbo-instruct",
+            "prompt": prompt,
+            "max_tokens": 150,
+            "temperature": 0,
+        },
+    ) as response:
+        result = await response.json()
+        try:
+            return result["choices"][0]["text"] or ""
+        except (KeyError, IndexError):
+            return ""
 
 
-async def create_image(client: openai.AsyncOpenAI, prompt: str, size: tuple[int, int] = (256, 256)) -> str:
+async def create_image(session: aiohttp.ClientSession, prompt: str, size: tuple[int, int] = (256, 256)) -> str:
     """Makes a call to OpenAI's API to generate an image based on given inputs.
 
     Parameters
@@ -94,17 +103,25 @@ async def create_image(client: openai.AsyncOpenAI, prompt: str, size: tuple[int,
     Returns
     -------
     url: :class:`str`
-        The url of the generated image.
+        The url of the generated image, or an empty string if it failed.
     """
 
-    image_response = await client.images.generate(
-        prompt=prompt,
-        n=1,
-        response_format="url",
-        size=f"{size[0]}x{size[1]}",  # type: ignore # FIXME: Find a way to pass in a literal.
-    )
-
-    return image_response.data[0].url or ""
+    async with session.post(
+        "https://api.openai.com/v1/images/generations",
+        headers={"Authorization": f"Bearer {core.CONFIG}"},
+        json={
+            "model": "dall-e-2",
+            "prompt": prompt,
+            "n": 1,
+            "size": f"{size[0]}x{size[1]}",  # FIXME: Find a way to pass in a literal.
+            "response_format": "url",
+        },
+    ) as response:
+        result = await response.json()
+        try:
+            return result["data"][0]["url"] or ""
+        except (KeyError, IndexError):
+            return ""
 
 
 async def create_inspiration(session: aiohttp.ClientSession) -> str:

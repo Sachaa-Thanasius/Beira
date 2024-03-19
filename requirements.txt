@@ -1,16 +1,20 @@
-ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py.git
+ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py.git@main
 arsenic
 async-lru
 asyncpg==0.29.0
 asyncpg-stubs==0.29.1
-atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper.git
+atlas-api @ https://github.com/Sachaa-Thanasius/atlas-api-wrapper/releases/download/v0.2.2/atlas_api-0.2.2-py3-none-any.whl
 discord.py[speed,voice]>=2.3.2
-fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api.git
+fichub-api @ https://github.com/Sachaa-Thanasius/fichub-api/releases/download/v0.2.2/fichub_api-0.2.2-py3-none-any.whl
+importlib_resources; python_version < "3.12"
 jishaku @ git+https://github.com/Gorialis/jishaku@a6661e2813124fbfe53326913e54f7c91e5d0dec
 lxml>=4.9.3
 types-lxml
 msgspec[toml]
-openai>=1.8.0
-parsedatetime-stubs @ git+https://github.com/Sachaa-Thanasius/parsedatetime-stubs
 Pillow>=10.0.0
 wavelink>=3.0.0
+
+# To be used later:
+# parsedatetime
+# parsedatetime-stubs @ git+https://github.com/Sachaa-Thanasius/parsedatetime-stubs
+# python-dateutil

@@ -184,5 +184,5 @@ def make_listeners(bot: core.Beira) -> tuple[tuple[str, functools.partial[Any]],
     return (
         ("on_member_update", functools.partial(on_leveled_role_member_update, bot, role_log_webhook)),
         ("on_member_update", functools.partial(on_server_boost_role_member_update, bot, role_log_webhook)),
-        # ("on_message", functools.partial(on_bad_twitter_link, bot)), # Twitter got their shit together.
+        # ("on_message", functools.partial(on_bad_twitter_link, bot)), # Twitter works.  # noqa: ERA001
     )

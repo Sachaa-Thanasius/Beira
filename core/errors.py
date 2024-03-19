@@ -3,8 +3,10 @@ errors.py: Custom errors used by the bot.
 """
 
 from discord import app_commands
-from discord.app_commands.commands import Check as AppCheckFunc
 from discord.ext import commands
+
+
+AppCheckFunc = app_commands.commands.Check
 
 
 __all__ = (

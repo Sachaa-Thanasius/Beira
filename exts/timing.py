@@ -178,7 +178,7 @@ class TimingCog(commands.Cog):
 
 
 # TODO: Complete and enable later.
-# async def setup(bot: core.Beira) -> None:
-#     """Connects cog to bot."""
+async def setup(bot: core.Beira) -> None:
+    """Connects cog to bot."""
 
-#     await bot.add_cog(TimingCog(bot))
+    # await bot.add_cog(TimingCog(bot))  # noqa: ERA001

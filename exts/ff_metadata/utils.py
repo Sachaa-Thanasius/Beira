@@ -79,7 +79,7 @@ def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False
 
         if child.tag in {"i", "em"}:
             text.append(f"{italics_marker}{child_text}{italics_marker}")
-            italics_marker = "_" if italics_marker == "*" else "*"
+            italics_marker = "_" if italics_marker == "*" else "*"  # type: ignore
         elif child.tag in {"b", "strong"}:
             if text and text[-1].endswith("*"):
                 text.append("\u200b")

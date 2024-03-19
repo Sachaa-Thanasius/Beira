@@ -9,6 +9,7 @@ from __future__ import annotations
 import logging
 import random
 import re
+import sys
 import textwrap
 from bisect import bisect_left
 from functools import lru_cache
@@ -25,6 +26,11 @@ from discord.ext import commands
 import core
 from core.utils import EMOJI_URL, PaginatedEmbedView
 
+
+if sys.version_info >= (3, 12):
+    from importlib import resources as importlib_resources
+else:
+    import importlib_resources
 
 if TYPE_CHECKING:
     from typing_extensions import Self
@@ -139,9 +145,10 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         """Load whatever is necessary to avoid reading from files or querying the database during runtime."""
 
         # Load story text from markdown files.
-        project_path = Path(__file__).resolve().parents[1]
-        for file in project_path.glob("data/story_text/**/*.md"):
-            if "text" in file.name:
+        data_dir = importlib_resources.files("data.story_text")
+        with importlib_resources.as_file(data_dir) as data_path:  # type: ignore
+            assert isinstance(data_path, Path)  # Wouldn't be necessary if as_file were typed better.
+            for file in data_path.glob("**/*text.md"):
                 await self.load_story_text(file)
 
     async def cog_command_error(self, ctx: core.Context, error: Exception) -> None:  # type: ignore # Narrowing

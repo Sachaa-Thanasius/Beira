@@ -31,8 +31,8 @@ else:
 
 LOGGER = logging.getLogger(__name__)
 
-GECKODRIVER = Path(__file__).parents[1].joinpath("drivers/geckodriver/geckodriver.exe")
-GECKODRIVER_LOGS = Path(__file__).parents[1].joinpath("logs/geckodriver.log")
+GECKODRIVER = Path().resolve().joinpath("drivers/geckodriver/geckodriver.exe")
+GECKODRIVER_LOGS = Path().resolve().joinpath("logs/geckodriver.log")
 
 PERSONAL_GUILD = 107584745809944576
 

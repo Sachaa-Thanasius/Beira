@@ -55,7 +55,7 @@ class RSSNotificationsCog(commands.Cog):
 
     def process_new_item(self, text: str) -> discord.Embed:
         """Turn new item/update into a nicely formatted discord Embed."""
-        ...
+        ...  # noqa: PIE790
 
     @tasks.loop(seconds=10)
     async def notification_check_loop(self) -> None:

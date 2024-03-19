@@ -5,14 +5,15 @@ description = "An personal Discord bot made in Python."
 readme = "README.md"
 license = { file = "LICENSE" }
 requires-python = ">=3.10"
-authors = [{ name = "Sachaa-Thanasius", email = "111999343+Sachaa-Thanasius@users.noreply.github.com" }]
+authors = [
+    { name = "Sachaa-Thanasius", email = "111999343+Sachaa-Thanasius@users.noreply.github.com" },
+]
 
 [project.urls]
 Homepage = "https://github.com/Sachaa-Thanasius/Beira"
-"Bug Tracker" = "https://github.com/Sachaa-Thanasius/Beira/issues"
 
 [tool.ruff]
-include = ["main.py", "core/*.py", "exts/*.py", "typings/*.*", "**/pyproject.toml"]
+include = ["main.py", "core/*", "exts/*", "**/pyproject.toml"]
 line-length = 120
 target-version = "py310"
 
@@ -75,12 +76,11 @@ extend-ignore = [
     "ISC002",
 ]
 unfixable = [
-    "ERA", # I don't want anything erroneously detected deleted by this.
+    "ERA", # Disallow erroneous detection into deletion.
 ]
 
 [tool.ruff.lint.per-file-ignores]
 "__init__.py" = ["F403", "PLC0414"] # Star import usually throws these.
-"typings/parsedatetime/parsedatetime.pyi" = ["F403"] # Star import usually throws these.
 "misc/**" = [
     "T201",   # Leave prints alone.
     "ERA001", # Leave commented code alone.
@@ -91,7 +91,7 @@ lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
-include = ["main.py", "core", "exts", "typings"]
+include = ["main.py", "core", "exts"]
 pythonVersion = "3.10"
 typeCheckingMode = "strict"
 
