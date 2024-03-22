@@ -123,7 +123,7 @@ class ExtraPlayer(wavelink.Player):
         nodes: list[wavelink.Node] | None = None,
     ) -> None:
         super().__init__(client, channel, nodes=nodes)
-        self.autoplay = wavelink.AutoPlayMode.partial # type: ignore
+        self.autoplay = wavelink.AutoPlayMode.partial
 
 
 class MusicCog(commands.Cog, name="Music"):
@@ -202,22 +202,28 @@ class MusicCog(commands.Cog, name="Music"):
         await ctx.send_help(ctx.command)
 
     @music.command()
-    async def connect(self, ctx: core.GuildContext) -> None:
+    async def connect(self, ctx: core.GuildContext, channel: discord.VoiceChannel | None = None) -> None:
         """Join a voice channel."""
 
         vc: wavelink.Player | None = ctx.voice_client
 
         if vc is not None and ctx.author.voice is not None:
-            if vc.channel != ctx.author.voice.channel:
+            # Not sure in what circumstances a member would have a voice state without being in a valid channel.
+            target_channel = channel or ctx.author.voice.channel
+            if target_channel != vc.channel:
                 if ctx.author.guild_permissions.administrator:
-                    await vc.move_to(ctx.author.voice.channel)
-                    await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
+                    await vc.move_to(target_channel)
+                    await ctx.send(f"Joined the {target_channel} channel.")
                 else:
                     await ctx.send("Voice player is currently being used in another channel.")
             else:
                 await ctx.send("Voice player already connected to this voice channel.")
         elif ctx.author.voice is None:
-            await ctx.send("Please join a voice channel and try again.")
+            if ctx.author.guild_permissions.administrator and channel is not None:
+                await channel.connect(cls=ExtraPlayer)
+                await ctx.send(f"Joined the {channel} channel.")
+            else:
+                await ctx.send("Please join a voice channel and try again.")
         else:
             # Not sure in what circumstances a member would have a voice state without being in a valid channel.
             assert ctx.author.voice.channel
@@ -225,19 +231,22 @@ class MusicCog(commands.Cog, name="Music"):
             await ctx.send(f"Joined the {ctx.author.voice.channel} channel.")
 
     @music.command()
-    async def play(self, ctx: core.GuildContext, *, query: str) -> None:
+    async def play(self, ctx: core.GuildContext, query: str, _channel: discord.VoiceChannel | None = None) -> None:
         """Play audio from a url or search term.
 
         Parameters
         ----------
         ctx: :class:`core.GuildContext`
             The invocation context.
-        search: :class:`str`
+        query: :class:`str`
             A search term/url that is converted into a track or playlist.
         """
 
-        assert ctx.voice_client  # Ensured by this command's before_invoke.
-        vc: wavelink.Player = ctx.voice_client
+        if ctx.author.guild_permissions.administrator and _channel is not None:
+            vc = await _channel.connect(cls=ExtraPlayer)
+        else:
+            assert ctx.voice_client  # Ensured by this command's before_invoke.
+            vc: wavelink.Player = ctx.voice_client
 
         async with ctx.typing():
             tracks: wavelink.Search = await wavelink.Playable.search(query)
@@ -256,6 +265,22 @@ class MusicCog(commands.Cog, name="Music"):
 
             if not vc.playing:
                 await vc.play(vc.queue.get())
+
+    @play.before_invoke
+    async def play_ensure_voice(self, ctx: core.GuildContext) -> None:
+        """Ensures that the voice client automatically connects the right channel."""
+
+        vc: wavelink.Player | None = ctx.voice_client
+
+        if vc is None:
+            if ctx.author.voice:
+                # Not sure in what circumstances a member would have a voice state without being in a valid channel.
+                assert ctx.author.voice.channel
+                await ctx.author.voice.channel.connect(cls=ExtraPlayer)
+            elif not ctx.author.guild_permissions.administrator:
+                await ctx.send("You are not connected to a voice channel.")
+                msg = "User not connected to a voice channel."
+                raise commands.CommandError(msg)
 
     @play.autocomplete("query")
     async def play_autocomplete(self, _: discord.Interaction, current: str) -> list[app_commands.Choice[str]]:
@@ -632,9 +657,8 @@ class MusicCog(commands.Cog, name="Music"):
 
         await ctx.send(error_text)
 
-    @play.before_invoke
     @muse_import.before_invoke
-    async def ensure_voice(self, ctx: core.GuildContext) -> None:
+    async def import_ensure_voice(self, ctx: core.GuildContext) -> None:
         """Ensures that the voice client automatically connects the right channel."""
 
         vc: wavelink.Player | None = ctx.voice_client
