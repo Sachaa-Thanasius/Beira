@@ -10,9 +10,10 @@ fichub-api @ https://github.com/Sachaa-Thanasius/fichub-api/releases/download/v0
 importlib_resources; python_version < "3.12"
 jishaku @ git+https://github.com/Gorialis/jishaku@a6661e2813124fbfe53326913e54f7c91e5d0dec
 lxml>=4.9.3
-types-lxml
 msgspec[toml]
+openpyxl
 Pillow>=10.0.0
+types-lxml
 wavelink>=3.0.0
 
 # To be used later:
