@@ -8,10 +8,11 @@ TODO: Consider switching to or extending Sinbad's dicelib: https://github.com/mi
 from __future__ import annotations
 
 import logging
+import operator
 import random
 import re
 import textwrap
-from ast import literal_eval
+from collections.abc import Callable
 from io import StringIO
 from typing import TYPE_CHECKING, Any, cast
 
@@ -71,18 +72,6 @@ standard_dice: dict[int, Die] = {
 # fmt: on
 
 
-def replace_dice_in_expr(match: re.Match[str]) -> str:
-    """Replace the dice in an expression with an expression containing the resulting rolls.
-
-    Example: Replaces``5d6`` in ``5d6 + 7`` with ``(1, 5, 6, 3, 3)``.
-    """
-
-    num = int(match.group(1)) if match.group(1) else 1
-    limit = int(match.group(2))
-    rolls = [random.randint(1, limit) for _ in range(num)]
-    return f"({' + '.join(str(ind_roll) for ind_roll in rolls)})"
-
-
 def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
     """Generate a dict of dice rolls.
 
@@ -115,16 +104,64 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
     -------
     normalized_expression, evaluation: tuple[:class:`str`, :class:`int`]
         A tuple with filled in expression and final result.
+
+    Notes
+    -----
+    Chosen limits are that standalone numbers must be less than 1000 and that dice expressions can only have up to 100
+    sides and 99 rolls per.
     """
 
-    normalized_expression = re.sub(r"(\d*)d(\d+)", replace_dice_in_expr, expression)
-    try:
-        evaluation = int(literal_eval(normalized_expression))
-    except (ValueError, TypeError, SyntaxError, MemoryError, RecursionError):
-        evaluation = 0
-        normalized_expression += " (Error thrown while rolling, incorrect result)"
+    if any(map(expression.__contains__, {"*", "/", "(", ")"})):
+        return "(Invalid expression; multiplication, division, and parentheses not supported)", 0
 
-    return normalized_expression, evaluation
+    expr_parts = expression.replace("+", " + ").replace("-", " - ").strip().split()
+    components: list[int] = []
+    operations: list[Callable[[Any, Any], Any]] = []
+    should_be_op = False
+    for part in expr_parts:
+        if not should_be_op:
+            if part.isdigit():
+                if len(part) < 4:
+                    components.append(int(part))
+                else:
+                    return "(Invalid expression; numbers cannot be longer than 3 digits)", 0
+            elif match := re.search(r"^(?P<num>[1-9][0-9]?)d(?P<limit>(?:100)|(?:[1-9][0-9]?))", part):
+                num = int(match.group("num"))
+                limit = int(match.group("limit"))
+                rolls = [random.randint(1, limit) for _ in range(num)]
+                components.append(sum(rolls))
+            else:
+                return f"(Invalid expression; expected number or dice expression, not {part!r})", 0
+        else:
+            if part == "-":
+                operations.append(operator.sub)
+            elif part == "+":
+                operations.append(operator.add)
+            else:
+                return f"(Invalid expression; expected operator, not {part!r})", 0
+
+        should_be_op = not should_be_op
+
+    if not should_be_op:
+        return "(Invalid expression; expression ends with an operator)", 0
+
+    if len(operations) != (len(components) - 1):
+        return "(Invalid expression; too many operators or too few dice expressions)", 0
+
+    operations.insert(0, operator.add)
+
+    total = 0
+
+    for op, component in zip(operations, components, strict=True):
+        total = op(total, component)
+
+    with StringIO() as expr_repr:
+        expr_repr.write(str(components[0]))
+        for op, component in zip(operations[1:], components[1:], strict=True):
+            op_repr = "+" if op is operator.add else "-"
+            expr_repr.write(f" {op_repr} {component}")
+
+        return expr_repr.getvalue(), total
 
 
 class DiceEmbed(discord.Embed):

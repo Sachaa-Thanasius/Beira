@@ -103,7 +103,7 @@ class AddEmojiButton(discord.ui.Button["AddEmojisView"]):
         else:
             await self.new_emoji.delete()
 
-            self.style = discord.ButtonStyle.secondary  # type: ignore
+            self.style = discord.ButtonStyle.secondary
             await interaction.response.edit_message(view=self.view)
             await interaction.followup.send(f"Deleted this emoji from the server: {self.emoji}", ephemeral=True)
 
