@@ -10,7 +10,7 @@ import discord
 import fichub_api
 import lxml.html
 
-from core.utils import PaginatedSelectView
+from core.utils import PaginatedSelectView, html_to_markdown
 
 
 __all__ = (
@@ -62,43 +62,6 @@ STORY_WEBSITE_REGEX = re.compile(
     r"(?:http://|https://|)"
     + "|".join(f"(?P<{key}>{value.story_regex.pattern})" for key, value in STORY_WEBSITE_STORE.items()),
 )
-
-
-def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False, base_url: str | None = None) -> str:
-    # Modified from RoboDanny code:
-    # https://github.com/Rapptz/RoboDanny/blob/6e54be1985793ed29fca6b7c5259677904b8e1ad/cogs/dictionary.py#L532
-
-    text: list[str] = []
-    italics_marker: str = "_"
-
-    if base_url is not None:
-        node.make_links_absolute("".join(base_url.partition(".com/wiki/")[0:-1]), resolve_base_href=True)
-
-    for child in node.iter():
-        child_text = child.text.strip() if child.text else ""
-
-        if child.tag in {"i", "em"}:
-            text.append(f"{italics_marker}{child_text}{italics_marker}")
-            italics_marker = "_" if italics_marker == "*" else "*"  # type: ignore
-        elif child.tag in {"b", "strong"}:
-            if text and text[-1].endswith("*"):
-                text.append("\u200b")
-            text.append(f"**{child_text.strip()}**")
-        elif child.tag == "a":
-            # No markup for links
-            if base_url is None:
-                text.append(child_text)
-            else:
-                text.append(f"[{child.text}]({child.attrib['href']})")
-        elif child.tag == "p":
-            text.append(f"\n{child_text}\n")
-        elif include_spans and child.tag == "span":
-            text.append(child_text)
-
-        if child.tail:
-            text.append(child.tail)
-
-    return "".join(text).strip()
 
 
 def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:

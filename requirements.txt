@@ -14,7 +14,7 @@ msgspec[toml]
 openpyxl
 Pillow>=10.0.0
 types-lxml
-wavelink>=3.0.0
+wavelink>=3.2.0
 
 # To be used later:
 # parsedatetime

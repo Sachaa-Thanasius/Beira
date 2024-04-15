@@ -8,22 +8,17 @@ from __future__ import annotations
 import asyncio
 import logging
 import textwrap
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from urllib.parse import quote as uriquote, urljoin
 
+import aiohttp
 import discord
 from discord.app_commands import Choice
 from discord.ext import commands
 from lxml import etree, html
 
 import core
-from core.utils import EMOJI_URL
-
-from .ff_metadata.utils import html_to_markdown
-
-
-if TYPE_CHECKING:
-    from aiohttp import ClientSession
+from core.utils import EMOJI_URL, html_to_markdown
 
 
 LOGGER = logging.getLogger(__name__)
@@ -70,7 +65,7 @@ class AoCWikiEmbed(discord.Embed):
         )
 
 
-async def load_wiki_all_pages(session: ClientSession, wiki_url: str) -> dict[str, str]:
+async def load_wiki_all_pages(session: aiohttp.ClientSession, wiki_url: str) -> dict[str, str]:
     pages_dict: dict[str, str] = {}
     next_path: str = urljoin(wiki_url, "/wiki/Special:AllPages")
     while True:
@@ -137,7 +132,7 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
     return element
 
 
-async def process_fandom_page(session: ClientSession, url: str) -> tuple[str | None, str | None]:
+async def process_fandom_page(session: aiohttp.ClientSession, url: str) -> tuple[str | None, str | None]:
     """Extract the summary and image from a Fandom page."""
 
     async with session.get(url) as response:
