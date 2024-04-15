@@ -51,7 +51,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
 
@@ -144,9 +144,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        search_factors: :class:`CommandStatsSearchFlags`
+        search_factors: `CommandStatsSearchFlags`
             A flag converter for taking a few query specifications when searching for usage stats.
         """
 

@@ -67,7 +67,7 @@ STORY_WEBSITE_REGEX = re.compile(
 def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own work.
 
-    Only accepts :class:`ao3.Work` objects.
+    Only accepts `ao3.Work` objects.
     """
 
     # Format the relevant information.
@@ -110,7 +110,7 @@ def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
 def create_ao3_series_embed(series: ao3.Series) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for an Archive of Our Own series.
 
-    Only accepts :class:`ao3.Series` objects.
+    Only accepts `ao3.Series` objects.
     """
 
     author_url = f"https://archiveofourown.org/users/{series.creators[0].name}"
@@ -142,7 +142,7 @@ def create_ao3_series_embed(series: ao3.Series) -> discord.Embed:
 def create_atlas_ffn_embed(story: atlas_api.Story) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for a FanFiction.Net story.
 
-    Only accepts :class:`atlas_api.Story` objects from my own Atlas wrapper.
+    Only accepts `atlas_api.Story` objects from my own Atlas wrapper.
     """
 
     # Format the relevant information.
@@ -174,7 +174,7 @@ def create_atlas_ffn_embed(story: atlas_api.Story) -> discord.Embed:
 def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
     """Create an embed that holds all the relevant metadata for a few different types of online fiction story.
 
-    Only accepts :class:`fichub_api.Story` objects from my own FicHub wrapper.
+    Only accepts `fichub_api.Story` objects from my own FicHub wrapper.
     """
 
     # Format the relevant information.
@@ -240,17 +240,17 @@ class AO3SeriesView(PaginatedSelectView[ao3.Work]):
 
     Parameters
     ----------
-    author_id: :class:`int`
+    author_id: `int`
         The Discord ID of the user that triggered this view. No one else can use it.
-    series: :class:`ao3.Series`
+    series: `ao3.Series`
         The object holding metadata about an AO3 series and the works within.
-    timeout: :class:`float` | None, optional
+    timeout: `float` | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
 
     Attributes
     ----------
-    series: :class:`ao3.Series`
+    series: `ao3.Series`
         The object holding metadata about an AO3 series and the works within.
     """
 

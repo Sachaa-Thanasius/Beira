@@ -26,8 +26,7 @@ T = TypeVar("T")
 class AppCheck(Protocol):
     predicate: AppCheckFunc
 
-    def __call__(self, coro_or_commands: T) -> T:
-        ...
+    def __call__(self, coro_or_commands: T) -> T: ...
 
 
 __all__ = (
@@ -138,7 +137,7 @@ def check_any(*checks: AppCheck) -> Callable[[T], T]:
 
     Parameters
     ----------
-    checks: :class:`AppCheckProtocol`
+    checks: `AppCheckProtocol`
         An argument list of checks that have been decorated with :func:`app_commands.check` decorator.
 
     Raises

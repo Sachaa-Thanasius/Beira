@@ -47,7 +47,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{BAR CHART}")
 
@@ -137,9 +137,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        channels: :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+        channels: `commands.Greedy`[`discord.abc.GuildChannel`]
             A list of channels to add, separated by spaces.
         """
 
@@ -177,9 +177,9 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        channels: :class:`commands.Greedy`[:class:`discord.abc.GuildChannel`]
+        channels: `commands.Greedy`[`discord.abc.GuildChannel`]
             A list of channels to remove, separated by spaces.
         """
 
@@ -210,11 +210,11 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
         platform: Literal["ao3", "ffn", "other"]
             The platform to search.
-        name_or_url: :class:`str`
+        name_or_url: `str`
             The search string for the story title, or the story url.
         """
 

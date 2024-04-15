@@ -27,13 +27,13 @@ class SnowballRecord(msgspec.Struct):
 
     Attributes
     ----------
-    hits: :class:`int`
+    hits: `int`
         The number of snowballs used that the member just hit people with.
-    misses: :class:`int`
+    misses: `int`
         The number of snowballs used the member just tried to hit someone with and missed.
-    kos: :class:`int'
+    kos: `int'
         The number of hits the member just took.
-    stock: :class:`int`
+    stock: `int`
         The change in how many snowballs the member has in stock.
     """
 
@@ -83,13 +83,13 @@ class GuildSnowballSettings(msgspec.Struct):
 
     Attributes
     ----------
-    guild_id: :class:`int`, default=0
+    guild_id: `int`, default=0
         The guild these settings apply to. Defaults to 0.
-    hit_odds: :class:`float`, default=0.6
+    hit_odds: `float`, default=0.6
         Chance of hitting someone with a snowball. Defaults to 0.6.
-    stock_cap: :class:`int`, default=100
+    stock_cap: `int`, default=100
         Maximum number of snowballs regular members can hold in their inventory. Defaults to 100.
-    transfer_cap: :class:`int`, default=10
+    transfer_cap: `int`, default=10
         Maximum number of snowballs that can be gifted or stolen. Defaults to 10.
     """
 
@@ -130,20 +130,20 @@ class SnowballSettingsModal(discord.ui.Modal):
 
     Parameters
     ----------
-    default_settings: :class:`SnowballSettings`
+    default_settings: `SnowballSettings`
         The current snowball-related settings for the guild.
 
     Attributes
     ----------
-    hit_odds_input: :class:`discord.ui.TextInput`
+    hit_odds_input: `discord.ui.TextInput`
         An editable text field showing the current hit odds for this guild.
-    stock_cap_input: :class:`discord.ui.TextInput`
+    stock_cap_input: `discord.ui.TextInput`
         An editable text field showing the current stock cap for this guild.
-    transfer_cap_input: :class:`discord.ui.TextInput`
+    transfer_cap_input: `discord.ui.TextInput`
         An editable text field showing the current transfer cap for this guild.
-    default_settings: :class:`SnowballSettings`
+    default_settings: `SnowballSettings`
         The current snowball-related settings for the guild.
-    new_settings: :class:`SnowballSettings`, optional
+    new_settings: `SnowballSettings`, optional
         The new snowball-related settings for this guild from user input.
     """
 
@@ -220,14 +220,14 @@ class SnowballSettingsView(discord.ui.View):
 
     Parameters
     ----------
-    guild_settings: :class:`SnowballSettings`
+    guild_settings: `SnowballSettings`
         The current snowball-related settings for the guild.
 
     Attributes
     ----------
-    settings: :class:`SnowballSettings`
+    settings: `SnowballSettings`
         The current snowball-related settings for the guild.
-    message: :class:`discord.Message`
+    message: `discord.Message`
         The message an instance of this view is attached to.
     """
 

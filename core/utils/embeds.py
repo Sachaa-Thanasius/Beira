@@ -21,16 +21,16 @@ LOGGER = logging.getLogger(__name__)
 
 
 class StatsEmbed(discord.Embed):
-    """A subclass of :class:`DTEmbed` that displays given statistics for a user.
+    """A subclass of `DTEmbed` that displays given statistics for a user.
 
     This has a default colour of 0x2f3136 and a default timestamp for right now in UTC.
 
     Parameters
     ----------
     *args
-        Positional arguments for the normal initialization of a discord :class:`Embed`.
+        Positional arguments for the normal initialization of a discord `Embed`.
     **kwargs
-        Keyword arguments for the normal initialization of a discord :class:`Embed`.
+        Keyword arguments for the normal initialization of a discord `Embed`.
     """
 
     def __init__(self, *args: object, **kwargs: object) -> None:
@@ -59,9 +59,9 @@ class StatsEmbed(discord.Embed):
             The emojis adorning each field. Defaults to a tuple with an empty string so there is at least one "emoji".
         values: Iterable[object], default=("",)
             The values for each field.
-        inline: :class:`bool`, default=False
+        inline: `bool`, default=False
             Whether the fields should be displayed inline. Defaults to False.
-        emoji_header_status: :class:`bool`, default=False
+        emoji_header_status: `bool`, default=False
             Whether the emojis should adorn the names or the values of each field. By default, adorns the values.
         """
 
@@ -98,13 +98,13 @@ class StatsEmbed(discord.Embed):
         ldbd_emojis: Iterable[AnyEmoji], default=("",)
             The emojis adorning the names of the leaderboard fields. Defaults to a tuple with an empty string so there
             is at least one "emoji".
-        name_format: :class:`str`, default="| {}"
+        name_format: `str`, default="| {}"
             The format for the name, to be filled by information from the content.
-        value_format: :class:`str`, default="{}"
+        value_format: `str`, default="{}"
             The format for the value, to be filled by information from the content.
-        inline: :class:`bool`, default=False
+        inline: `bool`, default=False
             Whether the fields should be displayed inline.
-        is_ranked: :class:`bool`, default=True
+        is_ranked: `bool`, default=True
             Whether the stats should be ranked in descending order.
         """
 

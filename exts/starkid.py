@@ -25,7 +25,7 @@ class StarKidCog(commands.Cog, name="StarKid"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="starkid", id=1077980709802758215)
 

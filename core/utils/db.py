@@ -42,9 +42,9 @@ async def upsert_users(conn: Pool_alias | Connection_alias, *users: UserObject) 
 
     Parameters
     ----------
-    conn: :class:`Pool` | :class:`Connection`
+    conn: `Pool` | `Connection`
         The connection pool used to interact to the database.
-    users: tuple[:class:`discord.abc.User` | :class:`discord.Object` | tuple]
+    users: tuple[`discord.abc.User` | `discord.Object` | tuple]
         One or more users, members, discord objects, or tuples of user ids and blocked statuses, to use for upsertion.
     """
 
@@ -66,9 +66,9 @@ async def upsert_guilds(conn: Pool_alias | Connection_alias, *guilds: GuildObjec
 
     Parameters
     ----------
-    conn: :class:`Pool` | :class:`Connection`
+    conn: `Pool` | `Connection`
         The connection pool used to interact to the database.
-    guilds: tuple[:class:`discord.Guild` | :class:`discord.Object` | tuple]
+    guilds: tuple[`discord.Guild` | `discord.Object` | tuple]
         One or more guilds, discord objects, or tuples of guild ids, names, and blocked statuses, to use for upsertion.
     """
 

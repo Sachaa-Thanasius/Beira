@@ -133,12 +133,12 @@ async def create_inspiration(session: aiohttp.ClientSession) -> str:
 
     Parameters
     ----------
-    session: :class:`aiohttp.ClientSession`
+    session: `aiohttp.ClientSession`
         The web session used to access the API.
 
     Returns
     -------
-    :class:`str`
+    `str`
         The url for the generated poster.
     """
 
@@ -156,7 +156,7 @@ class MiscCog(commands.Cog, name="Misc"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
 
@@ -208,9 +208,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        arg: :class:`str`
+        arg: `str`
             The user input.
         """
 
@@ -222,9 +222,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        message: :class:`discord.Message`
+        message: `discord.Message`
             The message to be quoted. It can be specified by a message link, message ID, or channel-message ID pair.
         """
 
@@ -241,7 +241,7 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
         """
 
@@ -278,9 +278,9 @@ class MiscCog(commands.Cog, name="Misc"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        text: :class:`str`
+        text: `str`
             The text to convert into meows.
         """
 

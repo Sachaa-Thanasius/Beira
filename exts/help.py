@@ -27,7 +27,7 @@ HELP_COLOR = 0x16A75D
 
 
 class HelpBotView(PaginatedEmbedView[tuple[str, tuple[tuple[str, str], ...]]]):
-    """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
+    """A subclass of `PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
 
     This is for a call to `/help`.
     """
@@ -74,7 +74,7 @@ class HelpBotView(PaginatedEmbedView[tuple[str, tuple[tuple[str, str], ...]]]):
 
 
 class HelpCogView(PaginatedEmbedView[tuple[str, str]]):
-    """A subclass of :class:`PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
+    """A subclass of `PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
 
     This is for a call to `/help <cog_name>`.
     """
@@ -192,7 +192,7 @@ class BeiraHelpCommand(commands.HelpCommand):
     def get_opening_note(self) -> str:
         """Returns help command's opening note.
 
-        Implementation borrowed from :class:`commands.MinimalHelpCommand`.
+        Implementation borrowed from `commands.MinimalHelpCommand`.
         """
 
         command_name = self.invoked_with
@@ -204,7 +204,7 @@ class BeiraHelpCommand(commands.HelpCommand):
     def get_command_signature(self, command: commands.Command[Any, ..., Any], /) -> str:
         """Returns formatted command signature.
 
-        Implementation borrowed from :class:`commands.MinimalHelpCommand`.
+        Implementation borrowed from `commands.MinimalHelpCommand`.
         """
 
         return f"{self.context.clean_prefix}{command.qualified_name} {command.signature}"
@@ -220,7 +220,7 @@ class BeiraHelpCommand(commands.HelpCommand):
 
 
 class HelpCog(commands.Cog, name="Help"):
-    """A cog that allows more dynamic usage of my custom help command class, :class:`BeiraHelpCommand`."""
+    """A cog that allows more dynamic usage of my custom help command class, `BeiraHelpCommand`."""
 
     def __init__(self, bot: core.Beira) -> None:
         self.bot = bot

@@ -25,7 +25,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
 
@@ -70,9 +70,9 @@ class AdminCog(commands.Cog, name="Administration"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        new_prefix: :class:`str`
+        new_prefix: `str`
             The prefix to be added.
         """
 
@@ -104,9 +104,9 @@ class AdminCog(commands.Cog, name="Administration"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        old_prefix: :class:`str`
+        old_prefix: `str`
             The prefix to be removed.
         """
 
@@ -134,7 +134,7 @@ class AdminCog(commands.Cog, name="Administration"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
         """
 

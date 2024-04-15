@@ -32,13 +32,13 @@ class Die(msgspec.Struct, frozen=True):
 
     Attributes
     ----------
-    value: :class:`int`
+    value: `int`
         The highest number the die can roll.
-    emoji: :class:`discord.PartialEmoji`
+    emoji: `discord.PartialEmoji`
         The emoji representing the die in displays.
-    color: :class:`discord.Colour`
+    color: `discord.Colour`
         The color representing the die in embed displays.
-    label: :class:`str`, default=f"D{value}"
+    label: `str`, default=f"D{value}"
         The label, or name, of the die. Defaults to ``D{value}``, as with most dice in casual discussion.
     """
 
@@ -70,12 +70,12 @@ def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
 
     Parameters
     ----------
-    dice_info: dict[:class:`int`, :class:`int`]
+    dice_info: dict[`int`, `int`]
         A mapping from the maximum value of a particular die to the number of times to roll that die.
 
     Returns
     -------
-    rolls_info: dict[:class:`int`, list[:class:`int`]]
+    rolls_info: dict[`int`, list[`int`]]
         A mapping from the maximum value of a particular die to the list of rolls that it made.
     """
 
@@ -90,12 +90,12 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
 
     Parameters
     ----------
-    expression: :class:`str`
+    expression: `str`
         The expression to roll.
 
     Returns
     -------
-    normalized_expression, evaluation: tuple[:class:`str`, :class:`int`]
+    normalized_expression, evaluation: tuple[`str`, `int`]
         A tuple with filled in expression and final result.
 
     Notes
@@ -162,11 +162,11 @@ class DiceEmbed(discord.Embed):
 
     Parameters
     ----------
-    rolls_info: dict[:class:`int`, list[:class:`int`]], optional
+    rolls_info: dict[`int`, list[`int`]], optional
         A dictionary of information with dice types as keys and corresponding dice rolls as values.
-    modifier: :class:`int`, default=0
+    modifier: `int`, default=0
         The post-calculation modifier for the dice rolls.
-    expression_info: tuple[:class:`str`, :class:`str`, :class:`str`], optional
+    expression_info: tuple[`str`, `str`, `str`], optional
         A tuple with the original expression, the expression filled with dice rolls, and the expressions' final result.
     """
 
@@ -291,14 +291,14 @@ class DiceButton(ui.Button["DiceView"]):
 
     Parameters
     ----------
-    die: :class:`Die`
+    die: `Die`
         The dataclass for the die being represented by the button.
 
     Attributes
     ----------
-    response_colour: :class:`discord.Colour`
+    response_colour: `discord.Colour`
         The color representing a die in embed displays.
-    value: :class:`int`
+    value: `int`
         The max possible roll for a die.
     """
 
@@ -365,9 +365,9 @@ class DiceModifierModal(ui.Modal):
 
     Attributes
     ----------
-    modifier_input: :class:`TextInput`
+    modifier_input: `TextInput`
         The text box with which users will enter their numerical values.
-    interaction: :class:`discord.Interaction`
+    interaction: `discord.Interaction`
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
@@ -394,9 +394,9 @@ class DiceExpressionModal(ui.Modal):
 
     Attributes
     ----------
-    expression_input: :class:`TextInput`
+    expression_input: `TextInput`
         The text box with which users will enter their expression.
-    interaction: :class:`discord.Interaction`
+    interaction: `discord.Interaction`
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
@@ -423,11 +423,11 @@ class DiceView(ui.View):
 
     Attributes
     ----------
-    modifier: :class:`int`
+    modifier: `int`
         The modifier to apply at the end of a roll or series of rolls.
-    num_rolls: :class:`int`
+    num_rolls: `int`
         The number of rolls to perform. Allows item interactions to cause multiple rolls.
-    expression: :class:`str`
+    expression: `str`
         The custom dice expression from user input to be evaluated.
     """
 
@@ -599,9 +599,9 @@ async def roll(ctx: core.Context, expression: str | None = None) -> None:
 
     Parameters
     ----------
-    ctx: :class:`core.Context`
+    ctx: `core.Context`
         The invocation context.
-    expression: :class:`str`, optional
+    expression: `str`, optional
         A custom dice expression to calculate. Optional.
     """
 

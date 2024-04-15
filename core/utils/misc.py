@@ -20,7 +20,7 @@ class catchtime:
 
     Parameters
     ----------
-    logger: :class:`logging.Logger`, optional
+    logger: `logging.Logger`, optional
         The logging channel to send the time to, if relevant. Optional.
     """
 

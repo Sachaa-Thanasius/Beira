@@ -36,7 +36,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 
     Parameters
     ----------
-    urls: list[:class:`str`]
+    urls: list[`str`]
         The op.gg profile urls to interact with during this webdriver session.
     """
 
@@ -126,7 +126,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
@@ -150,9 +150,9 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        summoner_name: :class:`str`
+        summoner_name: `str`
             The summoner name, or username, of the League of Legends player being queried.
         """
 
@@ -176,9 +176,9 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        summoner_names: list[:class:`str`]
+        summoner_names: list[`str`]
             A string of summoner names to create a leaderboard from. Separate these by spaces.
         """
 
@@ -204,12 +204,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        summoner_name_list: list[:class:'str']
+        summoner_name_list: list['str']
             The list of summoner names that will be queried via OP.GG for League of Legends stats, e.g. winrate/rank.
 
         Returns
         -------
-        embed: :class:`StatsEmbed`
+        embed: `StatsEmbed`
             The Discord embed with leaderboard fields for all ranked summoners.
         """
 
@@ -239,12 +239,12 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         Parameters
         ----------
-        summoner_name: :class:`str`
+        summoner_name: `str`
             The name of the League of Legends player.
 
         Returns
         -------
-        summoner_name, winrate, rank: tuple[:class:`str`, :class:`str`, :class:`str`]
+        summoner_name, winrate, rank: tuple[`str`, `str`, `str`]
             The stats of the LoL user, including name, winrate, and rank.
         """
 

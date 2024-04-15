@@ -36,13 +36,13 @@ class Context(commands.Context["Beira"]):
 
     @property
     def session(self) -> aiohttp.ClientSession:
-        """:class:`ClientSession`: Returns the asynchronous HTTP session used by the bot for HTTP requests."""
+        """`ClientSession`: Returns the asynchronous HTTP session used by the bot for HTTP requests."""
 
         return self.bot.web_session
 
     @property
     def db(self) -> Pool_alias:
-        """:class:`Pool`: Returns the asynchronous connection pool used by the bot for database management."""
+        """`Pool`: Returns the asynchronous connection pool used by the bot for database management."""
 
         return self.bot.db_pool
 

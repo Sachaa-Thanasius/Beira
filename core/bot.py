@@ -42,15 +42,15 @@ class Beira(commands.Bot):
     Parameters
     ----------
     *args
-        Variable length argument list, primarily for :class:`commands.Bot`.
-    db_pool: :class:`asyncpg.Pool`
+        Variable length argument list, primarily for `commands.Bot`.
+    db_pool: `asyncpg.Pool`
         A connection pool for a PostgreSQL database.
-    web_session: :class:`aiohttp.ClientSession`
+    web_session: `aiohttp.ClientSession`
         An HTTP session for making async HTTP requests.
-    initial_extensions: list[:class:`str`], optional
+    initial_extensions: list[`str`], optional
         A list of extension names that the bot will initially load.
     **kwargs
-        Arbitrary keyword arguments, primarily for :class:`commands.Bot`. See that class for more information.
+        Arbitrary keyword arguments, primarily for `commands.Bot`. See that class for more information.
     """
 
     logging_manager: LoggingManager
@@ -182,7 +182,7 @@ class Beira(commands.Bot):
 
     @property
     def owner(self) -> discord.User:
-        """:class:`discord.User`: The user that owns the bot."""
+        """`discord.User`: The user that owns the bot."""
 
         return self.app_info.owner
 
@@ -263,7 +263,7 @@ class Beira(commands.Bot):
             return ZoneInfo("UTC")
 
     def is_special_friend(self, user: discord.abc.User, /) -> bool:
-        """Checks if a :class:`discord.User` or :class:`discord.Member` is a "special friend" of this bot's owner."""
+        """Checks if a `discord.User` or `discord.Member` is a "special friend" of this bot's owner."""
 
         if len(self.special_friends) > 0:
             return user.id in self.special_friends.values()
@@ -271,7 +271,7 @@ class Beira(commands.Bot):
         return False
 
     def is_ali(self, user: discord.abc.User, /) -> bool:
-        """Checks if a :class:`discord.User` or :class:`discord.Member` is Ali."""
+        """Checks if a `discord.User` or `discord.Member` is Ali."""
 
         if len(self.special_friends) > 0:
             return user.id == self.special_friends["aeroali"]

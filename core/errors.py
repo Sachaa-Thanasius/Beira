@@ -84,9 +84,9 @@ class CheckAnyFailure(app_commands.CheckFailure):
 
     Attributes
     ------------
-    errors: list[:class:`app_commands.CheckFailure`]
+    errors: list[`app_commands.CheckFailure`]
         A list of errors that were caught during execution.
-    checks: List[Callable[[:class:`discord.Interaction`], :class:`bool`]]
+    checks: List[Callable[[`discord.Interaction`], `bool`]]
         A list of check predicates that failed.
     """
 

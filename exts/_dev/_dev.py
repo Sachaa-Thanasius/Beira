@@ -59,7 +59,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="discord_dev", animated=True, id=1084608963896672256)
 
@@ -132,11 +132,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
         block_type: Literal["user", "guild"], default="user"
             What type of entity or entities are being blocked. Defaults to "user".
-        entities: :class:`commands.Greedy`[:class:`discord.Object`]
+        entities: `commands.Greedy`[`discord.Object`]
             The entities to block.
         """
 
@@ -166,11 +166,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context
         block_type: Literal["user", "guild"], default="user"
             What type of entity or entities are being unblocked. Defaults to "user".
-        entities: :class:`commands.Greedy`[:class:`discord.Object`]
+        entities: `commands.Greedy`[`discord.Object`]
             The entities to unblock.
         """
 
@@ -244,7 +244,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context where the command was called.
         """
 
@@ -276,9 +276,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        extension: :class:`str`
+        extension: `str`
             The name of the chosen extension to load, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -316,9 +316,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        extension: :class:`str`
+        extension: `str`
             The name of the chosen extension to unload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -345,9 +345,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        extension: :class:`str`
+        extension: `str`
             The name of the chosen extension to reload, excluding the file type. If activated as a prefix command, the
             path needs to be typed out from the project root directory with periods as separators.
         """
@@ -416,12 +416,12 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        guilds: Greedy[:class:`discord.Object`], optional
+        guilds: Greedy[`discord.Object`], optional
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
-            :class:`discord.Object`s. Please provide as IDs separated by spaces.
-        spec: Choice[:class:`str`], optional
+            `discord.Object`s. Please provide as IDs separated by spaces.
+        spec: Choice[`str`], optional
             The type of sync to perform if no guilds are entered. No input means global sync.
 
         Notes
@@ -497,9 +497,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        error: :class:`commands.CommandError`
+        error: `commands.CommandError`
             The error thrown by the command.
         """
 

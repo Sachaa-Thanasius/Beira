@@ -32,16 +32,16 @@ AOC_EMOJI_URL, JARE_EMOJI_URL = EMOJI_URL.format(770620658501025812), EMOJI_URL.
 
 
 class AoCWikiEmbed(discord.Embed):
-    """A subclass of :class:`discord.Embed` that is set up for representing Ashes of Chaos wiki pages.
+    """A subclass of `discord.Embed` that is set up for representing Ashes of Chaos wiki pages.
 
     Parameters
     ----------
-    author_icon_url: :class:`str`, optional
+    author_icon_url: `str`, optional
         The image url for the embed's author icon. Defaults to the AoC emoji url.
-    footer_icon_url: :class:`str`, optional
+    footer_icon_url: `str`, optional
         The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
     **kwargs
-        Keyword arguments for the normal initialization of an :class:`DTEmbed`.
+        Keyword arguments for the normal initialization of an `DTEmbed`.
     """
 
     aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
@@ -178,14 +178,14 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     Parameters
     ----------
-    bot: :class:`core.Beira`
+    bot: `core.Beira`
         The main Discord bot this cog is a part of.
 
     Attributes
     ----------
-    bot: :class:`core.Beira`
+    bot: `core.Beira`
         The main Discord bot this cog is a part of.
-    all_wikis: dict[:class:`str`, dict[:class:`str`, :class:`str`]]
+    all_wikis: dict[`str`, dict[`str`, `str`]]
         The dict containing information for various wikis.
     """
 
@@ -195,7 +195,7 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="fandom", id=1077980392742727791)
 
@@ -223,11 +223,11 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         Parameters
         ----------
-        ctx: :class:`core.Context`
+        ctx: `core.Context`
             The invocation context.
-        wiki: :class:`str`
+        wiki: `str`
             The name of the wiki that's being searched.
-        search_term: :class:`str`
+        search_term: `str`
             The term or phrase being searched for in the wiki.
         """
 
@@ -260,9 +260,9 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
         Parameters
         ----------
-        wiki_name: :class:`str`
+        wiki_name: `str`
             The wiki to search within.
-        wiki_query: :class:`str`
+        wiki_query: `str`
             The text input to search with.
         """
 

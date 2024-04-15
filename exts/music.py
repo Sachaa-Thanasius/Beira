@@ -113,7 +113,7 @@ class MusicQueueView(PaginatedEmbedView[str]):
 
 
 class ExtraPlayer(wavelink.Player):
-    """A version of :class:`wavelink.Player` with autoplay set to partial."""
+    """A version of `wavelink.Player` with autoplay set to partial."""
 
     def __init__(
         self,
@@ -134,7 +134,7 @@ class MusicCog(commands.Cog, name="Music"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """:class:`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """`discord.PartialEmoji`: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{MUSICAL NOTE}")
 
@@ -236,9 +236,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        query: :class:`str`
+        query: `str`
             A search term/url that is converted into a track or playlist.
         """
 
@@ -368,9 +368,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        entry: :class:`int`
+        entry: `int`
             The track's position.
         """
 
@@ -404,11 +404,11 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        before: :class:`int`
+        before: `int`
             The index of the song you want moved.
-        after: :class:`int`
+        after: `int`
             The index you want to move it to.
         """
 
@@ -431,9 +431,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        index: :class:`int`
+        index: `int`
             The place in the queue to skip to.
         """
 
@@ -474,7 +474,7 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
         loop: Literal["All Tracks", "Current Track", "Off"]
             The loop settings. "All Tracks" loops everything in the queue, "Current Track" loops the playing track, and
@@ -506,9 +506,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        position: :class:`str`
+        position: `str`
             The time to jump to, given in the format `hours:minutes:seconds` or `minutes:seconds`.
         """
 
@@ -535,9 +535,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        volume: :class:`int`, optional
+        volume: `int`, optional
             The volume to change to, with a maximum of 1000.
         """
 
@@ -557,9 +557,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: :class:`core.GuildContext`
+        ctx: `core.GuildContext`
             The invocation context.
-        name: :class:`str`
+        name: `str`
             The name of the filter to use. "reset" resets the filters.
         """
 

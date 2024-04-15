@@ -81,18 +81,18 @@ class LoggingManager:
 
     Parameters
     ----------
-    stream: :class:`bool`, default=True
+    stream: `bool`, default=True
         Whether the logs should be output to a stream. Defaults to True.
 
     Attributes
     ----------
-    log: :class:`logging.Logger`
+    log: `logging.Logger`
         The primary bot handler.
-    max_bytes: :class:`int`
+    max_bytes: `int`
         The maximum size of each log file.
-    logging_path: :class:`Path`
+    logging_path: `Path`
         A path to the directory for all log files.
-    stream: :class:`bool`
+    stream: `bool`
         A boolean indicating whether the logs should be output to a stream.
     """
 
