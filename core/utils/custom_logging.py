@@ -13,17 +13,15 @@ import copy
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Self
 
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
 
 
 if TYPE_CHECKING:
     from types import TracebackType
-
-    from typing_extensions import Self
 else:
-    TracebackType = Self = object
+    TracebackType = object
 
 
 __all__ = ("LoggingManager",)

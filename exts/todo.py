@@ -8,7 +8,7 @@ import datetime
 import logging
 import textwrap
 from abc import ABC, abstractmethod
-from typing import TYPE_CHECKING, Any
+from typing import Any, Self
 
 import asyncpg
 import discord
@@ -19,11 +19,6 @@ import core
 from core.utils import OwnedView, PaginatedEmbedView
 from core.utils.db import Connection_alias, Pool_alias
 
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 LOGGER = logging.getLogger(__name__)
 

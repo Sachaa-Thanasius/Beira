@@ -10,7 +10,7 @@ import asyncio
 import itertools
 import logging
 from pathlib import Path
-from typing import TYPE_CHECKING, Any
+from typing import Any, Self
 from urllib.parse import quote, urljoin
 
 import aiohttp
@@ -21,12 +21,6 @@ from lxml import html
 
 import core
 from core.utils import StatsEmbed
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 
 LOGGER = logging.getLogger(__name__)

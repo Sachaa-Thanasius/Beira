@@ -8,15 +8,10 @@ from __future__ import annotations
 import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import TYPE_CHECKING, Any, Generic, TypeVar
+from typing import Any, Generic, Self, TypeVar
 
 import discord
 
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 _LT = TypeVar("_LT")
 

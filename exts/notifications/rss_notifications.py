@@ -1,21 +1,15 @@
 from __future__ import annotations
 
 import asyncio
-from typing import TYPE_CHECKING
+from typing import Self
 
+import aiohttp
 import asyncpg
 import discord
 import msgspec
 from discord.ext import commands, tasks
 
 import core
-
-
-if TYPE_CHECKING:
-    from aiohttp import ClientSession
-    from typing_extensions import Self
-else:
-    ClientSession = Self = object
 
 
 class NotificationRecord(msgspec.Struct):
@@ -25,7 +19,7 @@ class NotificationRecord(msgspec.Struct):
     webhook: discord.Webhook
 
     @classmethod
-    def from_record(cls, record: asyncpg.Record, *, session: ClientSession) -> Self:
+    def from_record(cls, record: asyncpg.Record, *, session: aiohttp.ClientSession) -> Self:
         webhook = discord.Webhook.from_url(record["notification_webhook"], session=session)
         return cls(record["notification_id"], record["notification_url"], record["last_notification"], webhook)
 

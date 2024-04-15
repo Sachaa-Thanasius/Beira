@@ -13,8 +13,10 @@ import math
 import random
 import re
 import tempfile
+import time
 from io import BytesIO, StringIO
 
+import aiohttp
 import discord
 import openpyxl
 import openpyxl.styles
@@ -22,10 +24,12 @@ from discord import app_commands
 from discord.ext import commands
 
 import core
-from core.utils import catchtime
 
 
 LOGGER = logging.getLogger(__name__)
+
+INSPIROBOT_API_URL = "https://inspirobot.me/api"
+INSPIROBOT_ICON_URL = "https://pbs.twimg.com/profile_images/815624354876760064/zPmAZWP4_400x400.jpg"
 
 
 def capitalize_meow(word: str, reference: str) -> str:
@@ -100,7 +104,7 @@ def color_step(r: int, g: int, b: int, repetitions: int = 1) -> tuple[int, int, 
 
 
 def process_color_data(role_data: list[tuple[str, discord.Colour]]) -> BytesIO:
-    """Sort colors, format them in an excel sheet, and return that sheet as a bytes stream."""
+    """Format role names and colors in an excel sheet and return that sheet as a bytes stream."""
 
     headers = ["Role Name", "Role Color (Hex)"]
     workbook = openpyxl.Workbook()
@@ -122,6 +126,25 @@ def process_color_data(role_data: list[tuple[str, discord.Colour]]) -> BytesIO:
         workbook.save(tmp)
         tmp.seek(0)
         return BytesIO(tmp.read())
+
+
+async def create_inspiration(session: aiohttp.ClientSession) -> str:
+    """Makes a call to InspiroBot's API to generate an inspirational poster.
+
+    Parameters
+    ----------
+    session: :class:`aiohttp.ClientSession`
+        The web session used to access the API.
+
+    Returns
+    -------
+    :class:`str`
+        The url for the generated poster.
+    """
+
+    async with session.get(url=INSPIROBOT_API_URL, params={"generate": "true"}) as response:
+        response.raise_for_status()
+        return await response.text()
 
 
 class MiscCog(commands.Cog, name="Misc"):
@@ -224,17 +247,17 @@ class MiscCog(commands.Cog, name="Misc"):
 
         ws_ping = self.bot.latency * 1000
 
-        with catchtime() as ct:
-            await ctx.typing()
-        typing_ping = ct.total_time * 1000
+        start_time = time.perf_counter()
+        await ctx.typing()
+        typing_ping = (time.perf_counter() - start_time) * 1000
 
-        with catchtime() as ct:
-            await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
-        db_ping = ct.total_time * 1000
+        start_time = time.perf_counter()
+        await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
+        db_ping = (time.perf_counter() - start_time) * 1000
 
-        with catchtime() as ct:
-            message = await ctx.send(embed=discord.Embed(title="Ping..."))
-        msg_ping = ct.total_time * 1000
+        start_time = time.perf_counter()
+        message = await ctx.send(embed=discord.Embed(title="Ping..."))
+        msg_ping = (time.perf_counter() - start_time) * 1000
 
         pong_embed = (
             discord.Embed(title="Pong! \N{TABLE TENNIS PADDLE AND BALL}")
@@ -283,6 +306,19 @@ class MiscCog(commands.Cog, name="Misc"):
 
         disc_file = discord.File(processed_data, f"{ctx.guild.name}-roles-sheet.xlsx")
         await ctx.send("Created Excel sheet with roles.", file=disc_file)
+
+    @commands.hybrid_command()
+    async def inspire_me(self, ctx: core.Context) -> None:
+        """Generate a random inspirational poster with InspiroBot."""
+
+        async with ctx.typing():
+            image_url = await create_inspiration(ctx.session)
+            embed = (
+                discord.Embed(color=0xE04206)
+                .set_image(url=image_url)
+                .set_footer(text="Generated with InspiroBot at https://inspirobot.me/", icon_url=INSPIROBOT_ICON_URL)
+            )
+        await ctx.send(embed=embed)
 
 
 async def setup(bot: core.Beira) -> None:

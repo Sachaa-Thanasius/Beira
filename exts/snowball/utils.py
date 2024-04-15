@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import Self
 
 import asyncpg
 import discord
@@ -9,12 +9,6 @@ from discord.ext import commands
 
 import core
 from core.utils.db import Connection_alias, Pool_alias, upsert_guilds, upsert_users
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 
 __all__ = (

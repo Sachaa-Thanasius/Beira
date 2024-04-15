@@ -1,10 +1,10 @@
 [project]
 name = "Beira"
-version = "0.0.1"
+version = "2024.04.15"
 description = "An personal Discord bot made in Python."
 readme = "README.md"
 license = { file = "LICENSE" }
-requires-python = ">=3.10"
+requires-python = ">=3.11"
 authors = [
     { name = "Sachaa-Thanasius", email = "111999343+Sachaa-Thanasius@users.noreply.github.com" },
 ]
@@ -15,7 +15,7 @@ Homepage = "https://github.com/Sachaa-Thanasius/Beira"
 [tool.ruff]
 include = ["main.py", "core/*", "exts/*", "**/pyproject.toml"]
 line-length = 120
-target-version = "py310"
+target-version = "py311"
 
 [tool.ruff.lint]
 select = [
@@ -92,9 +92,10 @@ combine-as-imports = true
 
 [tool.pyright]
 include = ["main.py", "core", "exts"]
-pythonVersion = "3.10"
+pythonVersion = "3.11"
 typeCheckingMode = "strict"
 
 # reportImportCycles = "warning"
 reportPropertyTypeMismatch = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"
+enableExperimentalFeatures = true

@@ -14,7 +14,7 @@ import textwrap
 from bisect import bisect_left
 from functools import lru_cache
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, ClassVar
+from typing import Any, ClassVar, Self
 
 import aiohttp
 import asyncpg
@@ -32,10 +32,6 @@ if sys.version_info >= (3, 12):
 else:
     import importlib_resources
 
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 LOGGER = logging.getLogger(__name__)
 

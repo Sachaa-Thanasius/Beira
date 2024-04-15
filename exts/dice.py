@@ -2,7 +2,6 @@
 dice.py: The extension that holds a die roll command and all the associated utility classes.
 
 TODO: Consider adding more elements from https://wiki.roll20.net/Dice_Reference.
-TODO: Consider switching to or extending Sinbad's dicelib: https://github.com/mikeshardmind/dicelib.
 """
 
 from __future__ import annotations
@@ -14,7 +13,7 @@ import re
 import textwrap
 from collections.abc import Callable
 from io import StringIO
-from typing import TYPE_CHECKING, Any, cast
+from typing import Any, Self
 
 import discord
 import msgspec
@@ -23,12 +22,6 @@ from discord.ext import commands
 
 import core
 from core.utils import EMOJI_STOCK
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 
 LOGGER = logging.getLogger(__name__)
@@ -582,7 +575,9 @@ class DiceView(ui.View):
             send_kwargs["embed"] = DiceEmbed(expression_info=(self.expression, filled_in_expression, result))
             send_kwargs["view"] = ui.View().add_item(RerollButton(expression=self.expression))
         else:
-            dice_select = cast(DiceSelect, discord.utils.get(self.children, custom_id="dice:select"))
+            dice_select = discord.utils.get(self.children, custom_id="dice:select")
+            assert isinstance(dice_select, DiceSelect)  # Known at runtime.
+
             if dice_select.values:
                 dice_info = {int(val): self.num_rolls for val in dice_select.values}
                 roll_info = roll_basic_dice(dice_info)

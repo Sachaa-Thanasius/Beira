@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import datetime
-from typing import TYPE_CHECKING, TypedDict
+from typing import NotRequired, TypedDict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import aiohttp
@@ -10,12 +10,6 @@ import msgspec
 from discord.ext import commands
 
 import core
-
-
-if TYPE_CHECKING:
-    from typing_extensions import NotRequired
-else:
-    NotRequired = object
 
 
 # The supposed schedule table right now.

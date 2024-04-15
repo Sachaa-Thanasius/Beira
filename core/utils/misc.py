@@ -6,34 +6,9 @@ from __future__ import annotations
 
 import logging
 import time
-from asyncio import iscoroutinefunction
-from collections.abc import Awaitable, Callable, Coroutine
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeGuard, TypeVar
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
-
-T = TypeVar("T")
-P = ParamSpec("P")
-Coro = Coroutine[Any, Any, T]
 
 
 __all__ = ("catchtime",)
-
-
-def is_awaitable_func(func: Callable[P, T] | Callable[P, Awaitable[T]]) -> TypeGuard[Callable[P, Awaitable[T]]]:
-    return iscoroutinefunction(func)
-
-
-def is_coroutine_func(func: Callable[P, T] | Callable[P, Coro[T]]) -> TypeGuard[Callable[P, Coro[T]]]:
-    return iscoroutinefunction(func)
-
-
-def is_not_coroutine_func(func: Callable[P, T] | Callable[P, Coro[T]]) -> TypeGuard[Callable[P, T]]:
-    return not iscoroutinefunction(func)
 
 
 class catchtime:
@@ -47,10 +22,10 @@ class catchtime:
         The logging channel to send the time to, if relevant. Optional.
     """
 
-    def __init__(self, logger: logging.Logger | None = None) -> None:
+    def __init__(self, logger: logging.Logger | None = None):
         self.logger = logger
 
-    def __enter__(self) -> Self:
+    def __enter__(self):
         self.total_time = time.perf_counter()
         return self
 

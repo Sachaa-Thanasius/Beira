@@ -9,21 +9,15 @@ from __future__ import annotations
 import logging
 import textwrap
 import urllib.parse
-from typing import TYPE_CHECKING, Any
+from typing import Any, Self
 
+import asyncpg
 import discord
 import msgspec
 from discord.ext import commands, tasks
 
 import core
 from core.utils import PaginatedSelectView
-
-
-if TYPE_CHECKING:
-    from asyncpg import Record
-    from typing_extensions import Self
-else:
-    Record = Self = object
 
 
 LOGGER = logging.getLogger(__name__)
@@ -54,7 +48,7 @@ class PatreonTierInfo(msgspec.Struct):
     color: discord.Colour = discord.Colour.default()
 
     @classmethod
-    def from_record(cls, record: Record) -> Self:
+    def from_record(cls, record: asyncpg.Record) -> Self:
         attrs_ = ("creator_name", "tier_name", "tier_value", "tier_info", "discord_guild", "tier_role")
         return cls(*(record[attr] for attr in attrs_), emoji=discord.PartialEmoji.from_str(record["tier_emoji"]))
 
@@ -150,7 +144,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         await self.bot.wait_until_ready()
 
         query = """SELECT * FROM patreon_creators WHERE creator_name = 'ACI100' ORDER BY tier_value;"""
-        records: list[Record] = await self.bot.db_pool.fetch(query)
+        records: list[asyncpg.Record] = await self.bot.db_pool.fetch(query)
         self.patreon_tiers_info = [PatreonTierInfo.from_record(record) for record in records]
 
         temp_guild_id = self.patreon_tiers_info[0].guild_id

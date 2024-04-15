@@ -10,23 +10,29 @@ import asyncio
 import logging
 import re
 import unicodedata
-from typing import TYPE_CHECKING, Any
+from io import BytesIO
+from typing import Any, Self
 
 import discord
 from discord import app_commands
 from discord.ext import commands
+from PIL import Image
 
 import core
 
-from .ai_generation.utils import get_image, process_image
-
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 LOGGER = logging.getLogger(__name__)
+
+
+def process_image(image_bytes: bytes) -> BytesIO:
+    """Processes image data with PIL."""
+
+    with Image.open(BytesIO(image_bytes)) as new_image:
+        output_buffer = BytesIO()
+        new_image.save(output_buffer, "png")
+        output_buffer.seek(0)
+
+    return output_buffer
 
 
 class GuildStickerFlags(commands.FlagConverter):
@@ -403,7 +409,8 @@ class EmojiOpsCog(commands.Cog, name="Emoji Operations"):
                     return
 
                 # Attempt to read the input as an image url.
-                emoji_bytes = await get_image(ctx.session, entity)
+                async with ctx.session.get(entity) as resp:
+                    emoji_bytes = await resp.read()
             else:
                 # Attempt to convert and read the input as an emoji normally.
                 emoji_bytes = await converted_emoji.read()

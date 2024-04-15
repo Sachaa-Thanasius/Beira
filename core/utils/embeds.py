@@ -7,15 +7,10 @@ from __future__ import annotations
 import itertools
 import logging
 from collections.abc import Iterable, Sequence
-from typing import TYPE_CHECKING, TypeAlias
+from typing import Self, TypeAlias
 
 import discord
 
-
-if TYPE_CHECKING:
-    from typing_extensions import Self
-else:
-    Self = object
 
 AnyEmoji: TypeAlias = discord.Emoji | discord.PartialEmoji | str
 
