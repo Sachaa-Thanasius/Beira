@@ -5,6 +5,7 @@ misc.py: Miscellaneous utility functions that might come in handy.
 from __future__ import annotations
 
 import logging
+import re
 import time
 
 import lxml.html
@@ -37,6 +38,10 @@ class catchtime:
             self.logger.info("Time: %.3f seconds", self.total_time)
 
 
+_BEFORE_WS = re.compile(r"^([\s]+)")
+_AFTER_WS = re.compile(r"([\s]+)$")
+
+
 def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False, base_url: str | None = None) -> str:
     # Modified from RoboDanny code:
     # https://github.com/Rapptz/RoboDanny/blob/6e54be1985793ed29fca6b7c5259677904b8e1ad/cogs/dictionary.py#L532
@@ -48,26 +53,35 @@ def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False
         node.make_links_absolute("".join(base_url.partition(".com/wiki/")[0:-1]), resolve_base_href=True)
 
     for child in node.iter():
-        child_text = child.text.strip() if child.text else ""
+        if child.text:
+            # Account for whitespace within a block that should be outside of it.
+            before_ws = _match.group() if (_match := _BEFORE_WS.search(child.text)) else ""
+            after_ws = _match.group() if (_match := _AFTER_WS.search(child.text)) else ""
+            child_text = child.text.strip()
+        else:
+            before_ws = after_ws = child_text = ""
 
         if child.tag in {"i", "em"}:
-            text.append(f"{italics_marker}{child_text}{italics_marker}")
+            text.append(f"{before_ws}{italics_marker}{child_text}{italics_marker}{after_ws}")
             if italics_marker == "*":  # type: ignore
                 italics_marker = "_"
         elif child.tag in {"b", "strong"}:
             if text and text[-1].endswith("*"):
                 text.append("\u200b")
-            text.append(f"**{child_text.strip()}**")
+            text.append(f"{before_ws}**{child_text}**{after_ws}")
         elif child.tag == "a":
             # No markup for links
             if base_url is None:
-                text.append(child_text)
+                text.append(f"{before_ws}{child_text}{after_ws}")
             else:
-                text.append(f"[{child.text}]({child.attrib['href']})")
+                text.append(f"{before_ws}[{child.text}]({child.attrib['href']}){after_ws}")
         elif child.tag == "p":
             text.append(f"\n{child_text}\n")
         elif include_spans and child.tag == "span":
-            text.append(child_text)
+            if len(child) > 1:
+                text.append(f"{html_to_markdown(child, include_spans=True)}")
+            else:
+                text.append(f"{before_ws}{child_text}{after_ws}")
 
         if child.tail:
             text.append(child.tail)
