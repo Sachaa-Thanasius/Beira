@@ -82,7 +82,7 @@ def find_keywords_in_ao3_text(
     for chapter_div in element.findall(".//div[@id='chapters']/div[@class='userstuff']"):
         for elder_sibling in chapter_div.itersiblings("div", preceding=True):
             if elder_sibling.get("class") == "meta group":
-                if (chapter_title_el := chapter_div.find(".//h2[@class='heading']")) is not None:
+                if (chapter_title_el := elder_sibling.find(".//h2[@class='heading']")) is not None:
                     chapter_title = chapter_title_el.text_content()
                 else:
                     chapter_title = ""
