@@ -6,10 +6,11 @@ Currently supports most long-form ACI100 works and M J Bradley's A Cadmean Victo
 
 from __future__ import annotations
 
+import importlib.resources
+import importlib.resources.abc
 import logging
 import random
 import re
-import sys
 import textwrap
 from bisect import bisect_left
 from typing import TYPE_CHECKING, ClassVar, Self
@@ -26,12 +27,6 @@ import core
 from core.utils import EMOJI_STOCK, EMOJI_URL, PaginatedEmbedView
 
 
-if sys.version_info >= (3, 12):
-    from importlib import resources as importlib_resources
-else:
-    import importlib_resources
-
-
 if TYPE_CHECKING:
 
     def markdownify(html: str, **kwargs: object) -> str: ...
@@ -42,10 +37,11 @@ else:
 LOGGER = logging.getLogger(__name__)
 
 AO3_EMOJI = discord.PartialEmoji.from_str(EMOJI_STOCK["ao3"])
+assert AO3_EMOJI.id
 
 
 @async_lru.alru_cache(ttl=300)
-async def get_ao3_html(session: aiohttp.ClientSession, url: str) -> lxml.html.HtmlElement | None:
+async def get_ao3_story_html(session: aiohttp.ClientSession, url: str) -> lxml.html.HtmlElement | None:
     async with session.get(url) as response:
         text = await response.text()
 
@@ -64,7 +60,7 @@ async def get_ao3_html(session: aiohttp.ClientSession, url: str) -> lxml.html.Ht
     return None
 
 
-def find_keywords_in_ao3_text(
+def find_keywords_in_ao3_story(
     element: lxml.html.HtmlElement,
     query: str,
     url: str,
@@ -94,24 +90,15 @@ def find_keywords_in_ao3_text(
             assert isinstance(para, lxml.html.HtmlElement)
             if query in para.text_content().casefold():
                 # Calling next(para.itersiblings()) or next(iter(para.itersiblings())) doesn't work,
-                # so one-iteration-for-loops it is.
-                para_before = para_after = None
+                # so wrapping generators it is.
+                para_before = next((before for before in para.itersiblings(preceding=True)), None)
+                para_after = next((after for after in para.itersiblings()), None)
 
-                for before in para.itersiblings(preceding=True):
-                    para_before = before
-                    break
-
-                for after in para.itersiblings():
-                    para_after = after
-                    break
-
-                # Could be one-lined with map and filter, but I find it less readable.
-                # html_to_markdown(elem, include_spans=True)
                 combined = "\n\n".join(
                     markdownify(
                         lxml.html.tostring(elem, method="html", encoding="unicode")
-                        .replace("\n<span>", "")
-                        .replace("</span>\n", "")
+                        .replace("\n<span>", "<span>")  # Jank, but it prevents spans from becoming new lines.
+                        .replace("</span>\n", "</span>")
                     ).strip()
                     for elem in (para_before, para, para_after)
                     if elem is not None
@@ -139,6 +126,14 @@ class StoryInfo(msgspec.Struct):
     def from_record(cls, record: asyncpg.Record) -> Self:
         attrs_ = ("story_acronym", "story_full_name", "author_name", "story_link", "emoji_id")
         return cls(*(record[attr] for attr in attrs_))
+
+
+class AO3StoryHtmlData(msgspec.Struct):
+    url: str
+    title: str
+    author: str
+    series: str | None = None
+    emoji_id: int = AO3_EMOJI.id
 
 
 class StoryQuoteView(PaginatedEmbedView[tuple[str, str, str]]):
@@ -274,7 +269,8 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         """Load whatever is necessary to avoid reading from files or querying the database during runtime."""
 
         # Load story text from markdown files. Directory structure is known.
-        data_dir = importlib_resources.files("data.story_text")
+
+        data_dir = importlib.resources.files("data.story_text")
         for author_works in data_dir.iterdir():
             for work in author_works.iterdir():
                 if work.is_file() and work.name.endswith("text.md"):
@@ -289,7 +285,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         LOGGER.exception("", exc_info=error)
 
     @classmethod
-    def load_story_text(cls, filepath: importlib_resources.abc.Traversable) -> None:
+    def load_story_text(cls, filepath: importlib.resources.abc.Traversable) -> None:
         """Load the story metadata and text."""
 
         # Compile all necessary regex patterns.
@@ -303,11 +299,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
         # Start file copying and indexing.
         with filepath.open("r", encoding="utf-8") as story_file:
-            if TYPE_CHECKING:
-                import io
-
-                assert isinstance(story_file, io.TextIOWrapper)
-
             # Instantiate index lists, which act as a table of contents of sorts.
             stem = str(filepath.name)[:-8]
             temp_text = cls.story_records[stem].text = [line for line in story_file if line.strip()]
@@ -479,21 +470,40 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             view.message = message
 
     @commands.hybrid_command()
-    async def search_ao3(self, ctx: core.Context, url: str, query: str) -> None:
+    @discord.app_commands.choices(
+        known_story=[
+            discord.app_commands.Choice(name="Ashes of Chaos", value="aoc"),
+            discord.app_commands.Choice(name="Conjoining of Paragons", value="cop"),
+            discord.app_commands.Choice(name="Fabric of Fate", value="fof"),
+            discord.app_commands.Choice(name="Perversion of Purity", value="pop"),
+        ],
+    )
+    async def find_text(
+        self,
+        ctx: core.Context,
+        query: str,
+        known_story: str | None = None,
+        url: str | None = None,
+    ) -> None:
         """Search the text of an AO3 story."""
 
         async with ctx.typing():
-            element = await get_ao3_html(ctx.session, url)
+            if known_story:
+                ...
+            elif url:
+                element = await get_ao3_story_html(ctx.session, url)
 
-            if element is not None:
-                story_metadata, search_results = find_keywords_in_ao3_text(element, query, url)
+                if element is not None:
+                    story_metadata, search_results = find_keywords_in_ao3_story(element, query, url)
+                else:
+                    story_metadata = StoryInfo("NONE", "Unknown", "Unknown", url, AO3_EMOJI.id)
+                    search_results = []
+
+                view = AO3StoryQuoteView(ctx.author.id, search_results, story_data=story_metadata)
+                message = await ctx.send(embed=await view.get_first_page(), view=view)
+                view.message = message
             else:
-                story_metadata = StoryInfo("NONE", "Unknown", "Unknown", url, AO3_EMOJI.id)
-                search_results = []
-
-            view = AO3StoryQuoteView(ctx.author.id, search_results, story_data=story_metadata)
-            message = await ctx.send(embed=await view.get_first_page(), view=view)
-            view.message = message
+                await ctx.send("One of `url` and `known_story` must be filled to perform a text search.")
 
 
 async def setup(bot: core.Beira) -> None:

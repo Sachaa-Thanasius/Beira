@@ -36,6 +36,8 @@ ACI_MOD_ROLE = 780904973004570654
 
 aci_guild_id = core.CONFIG.discord.important_guilds["prod"][0]
 
+LEAKY_INSTAGRAM_LINK_PATTERN = re.compile(r"(instagram\.com/.*?)&igsh.*==")
+
 
 async def on_server_boost_role_member_update(
     bot: core.Beira,
@@ -108,6 +110,30 @@ async def on_bad_twitter_link(bot: core.Beira, message: discord.Message) -> None
             content,
             allowed_mentions=discord.AllowedMentions(users=False, replied_user=False),
         )
+
+
+async def on_leaky_instagram_link(message: discord.Message) -> None:
+    if not message.guild or message.guild.id != aci_guild_id:
+        return
+
+    if not LEAKY_INSTAGRAM_LINK_PATTERN.search(message.content):
+        return
+
+    cleaned_content = re.sub(LEAKY_INSTAGRAM_LINK_PATTERN, "\1", message.content)
+    new_content = (
+        f"*Cleaned Instagram link(s)*\n"
+        f"Reposted from {message.author.mention} ({message.author.name} - {message.author.id}):\n"
+        "————————\n"
+        "\n"
+        f"{cleaned_content}"
+    )
+
+    send_kwargs: dict[str, Any] = {}
+    if message.attachments:
+        send_kwargs["files"] = [await atmt.to_file() for atmt in message.attachments]
+
+    await message.delete()
+    await message.channel.send(new_content, allowed_mentions=discord.AllowedMentions(users=False), **send_kwargs)
 
 
 async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessageDeleteEvent) -> None:
