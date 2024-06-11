@@ -7,6 +7,7 @@ from __future__ import annotations
 import functools
 import logging
 import re
+from collections.abc import Callable
 from typing import Any, TypeAlias
 
 import discord
@@ -113,7 +114,7 @@ async def on_bad_twitter_link(bot: core.Beira, message: discord.Message) -> None
 
 
 async def on_leaky_instagram_link(message: discord.Message) -> None:
-    if not message.guild or message.guild.id != aci_guild_id:
+    if (not message.guild) or (message.guild.id != aci_guild_id):
         return
 
     if not LEAKY_INSTAGRAM_LINK_PATTERN.search(message.content):
@@ -199,7 +200,7 @@ async def test_on_any_message_delete(bot: core.Beira, payload: discord.RawMessag
             await delete_log_channel.send(content)
 
 
-def make_listeners(bot: core.Beira) -> tuple[tuple[str, functools.partial[Any]], ...]:
+def make_listeners(bot: core.Beira) -> tuple[tuple[str, Callable[..., Any]], ...]:
     """Connects listeners to bot."""
 
     # The webhook url that will be used to send ACI-related notifications.
@@ -210,5 +211,6 @@ def make_listeners(bot: core.Beira) -> tuple[tuple[str, functools.partial[Any]],
     return (
         ("on_member_update", functools.partial(on_leveled_role_member_update, bot, role_log_webhook)),
         ("on_member_update", functools.partial(on_server_boost_role_member_update, bot, role_log_webhook)),
+        ("on_message", on_leaky_instagram_link),
         # ("on_message", functools.partial(on_bad_twitter_link, bot)), # Twitter works.  # noqa: ERA001
     )
