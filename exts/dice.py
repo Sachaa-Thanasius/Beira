@@ -125,7 +125,7 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
                 components.append(sum(rolls))
             else:
                 return f"(Invalid expression; expected number or dice expression, not {part!r})", 0
-        else:
+        else:  # noqa: PLR5501
             if part == "-":
                 operations.append(operator.sub)
             elif part == "+":
@@ -625,7 +625,7 @@ async def roll(ctx: core.Context, expression: str | None = None) -> None:
     await ctx.send(embed=embed, view=view)
 
 
-@roll.error
+@roll.error  # pyright: ignore [reportUnknownMemberType] # discord.py bug: see https://github.com/Rapptz/discord.py/issues/9788.
 async def roll_error(ctx: core.Context, error: commands.CommandError) -> None:
     # Extract the original error.
     error = getattr(error, "original", error)
@@ -639,4 +639,4 @@ async def setup(bot: core.Beira) -> None:
     """Add roll command and persistent dice view to bot."""
 
     bot.add_view(DiceView())
-    bot.add_command(roll)
+    bot.add_command(roll)  # pyright: ignore [reportUnknownArgumentType] # See roll_error link.

@@ -194,6 +194,13 @@ class MusicCog(commands.Cog, name="Music"):
         current_embed = create_track_embed("Now Playing", payload.original or payload.track)
         await player.channel.send(embed=current_embed)
 
+    @commands.Cog.listener()
+    async def on_wavelink_inactive_player(self, player: wavelink.Player) -> None:
+        await player.channel.send(
+            f"The player has been inactive for `{player.inactive_timeout}` seconds. Disconnecting now. Goodbye!"
+        )
+        await player.disconnect()
+
     @commands.hybrid_group()
     @commands.guild_only()
     async def music(self, ctx: core.GuildContext) -> None:
@@ -254,12 +261,15 @@ class MusicCog(commands.Cog, name="Music"):
                 await ctx.send(f"Could not find any tracks based on the given query: `{query}`.")
 
             if isinstance(tracks, wavelink.Playlist):
-                tracks.extras = {"requester": ctx.author.mention}
+                try:
+                    tracks.extras.requester = ctx.author.mention
+                except AttributeError:
+                    tracks.extras = {"requester": ctx.author.mention}
                 added = await vc.queue.put_wait(tracks)
                 await ctx.send(f"Added {added} tracks from the `{tracks.name}` playlist to the queue.")
             else:
                 track = tracks[0]
-                track.extras = {"requester": ctx.author.mention}
+                track.extras.requester = ctx.author.mention
                 await vc.queue.put_wait(track)
                 await ctx.send(f"Added `{track.title}` to the queue.")
 

@@ -63,7 +63,7 @@ def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False
 
         if child.tag in {"i", "em"}:
             text.append(f"{before_ws}{italics_marker}{child_text}{italics_marker}{after_ws}")
-            if italics_marker == "*":  # type: ignore
+            if italics_marker == "*":  # type: ignore # Pyright bug?
                 italics_marker = "_"
         elif child.tag in {"b", "strong"}:
             if text and text[-1].endswith("*"):

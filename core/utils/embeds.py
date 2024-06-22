@@ -109,7 +109,8 @@ class StatsEmbed(discord.Embed):
         """
 
         # Add the leaderboard fields - the emojis will be cycled over.
-        for rank, (content, emoji) in enumerate(zip(ldbd_content, itertools.cycle(ldbd_emojis), strict=False)):
+        # For the pyright: ignore below: Regresion in enumerate's typing?
+        for rank, (content, emoji) in enumerate(zip(ldbd_content, itertools.cycle(ldbd_emojis), strict=False)):  # pyright: ignore [reportUnknownVariableType]
             field_prefix = f"{emoji} {rank + 1} " if is_ranked else f"{emoji} "
             field_name = field_prefix + name_format.format(str(content[0]))
             field_value = value_format.format(*content[1:])

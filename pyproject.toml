@@ -1,6 +1,6 @@
 [project]
 name = "Beira"
-version = "2024.04.15"
+version = "2024.06.22"
 description = "An personal Discord bot made in Python."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -39,44 +39,47 @@ select = [
     "PIE",
     "T20",
     "PYI",
+    "PT",
     "RSE",
     "RET",
     "SIM",
     "TID",
     "PTH",
     "ERA",
-    "PD",
     "PL",
     "TRY",
-    "NPY",
     "RUF",
 ]
-extend-ignore = [
-    "S101", # Use of assert here is a known quantity. Blame typing memes.
-    # "PLR2004", # Magic value comparison. May remove later.
-    "SIM105", # Suppressable exception. I'm not paying the overhead of contextlib.suppress for stylistic choices.
-    "C90",    # McCabe complexity memes.
-    "PD011",  # Erroneous issue that triggers for any .values attribute access at all.
-    "S311",   # No need for cryptographically secure random number generation in this use case.
-    "ANN101", # Type of self is implicit.
-    "ANN102", # Type of cls is implicit.
-    "ANN204", # Special method return types are known by type checker.
-    "ANN401", # Not sure how else to type *args and **kwargs when they could be anything.
-    "PLR",    # Complexity things.
-    "PYI036", # Bug with annotations for __exit__.
-    # Recommended by Ruff when using Ruff format.
+ignore = [
+    "S101",    # Allow use of assert for typing reasons.
+    "PLR2004", # Magic value comparison.
+    "SIM105",  # Suppressable exception. contextlib.suppress is a stylistic choice with overhead.
+    "ANN101",  # Type of Self for self is usually implicit.
+    "ANN102",  # Type of type[Self] for cls is usually implicit.
+    "ANN204",  # Special method return types are usually implicit or known by type checkers.
+    "ANN401",  # Any is necessary sometimes.
+    "PT001",   # pytest recommends against empty parentheses on pytest.fixture.
+    "UP038",   # isinstance performs better with tuples than unions.
+    # == Recommended ignores by ruff when using ruff format.
     "E111",
     "E114",
     "E117",
-    "Q003",
+    "D206",
+    "D300",
     "COM812",
     "COM819",
     # "E501",
     "ISC001",
     "ISC002",
+    # == Project-specific ignores.
+    "S311",    # No need for cryptographically secure number generation in this use case; it's just dice rolls.
+    "PLR0911", # Unlimited returns.
+    "PLR0912", # Unlimited branches.
+    "PLR0913", # Unlimited arguments.
+    "PYI036",  # Bug with annotations for __(a)exit__ if a placeholder for a needed type exists in the else clause of an `if TYPE_CHECKING` block.
 ]
 unfixable = [
-    "ERA", # Disallow erroneous detection into deletion.
+    "ERA", # Don't want erroneous deletion of comments.
 ]
 
 [tool.ruff.lint.per-file-ignores]

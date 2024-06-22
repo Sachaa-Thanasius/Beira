@@ -96,7 +96,7 @@ class Beira(commands.Bot):
         await self._load_extensions()
 
         # Connect to lavalink node(s).
-        node = wavelink.Node(uri=CONFIG.lavalink.uri, password=CONFIG.lavalink.password)
+        node = wavelink.Node(uri=CONFIG.lavalink.uri, password=CONFIG.lavalink.password, inactive_player_timeout=600)
         await wavelink.Pool.connect(client=self, nodes=[node])
 
         # Get information about owner.

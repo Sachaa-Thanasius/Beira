@@ -152,7 +152,7 @@ async def process_fandom_page(session: aiohttp.ClientSession, url: str) -> tuple
             to_look_for = [".//aside[contains(@class, 'portable-infobox')]", ".//div[@id='toc']", ".//h2"]
 
             for index, node in enumerate(content.xpath(" | ".join(to_look_for))):
-                if (node.tag == "div" or node.tag == "h2") and summary_end_index == 0 and index > summary_end_index:
+                if (node.tag in {"div", "h2"}) and summary_end_index == 0 and index > summary_end_index:
                     summary_end_index = index
 
                 node.getparent().remove(node)
