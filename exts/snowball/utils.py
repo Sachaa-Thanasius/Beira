@@ -66,7 +66,7 @@ class SnowballRecord(msgspec.Struct):
         member_stmt = (
             "INSERT INTO members (guild_id, user_id) VALUES ($1, $2) ON CONFLICT (guild_id, user_id) DO NOTHING;"
         )
-        await conn.execute(member_stmt, member.id, member.guild.id)
+        await conn.execute(member_stmt, member.guild.id, member.id)
 
         snowball_stmt = """\
             INSERT INTO snowball_stats (user_id, guild_id, hits, misses, kos, stock)
@@ -78,7 +78,7 @@ class SnowballRecord(msgspec.Struct):
                     stock = snowball_stats.stock + $7
             RETURNING *;
         """
-        args = member.id, member.guild.id, hits, misses, kos, max(stock, 0), stock
+        args = (member.id, member.guild.id, hits, misses, kos, max(stock, 0), stock)
         return cls.from_record(await conn.fetchrow(snowball_stmt, *args))
 
 
