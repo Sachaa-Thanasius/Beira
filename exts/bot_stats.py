@@ -73,10 +73,10 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         if user_info:
             stmt = "INSERT INTO users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING;"
-            await db.executemany(stmt, [user.id for user in user_info], timeout=60.0)
+            await db.executemany(stmt, [(user.id,) for user in user_info], timeout=60.0)
         if guild_info:
             stmt = "INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING;"
-            await db.executemany(stmt, [guild.id for guild in guild_info], timeout=60.0)
+            await db.executemany(stmt, [(guild.id,) for guild in guild_info], timeout=60.0)
 
         # Assemble the record to upsert.
         cmd = (
