@@ -13,7 +13,7 @@ authors = [
 Homepage = "https://github.com/Sachaa-Thanasius/Beira"
 
 [tool.ruff]
-include = ["main.py", "core/*", "exts/*", "**/pyproject.toml", "misc/**/*.py"]
+include = ["src/beira/**/*.py", "misc/**/*.py"]
 line-length = 120
 target-version = "py312"
 
@@ -94,7 +94,7 @@ lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
-include = ["main.py", "core", "exts"]
+include = ["src/beira"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 
