@@ -61,7 +61,7 @@ class SnowballRecord(msgspec.Struct):
         # Upsert the relevant users and guilds to the database before adding a snowball record.
         user_stmt = "INSERT INTO users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING;"
         await conn.execute(user_stmt, member.id)
-        guild_stmt = "INSERT INTO guilds (guild_id) VALUES ($2) ON CONFLICT (guild_id) DO NOTHING;"
+        guild_stmt = "INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING;"
         await conn.execute(guild_stmt, member.guild.id)
         member_stmt = (
             "INSERT INTO members (guild_id, user_id) VALUES ($1, $2) ON CONFLICT (guild_id, user_id) DO NOTHING;"
