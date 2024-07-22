@@ -1,3 +1,15 @@
+__all__ = (
+    "COLLECT_SUCCEED_IMGS",
+    "COLLECT_FAIL_IMGS",
+    "HIT_NOTES",
+    "HIT_IMGS",
+    "MISS_NOTES",
+    "MISS_IMGS",
+    "SNOW_INSPO_URL",
+    "SNOW_INSPO_NOTE",
+    "SNOW_CODE_NOTE",
+)
+
 COLLECT_SUCCEED_IMGS = (
     "https://c.tenor.com/NBqwJNBaSXUAAAAC/playing-with-snow-piu-piu.gif?width=400&height=225",
     "https://media.tenor.com/odNpnufgwkYAAAAC/anime-cute.gif",

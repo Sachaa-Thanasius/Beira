@@ -1,4 +1,4 @@
-from . import tree as tree, utils as utils
+from . import tree as tree
 from .bot import Beira as Beira
 from .checks import *
 from .config import *

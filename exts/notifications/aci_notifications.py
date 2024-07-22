@@ -1,14 +1,10 @@
-"""
-custom_notifications.py: One or more listenerrs for sending custom notifications based on events.
-"""
-
-from __future__ import annotations
+"""custom_notifications.py: One or more listenerrs for sending custom notifications based on events."""
 
 import functools
 import logging
 import re
 from collections.abc import Callable
-from typing import Any, TypeAlias
+from typing import Any
 
 import discord
 from discord import CategoryChannel, ForumChannel, StageChannel, TextChannel, VoiceChannel
@@ -16,11 +12,11 @@ from discord import CategoryChannel, ForumChannel, StageChannel, TextChannel, Vo
 import core
 
 
-ValidGuildChannel: TypeAlias = VoiceChannel | StageChannel | ForumChannel | TextChannel | CategoryChannel
+type ValidGuildChannel = VoiceChannel | StageChannel | ForumChannel | TextChannel | CategoryChannel
 
 LOGGER = logging.getLogger(__name__)
 
-# 799077440139034654 would be the actional channel should this go into "production"
+# 799077440139034654 would be the actual channel should the delete hooks go into "production".
 ACI_DELETE_CHANNEL = 975459460560605204
 
 # A list of ids for Tatsu leveled roles to keep track of.
@@ -35,14 +31,13 @@ ACI_LEVELED_ROLES = {
 #  The mod role(s) to ping when sending notifications.
 ACI_MOD_ROLE = 780904973004570654
 
-aci_guild_id = core.CONFIG.discord.important_guilds["prod"][0]
+ACI_GUILD_ID = core.CONFIG.discord.important_guilds["prod"][0]
 
 LEAKY_INSTAGRAM_LINK_PATTERN = re.compile(r"(instagram\.com/.*?)&igsh.*==")
 
 
 async def on_server_boost_role_member_update(
-    bot: core.Beira,
-    role_log_wbhk: discord.Webhook,
+    log_webhook: discord.Webhook,
     before: discord.Member,
     after: discord.Member,
 ) -> None:
@@ -54,18 +49,17 @@ async def on_server_boost_role_member_update(
 
     # Check if the update is in the right server, a member got new roles, and they got a new "Server Booster" role.
     if (
-        before.guild.id == aci_guild_id
+        before.guild.id == ACI_GUILD_ID
         and len(new_roles := set(after.roles).difference(before.roles)) > 0
         and after.guild.premium_subscriber_role in new_roles
     ):
         # Send a message notifying holders of some other role(s) about this new role acquisition.
         content = f"<@&{ACI_MOD_ROLE}>, {after.mention} just boosted the server!"
-        await role_log_wbhk.send(content)
+        await log_webhook.send(content)
 
 
 async def on_leveled_role_member_update(
-    bot: core.Beira,
-    role_log_wbhk: discord.Webhook,
+    log_webhook: discord.Webhook,
     before: discord.Member,
     after: discord.Member,
 ) -> None:
@@ -77,7 +71,7 @@ async def on_leveled_role_member_update(
 
     # Check if the update is in the right server, a member got new roles, and they got a relevant leveled role.
     if (
-        before.guild.id == aci_guild_id
+        before.guild.id == ACI_GUILD_ID
         and len(new_roles := set(after.roles).difference(before.roles)) > 0
         and (new_leveled_roles := tuple(role for role in new_roles if (role.id in ACI_LEVELED_ROLES)))
     ):
@@ -93,11 +87,11 @@ async def on_leveled_role_member_update(
             # Send a message notifying holders of some other role(s) about this new role acquisition.
             role_names = tuple(role.name for role in new_leveled_roles)
             content = f"<@&{ACI_MOD_ROLE}>, {after.mention} was given the `{role_names}` role(s)."
-            await role_log_wbhk.send(content)
+            await log_webhook.send(content)
 
 
 async def on_bad_twitter_link(bot: core.Beira, message: discord.Message) -> None:
-    if message.author == bot.user or (not message.guild or message.guild.id != aci_guild_id):
+    if message.author == bot.user or (not message.guild or message.guild.id != ACI_GUILD_ID):
         return
 
     if links := re.findall(r"(?:http(?:s)?://|(?<!\S))(?:twitter|x)\.com/.+", message.content):
@@ -114,7 +108,7 @@ async def on_bad_twitter_link(bot: core.Beira, message: discord.Message) -> None
 
 
 async def on_leaky_instagram_link(message: discord.Message) -> None:
-    if (not message.guild) or (message.guild.id != aci_guild_id):
+    if (not message.guild) or (message.guild.id != ACI_GUILD_ID):
         return
 
     if not LEAKY_INSTAGRAM_LINK_PATTERN.search(message.content):
@@ -204,13 +198,13 @@ def make_listeners(bot: core.Beira) -> tuple[tuple[str, Callable[..., Any]], ...
     """Connects listeners to bot."""
 
     # The webhook url that will be used to send ACI-related notifications.
-    aci_webhook_url: str = core.CONFIG.discord.webhooks[0]
+    aci_webhook_url = core.CONFIG.discord.webhooks[0]
     role_log_webhook = discord.Webhook.from_url(aci_webhook_url, session=bot.web_session)
 
     # Adjust the arguments for the listeners and provide corresponding event name.
     return (
-        ("on_member_update", functools.partial(on_leveled_role_member_update, bot, role_log_webhook)),
-        ("on_member_update", functools.partial(on_server_boost_role_member_update, bot, role_log_webhook)),
+        ("on_member_update", functools.partial(on_leveled_role_member_update, role_log_webhook)),
+        ("on_member_update", functools.partial(on_server_boost_role_member_update, role_log_webhook)),
         ("on_message", on_leaky_instagram_link),
         # ("on_message", functools.partial(on_bad_twitter_link, bot)), # Twitter works.  # noqa: ERA001
     )

@@ -1,6 +1,4 @@
-"""
-errors.py: Custom errors used by the bot.
-"""
+"""errors.py: Custom errors used by the bot."""
 
 from discord import app_commands
 from discord.ext import commands

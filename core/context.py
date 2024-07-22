@@ -1,10 +1,8 @@
-"""
-context.py: For the custom context and interaction subclasses. Mainly used for type narrowing.
-"""
+"""context.py: For the custom context and interaction subclasses. Mainly used for type narrowing."""
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, TypeAlias
+from typing import TYPE_CHECKING
 
 import aiohttp
 import discord
@@ -20,7 +18,7 @@ if TYPE_CHECKING:
 
 __all__ = ("Context", "GuildContext", "Interaction")
 
-Interaction: TypeAlias = discord.Interaction["Beira"]
+type Interaction = discord.Interaction[Beira]
 
 
 class Context(commands.Context["Beira"]):

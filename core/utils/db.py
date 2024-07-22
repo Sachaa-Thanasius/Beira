@@ -1,29 +1,24 @@
-"""
-db.py: Utility functions for interacting with the database.
-"""
+"""db.py: Utility functions for interacting with the database."""
 
-from __future__ import annotations
+from typing import TYPE_CHECKING
 
-from typing import TYPE_CHECKING, TypeAlias
-
-import discord
 import msgspec
 from asyncpg import Connection, Pool, Record
 from asyncpg.pool import PoolConnectionProxy
 
 
-UserObject: TypeAlias = discord.abc.User | discord.Object | tuple[int, bool]
-GuildObject: TypeAlias = discord.Guild | discord.Object | tuple[int, bool]
-
-
-__all__ = ("Connection_alias", "Pool_alias", "conn_init", "upsert_users", "upsert_guilds")
+__all__ = (
+    "Connection_alias",
+    "Pool_alias",
+    "conn_init",
+)
 
 if TYPE_CHECKING:
-    Connection_alias: TypeAlias = Connection[Record] | PoolConnectionProxy[Record]
-    Pool_alias: TypeAlias = Pool[Record]
+    type Connection_alias = Connection[Record] | PoolConnectionProxy[Record]
+    type Pool_alias = Pool[Record]
 else:
-    Connection_alias: TypeAlias = Connection | PoolConnectionProxy
-    Pool_alias: TypeAlias = Pool
+    type Connection_alias = Connection | PoolConnectionProxy
+    type Pool_alias = Pool
 
 
 async def conn_init(connection: Connection_alias) -> None:
@@ -35,51 +30,3 @@ async def conn_init(connection: Connection_alias) -> None:
         encoder=msgspec.json.encode,
         decoder=msgspec.json.decode,
     )
-
-
-async def upsert_users(conn: Pool_alias | Connection_alias, *users: UserObject) -> None:
-    """Upsert a Discord user in the appropriate database table.
-
-    Parameters
-    ----------
-    conn: `Pool` | `Connection`
-        The connection pool used to interact to the database.
-    users: tuple[`discord.abc.User` | `discord.Object` | tuple]
-        One or more users, members, discord objects, or tuples of user ids and blocked statuses, to use for upsertion.
-    """
-
-    upsert_query = """
-        INSERT INTO users (user_id, is_blocked)
-        VALUES ($1, $2)
-        ON CONFLICT(user_id)
-        DO UPDATE
-            SET is_blocked = EXCLUDED.is_blocked;
-    """
-
-    # Format the users as minimal tuples.
-    values = [(user.id, False) if not isinstance(user, tuple) else user for user in users]
-    await conn.executemany(upsert_query, values, timeout=60.0)
-
-
-async def upsert_guilds(conn: Pool_alias | Connection_alias, *guilds: GuildObject) -> None:
-    """Upsert a Discord guild in the appropriate database table.
-
-    Parameters
-    ----------
-    conn: `Pool` | `Connection`
-        The connection pool used to interact to the database.
-    guilds: tuple[`discord.Guild` | `discord.Object` | tuple]
-        One or more guilds, discord objects, or tuples of guild ids, names, and blocked statuses, to use for upsertion.
-    """
-
-    upsert_query = """
-        INSERT INTO guilds (guild_id, is_blocked)
-        VALUES ($1, $2)
-        ON CONFLICT (guild_id)
-        DO UPDATE
-            SET is_blocked = EXCLUDED.is_blocked;
-    """
-
-    # Format the guilds as minimal tuples.
-    values = [(guild.id, False) if not isinstance(guild, tuple) else guild for guild in guilds]
-    await conn.executemany(upsert_query, values, timeout=60.0)

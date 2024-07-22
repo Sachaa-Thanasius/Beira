@@ -2,8 +2,6 @@
 todo.py: A module/cog for handling todo lists made in Discord and stored in a database.
 """
 
-from __future__ import annotations
-
 import datetime
 import logging
 import textwrap
@@ -63,9 +61,9 @@ class TodoItem(msgspec.Struct):
             The connection/pool that will be used to make this database command.
         """
 
-        command = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
+        stmt = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
         new_date = discord.utils.utcnow() if self.completed_at is None else None
-        record = await conn.fetchrow(command, new_date, self.todo_id)
+        record = await conn.fetchrow(stmt, new_date, self.todo_id)
         return self.from_record(record) if record else type(self).generate_deleted()
 
     async def update(self, conn: Pool_alias | Connection_alias, updated_content: str) -> Self:
@@ -81,8 +79,8 @@ class TodoItem(msgspec.Struct):
             The new to-do content.
         """
 
-        command = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
-        record = await conn.fetchrow(command, updated_content, self.todo_id)
+        stmt = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
+        record = await conn.fetchrow(stmt, updated_content, self.todo_id)
         return self.from_record(record) if record else type(self).generate_deleted()
 
     async def delete(self, conn: Pool_alias | Connection_alias) -> None:
@@ -94,8 +92,7 @@ class TodoItem(msgspec.Struct):
             The connection/pool that will be used to make this database command.
         """
 
-        command = "DELETE FROM todos where todo_id = $1;"
-        await conn.execute(command, self.todo_id)
+        await conn.execute("DELETE FROM todos where todo_id = $1;", self.todo_id)
 
     def display_embed(self, *, to_be_deleted: bool = False) -> discord.Embed:
         """Generates a formatted embed from a to-do record.
@@ -478,8 +475,8 @@ class TodoCog(commands.Cog, name="Todo"):
             await ctx.send("Content is too long. Please keep to within 2000 characters.")
             return
 
-        command = "INSERT INTO todos (user_id, todo_content) VALUES ($1, $2);"
-        await self.bot.db_pool.execute(command, ctx.author.id, content)
+        stmt = "INSERT INTO todos (user_id, todo_content) VALUES ($1, $2);"
+        await self.bot.db_pool.execute(stmt, ctx.author.id, content)
         await ctx.send("Todo added!", ephemeral=True)
 
     @todo.command("delete")
@@ -494,16 +491,15 @@ class TodoCog(commands.Cog, name="Todo"):
             The id of the task to do.
         """
 
-        command = "DELETE FROM todos where todo_id = $1 and user_id = $2;"
-        await self.bot.db_pool.execute(command, todo_id, ctx.author.id)
+        stmt = "DELETE FROM todos where todo_id = $1 and user_id = $2;"
+        await self.bot.db_pool.execute(stmt, todo_id, ctx.author.id)
         await ctx.send(f"To-do item #{todo_id} has been removed.", ephemeral=True)
 
     @todo.command("clear")
     async def todo_clear(self, ctx: core.Context) -> None:
         """Clear all of your to-do items."""
 
-        command = "DELETE FROM todos where user_id = $1;"
-        await self.bot.db_pool.execute(command, ctx.author.id)
+        await self.bot.db_pool.execute("DELETE FROM todos where user_id = $1;", ctx.author.id)
         await ctx.send("All of your todo items have been cleared.", ephemeral=True)
 
     @todo.command("show")

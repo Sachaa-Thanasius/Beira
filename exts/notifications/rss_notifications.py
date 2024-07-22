@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import asyncio
 from typing import Self
 
@@ -55,7 +53,7 @@ class RSSNotificationsCog(commands.Cog):
     async def notification_check_loop(self) -> None:
         """Continuously check urls for updates and send notifications to webhooks accordingly."""
 
-        notif_tasks: list[asyncio.Task[str | None]] = [asyncio.create_task(self.check_url(rec) for rec in self.records)]
+        notif_tasks: list[asyncio.Task[str | None]] = [asyncio.create_task(self.check_url(rec)) for rec in self.records]
         results: list[str | None] = await asyncio.gather(*notif_tasks)
         to_update = ((result, rec) for result, rec in zip(results, self.records, strict=True) if result is not None)
         for result, rec in to_update:

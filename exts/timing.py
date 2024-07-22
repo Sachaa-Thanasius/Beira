@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import datetime
 from typing import NotRequired, TypedDict
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
@@ -115,14 +113,14 @@ class TimingCog(commands.Cog):
         except ZoneInfoNotFoundError:
             await ctx.send("That's an invalid time zone.")
         else:
-            query = """\
+            stmt = """\
                 INSERT INTO users (user_id, timezone)
                 VALUES ($1, $2)
                 ON CONFLICT (user_id)
                 DO UPDATE
                     SET timezone = EXCLUDED.timezone;
             """
-            await ctx.db.execute(query, ctx.author.id, zone)
+            await ctx.db.execute(stmt, ctx.author.id, zone)
             self.bot.get_user_timezone.cache_invalidate(ctx.author.id)
             await ctx.send(
                 f"Your timezone has been set to {tz} (CLDR name: {self.timezone_aliases[tz]}).",
@@ -133,8 +131,7 @@ class TimingCog(commands.Cog):
     async def timezone_clear(self, ctx: core.Context) -> None:
         """Clear your timezone."""
 
-        query = "UPDATE users SET timezone = NULL WHERE user_id = $1;"
-        await ctx.db.execute(query, ctx.author.id)
+        await ctx.db.execute("UPDATE users SET timezone = NULL WHERE user_id = $1;", ctx.author.id)
         self.bot.get_user_timezone.cache_invalidate(ctx.author.id)
         await ctx.send("Your timezone has been cleared.", ephemeral=True)
 

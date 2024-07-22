@@ -1,23 +1,21 @@
-"""
-embeds.py: This class provides embeds for user-specific statistics separated into fields.
-"""
+"""embeds.py: This class provides embeds for user-specific statistics separated into fields."""
 
 from __future__ import annotations
 
 import itertools
 import logging
 from collections.abc import Iterable, Sequence
-from typing import Self, TypeAlias
+from typing import Self
 
 import discord
 
 
-AnyEmoji: TypeAlias = discord.Emoji | discord.PartialEmoji | str
+LOGGER = logging.getLogger(__name__)
+
+type AnyEmoji = discord.Emoji | discord.PartialEmoji | str
 
 
 __all__ = ("StatsEmbed",)
-
-LOGGER = logging.getLogger(__name__)
 
 
 class StatsEmbed(discord.Embed):

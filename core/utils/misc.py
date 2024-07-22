@@ -1,8 +1,4 @@
-"""
-misc.py: Miscellaneous utility functions that might come in handy.
-"""
-
-from __future__ import annotations
+"""misc.py: Miscellaneous utility functions that might come in handy."""
 
 import logging
 import re
@@ -32,7 +28,7 @@ class catchtime:
         self.total_time = time.perf_counter()
         return self
 
-    def __exit__(self, *exc: object) -> None:
+    def __exit__(self, *exc_info: object) -> None:
         self.total_time = time.perf_counter() - self.total_time
         if self.logger:
             self.logger.info("Time: %.3f seconds", self.total_time)

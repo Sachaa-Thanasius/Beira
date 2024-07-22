@@ -1,10 +1,7 @@
-"""
-patreon.py: A cog for checking which Discord members are currently patrons of ACI100.
+"""patreon.py: A cog for checking which Discord members are currently patrons of ACI100.
 
 Work in progress to make the view portion functional for M J Bradley.
 """
-
-from __future__ import annotations
 
 import logging
 import textwrap
@@ -143,7 +140,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
     async def _get_patreon_roles(self) -> None:
         await self.bot.wait_until_ready()
 
-        query = """SELECT * FROM patreon_creators WHERE creator_name = 'ACI100' ORDER BY tier_value;"""
+        query = "SELECT * FROM patreon_creators WHERE creator_name = 'ACI100' ORDER BY tier_value;"
         records: list[asyncpg.Record] = await self.bot.db_pool.fetch(query)
         self.patreon_tiers_info = [PatreonTierInfo.from_record(record) for record in records]
 

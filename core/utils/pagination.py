@@ -8,12 +8,9 @@ from __future__ import annotations
 import asyncio
 from abc import ABC, abstractmethod
 from collections.abc import Sequence
-from typing import Any, Generic, Self, TypeVar
+from typing import Any, Self
 
 import discord
-
-
-_LT = TypeVar("_LT")
 
 
 __all__ = ("QuitButton", "OwnedView", "PageSeekModal", "PaginatedEmbedView", "PaginatedSelectView")
@@ -118,7 +115,7 @@ class PageSeekModal(discord.ui.Modal, title="Page Jump"):
         self.stop()
 
 
-class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
+class PaginatedEmbedView[_LT](ABC, OwnedView):
     """A view that handles paginated embeds and page buttons.
 
     Parameters
@@ -294,7 +291,7 @@ class PaginatedEmbedView(ABC, Generic[_LT], OwnedView):
         await self.update_page(interaction)
 
 
-class PaginatedSelectView(ABC, Generic[_LT], OwnedView):
+class PaginatedSelectView[_LT](ABC, OwnedView):
     """A view that handles paginated embeds and page buttons.
 
     Parameters

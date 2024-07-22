@@ -1,9 +1,6 @@
-"""
-fandom_wiki.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
+"""fandom_wiki.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
 first.
 """
-
-from __future__ import annotations
 
 import asyncio
 import logging
@@ -13,9 +10,10 @@ from urllib.parse import quote as uriquote, urljoin
 
 import aiohttp
 import discord
-from discord.app_commands import Choice
+import lxml.etree
+import lxml.html
+from discord import app_commands
 from discord.ext import commands
-from lxml import etree, html
 
 import core
 from core.utils import EMOJI_URL, html_to_markdown
@@ -71,7 +69,7 @@ async def load_wiki_all_pages(session: aiohttp.ClientSession, wiki_url: str) -> 
     while True:
         async with session.get(next_path) as response:
             text = await response.text()
-            element = html.fromstring(text)
+            element = lxml.html.fromstring(text)
         pages_dict.update(
             {
                 el.attrib["title"]: urljoin(wiki_url, el.attrib["href"])
@@ -86,7 +84,7 @@ async def load_wiki_all_pages(session: aiohttp.ClientSession, wiki_url: str) -> 
     return pages_dict
 
 
-def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignore [reportPrivateUsage]
+def clean_fandom_page(element: lxml.etree._Element) -> lxml.etree._Element:  # pyright: ignore [reportPrivateUsage]
     """Attempts to clean a Fandom wiki page.
 
     Removes everything from a Fandom wiki page that isn't the first few lines, if possible.
@@ -97,7 +95,7 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
     # Clean the content.
     infoboxes = element.findall(".//aside[@class='portable-infobox']")
     for box in infoboxes:
-        box.getparent().remove(box)  # type: ignore [reportOptionalMemberAccess]
+        box.getparent().remove(box)  # pyright: ignore [reportOptionalMemberAccess]
 
     toc = element.find(".//div[@id='toc']")
     if toc is not None:
@@ -108,7 +106,7 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
         else:
             if index > summary_end_index:
                 summary_end_index = index
-        toc.getparent().remove(toc)  # type: ignore [reportOptionalMemberAccess]
+        toc.getparent().remove(toc)  # pyright: ignore [reportOptionalMemberAccess]
 
     subheading = element.find(".//h2")
     if subheading is not None:
@@ -119,15 +117,15 @@ def clean_fandom_page(element: etree._Element) -> etree._Element:  # type: ignor
         else:
             if index > summary_end_index:
                 summary_end_index = index
-            subheading.getparent().remove(subheading)  # type: ignore [reportOptionalMemberAccess]
+            subheading.getparent().remove(subheading)  # pyright: ignore [reportOptionalMemberAccess]
 
     if summary_end_index != 0:
         for el in list(element[summary_end_index + 1 :]):
-            el.getparent().remove(el)  # type: ignore [reportOptionalMemberAccess]
+            el.getparent().remove(el)  # pyright: ignore [reportOptionalMemberAccess]
 
     for el in list(element):
         if el.text and el.text == "\n":
-            el.getparent().remove(el)  # type: ignore [reportOptionalMemberAccess]
+            el.getparent().remove(el)  # pyright: ignore [reportOptionalMemberAccess]
 
     return element
 
@@ -139,7 +137,7 @@ async def process_fandom_page(session: aiohttp.ClientSession, url: str) -> tuple
         char_summary, char_thumbnail = None, None
 
         # Extract the main content.
-        element = html.fromstring(await response.text())
+        element = lxml.html.fromstring(await response.text())
         content = element.find(".//div[@class='mw-parser-output']")
         if content is not None:
             # Extract the image.
@@ -235,14 +233,20 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         await ctx.send(embed=embed)
 
     @wiki.autocomplete("wiki")
-    async def wiki_autocomplete(self, _: core.Interaction, current: str) -> list[Choice[str]]:
+    async def wiki_autocomplete(self, _: core.Interaction, current: str) -> list[app_commands.Choice[str]]:
         """Autocomplete callback for the names of different wikis."""
 
         options = self.all_wikis.keys()
-        return [Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()][:25]
+        return [
+            app_commands.Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()
+        ][:25]
 
     @wiki.autocomplete("search_term")
-    async def wiki_search_term_autocomplete(self, interaction: core.Interaction, current: str) -> list[Choice[str]]:
+    async def wiki_search_term_autocomplete(
+        self,
+        interaction: core.Interaction,
+        current: str,
+    ) -> list[app_commands.Choice[str]]:
         """Autocomplete callback for the names of different wiki pages.
 
         Defaults to searching through the AoC wiki if the given wiki name is invalid.
@@ -253,7 +257,9 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
             wiki = "Harry Potter and the Ashes of Chaos"
 
         options = self.all_wikis[wiki]
-        return [Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()][:25]
+        return [
+            app_commands.Choice(name=name, value=name) for name in options if current.casefold() in name.casefold()
+        ][:25]
 
     async def search_wiki(self, wiki_name: str, wiki_query: str) -> discord.Embed:
         """Search a Fandom wiki for different pages.

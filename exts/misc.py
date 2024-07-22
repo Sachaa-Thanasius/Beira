@@ -1,10 +1,4 @@
-"""
-misc.py: A cog for testing slash and hybrid command functionality.
-
-Side note: This is the cog with the ``ping`` command.
-"""
-
-from __future__ import annotations
+"""misc.py: A cog for testing slash and hybrid command functionality."""
 
 import asyncio
 import colorsys
@@ -16,7 +10,6 @@ import tempfile
 import time
 from io import BytesIO, StringIO
 
-import aiohttp
 import discord
 import openpyxl
 import openpyxl.styles
@@ -128,25 +121,6 @@ def process_color_data(role_data: list[tuple[str, discord.Colour]]) -> BytesIO:
         return BytesIO(tmp.read())
 
 
-async def create_inspiration(session: aiohttp.ClientSession) -> str:
-    """Makes a call to InspiroBot's API to generate an inspirational poster.
-
-    Parameters
-    ----------
-    session: `aiohttp.ClientSession`
-        The web session used to access the API.
-
-    Returns
-    -------
-    `str`
-        The url for the generated poster.
-    """
-
-    async with session.get(url=INSPIROBOT_API_URL, params={"generate": "true"}) as response:
-        response.raise_for_status()
-        return await response.text()
-
-
 class MiscCog(commands.Cog, name="Misc"):
     """A cog with some basic commands, originally used for testing slash and hybrid command functionality."""
 
@@ -252,7 +226,7 @@ class MiscCog(commands.Cog, name="Misc"):
         typing_ping = (time.perf_counter() - start_time) * 1000
 
         start_time = time.perf_counter()
-        await self.bot.db_pool.fetch("""SELECT * FROM guilds;""")
+        await self.bot.db_pool.fetch("SELECT * FROM guilds;")
         db_ping = (time.perf_counter() - start_time) * 1000
 
         start_time = time.perf_counter()
@@ -294,6 +268,16 @@ class MiscCog(commands.Cog, name="Misc"):
     @commands.guild_only()
     @commands.hybrid_command()
     async def role_excel(self, ctx: core.GuildContext, by_color: bool = False) -> None:
+        """Get a spreadsheet with a guild's roles, optionally sorted by color.
+
+        Parameters
+        ----------
+        ctx: `core.GuildContext`
+            The invocation context, restricted to a guild.
+        by_color: `bool`, default=False
+            Whether the roles should be sorted by color. If False, sorts by name. Default is False.
+        """
+
         def color_key(item: tuple[str, discord.Colour]) -> tuple[int, int, int]:
             r, g, b = item[1].to_rgb()
             return color_step(r, g, b, 8)
@@ -312,7 +296,11 @@ class MiscCog(commands.Cog, name="Misc"):
         """Generate a random inspirational poster with InspiroBot."""
 
         async with ctx.typing():
-            image_url = await create_inspiration(ctx.session)
+            # Make a call to InspiroBot's API to generate an inspirational poster.
+            async with ctx.session.get(url=INSPIROBOT_API_URL, params={"generate": "true"}) as response:
+                response.raise_for_status()
+                image_url = await response.text()
+
             embed = (
                 discord.Embed(color=0xE04206)
                 .set_image(url=image_url)

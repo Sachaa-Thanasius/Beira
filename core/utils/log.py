@@ -1,27 +1,18 @@
-"""
-custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
+"""custom_logging.py: Based on the work of Umbra, this is Beira's logging system.
 
 References
 ----------
 https://github.com/AbstractUmbra/Mipha/blob/main/bot.py#L91
 """
 
-from __future__ import annotations
-
 import asyncio
 import copy
 import logging
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
-from typing import TYPE_CHECKING, Any, Self
+from typing import Self
 
 from discord.utils import _ColourFormatter as ColourFormatter, stream_supports_colour  # type: ignore # Because color.
-
-
-if TYPE_CHECKING:
-    from types import TracebackType
-else:
-    TracebackType = object
 
 
 __all__ = ("LoggingManager",)
@@ -29,7 +20,7 @@ __all__ = ("LoggingManager",)
 
 class AsyncQueueHandler(logging.Handler):
     # Copied api and implementation of stdlib QueueHandler.
-    def __init__(self, queue: asyncio.Queue[Any]) -> None:
+    def __init__(self, queue: asyncio.Queue[logging.LogRecord]) -> None:
         logging.Handler.__init__(self)
         self.queue = queue
 
@@ -68,9 +59,7 @@ class RemoveNoise(logging.Filter):
         super().__init__(name="discord.state")
 
     def filter(self, record: logging.LogRecord) -> bool:
-        if record.levelname == "WARNING" and "referencing an unknown" in record.msg:
-            return False
-        return True
+        return not (record.levelname == "WARNING" and "referencing an unknown" in record.msg)
 
 
 # TODO: Personalize logging beyond Umbra's work.
@@ -142,20 +131,10 @@ class LoggingManager:
 
         return self
 
-    async def __aexit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
-        return self.__exit__(exc_type, exc_val, traceback)
+    async def __aexit__(self, *exc_info: object) -> None:
+        return self.__exit__(*exc_info)
 
-    def __exit__(
-        self,
-        exc_type: type[BaseException] | None,
-        exc_val: BaseException | None,
-        traceback: TracebackType | None,
-    ) -> None:
+    def __exit__(self, *exc_info: object) -> None:
         """Close and remove all logging handlers."""
 
         handlers = self.log.handlers[:]

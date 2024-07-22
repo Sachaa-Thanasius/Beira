@@ -1,10 +1,7 @@
-"""
-lol.py: A cog for checking user win rates and other stats in League of Legends.
+"""lol.py: A cog for checking user win rates and other stats in League of Legends.
 
 Credit to Ralph for the idea and initial implementation.
 """
-
-from __future__ import annotations
 
 import asyncio
 import itertools
@@ -15,9 +12,9 @@ from urllib.parse import quote, urljoin
 
 import aiohttp
 import discord
+import lxml.html
 from arsenic import browsers, errors, get_session, services  # type: ignore # Third-party lib typing.
 from discord.ext import commands
-from lxml import html
 
 import core
 from core.utils import StatsEmbed
@@ -59,7 +56,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 class UpdateOPGGView(discord.ui.View):
     """A small view that adds an update button for OP.GG stats."""
 
-    def __init__(self, author_id: int, cog: LoLCog, summoner_name_list: list[str], **kwargs: Any) -> None:
+    def __init__(self, author_id: int, cog: "LoLCog", summoner_name_list: list[str], **kwargs: Any) -> None:
         super().__init__(**kwargs)
         self.author_id = author_id
         self.cog = cog
@@ -256,7 +253,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
                 content = await response.text()
 
             # Parse the summoner information for winrate and tier (referred to later as rank).
-            tree = html.fromstring(content)
+            tree = lxml.html.fromstring(content)
             winrate = str(tree.xpath("//div[@class='ratio']/string()")).removeprefix("Win Rate")
             rank = str(tree.xpath("//div[@class='tier']/string()")).capitalize()
             if not (winrate and rank):

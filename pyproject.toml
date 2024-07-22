@@ -13,9 +13,9 @@ authors = [
 Homepage = "https://github.com/Sachaa-Thanasius/Beira"
 
 [tool.ruff]
-include = ["main.py", "core/*", "exts/*", "**/pyproject.toml"]
+include = ["main.py", "core/*", "exts/*", "**/pyproject.toml", "misc/**/*.py"]
 line-length = 120
-target-version = "py311"
+target-version = "py312"
 
 [tool.ruff.lint]
 select = [
@@ -95,7 +95,7 @@ combine-as-imports = true
 
 [tool.pyright]
 include = ["main.py", "core", "exts"]
-pythonVersion = "3.11"
+pythonVersion = "3.12"
 typeCheckingMode = "strict"
 
 # reportImportCycles = "warning"

@@ -1,10 +1,7 @@
-"""
-emoji_ops.py: This cog is meant to provide functionality for stealing emojis.
+"""emoji_ops.py: This cog is meant to provide functionality for stealing emojis.
 
 Credit to Froopy and Danny for inspiration from their bots.
 """
-
-from __future__ import annotations
 
 import asyncio
 import logging

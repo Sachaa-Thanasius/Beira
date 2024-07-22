@@ -1,10 +1,8 @@
-from __future__ import annotations
-
 import asyncio
 import logging
 import traceback
 from collections.abc import Callable, Coroutine
-from typing import TYPE_CHECKING, Any, ParamSpec, TypeAlias
+from typing import TYPE_CHECKING, Any
 
 import discord
 from discord import Client, Interaction
@@ -22,19 +20,21 @@ else:
 
     ClientT_co = TypeVar("ClientT_co", bound=Client, covariant=True)
 
-P = ParamSpec("P")
-T = TypeVar("T")
-Coro: TypeAlias = Coroutine[Any, Any, T]
-CoroFunc: TypeAlias = Callable[..., Coro[Any]]
-GroupT = TypeVar("GroupT", bound=Group | commands.Cog)
-AppHook: TypeAlias = Callable[[GroupT, Interaction[Any]], Coro[Any]] | Callable[[Interaction[Any]], Coro[Any]]
+
+type Coro[T] = Coroutine[Any, Any, T]
+type CoroFunc = Callable[..., Coro[Any]]
+type AppHook[GroupT: (Group | commands.Cog)] = (
+    Callable[[GroupT, Interaction[Any]], Coro[Any]] | Callable[[Interaction[Any]], Coro[Any]]
+)
 
 LOGGER = logging.getLogger(__name__)
 
 __all__ = ("before_app_invoke", "after_app_invoke", "HookableTree")
 
 
-def before_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
+def before_app_invoke[GroupT: (Group | commands.Cog), **P, T](
+    coro: AppHook[GroupT],
+) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
     """A decorator that registers a coroutine as a pre-invoke hook.
 
     This allows you to refer to one before invoke hook for several commands that
@@ -67,7 +67,9 @@ def before_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]]
     return decorator
 
 
-def after_app_invoke(coro: AppHook[GroupT]) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
+def after_app_invoke[GroupT: (Group | commands.Cog), **P, T](
+    coro: AppHook[GroupT],
+) -> Callable[[Command[GroupT, P, T]], Command[GroupT, P, T]]:
     """A decorator that registers a coroutine as a post-invoke hook.
 
     This allows you to refer to one after invoke hook for several commands that
@@ -132,7 +134,7 @@ class HookableTree(CommandTree[ClientT_co]):
             LOGGER.error("Exception in command tree", exc_info=error, extra={"embed": embed})
 
     async def _call(self, interaction: Interaction[ClientT_co]) -> None:
-        ###### Copy the original logic but add hook checks/calls near the end.
+        # ---- Copy the original logic but add hook checks/calls near the end.
 
         if not await self.interaction_check(interaction):
             interaction.command_failed = True
@@ -172,7 +174,7 @@ class HookableTree(CommandTree[ClientT_co]):
 
             return
 
-        ### Look for a pre-command hook.
+        # -- Look for a pre-command hook.
         # Pre-command hooks are run before actual command-specific checks, unlike prefix commands.
         # It doesn't really make sense, but the only solution seems to be monkey-patching
         # Command._invoke_with_namespace, which doesn't seem feasible.
@@ -194,7 +196,7 @@ class HookableTree(CommandTree[ClientT_co]):
             if not interaction.command_failed:
                 self.client.dispatch("app_command_completion", interaction, command)
         finally:
-            ### Look for a post-command hook.
+            # -- Look for a post-command hook.
             after_invoke = getattr(command, "_after_invoke", None)
             if after_invoke:
                 instance = getattr(after_invoke, "__self__", None)

@@ -1,9 +1,6 @@
+"""music.py: This cog provides functionality for playing tracks in voice channels given search terms or urls,
+implemented with Wavelink.
 """
-music.py: This cog provides functionality for playing tracks in voice channels given search terms or urls, implemented
-with Wavelink.
-"""
-
-from __future__ import annotations
 
 import datetime
 import functools

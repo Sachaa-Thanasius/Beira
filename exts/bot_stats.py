@@ -1,25 +1,16 @@
-"""
-bot_stats.py: A cog for tracking different bot metrics.
-"""
-
-from __future__ import annotations
+"""bot_stats.py: A cog for tracking different bot metrics."""
 
 import logging
 from datetime import timedelta
-from typing import TYPE_CHECKING, Literal
+from typing import Literal
 
+import asyncpg
 import discord
 from discord.app_commands import Choice
 from discord.ext import commands
 
 import core
-from core.utils import StatsEmbed, upsert_guilds, upsert_users
-
-
-if TYPE_CHECKING:
-    from asyncpg import Record
-else:
-    Record = object
+from core.utils import StatsEmbed
 
 
 LOGGER = logging.getLogger(__name__)
@@ -68,6 +59,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         assert ctx.command is not None
 
+        db = self.bot.db_pool
+
         # Make sure all possible involved users and guilds are in the database before using their ids as foreign keys.
         user_info = [ctx.author]
         guild_info = [ctx.guild] if ctx.guild else []
@@ -79,9 +72,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
                 guild_info.append(arg)
 
         if user_info:
-            await upsert_users(self.bot.db_pool, *user_info)
+            stmt = "INSERT INTO users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING;"
+            await db.executemany(stmt, [user.id for user in user_info], timeout=60.0)
         if guild_info:
-            await upsert_guilds(self.bot.db_pool, *guild_info)
+            stmt = "INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING;"
+            await db.executemany(stmt, [guild.id for guild in guild_info], timeout=60.0)
 
         # Assemble the record to upsert.
         cmd = (
@@ -95,11 +90,11 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
             ctx.command_failed,
         )
 
-        query = """
+        stmt = """\
             INSERT into commands (guild_id, channel_id, user_id, date_time, prefix, command, app_command, failed)
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8);
         """
-        await self.bot.db_pool.execute(query, *cmd, timeout=60.0)
+        await db.execute(stmt, *cmd, timeout=60.0)
 
     @commands.Cog.listener("on_command_completion")
     async def track_command_completion(self, ctx: core.Context) -> None:
@@ -136,7 +131,8 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
     async def add_guild_to_db(self, guild: discord.Guild) -> None:
         """Upserts a guild - one that the bot just joined - to the database."""
 
-        await upsert_guilds(self.bot.db_pool, guild)
+        stmt = "INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING;"
+        await self.bot.db_pool.execute(stmt, guild.id, timeout=60.0)
 
     @commands.hybrid_command(name="usage")
     async def check_usage(self, ctx: core.Context, *, search_factors: CommandStatsSearchFlags) -> None:
@@ -166,8 +162,12 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
                 record_tuples = (((get_strat(record[0]) or record[0]), record[1]) for record in records)
 
-                ldbd_emojis = ["\N{FIRST PLACE MEDAL}", "\N{SECOND PLACE MEDAL}", "\N{THIRD PLACE MEDAL}"]
-                ldbd_emojis.extend("\N{SPORTS MEDAL}" for _ in range(6))
+                ldbd_emojis = [
+                    "\N{FIRST PLACE MEDAL}",
+                    "\N{SECOND PLACE MEDAL}",
+                    "\N{THIRD PLACE MEDAL}",
+                    *("\N{SPORTS MEDAL}" for _ in range(6)),
+                ]
 
                 embed.add_leaderboard_fields(ldbd_content=record_tuples, ldbd_emojis=ldbd_emojis)
             else:
@@ -181,7 +181,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         command: str | None = None,
         guild: discord.Guild | None = None,
         universal: bool = False,
-    ) -> list[Record]:
+    ) -> list[asyncpg.Record]:
         """Queries the database for command usage."""
 
         query_args: list[object] = []  # Holds the query args as objects.
@@ -189,24 +189,24 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
         # Create the base queries.
         if guild:
-            query = """
-                SELECT u.user_id, COUNT(*)
-                FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
-                {where}
-                GROUP BY u.user_id
-                ORDER BY COUNT(*) DESC
-                LIMIT 10;
-            """
+            query = """\
+SELECT u.user_id, COUNT(*)
+FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
+{where}
+GROUP BY u.user_id
+ORDER BY COUNT(*) DESC
+LIMIT 10;
+"""
 
         else:
-            query = """
-                SELECT g.guild_id, COUNT(*)
-                FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
-                {where}
-                GROUP BY g.guild_id
-                ORDER BY COUNT(*) DESC
-                LIMIT 10;
-            """
+            query = """\
+SELECT g.guild_id, COUNT(*)
+FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
+{where}
+GROUP BY g.guild_id
+ORDER BY COUNT(*) DESC
+LIMIT 10;
+"""
 
         # Create the WHERE clause for the query.
         if guild and not universal:

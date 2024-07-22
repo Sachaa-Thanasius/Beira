@@ -1,14 +1,11 @@
-"""
-snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
+"""snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
 
-References
-----------
-Rules and code inspiration.
-https://web.archive.org/web/20220103003050/https://support.discord.com/hc/en-us/articles/4414111886359-Snowsgiving-2021-Snowball-Bot-FAQ
-https://github.com/0xMukesh/snowball-bot
+Notes
+-----
+Rules and code inspiration:
+- https://web.archive.org/web/20220103003050/https://support.discord.com/hc/en-us/articles/4414111886359-Snowsgiving-2021-Snowball-Bot-FAQ
+- https://github.com/0xMukesh/snowball-bot
 """
-
-from __future__ import annotations
 
 import logging
 import random
@@ -187,7 +184,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         embed = discord.Embed(color=0x60FF60)
         ephemeral = False
 
-        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2;"
         record = await ctx.db.fetchrow(query, ctx.guild.id, ctx.author.id)
 
         # The user has to be in the database and have collected at least one snowball before they can throw one.
@@ -260,7 +257,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=def_embed, ephemeral=True)
             return
 
-        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2;"
         async with ctx.db.acquire() as conn, conn.transaction():
             giver_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
             receiver_record = await conn.fetchrow(query, ctx.guild.id, receiver.id)
@@ -337,7 +334,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             await ctx.send(embed=def_embed, ephemeral=True)
             return
 
-        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2"
+        query = "SELECT hits, misses, kos, stock FROM snowball_stats WHERE guild_id = $1 AND user_id = $2;"
         async with ctx.db.acquire() as conn, conn.transaction():
             thief_record = await conn.fetchrow(query, ctx.guild.id, ctx.author.id)
             victim_record = await conn.fetchrow(query, ctx.guild.id, victim.id)
@@ -390,7 +387,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
             all their interactions within the guild in context.
         """
 
-        query = """
+        query = """\
             SELECT guild_rank, hits, misses, kos, stock
             FROM(
                 SELECT user_id, hits, kos, misses, stock,
@@ -469,7 +466,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
     async def leaderboard(self, ctx: core.GuildContext) -> None:
         """See who's dominating the Snowball Bot leaderboard in your server."""
 
-        query = """
+        query = """\
             SELECT user_id, hits, kos, misses, stock,
                 DENSE_RANK() over (ORDER BY hits DESC, kos, misses, stock DESC, user_id DESC) AS rank
             FROM snowball_stats
@@ -501,8 +498,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """See who's dominating the Global Snowball Bot leaderboard across all the servers."""
         assert self.bot.user  # Known to exist during runtime.
 
-        query = "SELECT * FROM global_rank_view LIMIT $1;"
-        global_ldbd = await ctx.db.fetch(query, LEADERBOARD_MAX)
+        global_ldbd = await ctx.db.fetch("SELECT * FROM global_rank_view LIMIT $1;", LEADERBOARD_MAX)
 
         embed = StatsEmbed(
             color=0x2F3136,
@@ -523,8 +519,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """See which guild is dominating the Snowball Bot leaderboard."""
         assert self.bot.user  # Known to exist during runtime.
 
-        query = "SELECT * FROM guilds_only_rank_view LIMIT $1;"
-        guilds_only_ldbd = await ctx.db.fetch(query, LEADERBOARD_MAX)
+        guilds_only_ldbd = await ctx.db.fetch("SELECT * FROM guilds_only_rank_view LIMIT $1;", LEADERBOARD_MAX)
 
         embed = StatsEmbed(
             color=0x2F3136,

@@ -1,15 +1,10 @@
-"""
-ff_metadata.py: A cog with triggers for retrieving story metadata.
-
-TODO: Account for orphaned fics, anonymous fics, really long embed descriptions, and series with more than 25 fics.
-"""
-
-from __future__ import annotations
+"""ff_metadata.py: A cog with triggers for retrieving story metadata."""
+# TODO: Account for orphaned fics, anonymous fics, really long embed descriptions, and series with more than 25 fics.
 
 import logging
 import re
 from collections.abc import AsyncGenerator
-from typing import Literal, TypeAlias
+from typing import Literal
 
 import ao3
 import atlas_api
@@ -27,7 +22,7 @@ from .utils import (
 )
 
 
-StoryDataType: TypeAlias = atlas_api.Story | fichub_api.Story | ao3.Work | ao3.Series
+type StoryDataType = atlas_api.Story | fichub_api.Story | ao3.Work | ao3.Series
 
 
 LOGGER = logging.getLogger(__name__)
@@ -54,8 +49,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
     async def cog_load(self) -> None:
         # FIXME: Setup logging into AO3 via ao3.py.
         # Load a cache of channels to auto-respond in.
-        query = """SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;"""
-        records = await self.bot.db_pool.fetch(query)
+        records = await self.bot.db_pool.fetch("SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;")
         for record in records:
             self.allowed_channels_cache.setdefault(record["guild_id"], set()).add(record["channel_id"])
 
@@ -143,17 +137,17 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             A list of channels to add, separated by spaces.
         """
 
-        command = """
-            INSERT INTO fanfic_autoresponse_settings (guild_id, channel_id)
-            VALUES ($1, $2)
-            ON CONFLICT (guild_id, channel_id) DO NOTHING;
-        """
-        query = """SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"""
-
         async with ctx.typing():
             # Update the database.
             async with self.bot.db_pool.acquire() as conn:
-                await conn.executemany(command, [(ctx.guild.id, channel.id) for channel in channels])
+                stmt = """\
+                    INSERT INTO fanfic_autoresponse_settings (guild_id, channel_id)
+                    VALUES ($1, $2)
+                    ON CONFLICT (guild_id, channel_id) DO NOTHING;
+                """
+                await conn.executemany(stmt, [(ctx.guild.id, channel.id) for channel in channels])
+
+                query = "SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"
                 records = await conn.fetch(query, ctx.guild.id)
 
             # Update the cache.
@@ -183,13 +177,13 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
             A list of channels to remove, separated by spaces.
         """
 
-        command = """DELETE FROM fanfic_autoresponse_settings WHERE channel_id = $1;"""
-        query = """SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"""
-
         async with ctx.typing():
             # Update the database.
             async with self.bot.db_pool.acquire() as con:
-                await con.executemany(command, [(channel.id,) for channel in channels])
+                stmt = "DELETE FROM fanfic_autoresponse_settings WHERE channel_id = $1;"
+                await con.executemany(stmt, [(channel.id,) for channel in channels])
+
+                query = "SELECT channel_id FROM fanfic_autoresponse_settings WHERE guild_id = $1;"
                 records = await con.fetch(query, ctx.guild.id)
 
             # Update the cache.

@@ -1,12 +1,10 @@
-from __future__ import annotations
-
-from core import Beira
+import core
 
 from ._dev import DevCog
 from ._test import TestCog
 
 
-async def setup(bot: Beira) -> None:
+async def setup(bot: core.Beira) -> None:
     """Connects cog to bot."""
 
     # Can't use the guilds kwarg, as it doesn't currently work for hybrids. It would look like this:

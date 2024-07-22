@@ -1,6 +1,4 @@
-"""
-config.py: Imports configuration information, such as api keys and tokens, default prefixes, etc.
-"""
+"""config.py: Imports configuration information, such as api keys and tokens, default prefixes, etc."""
 
 import pathlib
 from typing import Any
@@ -82,13 +80,4 @@ def decode(data: bytes | str) -> Config:
     return msgspec.toml.decode(data, type=Config)
 
 
-def encode(msg: Config) -> bytes:
-    """Encode a ``Config`` object to TOML."""
-
-    return msgspec.toml.encode(msg)
-
-
-with pathlib.Path("config.toml").open(encoding="utf-8") as f:
-    data = f.read()
-
-CONFIG = decode(data)
+CONFIG = decode(pathlib.Path("config.toml").read_text(encoding="utf-8"))

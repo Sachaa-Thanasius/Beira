@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from typing import Self
 
 import asyncpg
@@ -8,7 +6,7 @@ import msgspec
 from discord.ext import commands
 
 import core
-from core.utils.db import Connection_alias, Pool_alias, upsert_guilds, upsert_users
+from core.utils.db import Connection_alias, Pool_alias
 
 
 __all__ = (
@@ -61,10 +59,16 @@ class SnowballRecord(msgspec.Struct):
         """Upserts a user's snowball stats based on the given stat parameters."""
 
         # Upsert the relevant users and guilds to the database before adding a snowball record.
-        await upsert_users(conn, member)
-        await upsert_guilds(conn, member.guild)
+        user_stmt = "INSERT INTO users (user_id) VALUES ($1) ON CONFLICT (user_id) DO NOTHING;"
+        await conn.execute(user_stmt, member.id)
+        guild_stmt = "INSERT INTO guilds (guild_id) VALUES ($2) ON CONFLICT (guild_id) DO NOTHING;"
+        await conn.execute(guild_stmt, member.guild.id)
+        member_stmt = (
+            "INSERT INTO members (guild_id, user_id) VALUES ($1, $2) ON CONFLICT (guild_id, user_id) DO NOTHING;"
+        )
+        await conn.execute(member_stmt, member.id, member.guild.id)
 
-        snowball_upsert_query = """
+        snowball_stmt = """\
             INSERT INTO snowball_stats (user_id, guild_id, hits, misses, kos, stock)
             VALUES ($1, $2, $3, $4, $5, $6)
             ON CONFLICT (user_id, guild_id) DO UPDATE
@@ -75,7 +79,7 @@ class SnowballRecord(msgspec.Struct):
             RETURNING *;
         """
         args = member.id, member.guild.id, hits, misses, kos, max(stock, 0), stock
-        return cls.from_record(await conn.fetchrow(snowball_upsert_query, *args))
+        return cls.from_record(await conn.fetchrow(snowball_stmt, *args))
 
 
 class GuildSnowballSettings(msgspec.Struct):
@@ -106,14 +110,13 @@ class GuildSnowballSettings(msgspec.Struct):
     async def from_database(cls: type[Self], conn: Pool_alias | Connection_alias, guild_id: int) -> Self:
         """Query a snowball settings database record for a guild."""
 
-        query = """SELECT * FROM snowball_settings WHERE guild_id = $1;"""
-        record = await conn.fetchrow(query, guild_id)
+        record = await conn.fetchrow("SELECT * FROM snowball_settings WHERE guild_id = $1;", guild_id)
         return cls.from_record(record) if record else cls(guild_id)
 
     async def upsert_record(self, conn: Pool_alias | Connection_alias) -> None:
         """Upsert these snowball settings into the database."""
 
-        query = """
+        stmt = """\
             INSERT INTO snowball_settings (guild_id, hit_odds, stock_cap, transfer_cap)
             VALUES ($1, $2, $3, $4)
             ON CONFLICT(guild_id)
@@ -122,7 +125,7 @@ class GuildSnowballSettings(msgspec.Struct):
                     stock_cap = EXCLUDED.stock_cap,
                     transfer_cap = EXCLUDED.transfer_cap;
         """
-        await conn.execute(query, self.guild_id, self.hit_odds, self.stock_cap, self.transfer_cap)
+        await conn.execute(stmt, self.guild_id, self.hit_odds, self.stock_cap, self.transfer_cap)
 
 
 class SnowballSettingsModal(discord.ui.Modal):
@@ -187,26 +190,29 @@ class SnowballSettingsModal(discord.ui.Modal):
         new_odds_val = self.default_settings.hit_odds
         try:
             temp = float(self.hit_odds_input.value)
-            if 0.0 <= temp <= 1.0:
-                new_odds_val = temp
         except ValueError:
             pass
+        else:
+            if 0.0 <= temp <= 1.0:
+                new_odds_val = temp
 
         new_stock_val = self.default_settings.stock_cap
         try:
             temp = int(self.stock_cap_input.value)
-            if temp >= 0:
-                new_stock_val = temp
         except ValueError:
             pass
+        else:
+            if temp >= 0:
+                new_stock_val = temp
 
         new_transfer_val = self.default_settings.transfer_cap
         try:
             temp = int(self.transfer_cap_input.value)
-            if temp >= 0:
-                new_transfer_val = temp
         except ValueError:
             pass
+        else:
+            if temp >= 0:
+                new_transfer_val = temp
 
         # Update the record in the database if there's been a change.
         self.new_settings = GuildSnowballSettings(guild_id, new_odds_val, new_stock_val, new_transfer_val)

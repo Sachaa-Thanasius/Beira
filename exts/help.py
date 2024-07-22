@@ -1,12 +1,9 @@
-"""
-help.py: A custom help command for Beira set through a cog.
+"""help.py: A custom help command for Beira set through a cog.
 
 Notes
 -----
 The guide this was based off of: https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
 """
-
-from __future__ import annotations
 
 import logging
 import re

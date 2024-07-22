@@ -1,9 +1,6 @@
+"""admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at a guild owner
+or bot owner's behest.
 """
-admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at a guild owner or
-bot owner's behest.
-"""
-
-from __future__ import annotations
 
 import logging
 
@@ -82,15 +79,15 @@ class AdminCog(commands.Cog, name="Administration"):
             if new_prefix in local_prefixes:
                 await ctx.send("You already registered this prefix.")
             else:
-                guild_query = """INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT DO NOTHING;"""
-                prefix_query = """
+                guild_stmt = "INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT DO NOTHING;"
+                prefix_stmt = """\
                     INSERT INTO guild_prefixes (guild_id, prefix)
                     VALUES ($1, $2)
                     ON CONFLICT (guild_id, prefix) DO NOTHING;
                 """
                 async with self.bot.db_pool.acquire() as conn, conn.transaction():
-                    await conn.execute(guild_query, ctx.guild.id)
-                    await conn.execute(prefix_query, ctx.guild.id, new_prefix)
+                    await conn.execute(guild_stmt, ctx.guild.id)
+                    await conn.execute(prefix_stmt, ctx.guild.id, new_prefix)
                     # Update it in the cache.
                     self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
 
@@ -116,12 +113,9 @@ class AdminCog(commands.Cog, name="Administration"):
             if old_prefix not in local_prefixes:
                 await ctx.send("This prefix was never registered in this guild or has already been unregistered.")
             else:
-                prefix_query = """DELETE FROM guild_prefixes WHERE guild_id = $1 AND prefix = $2;"""
-
-                # Update it in the database.
-                await self.bot.db_pool.execute(prefix_query, ctx.guild.id, old_prefix)
-
-                # Update it in the cache.
+                # Update it in the database and the cache.
+                prefix_stmt = "DELETE FROM guild_prefixes WHERE guild_id = $1 AND prefix = $2;"
+                await self.bot.db_pool.execute(prefix_stmt, ctx.guild.id, old_prefix)
                 self.bot.prefix_cache.setdefault(ctx.guild.id, [old_prefix]).remove(old_prefix)
 
                 await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
@@ -139,16 +133,13 @@ class AdminCog(commands.Cog, name="Administration"):
         """
 
         async with ctx.typing():
-            prefix_query = """DELETE FROM guild_prefixes WHERE guild_id = $1;"""
-
-            # Update it in the database.
-            await self.bot.db_pool.execute(prefix_query, ctx.guild.id)
-            # Update it in the cache.
+            # Update it in the database and the cache.
+            prefix_stmt = """DELETE FROM guild_prefixes WHERE guild_id = $1;"""
+            await self.bot.db_pool.execute(prefix_stmt, ctx.guild.id)
             self.bot.prefix_cache.setdefault(ctx.guild.id, []).clear()
 
-            await ctx.send(
-                "The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`.",
-            )
+            content = "The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`."
+            await ctx.send(content)
 
     @prefixes_add.error
     @prefixes_remove.error

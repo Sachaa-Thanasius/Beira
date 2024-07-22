@@ -1,20 +1,15 @@
-"""
-bot.py: The main bot code.
-"""
-
-from __future__ import annotations
+"""bot.py: The main bot code."""
 
 import logging
 import sys
 import time
 import traceback
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 
 import aiohttp
 import ao3
 import async_lru
-import asyncpg
 import atlas_api
 import discord
 import fichub_api
@@ -26,12 +21,8 @@ from exts import EXTENSIONS
 from .checks import is_blocked
 from .config import CONFIG
 from .context import Context
+from .utils import LoggingManager, Pool_alias
 
-
-if TYPE_CHECKING:
-    from core.utils import LoggingManager
-else:
-    LoggingManager = object
 
 LOGGER = logging.getLogger(__name__)
 
@@ -58,7 +49,7 @@ class Beira(commands.Bot):
     def __init__(
         self,
         *args: Any,
-        db_pool: asyncpg.Pool[asyncpg.Record],
+        db_pool: Pool_alias,
         web_session: aiohttp.ClientSession,
         initial_extensions: list[str] | None = None,
         **kwargs: Any,
@@ -189,8 +180,8 @@ class Beira(commands.Bot):
     async def _load_blocked_entities(self) -> None:
         """Load all blocked users and guilds from the bot database."""
 
-        user_query = """SELECT user_id FROM users WHERE is_blocked;"""
-        guild_query = """SELECT guild_id FROM guilds WHERE is_blocked;"""
+        user_query = "SELECT user_id FROM users WHERE is_blocked;"
+        guild_query = "SELECT guild_id FROM guilds WHERE is_blocked;"
 
         async with self.db_pool.acquire() as conn, conn.transaction():
             user_records = await conn.fetch(user_query)
@@ -202,7 +193,7 @@ class Beira(commands.Bot):
     async def _load_guild_prefixes(self, guild_id: int | None = None) -> None:
         """Load all prefixes from the bot database."""
 
-        query = """SELECT guild_id, prefix FROM guild_prefixes"""
+        query = "SELECT guild_id, prefix FROM guild_prefixes"
         try:
             if guild_id:
                 query += " WHERE guild_id = $1"
@@ -248,8 +239,7 @@ class Beira(commands.Bot):
 
     @async_lru.alru_cache()
     async def get_user_timezone(self, user_id: int) -> str | None:
-        query = "SELECT timezone FROM users WHERE user_id = $1;"
-        record = await self.db_pool.fetchrow(query, user_id)
+        record = await self.db_pool.fetchrow("SELECT timezone FROM users WHERE user_id = $1;", user_id)
         return record["timezone"] if record else None
 
     async def get_user_tzinfo(self, user_id: int) -> ZoneInfo:

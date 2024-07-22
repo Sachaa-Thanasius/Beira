@@ -4,15 +4,13 @@ story_search.py: This cog is meant to provide functionality for searching the te
 Currently supports most long-form ACI100 works and M J Bradley's A Cadmean Victory Remastered.
 """
 
-from __future__ import annotations
-
 import importlib.resources
-import importlib.resources.abc
 import logging
 import random
 import re
 import textwrap
 from bisect import bisect_left
+from importlib.resources.abc import Traversable
 from typing import TYPE_CHECKING, ClassVar, Self
 
 import aiohttp
@@ -38,6 +36,24 @@ LOGGER = logging.getLogger(__name__)
 
 AO3_EMOJI = discord.PartialEmoji.from_str(EMOJI_STOCK["ao3"])
 assert AO3_EMOJI.id
+
+
+class StoryInfo(msgspec.Struct):
+    """A class to hold all the information about each story."""
+
+    acronym: str
+    name: str
+    author: str
+    link: str
+    emoji_id: int | None = None
+    text: list[str] = msgspec.field(default_factory=list)
+    chapter_index: list[int] = msgspec.field(default_factory=list)
+    collection_index: list[int] = msgspec.field(default_factory=list)
+
+    @classmethod
+    def from_record(cls, record: asyncpg.Record) -> Self:
+        attrs_ = ("story_acronym", "story_full_name", "author_name", "story_link", "emoji_id")
+        return cls(*(record[attr] for attr in attrs_))
 
 
 @async_lru.alru_cache(ttl=300)
@@ -108,24 +124,6 @@ def find_keywords_in_ao3_story(
                 results.append((chapter_title, combined))
 
     return StoryInfo("NONE", title, author, url, AO3_EMOJI.id), results
-
-
-class StoryInfo(msgspec.Struct):
-    """A class to hold all the information about each story."""
-
-    acronym: str
-    name: str
-    author: str
-    link: str
-    emoji_id: int | None = None
-    text: list[str] = msgspec.field(default_factory=list)
-    chapter_index: list[int] = msgspec.field(default_factory=list)
-    collection_index: list[int] = msgspec.field(default_factory=list)
-
-    @classmethod
-    def from_record(cls, record: asyncpg.Record) -> Self:
-        attrs_ = ("story_acronym", "story_full_name", "author_name", "story_link", "emoji_id")
-        return cls(*(record[attr] for attr in attrs_))
 
 
 class AO3StoryHtmlData(msgspec.Struct):
@@ -285,7 +283,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         LOGGER.exception("", exc_info=error)
 
     @classmethod
-    def load_story_text(cls, filepath: importlib.resources.abc.Traversable) -> None:
+    def load_story_text(cls, filepath: Traversable) -> None:
         """Load the story metadata and text."""
 
         # Compile all necessary regex patterns.

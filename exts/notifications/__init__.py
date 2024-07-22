@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 import core
 
 from .aci_notifications import make_listeners as make_aci_listeners

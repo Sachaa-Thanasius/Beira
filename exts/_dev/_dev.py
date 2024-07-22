@@ -1,12 +1,12 @@
-"""
-_dev.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest.
+"""_dev.py: A cog that implements commands for reloading and syncing extensions and other commands, at the owner's
+behest.
 """
 
-from __future__ import annotations
-
+import contextlib
 import logging
+from collections.abc import Generator
 from time import perf_counter
-from typing import Literal
+from typing import Any, Literal
 
 import discord
 from asyncpg.exceptions import PostgresConnectionError, PostgresError
@@ -14,7 +14,6 @@ from discord import app_commands
 from discord.ext import commands
 
 import core
-from core.utils import upsert_guilds, upsert_users
 from exts import EXTENSIONS
 
 
@@ -142,11 +141,25 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         # Regardless of block type, update the database, update the cache, and create an informational embed.
         if block_type == "users":
-            await upsert_users(ctx.db, *((user.id, True) for user in entities))
+            stmt = """\
+                INSERT INTO users (user_id, is_blocked)
+                VALUES ($1, $2)
+                ON CONFLICT(user_id)
+                DO UPDATE
+                    SET is_blocked = EXCLUDED.is_blocked;
+            """
+            await ctx.db.executemany(stmt, [(user.id, True) for user in entities])
             self.bot.blocked_entities_cache["users"].update(user.id for user in entities)
             embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
         else:
-            await upsert_guilds(ctx.db, *((guild.id, True) for guild in entities))
+            stmt = """\
+                INSERT INTO guilds (guild_id, is_blocked)
+                VALUES ($1, $2)
+                ON CONFLICT (guild_id)
+                DO UPDATE
+                    SET is_blocked = EXCLUDED.is_blocked;
+            """
+            await ctx.db.executemany(stmt, [(guild.id, True) for guild in entities])
             self.bot.blocked_entities_cache["guilds"].update(guild.id for guild in entities)
             embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
 
@@ -176,11 +189,25 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         # Regardless of block type, update the database, update the cache, and create an informational embed.
         if block_type == "users":
-            await upsert_users(ctx.db, *((user.id, False) for user in entities))
+            stmt = """\
+                INSERT INTO users (user_id, is_blocked)
+                VALUES ($1, $2)
+                ON CONFLICT(user_id)
+                DO UPDATE
+                    SET is_blocked = EXCLUDED.is_blocked;
+            """
+            await ctx.db.executemany(stmt, [(user.id, False) for user in entities])
             self.bot.blocked_entities_cache["users"].difference_update(user.id for user in entities)
             embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
         else:
-            await upsert_guilds(ctx.db, *((guild.id, False) for guild in entities))
+            stmt = """\
+                INSERT INTO guilds (guild_id, is_blocked)
+                VALUES ($1, $2)
+                ON CONFLICT (guild_id)
+                DO UPDATE
+                    SET is_blocked = EXCLUDED.is_blocked;
+            """
+            await ctx.db.executemany(stmt, [(guild.id, False) for guild in entities])
             self.bot.blocked_entities_cache["guilds"].difference_update(guild.id for guild in entities)
             embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
 
@@ -208,7 +235,14 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         interaction: core.Interaction,
         user: discord.User | discord.Member,
     ) -> None:
-        await upsert_users(interaction.client.db_pool, (user.id, True))
+        stmt = """
+            INSERT INTO users (user_id, is_blocked)
+            VALUES ($1, $2)
+            ON CONFLICT(user_id)
+            DO UPDATE
+                SET is_blocked = EXCLUDED.is_blocked;
+        """
+        await self.bot.db_pool.execute(stmt, user.id, True)
         self.bot.blocked_entities_cache["users"].update((user.id,))
 
         # Display the results.
@@ -221,7 +255,14 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         interaction: core.Interaction,
         user: discord.User | discord.Member,
     ) -> None:
-        await upsert_users(interaction.client.db_pool, (user.id, False))
+        stmt = """
+            INSERT INTO users (user_id, is_blocked)
+            VALUES ($1, $2)
+            ON CONFLICT(user_id)
+            DO UPDATE
+                SET is_blocked = EXCLUDED.is_blocked;
+        """
+        await self.bot.db_pool.execute(stmt, user.id, False)
         self.bot.blocked_entities_cache["users"].difference_update((user.id,))
 
         # Display the results.
@@ -371,14 +412,14 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 failed: list[str] = []
 
                 start_time = perf_counter()
-                for extension in sorted(self.bot.extensions):
+                for ext in sorted(self.bot.extensions):
                     try:
-                        await self.bot.reload_extension(extension)
+                        await self.bot.reload_extension(ext)
                     except commands.ExtensionError as err:
-                        failed.append(extension)
-                        LOGGER.exception("Couldn't reload extension: %s", extension, exc_info=err)
+                        failed.append(ext)
+                        LOGGER.exception("Couldn't reload extension: %s", ext, exc_info=err)
                     else:
-                        reloaded.append(extension)
+                        reloaded.append(ext)
                 end_time = perf_counter()
 
                 ratio_succeeded = f"{len(reloaded)}/{len(self.bot.extensions)}"
@@ -530,3 +571,28 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             LOGGER.exception("Unknown error in sync command", exc_info=error)
 
         await ctx.reply(embed=embed)
+
+    @commands.hybrid_command()
+    async def cmd_tree(self, ctx: core.Context) -> None:
+        indent_level = 0
+
+        @contextlib.contextmanager
+        def new_indent(num: int = 4) -> Generator[None, object, None]:
+            nonlocal indent_level
+            indent_level += num
+            try:
+                yield
+            finally:
+                indent_level -= num
+
+        def walk_commands_with_indent(group: commands.GroupMixin[Any]) -> Generator[str, object, None]:
+            for cmd in group.commands:
+                indent = "" if (indent_level == 0) else (indent_level - 1) * "─"
+                yield f"└{indent}{cmd.qualified_name}"
+
+                if isinstance(cmd, commands.GroupMixin):
+                    with new_indent():
+                        yield from walk_commands_with_indent(cmd)
+
+        result = "\n".join(["Beira", *walk_commands_with_indent(ctx.bot)])
+        await ctx.send(f"```\n{result}\n```")

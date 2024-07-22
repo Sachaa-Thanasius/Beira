@@ -1,10 +1,5 @@
-"""
-dice.py: The extension that holds a die roll command and all the associated utility classes.
-
-TODO: Consider adding more elements from https://wiki.roll20.net/Dice_Reference.
-"""
-
-from __future__ import annotations
+"""dice.py: The extension that holds a die roll command and all the associated utility classes."""
+# TODO: Consider adding more elements from https://wiki.roll20.net/Dice_Reference.
 
 import logging
 import operator
@@ -38,8 +33,6 @@ class Die(msgspec.Struct, frozen=True):
         The emoji representing the die in displays.
     color: `discord.Colour`
         The color representing the die in embed displays.
-    label: `str`, default=f"D{value}"
-        The label, or name, of the die. Defaults to ``D{value}``, as with most dice in casual discussion.
     """
 
     value: int
@@ -48,6 +41,8 @@ class Die(msgspec.Struct, frozen=True):
 
     @property
     def label(self) -> str:
+        """`str`: The label, or name, of the die. Defaults to ``D{value}``, as with most dice in casual discussion."""
+
         return f"D{self.value}"
 
 

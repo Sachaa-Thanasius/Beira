@@ -1,11 +1,7 @@
-"""
-checks.py: Custom checks used by the bot.
-"""
-
-from __future__ import annotations
+"""checks.py: Custom checks used by the bot."""
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, Any, Protocol, TypeVar
+from typing import TYPE_CHECKING, Any, Protocol
 
 import discord
 from discord import app_commands
@@ -18,15 +14,11 @@ from .errors import CheckAnyFailure, GuildIsBlocked, NotAdmin, NotInBotVoiceChan
 if TYPE_CHECKING:
     from discord.ext.commands._types import Check  # type: ignore [reportMissingTypeStubs]
 
-    from .context import Context, GuildContext
-
-T = TypeVar("T")
-
 
 class AppCheck(Protocol):
     predicate: AppCheckFunc
 
-    def __call__(self, coro_or_commands: T) -> T: ...
+    def __call__[T](self, coro_or_commands: T) -> T: ...
 
 
 __all__ = (
@@ -39,15 +31,15 @@ __all__ = (
 )
 
 
-def is_owner_or_friend() -> Check[Any]:
-    """A :func:`.check` that checks if the person invoking this command is the
-    owner of the bot or on a special friends list.
+def is_owner_or_friend() -> "Check[Any]":
+    """A `.check` that checks if the person invoking this command is the owner of the bot or on a special friends list.
 
-    This is partially powered by :meth:`.Bot.is_owner`.
+    This is partially powered by `.Bot.is_owner`.
 
-    This check raises a special exception, :exc:`.NotOwnerOrFriend` that is derived
-    from :exc:`commands.CheckFailure`.
+    This check raises a special exception, `.NotOwnerOrFriend` that is derived from `commands.CheckFailure`.
     """
+
+    from .context import Context
 
     async def predicate(ctx: Context) -> bool:
         if not (ctx.bot.is_special_friend(ctx.author) or await ctx.bot.is_owner(ctx.author)):
@@ -57,13 +49,14 @@ def is_owner_or_friend() -> Check[Any]:
     return commands.check(predicate)
 
 
-def is_admin() -> Check[Any]:
-    """A :func:`.check` that checks if the person invoking this command is an
-    administrator of the guild in the current context.
+def is_admin() -> "Check[Any]":
+    """A `.check` that checks if the person invoking this command is an administrator of the guild in the current
+    context.
 
-    This check raises a special exception, :exc:`NotAdmin` that is derived
-    from :exc:`commands.CheckFailure`.
+    This check raises a special exception, `NotAdmin` that is derived from `commands.CheckFailure`.
     """
+
+    from .context import GuildContext
 
     async def predicate(ctx: GuildContext) -> bool:
         if not ctx.author.guild_permissions.administrator:
@@ -73,13 +66,14 @@ def is_admin() -> Check[Any]:
     return commands.check(predicate)
 
 
-def in_bot_vc() -> Check[Any]:
-    """A :func:`.check` that checks if the person invoking this command is in
-    the same voice channel as the bot within a guild.
+def in_bot_vc() -> "Check[Any]":
+    """A `.check` that checks if the person invoking this command is in the same voice channel as the bot within
+    a guild.
 
-    This check raises a special exception, :exc:`NotInBotVoiceChannel` that is derived
-    from :exc:`commands.CheckFailure`.
+    This check raises a special exception, `NotInBotVoiceChannel` that is derived from `commands.CheckFailure`.
     """
+
+    from .context import GuildContext
 
     async def predicate(ctx: GuildContext) -> bool:
         vc = ctx.voice_client
@@ -94,12 +88,13 @@ def in_bot_vc() -> Check[Any]:
     return commands.check(predicate)
 
 
-def in_aci100_guild() -> Check[Any]:
-    """A :func:`.check` that checks if the person invoking this command is in
-    the ACI100 guild.
+def in_aci100_guild() -> "Check[Any]":
+    """A `.check` that checks if the person invoking this command is in the ACI100 guild.
 
-    This check raises the exception :exc:`commands.CheckFailure`.
+    This check raises the exception `commands.CheckFailure`.
     """
+
+    from .context import GuildContext
 
     async def predicate(ctx: GuildContext) -> bool:
         if ctx.guild.id != 602735169090224139:
@@ -110,11 +105,13 @@ def in_aci100_guild() -> Check[Any]:
     return commands.check(predicate)
 
 
-def is_blocked() -> Check[Any]:
-    """A :func:`.check` that checks if the command is being invoked from a blocked user or guild.
+def is_blocked() -> "Check[Any]":
+    """A `.check` that checks if the command is being invoked from a blocked user or guild.
 
-    This check raises the exception :exc:`commands.CheckFailure`.
+    This check raises the exception `commands.CheckFailure`.
     """
+
+    from .context import Context
 
     async def predicate(ctx: Context) -> bool:
         if not (await ctx.bot.is_owner(ctx.author)):
@@ -128,22 +125,22 @@ def is_blocked() -> Check[Any]:
 
 
 # TODO: Actually check if this works.
-def check_any(*checks: AppCheck) -> Callable[[T], T]:
+def check_any[T](*checks: AppCheck) -> Callable[[T], T]:
     """An attempt at making a `check_any` decorator for application commands that checks if any of the checks passed
     will pass, i.e. using logical OR.
 
-    If all checks fail then :exc:`CheckAnyFailure` is raised to signal the failure.
-    It inherits from :exc:`app_commands.CheckFailure`.
+    If all checks fail then :exc:`CheckAnyFailure` is raised to signal the failure. It inherits from
+    `app_commands.CheckFailure`.
 
     Parameters
     ----------
     checks: `AppCheckProtocol`
-        An argument list of checks that have been decorated with :func:`app_commands.check` decorator.
+        An argument list of checks that have been decorated with `app_commands.check` decorator.
 
     Raises
     ------
     TypeError
-        A check passed has not been decorated with the :func:`app_commands.check` decorator.
+        A check passed has not been decorated with the `app_commands.check` decorator.
     """
 
     unwrapped: list[AppCheckFunc] = []
