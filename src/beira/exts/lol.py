@@ -1,4 +1,4 @@
-"""lol.py: A cog for checking user win rates and other stats in League of Legends.
+"""A cog for checking user win rates and other stats in League of Legends.
 
 Credit to Ralph for the idea and initial implementation.
 """
@@ -33,7 +33,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 
     Parameters
     ----------
-    urls: list[`str`]
+    urls: list[str]
         The op.gg profile urls to interact with during this webdriver session.
     """
 
@@ -96,10 +96,7 @@ class UpdateOPGGView(discord.ui.View):
 
 
 class LoLCog(commands.Cog, name="League of Legends"):
-    """A cog for checking user win rates and ranks in League of Legends.
-
-    Credit to Ralph for the main code; I'm just testing it out to see how it would work in Discord.
-    """
+    """A cog for checking user win rates and ranks in League of Legends."""
 
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot
@@ -123,17 +120,79 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="ok_lol", id=1077980829315252325)
 
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
+    async def check_lol_stats(self, summoner_name: str) -> tuple[str, str, str]:
+        """Queries the OP.GG website for a summoner's winrate and rank.
 
-        LOGGER.exception("", exc_info=error)
+        Parameters
+        ----------
+        summoner_name: str
+            The name of the League of Legends player.
+
+        Returns
+        -------
+        summoner_name, winrate, rank: tuple[str, str, str]
+            The stats of the LoL user, including name, winrate, and rank.
+        """
+
+        adjusted_name = quote(summoner_name)
+        url = urljoin(self.req_site, adjusted_name)
+
+        try:
+            async with self.bot.web_session.get(url, headers=self.req_headers) as response:
+                content = await response.text()
+
+            # Parse the summoner information for winrate and tier (referred to later as rank).
+            tree = lxml.html.fromstring(content)
+            winrate = str(tree.xpath("//div[@class='ratio']/string()")).removeprefix("Win Rate")
+            rank = str(tree.xpath("//div[@class='tier']/string()")).capitalize()
+            if not (winrate and rank):
+                winrate, rank = "None", "None"
+        except (AttributeError, aiohttp.ClientError):
+            # Thrown if the summoner has no games in ranked or no data at all.
+            winrate, rank = "None", "None"
+
+        await asyncio.sleep(0.25)
+
+        return summoner_name, winrate, rank
+
+    async def create_lol_leaderboard(self, summoner_name_list: list[str]) -> StatsEmbed:
+        """Asynchronously performs queries to OP.GG for summoners' stats and displays them as a leaderboard.
+
+        Parameters
+        ----------
+        summoner_name_list: list[str]
+            The list of summoner names that will be queried via OP.GG for League of Legends stats, e.g. winrate/rank.
+
+        Returns
+        -------
+        embed: StatsEmbed
+            The Discord embed with leaderboard fields for all ranked summoners.
+        """
+
+        # Get the information for every user.
+        tasks = [self.bot.loop.create_task(self.check_lol_stats(name)) for name in summoner_name_list]
+        results = await asyncio.gather(*tasks)
+
+        leaderboard = [result for result in results if result[1:2] != ("None", "None")]
+        leaderboard.sort(key=lambda x: x[1])
+
+        # Construct the embed for the leaderboard.
+        embed = StatsEmbed(
+            color=0x193D2C,
+            title="League of Legends Leaderboard",
+            description=(
+                "If players are missing, they either don't exist or aren't ranked.\n"
+                r"(Winrate \|| Rank)"
+                "\n―――――――――――"
+            ),
+        )
+        if leaderboard:
+            embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format=r"({} \|| {})")
+        return embed
 
     @commands.hybrid_group()
     async def lol(self, ctx: beira.Context) -> None:
@@ -175,7 +234,7 @@ class LoLCog(commands.Cog, name="League of Legends"):
         ----------
         ctx: `beira.Context`
             The invocation context.
-        summoner_names: list[`str`]
+        summoner_names: `list[str]`
             A string of summoner names to create a leaderboard from. Separate these by spaces.
         """
 
@@ -196,78 +255,6 @@ class LoLCog(commands.Cog, name="League of Legends"):
 
         await ctx.send(embed=embed, view=view)
 
-    async def create_lol_leaderboard(self, summoner_name_list: list[str]) -> StatsEmbed:
-        """Asynchronously performs queries to OP.GG for summoners' stats and displays them as a leaderboard.
-
-        Parameters
-        ----------
-        summoner_name_list: list['str']
-            The list of summoner names that will be queried via OP.GG for League of Legends stats, e.g. winrate/rank.
-
-        Returns
-        -------
-        embed: `StatsEmbed`
-            The Discord embed with leaderboard fields for all ranked summoners.
-        """
-
-        # Get the information for every user.
-        tasks = [self.bot.loop.create_task(self.check_lol_stats(name)) for name in summoner_name_list]
-        results = await asyncio.gather(*tasks)
-
-        leaderboard = [result for result in results if result[1:2] != ("None", "None")]
-        leaderboard.sort(key=lambda x: x[1])
-
-        # Construct the embed for the leaderboard.
-        embed = StatsEmbed(
-            color=0x193D2C,
-            title="League of Legends Leaderboard",
-            description=(
-                "If players are missing, they either don't exist or aren't ranked.\n"
-                r"(Winrate \|| Rank)"
-                "\n―――――――――――"
-            ),
-        )
-        if leaderboard:
-            embed.add_leaderboard_fields(ldbd_content=leaderboard, ldbd_emojis=[":medal:"], value_format=r"({} \|| {})")
-        return embed
-
-    async def check_lol_stats(self, summoner_name: str) -> tuple[str, str, str]:
-        """Queries the OP.GG website for a summoner's winrate and rank.
-
-        Parameters
-        ----------
-        summoner_name: `str`
-            The name of the League of Legends player.
-
-        Returns
-        -------
-        summoner_name, winrate, rank: tuple[`str`, `str`, `str`]
-            The stats of the LoL user, including name, winrate, and rank.
-        """
-
-        adjusted_name = quote(summoner_name)
-        url = urljoin(self.req_site, adjusted_name)
-
-        try:
-            async with self.bot.web_session.get(url, headers=self.req_headers) as response:
-                content = await response.text()
-
-            # Parse the summoner information for winrate and tier (referred to later as rank).
-            tree = lxml.html.fromstring(content)
-            winrate = str(tree.xpath("//div[@class='ratio']/string()")).removeprefix("Win Rate")
-            rank = str(tree.xpath("//div[@class='tier']/string()")).capitalize()
-            if not (winrate and rank):
-                winrate, rank = "None", "None"
-        except (AttributeError, aiohttp.ClientError):
-            # Thrown if the summoner has no games in ranked or no data at all.
-            winrate, rank = "None", "None"
-
-        await asyncio.sleep(0.25)
-
-        return summoner_name, winrate, rank
-
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(LoLCog(bot))

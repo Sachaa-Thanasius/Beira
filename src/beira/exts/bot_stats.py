@@ -1,4 +1,4 @@
-"""bot_stats.py: A cog for tracking different bot metrics."""
+"""A cog for tracking different bot metrics."""
 
 import logging
 from datetime import timedelta
@@ -42,17 +42,9 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{CHART WITH UPWARDS TREND}")
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     async def track_command_use(self, ctx: beira.Context) -> None:
         """Stores records of command uses in the database after some processing."""
@@ -134,6 +126,57 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         stmt = "INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING;"
         await self.bot.db_pool.execute(stmt, guild.id, timeout=60.0)
 
+    async def get_usage(
+        self,
+        time_period: int = 0,
+        command: str | None = None,
+        guild: discord.Guild | None = None,
+        universal: bool = False,
+    ) -> list[asyncpg.Record]:
+        """Queries the database for command usage."""
+
+        query_args: list[object] = []  # Holds the query args as objects.
+        where_params: list[str] = []  # Holds the query param placeholders as formatted strings.
+
+        # Create the base queries.
+        if guild:
+            query = """\
+                SELECT u.user_id, COUNT(*)
+                FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
+                {where}
+                GROUP BY u.user_id
+                ORDER BY COUNT(*) DESC
+                LIMIT 10;
+            """
+
+        else:
+            query = """\
+                SELECT g.guild_id, COUNT(*)
+                FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
+                {where}
+                GROUP BY g.guild_id
+                ORDER BY COUNT(*) DESC
+                LIMIT 10;
+            """
+
+        # Create the WHERE clause for the query.
+        if guild and not universal:
+            query_args.append(guild.id)
+            where_params.append(f"guild_id = ${len(query_args)}")
+
+        if time_period and (time_period > 0):
+            query_args.append(discord.utils.utcnow() - timedelta(days=time_period))
+            where_params.append(f"date_time >= ${len(query_args)}")
+
+        if command:
+            query_args.append(command)
+            where_params.append(f"command = ${len(query_args)}")
+
+        # Add the WHERE clause to the query if necessary.
+        where_clause = f"WHERE {' AND '.join(where_params)}\n" if len(query_args) > 0 else ""
+        query = query.format(where=where_clause)
+        return await self.bot.db_pool.fetch(query, *query_args)
+
     @commands.hybrid_command(name="usage")
     async def check_usage(self, ctx: beira.Context, *, search_factors: CommandStatsSearchFlags) -> None:
         """Retrieve statistics about bot command usage.
@@ -175,57 +218,6 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
 
             await ctx.reply(embed=embed)
 
-    async def get_usage(
-        self,
-        time_period: int = 0,
-        command: str | None = None,
-        guild: discord.Guild | None = None,
-        universal: bool = False,
-    ) -> list[asyncpg.Record]:
-        """Queries the database for command usage."""
-
-        query_args: list[object] = []  # Holds the query args as objects.
-        where_params: list[str] = []  # Holds the query param placeholders as formatted strings.
-
-        # Create the base queries.
-        if guild:
-            query = """\
-SELECT u.user_id, COUNT(*)
-FROM commands cmds INNER JOIN users u on cmds.user_id = u.user_id
-{where}
-GROUP BY u.user_id
-ORDER BY COUNT(*) DESC
-LIMIT 10;
-"""
-
-        else:
-            query = """\
-SELECT g.guild_id, COUNT(*)
-FROM commands cmds INNER JOIN guilds g on cmds.guild_id = g.guild_id
-{where}
-GROUP BY g.guild_id
-ORDER BY COUNT(*) DESC
-LIMIT 10;
-"""
-
-        # Create the WHERE clause for the query.
-        if guild and not universal:
-            query_args.append(guild.id)
-            where_params.append(f"guild_id = ${len(query_args)}")
-
-        if time_period and (time_period > 0):
-            query_args.append(discord.utils.utcnow() - timedelta(days=time_period))
-            where_params.append(f"date_time >= ${len(query_args)}")
-
-        if command:
-            query_args.append(command)
-            where_params.append(f"command = ${len(query_args)}")
-
-        # Add the WHERE clause to the query if necessary.
-        where_clause = f"WHERE {' AND '.join(where_params)}\n" if len(query_args) > 0 else ""
-        query = query.format(where=where_clause)
-        return await self.bot.db_pool.fetch(query, *query_args)
-
     @check_usage.autocomplete("command")
     async def command_autocomplete(self, interaction: beira.Interaction, current: str) -> list[Choice[str]]:
         """Autocompletes with bot command names."""
@@ -244,6 +236,4 @@ LIMIT 10;
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(BotStatsCog(bot))

@@ -10,6 +10,15 @@ from discord.ext import commands, tasks
 import beira
 
 
+# Potential database schema:
+# CREATE TABLE IF NOT EXISTS notifications_tracker(
+#     notification_id         SERIAL      PRIMARY KEY,
+#     notification_url        TEXT        NOT NULL,
+#     last_notification       TEXT        NOT NULL,
+#     notification_webhook    TEXT        NOT NULL
+# );
+
+
 class NotificationRecord(msgspec.Struct):
     id: int
     url: str
@@ -23,16 +32,7 @@ class NotificationRecord(msgspec.Struct):
 
 
 class RSSNotificationsCog(commands.Cog):
-    """Cog that uses polling to handle notifications related to various social media and website new posts/updates.
-
-    Potential database schema:
-    CREATE TABLE IF NOT EXISTS notifications_tracker(
-        notification_id         SERIAL      PRIMARY KEY,
-        notification_url        TEXT        NOT NULL,
-        last_notification       TEXT        NOT NULL,
-        notification_webhook    TEXT        NOT NULL
-    );
-    """
+    """Cog that uses polling to handle notifications related to various social media and website new posts/updates."""
 
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot

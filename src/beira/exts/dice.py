@@ -1,4 +1,4 @@
-"""dice.py: The extension that holds a die roll command and all the associated utility classes."""
+"""The extension that holds a die roll command and all the associated utility classes."""
 # TODO: Consider adding more elements from https://wiki.roll20.net/Dice_Reference.
 
 import logging
@@ -27,11 +27,11 @@ class Die(msgspec.Struct, frozen=True):
 
     Attributes
     ----------
-    value: `int`
+    value: int
         The highest number the die can roll.
-    emoji: `discord.PartialEmoji`
+    emoji: discord.PartialEmoji
         The emoji representing the die in displays.
-    color: `discord.Colour`
+    color: discord.Colour
         The color representing the die in embed displays.
     """
 
@@ -41,7 +41,7 @@ class Die(msgspec.Struct, frozen=True):
 
     @property
     def label(self) -> str:
-        """`str`: The label, or name, of the die. Defaults to ``D{value}``, as with most dice in casual discussion."""
+        """str: The label, or name, of the die. Defaults to ``D{value}``, as with most dice in casual discussion."""
 
         return f"D{self.value}"
 
@@ -65,12 +65,12 @@ def roll_basic_dice(dice_info: dict[int, int]) -> dict[int, list[int]]:
 
     Parameters
     ----------
-    dice_info: dict[`int`, `int`]
+    dice_info: dict[int, int]
         A mapping from the maximum value of a particular die to the number of times to roll that die.
 
     Returns
     -------
-    rolls_info: dict[`int`, list[`int`]]
+    rolls_info: dict[int, list[int]]
         A mapping from the maximum value of a particular die to the list of rolls that it made.
     """
 
@@ -85,12 +85,12 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
 
     Parameters
     ----------
-    expression: `str`
+    expression: str
         The expression to roll.
 
     Returns
     -------
-    normalized_expression, evaluation: tuple[`str`, `int`]
+    normalized_expression, evaluation: tuple[str, int]
         A tuple with filled in expression and final result.
 
     Notes
@@ -157,11 +157,11 @@ class DiceEmbed(discord.Embed):
 
     Parameters
     ----------
-    rolls_info: dict[`int`, list[`int`]], optional
+    rolls_info: dict[int, list[int]], optional
         A dictionary of information with dice types as keys and corresponding dice rolls as values.
-    modifier: `int`, default=0
+    modifier: int, default=0
         The post-calculation modifier for the dice rolls.
-    expression_info: tuple[`str`, `str`, `str`], optional
+    expression_info: tuple[str, str, str], optional
         A tuple with the original expression, the expression filled with dice rolls, and the expressions' final result.
     """
 
@@ -286,14 +286,14 @@ class DiceButton(ui.Button["DiceView"]):
 
     Parameters
     ----------
-    die: `Die`
+    die: Die
         The dataclass for the die being represented by the button.
 
     Attributes
     ----------
-    response_colour: `discord.Colour`
+    response_colour: discord.Colour
         The color representing a die in embed displays.
-    value: `int`
+    value: int
         The max possible roll for a die.
     """
 
@@ -360,9 +360,9 @@ class DiceModifierModal(ui.Modal):
 
     Attributes
     ----------
-    modifier_input: `TextInput`
+    modifier_input: TextInput
         The text box with which users will enter their numerical values.
-    interaction: `discord.Interaction`
+    interaction: discord.Interaction
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
@@ -389,9 +389,9 @@ class DiceExpressionModal(ui.Modal):
 
     Attributes
     ----------
-    expression_input: `TextInput`
+    expression_input: TextInput
         The text box with which users will enter their expression.
-    interaction: `discord.Interaction`
+    interaction: discord.Interaction
         The user interaction, to be used by other classes to ensure continuity in the view interaction flow.
     """
 
@@ -418,11 +418,11 @@ class DiceView(ui.View):
 
     Attributes
     ----------
-    modifier: `int`
+    modifier: int
         The modifier to apply at the end of a roll or series of rolls.
-    num_rolls: `int`
+    num_rolls: int
         The number of rolls to perform. Allows item interactions to cause multiple rolls.
-    expression: `str`
+    expression: str
         The custom dice expression from user input to be evaluated.
     """
 
@@ -618,16 +618,6 @@ async def roll(ctx: beira.Context, expression: str | None = None) -> None:
         view = ui.View().add_item(RerollButton(expression=expression))
 
     await ctx.send(embed=embed, view=view)
-
-
-@roll.error  # pyright: ignore [reportUnknownMemberType] # discord.py bug: see https://github.com/Rapptz/discord.py/issues/9788.
-async def roll_error(ctx: beira.Context, error: commands.CommandError) -> None:
-    # Extract the original error.
-    error = getattr(error, "original", error)
-    if ctx.interaction:
-        error = getattr(error, "original", error)
-
-    LOGGER.exception("", exc_info=error)
 
 
 async def setup(bot: beira.Beira) -> None:

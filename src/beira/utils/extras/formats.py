@@ -11,9 +11,7 @@ class plural:
         v = self.value
         singular, _, plural = format_spec.partition("|")
         plural = plural or f"{singular}s"
-        if abs(v) != 1:
-            return f"{v} {plural}"
-        return f"{v} {singular}"
+        return f"{v} {plural if (abs(v) != 1) else singular}"
 
 
 def human_join(seq: Sequence[str], delim: str = ", ", final: str = "or") -> str:

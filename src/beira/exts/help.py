@@ -1,8 +1,6 @@
-"""help.py: A custom help command for Beira set through a cog.
+"""A custom help command for Beira set through a cog.
 
-Notes
------
-The guide this was based off of: https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
+The implementation is based off of this guide: https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
 """
 
 import logging
@@ -24,9 +22,9 @@ HELP_COLOR = 0x16A75D
 
 
 class HelpBotView(PaginatedEmbedView[tuple[str, tuple[tuple[str, str], ...]]]):
-    """A subclass of `PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
+    """A subclass of PaginatedEmbedView that handles paginated embeds, specifically for help commands.
 
-    This is for a call to `/help`.
+    This is for a call to /help.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -71,9 +69,9 @@ class HelpBotView(PaginatedEmbedView[tuple[str, tuple[tuple[str, str], ...]]]):
 
 
 class HelpCogView(PaginatedEmbedView[tuple[str, str]]):
-    """A subclass of `PaginatedEmbedView` that handles paginated embeds, specifically for help commands.
+    """A subclass of PaginatedEmbedView that handles paginated embeds, specifically for help commands.
 
-    This is for a call to `/help <cog_name>`.
+    This is for a call to /help <cog_name>.
     """
 
     def __init__(self, *args: Any, cog_info: tuple[str, str], **kwargs: Any) -> None:
@@ -189,7 +187,7 @@ class BeiraHelpCommand(commands.HelpCommand):
     def get_opening_note(self) -> str:
         """Returns help command's opening note.
 
-        Implementation borrowed from `commands.MinimalHelpCommand`.
+        Implementation borrowed from commands.MinimalHelpCommand.
         """
 
         command_name = self.invoked_with
@@ -201,7 +199,7 @@ class BeiraHelpCommand(commands.HelpCommand):
     def get_command_signature(self, command: commands.Command[Any, ..., Any], /) -> str:
         """Returns formatted command signature.
 
-        Implementation borrowed from `commands.MinimalHelpCommand`.
+        Implementation borrowed from commands.MinimalHelpCommand.
         """
 
         return f"{self.context.clean_prefix}{command.qualified_name} {command.signature}"
@@ -217,7 +215,7 @@ class BeiraHelpCommand(commands.HelpCommand):
 
 
 class HelpCog(commands.Cog, name="Help"):
-    """A cog that allows more dynamic usage of my custom help command class, `BeiraHelpCommand`."""
+    """A cog that allows more dynamic usage of a custom help command class."""
 
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot
@@ -230,13 +228,17 @@ class HelpCog(commands.Cog, name="Help"):
 
         self.bot.help_command = self._old_help_command
 
-    async def cog_command_error(self, ctx: commands.Context[Any], error: Exception) -> None:
-        error = getattr(error, "original", error)
-        LOGGER.exception("", exc_info=error)
-
     @app_commands.command(name="help")
     async def help_(self, interaction: beira.Interaction, command: str | None = None) -> None:
-        """Access the help commands through the slash system."""
+        """Access the help commands through the slash system.
+
+        Parameters
+        ----------
+        interaction: `beira.Interaction`
+            The command interaction.
+        command: `str`, optional
+            A name to match to a bot command. If unfilled, default to the generic help dialog.
+        """
 
         ctx = await self.bot.get_context(interaction, cls=beira.Context)
 

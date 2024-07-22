@@ -63,10 +63,7 @@ STORY_WEBSITE_REGEX = re.compile(
 
 
 def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
-    """Create an embed that holds all the relevant metadata for an Archive of Our Own work.
-
-    Only accepts `ao3.Work` objects.
-    """
+    """Create an embed that holds all the relevant metadata for an Archive of Our Own work."""
 
     # Format the relevant information.
     if work.date_updated:
@@ -106,10 +103,7 @@ def create_ao3_work_embed(work: ao3.Work) -> discord.Embed:
 
 
 def create_ao3_series_embed(series: ao3.Series) -> discord.Embed:
-    """Create an embed that holds all the relevant metadata for an Archive of Our Own series.
-
-    Only accepts `ao3.Series` objects.
-    """
+    """Create an embed that holds all the relevant metadata for an Archive of Our Own series."""
 
     author_url = f"https://archiveofourown.org/users/{series.creators[0].name}"
 
@@ -138,10 +132,7 @@ def create_ao3_series_embed(series: ao3.Series) -> discord.Embed:
 
 
 def create_atlas_ffn_embed(story: atlas_api.Story) -> discord.Embed:
-    """Create an embed that holds all the relevant metadata for a FanFiction.Net story.
-
-    Only accepts `atlas_api.Story` objects from my own Atlas wrapper.
-    """
+    """Create an embed that holds all the relevant metadata for a FanFiction.Net story."""
 
     # Format the relevant information.
     update_date = story.updated if story.updated else story.published
@@ -170,10 +161,7 @@ def create_atlas_ffn_embed(story: atlas_api.Story) -> discord.Embed:
 
 
 def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
-    """Create an embed that holds all the relevant metadata for a few different types of online fiction story.
-
-    Only accepts `fichub_api.Story` objects from my own FicHub wrapper.
-    """
+    """Create an embed that holds all the relevant metadata for a few different types of online fiction story."""
 
     # Format the relevant information.
     updated = story.updated.strftime("%B %d, %Y")
@@ -218,19 +206,17 @@ def create_fichub_embed(story: fichub_api.Story) -> discord.Embed:
 
 
 def ff_embed_factory(story_data: Any | None) -> discord.Embed | None:
-    if story_data is None:
-        return None
-
-    if isinstance(story_data, atlas_api.Story):
-        return create_atlas_ffn_embed(story_data)
-    if isinstance(story_data, fichub_api.Story):
-        return create_fichub_embed(story_data)
-    if isinstance(story_data, ao3.Work):
-        return create_ao3_work_embed(story_data)
-    if isinstance(story_data, ao3.Series):
-        return create_ao3_series_embed(story_data)
-
-    return None
+    match story_data:
+        case atlas_api.Story():
+            return create_atlas_ffn_embed(story_data)
+        case fichub_api.AO3Story() | fichub_api.FFNStory() | fichub_api.OtherStory():
+            return create_fichub_embed(story_data)
+        case ao3.Work():
+            return create_ao3_work_embed(story_data)
+        case ao3.Series():
+            return create_ao3_series_embed(story_data)
+        case _:
+            return None
 
 
 class AO3SeriesView(PaginatedSelectView[ao3.Work]):
@@ -238,17 +224,17 @@ class AO3SeriesView(PaginatedSelectView[ao3.Work]):
 
     Parameters
     ----------
-    author_id: `int`
+    author_id: int
         The Discord ID of the user that triggered this view. No one else can use it.
-    series: `ao3.Series`
+    series: ao3.Series
         The object holding metadata about an AO3 series and the works within.
-    timeout: `float` | None, optional
+    timeout: float | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
 
     Attributes
     ----------
-    series: `ao3.Series`
+    series: ao3.Series
         The object holding metadata about an AO3 series and the works within.
     """
 

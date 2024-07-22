@@ -3,11 +3,12 @@
 import logging
 import re
 import time
+from collections.abc import Callable
 
 import lxml.html
 
 
-__all__ = ("catchtime", "html_to_markdown")
+__all__ = ("catchtime", "html_to_markdown", "copy_annotations")
 
 
 class catchtime:
@@ -83,3 +84,15 @@ def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False
             text.append(child.tail)
 
     return "".join(text).strip()
+
+
+def copy_annotations[**P, T](original_func: Callable[P, T]) -> Callable[[Callable[..., object]], Callable[P, T]]:
+    """A decorator that copies the annotations from one function onto another.
+
+    It may be a lie, but the lie can aid type checkers, IDEs, intellisense, etc.
+    """
+
+    def inner(new_func: Callable[..., object]) -> Callable[P, T]:
+        return new_func  # type: ignore # A lie.
+
+    return inner

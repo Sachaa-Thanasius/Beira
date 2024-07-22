@@ -1,4 +1,4 @@
-"""custom_notifications.py: One or more listeners for sending custom notifications based on events."""
+"""One or more listeners for sending custom notifications based on events."""
 
 import asyncio
 import logging

@@ -1,4 +1,4 @@
-"""ff_metadata.py: A cog with triggers for retrieving story metadata."""
+"""A cog with triggers for retrieving story metadata."""
 # TODO: Account for orphaned fics, anonymous fics, really long embed descriptions, and series with more than 25 fics.
 
 import logging
@@ -34,6 +34,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
 
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot
+
         self.atlas_client = bot.atlas_client
         self.fichub_client = bot.fichub_client
         self.ao3_client = bot.ao3_client
@@ -52,14 +53,6 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         records = await self.bot.db_pool.fetch("SELECT guild_id, channel_id FROM fanfic_autoresponse_settings;")
         for record in records:
             self.allowed_channels_cache.setdefault(record["guild_id"], set()).add(record["channel_id"])
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     @commands.Cog.listener("on_message")
     async def on_posted_fanfic_link(self, message: discord.Message) -> None:
@@ -133,7 +126,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         ----------
         ctx: `beira.GuildContext`
             The invocation context.
-        channels: `commands.Greedy`[`discord.abc.GuildChannel`]
+        channels: `commands.Greedy[discord.abc.GuildChannel]`
             A list of channels to add, separated by spaces.
         """
 
@@ -173,7 +166,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         ----------
         ctx: `beira.GuildContext`
             The invocation context.
-        channels: `commands.Greedy`[`discord.abc.GuildChannel`]
+        channels: `commands.Greedy[discord.abc.GuildChannel]`
             A list of channels to remove, separated by spaces.
         """
 
@@ -212,7 +205,7 @@ class FFMetadataCog(commands.GroupCog, name="Fanfiction Metadata Search", group_
         ----------
         ctx: `beira.Context`
             The invocation context.
-        platform: Literal["ao3", "ffn", "other"]
+        platform: `Literal["ao3", "ffn", "other"]`
             The platform to search.
         name_or_url: `str`
             The search string for the story title, or the story url.

@@ -55,7 +55,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="discord_dev", animated=True, id=1084608963896672256)
 
@@ -76,24 +76,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         """Set up bot owner check as universal within the cog."""
 
         return await self.bot.is_owner(ctx.author)
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        assert ctx.command
-
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        embed = discord.Embed(color=0x5E9A40)
-
-        if isinstance(error, commands.ExtensionError):
-            embed.description = f"Couldn't {ctx.command.name} extension: {error.name}\n{error}"
-            LOGGER.error("Couldn't %s extension: %s", ctx.command.name, error.name, exc_info=error)
-        else:
-            LOGGER.exception("", exc_info=error)
-
-        await ctx.send(embed=embed, ephemeral=True)
 
     @commands.hybrid_group(fallback="get")
     async def block(self, ctx: beira.Context) -> None:
@@ -129,9 +111,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         ----------
         ctx: `beira.Context`
             The invocation context.
-        block_type: Literal["user", "guild"], default="user"
+        block_type: `Literal["user", "guild"]`, default="user"
             What type of entity or entities are being blocked. Defaults to "user".
-        entities: `commands.Greedy`[`discord.Object`]
+        entities: `commands.Greedy[discord.Object`]
             The entities to block.
         """
 
@@ -176,9 +158,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         ----------
         ctx: `beira.Context`
             The invocation context
-        block_type: Literal["user", "guild"], default="user"
+        block_type: `Literal["user", "guild"]`, default="user"
             What type of entity or entities are being unblocked. Defaults to "user".
-        entities: `commands.Greedy`[`discord.Object`]
+        entities: `commands.Greedy[discord.Object`]
             The entities to unblock.
         """
 
@@ -212,24 +194,19 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     @block_add.error
     @block_remove.error
     async def block_change_error(self, ctx: beira.Context, error: commands.CommandError) -> None:
+        assert ctx.command
+
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
 
-        assert ctx.command
-
         if isinstance(error, PostgresError | PostgresConnectionError):
             action = "block" if ctx.command.qualified_name == "block add" else "unblock"
             await ctx.send(f"Unable to {action} these users/guilds at this time.", ephemeral=True)
-        LOGGER.exception("", exc_info=error)
 
     @app_commands.check(lambda interaction: interaction.user.id == interaction.client.owner_id)
-    async def context_menu_block_add(
-        self,
-        interaction: beira.Interaction,
-        user: discord.User | discord.Member,
-    ) -> None:
+    async def context_menu_block_add(self, interaction: beira.Interaction, user: discord.User | discord.Member) -> None:
         stmt = """
             INSERT INTO users (user_id, is_blocked)
             VALUES ($1, $2)
@@ -274,13 +251,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
     @commands.hybrid_command()
     async def walk(self, ctx: beira.Context) -> None:
-        """Walk through all app commands globally and in every guild to see what is synced and where.
-
-        Parameters
-        ----------
-        ctx: `beira.Context`
-            The invocation context where the command was called.
-        """
+        """Walk through all app commands globally and in every guild to see what is synced and where."""
 
         all_embeds: list[discord.Embed] = []
 
@@ -432,6 +403,24 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             if current.lower() in ext.lower()
         ][:25]
 
+    @load.error
+    @unload.error
+    @reload.error
+    async def load_error(self, ctx: beira.Context, error: commands.CommandError) -> None:
+        assert ctx.command
+
+        # Extract the original error.
+        error = getattr(error, "original", error)
+        if ctx.interaction:
+            error = getattr(error, "original", error)
+
+        if isinstance(error, commands.ExtensionError):
+            embed = discord.Embed(
+                color=0x5E9A40,
+                description=f"Couldn't {ctx.command.name} extension: {error.name}\n{error}",
+            )
+            await ctx.send(embed=embed, ephemeral=True)
+
     @commands.hybrid_command("sync")
     @app_commands.choices(spec=[app_commands.Choice(name=name, value=value) for name, value in SPEC_CHOICES])
     async def sync_(
@@ -442,16 +431,16 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
     ) -> None:
         """Syncs the command tree in some way based on input.
 
-        The `spec` and `guilds` parameters are mutually exclusive.
+        ``spec`` and ``guilds`` are mutually exclusive.
 
         Parameters
         ----------
         ctx: `beira.Context`
             The invocation context.
-        guilds: Greedy[`discord.Object`], optional
+        guilds: `Greedy[discord.Object`], optional
             The guilds to sync the app commands if no specification is entered. Converts guild ids to
-            `discord.Object`s. Please provide as IDs separated by spaces.
-        spec: Choice[`str`], optional
+            ``discord.Object``s. Please provide as IDs separated by spaces.
+        spec: `Choice[str]`, optional
             The type of sync to perform if no guilds are entered. No input means global sync.
 
         Notes
@@ -461,19 +450,13 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         Here is some elaboration on what the command would do with different arguments. Irrelevant with slash
         activation, but replace '$' with whatever your prefix is for prefix command activation:
 
-            `$sync`: Sync globally.
-
-            `$sync ~`: Sync with current guild.
-
-            `$sync *`: Copy all global app commands to current guild and sync.
-
-            `$sync ^`: Clear all commands from the current guild target and sync, thereby removing guild commands.
-
-            `$sync -`: (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
-
-            `$sync +`: (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
-
-            `$sync <id_1> <id_2> ...`: Sync with those guilds of id_1, id_2, etc.
+        - `$sync`: Sync globally.
+        - `$sync ~`: Sync with current guild.
+        - `$sync *`: Copy all global app commands to current guild and sync.
+        - `$sync ^`: Clear all commands from the current guild target and sync, thereby removing guild commands.
+        - `$sync -`: (D-N-T!) Clear all global commands and sync, thereby removing all global commands.
+        - `$sync +`: (D-N-T!) Clear all commands from all guilds and sync, thereby removing all guild commands.
+        - `$sync <id_1> <id_2> ...`: Sync with those guilds of id_1, id_2, etc.
 
         References
         ----------
@@ -523,13 +506,13 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
     @sync_.error
     async def sync_error(self, ctx: beira.Context, error: commands.CommandError) -> None:
-        """A local error handler for the :meth:`sync_` command.
+        """A local error handler for the sync_ command.
 
         Parameters
         ----------
-        ctx: `beira.Context`
+        ctx: beira.Context
             The invocation context.
-        error: `commands.CommandError`
+        error: commands.CommandError
             The error thrown by the command.
         """
 
@@ -592,16 +575,16 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
+    dev_guild_ids = list(bot.config.discord.important_guilds["dev"])
+    dev_guilds = [discord.Object(id=guild_id) for guild_id in bot.config.discord.important_guilds["dev"]]
+    cog = DevCog(bot, dev_guilds)
 
     # Can't use the guilds kwarg in add_cog, as it doesn't currently work for hybrids.
     # Ref: https://github.com/Rapptz/discord.py/pull/9428
-    dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in bot.config.discord.important_guilds["dev"]]
-    cog = DevCog(bot, dev_guilds_objects)
-    for cmd in cog.walk_app_commands():
-        if cmd._guild_ids is None:
-            cmd._guild_ids = [g.id for g in dev_guilds_objects]
+    for cmd in cog.get_app_commands():
+        if cmd._guild_ids is None:  # pyright: ignore [reportPrivateUsage]
+            cmd._guild_ids = dev_guild_ids  # pyright: ignore [reportPrivateUsage]
         else:
-            cmd._guild_ids.extend(g.id for g in dev_guilds_objects)
+            cmd._guild_ids.extend(dev_guild_ids)  # pyright: ignore [reportPrivateUsage]
 
     await bot.add_cog(cog)

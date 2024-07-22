@@ -1,9 +1,8 @@
-"""music.py: This cog provides functionality for playing tracks in voice channels given search terms or urls,
-implemented with Wavelink.
+"""This cog provides functionality for playing tracks in voice channels given search terms or urls, implemented with
+wavelink.
 """
 
 import datetime
-import functools
 import json
 import logging
 import re
@@ -14,6 +13,7 @@ import discord
 import wavelink
 from discord import app_commands
 from discord.ext import commands
+from discord.utils import MISSING
 from wavelink.types.filters import FilterPayload
 
 import beira
@@ -21,9 +21,6 @@ from beira.utils import EMOJI_STOCK, PaginatedEmbedView
 
 
 LOGGER = logging.getLogger(__name__)
-
-
-escape_markdown = functools.partial(discord.utils.escape_markdown, as_needed=True)
 
 
 COMMON_FILTERS: dict[str, FilterPayload] = {
@@ -38,8 +35,8 @@ def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
     icon = EMOJI_STOCK.get(type(track).__name__, "\N{MUSICAL NOTE}")
     title = f"{icon} {title}"
     uri = track.uri or ""
-    author = escape_markdown(track.author)
-    track_title = escape_markdown(track.title)
+    author = discord.utils.escape_markdown(track.author, as_needed=True)
+    track_title = discord.utils.escape_markdown(track.title, as_needed=True)
 
     try:
         end_time = str(datetime.timedelta(milliseconds=track.length))
@@ -56,7 +53,6 @@ def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
     if track.album.name:
         embed.add_field(name="Album", value=track.album.name)
 
-    # FIXME: Test whether setting on a playlist's extras will set on contained tracks' extras.
     if requester := getattr(track.extras, "requester", None):
         embed.add_field(name="Requested By", value=requester)
 
@@ -66,7 +62,7 @@ def create_track_embed(title: str, track: wavelink.Playable) -> discord.Embed:
 class InvalidShortTimeFormat(app_commands.AppCommandError):
     """Exception raised when a given input does not match the short time format needed as a command parameter.
 
-    This inherits from :exc:`app_commands.AppCommandError`.
+    This inherits from app_commands.AppCommandError.
     """
 
     def __init__(self, value: str, *args: object) -> None:
@@ -110,12 +106,12 @@ class MusicQueueView(PaginatedEmbedView[str]):
 
 
 class ExtraPlayer(wavelink.Player):
-    """A version of `wavelink.Player` with autoplay set to partial."""
+    """A version of wavelink.Player with autoplay set to partial."""
 
     def __init__(
         self,
-        client: discord.Client = discord.utils.MISSING,
-        channel: discord.abc.Connectable = discord.utils.MISSING,
+        client: discord.Client = MISSING,
+        channel: discord.abc.Connectable = MISSING,
         *,
         nodes: list[wavelink.Node] | None = None,
     ) -> None:
@@ -131,12 +127,15 @@ class MusicCog(commands.Cog, name="Music"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{MUSICAL NOTE}")
 
     async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
         """Catch errors from commands inside this cog."""
+
+        if ctx.error_handled:
+            return
 
         embed = discord.Embed(title="Music Error", description="Something went wrong with this command.")
 
@@ -147,17 +146,18 @@ class MusicCog(commands.Cog, name="Music"):
 
         if isinstance(error, commands.MissingPermissions):
             embed.description = "You don't have permission to do this."
+            ctx.error_handled = True
         elif isinstance(error, beira.NotInBotVoiceChannel):
             embed.description = "You're not in the same voice channel as the bot."
+            ctx.error_handled = True
         elif isinstance(error, InvalidShortTimeFormat):
             embed.description = error.message
+            ctx.error_handled = True
         elif isinstance(error, app_commands.TransformerError):
             if err := error.__cause__:
                 embed.description = err.args[0]
             else:
                 embed.description = f"Couldn't convert `{error.value}` into a track."
-        else:
-            LOGGER.exception("Exception: %s", error, exc_info=error)
 
         await ctx.send(embed=embed)
 
@@ -207,7 +207,15 @@ class MusicCog(commands.Cog, name="Music"):
 
     @music.command()
     async def connect(self, ctx: beira.GuildContext, channel: discord.VoiceChannel | None = None) -> None:
-        """Join a voice channel."""
+        """Join a voice channel.
+
+        Parameters
+        ----------
+        ctx: `beira.GuildContext`
+            The invocation context.
+        channel: `discord.VoiceChannel`, optional
+            The channel to join.
+        """
 
         vc: wavelink.Player | None = ctx.voice_client
 
@@ -352,7 +360,7 @@ class MusicCog(commands.Cog, name="Music"):
     async def queue(self, ctx: beira.GuildContext) -> None:
         """Music queue-related commands. By default, this displays everything in the queue.
 
-        Use `play` to add things to the queue.
+        Use `/play` to add things to the queue.
         """
 
         vc: wavelink.Player | None = ctx.voice_client
@@ -483,7 +491,7 @@ class MusicCog(commands.Cog, name="Music"):
         ----------
         ctx: `beira.GuildContext`
             The invocation context.
-        loop: Literal["All Tracks", "Current Track", "Off"]
+        loop: `Literal["All Tracks", "Current Track", "Off"]`, default="Off"
             The loop settings. "All Tracks" loops everything in the queue, "Current Track" loops the playing track, and
             "Off" resets all looping.
         """
@@ -621,9 +629,9 @@ class MusicCog(commands.Cog, name="Music"):
 
         Parameters
         ----------
-        ctx: beira.GuildContext
+        ctx: `beira.GuildContext`
             The invocation context.
-        import_file: discord.Attachment
+        import_file: `discord.Attachment`
             A JSON file with track information to recreate the queue with. May be created by /export.
         """
 
@@ -656,13 +664,13 @@ class MusicCog(commands.Cog, name="Music"):
         actual_error = error.__cause__ or error
 
         if isinstance(actual_error, discord.HTTPException):
-            error_text = f"Bad input: {actual_error.text}"
+            await ctx.send(f"Bad input: {actual_error.text}")
+            ctx.error_handled = True
         elif isinstance(actual_error, json.JSONDecodeError):
-            error_text = "Bad input: Given attachment is formatted incorrectly."
+            await ctx.send("Bad input: Given attachment is formatted incorrectly.")
+            ctx.error_handled = True
         else:
-            error_text = "Error: Failed to import attachment."
-
-        await ctx.send(error_text)
+            await ctx.send("Error: Failed to import attachment.")
 
     @muse_import.before_invoke
     async def import_ensure_voice(self, ctx: beira.GuildContext) -> None:
@@ -682,6 +690,4 @@ class MusicCog(commands.Cog, name="Music"):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(MusicCog(bot))

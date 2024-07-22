@@ -6,10 +6,7 @@ from typing import Any
 import msgspec
 
 
-__all__ = (
-    "Config",
-    "load_config",
-)
+__all__ = ("Config", "load_config")
 
 
 class Base(msgspec.Struct):

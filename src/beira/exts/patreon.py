@@ -1,4 +1,4 @@
-"""patreon.py: A cog for checking which Discord members are currently patrons of ACI100.
+"""A cog for checking which Discord members are currently patrons of ACI100.
 
 Work in progress to make the view portion functional for M J Bradley.
 """
@@ -14,14 +14,14 @@ import msgspec
 from discord.ext import commands, tasks
 
 import beira
-from beira.utils import PaginatedSelectView
+from beira.utils import EMOJI_URL, PaginatedSelectView
 
 
 LOGGER = logging.getLogger(__name__)
 
 CAMPAIGN_BASE = "https://www.patreon.com/api/oauth2/v2/campaigns"
 INFO_EMOJI = discord.PartialEmoji.from_str("<:icons_info:880113401207095346>")
-ACI100_ICON_URL = "https://cdn.discordapp.com/emojis/1077980959569362994.webp?size=48&quality=lossless"
+ACI100_ICON_URL = EMOJI_URL.format(1077980959569362994)
 
 
 class PatreonMember(msgspec.Struct):
@@ -95,7 +95,7 @@ class PatreonTierSelectView(PaginatedSelectView[PatreonTierInfo]):
 class PatreonCheckCog(commands.Cog, name="Patreon"):
     """A cog for Patreon-related tasks, like checking which Discord members are currently patrons of ACI100.
 
-    In development.
+    A work in progress.
     """
 
     def __init__(self, bot: beira.Beira) -> None:
@@ -105,7 +105,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="patreon", id=1077980959569362994)
 
@@ -128,14 +128,6 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
         original = commands.is_owner().predicate
         return await original(ctx)
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("Error in Patreon Cog", exc_info=error)
 
     async def _get_patreon_roles(self) -> None:
         await self.bot.wait_until_ready()
@@ -272,8 +264,6 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(PatreonCheckCog(bot))
 
 

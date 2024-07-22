@@ -1,5 +1,4 @@
-"""
-story_search.py: This cog is meant to provide functionality for searching the text of some books.
+"""This cog is meant to provide functionality for searching the text of some books.
 
 Currently supports most long-form ACI100 works and M J Bradley's A Cadmean Victory Remastered.
 """
@@ -36,6 +35,13 @@ LOGGER = logging.getLogger(__name__)
 
 AO3_EMOJI = discord.PartialEmoji.from_str(EMOJI_STOCK["ao3"])
 assert AO3_EMOJI.id
+
+ACI100_STORY_CHOICES = [
+    discord.app_commands.Choice(name="Ashes of Chaos", value="aoc"),
+    discord.app_commands.Choice(name="Conjoining of Paragons", value="cop"),
+    discord.app_commands.Choice(name="Fabric of Fate", value="fof"),
+    discord.app_commands.Choice(name="Perversion of Purity", value="pop"),
+]
 
 
 class StoryInfo(msgspec.Struct):
@@ -135,16 +141,16 @@ class AO3StoryHtmlData(msgspec.Struct):
 
 
 class StoryQuoteView(PaginatedEmbedView[tuple[str, str, str]]):
-    """A subclass of `PaginatedEmbedView` that handles paginated embeds, specifically for quotes from a story.
+    """A subclass of PaginatedEmbedView that handles paginated embeds, specifically for quotes from a story.
 
     Parameters
     ----------
     *args
-        Positional arguments the normal initialization of an `PaginatedEmbedView`. See that class for more info.
+        Positional arguments the normal initialization of an PaginatedEmbedView. See that class for more info.
     story_data: StoryInfo
         The story's data and metadata, including full name, author name, and image representation.
     **kwargs
-        Keyword arguments the normal initialization of an `PaginatedEmbedView`. See that class for more info.
+        Keyword arguments the normal initialization of an PaginatedEmbedView. See that class for more info.
 
     Attributes
     ----------
@@ -186,16 +192,16 @@ class StoryQuoteView(PaginatedEmbedView[tuple[str, str, str]]):
 
 
 class AO3StoryQuoteView(PaginatedEmbedView[tuple[str, str]]):
-    """A subclass of `PaginatedEmbedView` that handles paginated embeds, specifically for quotes from a story.
+    """A subclass of PaginatedEmbedView that handles paginated embeds, specifically for quotes from a story.
 
     Parameters
     ----------
     *args
-        Positional arguments the normal initialization of an `PaginatedEmbedView`. See that class for more info.
+        Positional arguments the normal initialization of an PaginatedEmbedView. See that class for more info.
     story_data: StoryInfo
         The story's data and metadata, including full name, author name, and image representation.
     **kwargs
-        Keyword arguments the normal initialization of an `PaginatedEmbedView`. See that class for more info.
+        Keyword arguments the normal initialization of an PaginatedEmbedView. See that class for more info.
 
     Attributes
     ----------
@@ -241,14 +247,9 @@ class AO3StoryQuoteView(PaginatedEmbedView[tuple[str, str]]):
 class StorySearchCog(commands.Cog, name="Quote Search"):
     """A cog with commands for people to search the text of some ACI100 books while in Discord.
 
-    Parameters
-    ----------
-    bot: `Beira`
-        The main Discord bot this cog is a part of.
-
     Attributes
     ----------
-    story_records: dict
+    story_records: `dict[str, StoryInfo]`
         The dictionary holding the metadata and text for all stories being scanned.
     """
 
@@ -259,7 +260,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{BOOKS}")
 
@@ -273,14 +274,6 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             for work in author_works.iterdir():
                 if work.is_file() and work.name.endswith("text.md"):
                     self.load_story_text(work)
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     @classmethod
     def load_story_text(cls, filepath: Traversable) -> None:
@@ -390,13 +383,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
 
     @commands.hybrid_command()
     async def random_text(self, ctx: beira.Context) -> None:
-        """Display a random line from the story.
-
-        Parameters
-        ----------
-        ctx: `beira.Context`
-            The invocation context where the command was called.
-        """
+        """Display a random line from the story."""
 
         # Randomly choose an ACI100 story.
         story = random.choice([key for key in self.story_records if key != "acvr"])
@@ -422,14 +409,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command()
-    @discord.app_commands.choices(
-        story=[
-            discord.app_commands.Choice(name="Ashes of Chaos", value="aoc"),
-            discord.app_commands.Choice(name="Conjoining of Paragons", value="cop"),
-            discord.app_commands.Choice(name="Fabric of Fate", value="fof"),
-            discord.app_commands.Choice(name="Perversion of Purity", value="pop"),
-        ],
-    )
+    @discord.app_commands.choices(story=ACI100_STORY_CHOICES)
     async def search_text(self, ctx: beira.Context, story: str, *, query: str) -> None:
         """Search the works of ACI100 for a word or phrase.
 
@@ -468,14 +448,7 @@ class StorySearchCog(commands.Cog, name="Quote Search"):
             view.message = message
 
     @commands.hybrid_command()
-    @discord.app_commands.choices(
-        known_story=[
-            discord.app_commands.Choice(name="Ashes of Chaos", value="aoc"),
-            discord.app_commands.Choice(name="Conjoining of Paragons", value="cop"),
-            discord.app_commands.Choice(name="Fabric of Fate", value="fof"),
-            discord.app_commands.Choice(name="Perversion of Purity", value="pop"),
-        ],
-    )
+    @discord.app_commands.choices(known_story=ACI100_STORY_CHOICES)
     async def find_text(
         self,
         ctx: beira.Context,

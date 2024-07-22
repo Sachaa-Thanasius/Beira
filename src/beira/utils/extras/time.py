@@ -12,7 +12,6 @@ from discord.ext import commands
 
 import beira
 
-from ... import Context  # noqa: TID252
 from .formats import human_join, plural
 
 
@@ -68,7 +67,7 @@ class ShortTime:
             self.dt = self.dt.astimezone(tzinfo)
 
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> Self:
+    async def convert(cls, ctx: beira.Context, argument: str) -> Self:
         tzinfo = await ctx.bot.get_user_tzinfo(ctx.author.id)
         return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
 
@@ -84,7 +83,7 @@ class RelativeDelta(discord.app_commands.Transformer, commands.Converter[relativ
         data = {k: int(v) for k, v in match.groupdict(default=0).items()}
         return relativedelta(**data)  # type: ignore # None of the regex groups currently fill the date fields.
 
-    async def convert(self, ctx: Context, argument: str) -> relativedelta:  # type: ignore # Custom context.
+    async def convert(self, ctx: beira.Context, argument: str) -> relativedelta:  # type: ignore # Custom context.
         try:
             return self.__do_conversion(argument)
         except ValueError as e:
@@ -126,7 +125,7 @@ class HumanTime:
         self._past: bool = self.dt < now
 
     @classmethod
-    async def convert(cls, ctx: Context, argument: str) -> Self:
+    async def convert(cls, ctx: beira.Context, argument: str) -> Self:
         tzinfo = await ctx.bot.get_user_tzinfo(ctx.author.id)
         return cls(argument, now=ctx.message.created_at, tzinfo=tzinfo)
 
@@ -194,7 +193,7 @@ class FriendlyTimeResult:
 
     async def ensure_constraints(
         self,
-        ctx: Context,
+        ctx: beira.Context,
         uft: UserFriendlyTime,
         now: datetime.datetime,
         remaining: str,
@@ -234,7 +233,7 @@ class UserFriendlyTime(commands.Converter[FriendlyTimeResult]):
         self.converter: commands.Converter[str] | None = converter
         self.default: Any = default
 
-    async def convert(self, ctx: Context, argument: str) -> FriendlyTimeResult:  # type: ignore # Custom context.  # noqa: PLR0915
+    async def convert(self, ctx: beira.Context, argument: str) -> FriendlyTimeResult:  # type: ignore # Custom context.  # noqa: PLR0915
         calendar = HumanTime.calendar
         regex = ShortTime.COMPILED
         now = ctx.message.created_at

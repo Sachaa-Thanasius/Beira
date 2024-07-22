@@ -1,4 +1,4 @@
-"""starkid.py: A cog for StarKid-related commands and functionality.
+"""A cog for StarKid-related commands and functionality.
 
 Shoutout to Theo and Ali for inspiration, as well as the whole StarKid server.
 """
@@ -22,7 +22,7 @@ class StarKidCog(commands.Cog, name="StarKid"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="starkid", id=1077980709802758215)
 
@@ -40,6 +40,4 @@ class StarKidCog(commands.Cog, name="StarKid"):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(StarKidCog(bot))

@@ -1,6 +1,4 @@
-"""fandom_wiki.py: A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki
-first.
-"""
+"""A cog for searching a fandom's Fandom wiki page. Starting with characters from the ACI100 wiki first."""
 
 import asyncio
 import logging
@@ -26,20 +24,21 @@ WIKIS_TO_LOAD = {
     "Team StarKid": "https://starkid.fandom.com",
 }
 
-AOC_EMOJI_URL, JARE_EMOJI_URL = EMOJI_URL.format(770620658501025812), EMOJI_URL.format(1061029880059400262)
+AOC_EMOJI_URL = EMOJI_URL.format(770620658501025812)
+JARE_EMOJI_URL = EMOJI_URL.format(1061029880059400262)
 
 
 class AoCWikiEmbed(discord.Embed):
-    """A subclass of `discord.Embed` that is set up for representing Ashes of Chaos wiki pages.
+    """A subclass of discord.Embed that is set up for representing Ashes of Chaos wiki pages.
 
     Parameters
     ----------
-    author_icon_url: `str`, optional
+    author_icon_url: str, optional
         The image url for the embed's author icon. Defaults to the AoC emoji url.
-    footer_icon_url: `str`, optional
+    footer_icon_url: str, optional
         The image url for the embed's footer icon. Defaults to the Mr. Jare emoji url.
     **kwargs
-        Keyword arguments for the normal initialization of an `DTEmbed`.
+        Keyword arguments for the normal initialization of discord.Embed.
     """
 
     aoc_wiki_url = "https://ashes-of-chaos.fandom.com"
@@ -173,27 +172,15 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
     """A cog for searching a fandom's Fandom wiki page.
 
     This can only handle characters from the ACI100 Ashes of Chaos wiki right now.
-
-    Parameters
-    ----------
-    bot: `beira.Beira`
-        The main Discord bot this cog is a part of.
-
-    Attributes
-    ----------
-    bot: `beira.Beira`
-        The main Discord bot this cog is a part of.
-    all_wikis: dict[`str`, dict[`str`, `str`]]
-        The dict containing information for various wikis.
     """
 
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot
-        self.all_wikis: dict[str, dict[str, str]] = {}
+        self.all_wikis: dict[str, dict[str, str]] = {}  # A dict containing info for various wikis.
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="fandom", id=1077980392742727791)
 
@@ -205,14 +192,6 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
         self.all_wikis.update(dict(zip(WIKIS_TO_LOAD.keys(), await asyncio.gather(*coros), strict=True)))
 
         LOGGER.info("All wiki names: %s", list(self.all_wikis.keys()))
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()
     @commands.cooldown(1, 5, commands.cooldowns.BucketType.user)
@@ -330,6 +309,4 @@ class FandomWikiSearchCog(commands.Cog, name="Fandom Wiki Search"):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(FandomWikiSearchCog(bot))

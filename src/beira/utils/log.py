@@ -16,7 +16,7 @@ __all__ = ("LoggingManager",)
 
 
 class RemoveNoise(logging.Filter):
-    """Filter for discord.state warnings about "referencing an unknown"."""
+    """Filter for "discord.state" to only let through warnings about "referencing an unknown"."""
 
     def __init__(self) -> None:
         super().__init__(name="discord.state")

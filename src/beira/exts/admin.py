@@ -1,5 +1,5 @@
-"""admin.py: A cog that implements commands for reloading and syncing extensions and other commands, at a guild owner
-or bot owner's behest.
+"""A cog that implements commands for reloading and syncing extensions and other commands, at a guild owner or bot
+owner's behest.
 """
 
 import logging
@@ -22,17 +22,9 @@ class AdminCog(commands.Cog, name="Administration"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="endless_gears", animated=True, id=1077981366911766549)
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()
     @commands.guild_only()
@@ -124,13 +116,7 @@ class AdminCog(commands.Cog, name="Administration"):
     @commands.guild_only()
     @commands.check_any(commands.is_owner(), beira.is_admin())
     async def prefixes_reset(self, ctx: beira.GuildContext) -> None:
-        """Remove all prefixes within this server for the bot to respond to.
-
-        Parameters
-        ----------
-        ctx: `beira.GuildContext`
-            The invocation context.
-        """
+        """Remove all prefixes within this server for the bot to respond to."""
 
         async with ctx.typing():
             # Update it in the database and the cache.
@@ -145,26 +131,24 @@ class AdminCog(commands.Cog, name="Administration"):
     @prefixes_remove.error
     @prefixes_reset.error
     async def prefixes_subcommands_error(self, ctx: beira.Context, error: commands.CommandError) -> None:
+        assert ctx.command
+
         # Extract the original error.
         error = getattr(error, "original", error)
         if ctx.interaction:
             error = getattr(error, "original", error)
 
-        assert ctx.command
         if isinstance(error, PostgresWarning | PostgresError):
             if ctx.command.name == "add":
                 await ctx.send("This prefix could not be added at this time.")
+                ctx.error_handled = True
             elif ctx.command.name == "remove":
                 await ctx.send("This prefix could not be removed at this time.")
+                ctx.error_handled = True
             elif ctx.command.name == "reset":
                 await ctx.send("This server's prefixes could not be reset.")
-            else:
-                LOGGER.exception("", exc_info=error)
-        else:
-            LOGGER.exception("", exc_info=error)
+                ctx.error_handled = True
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(AdminCog(bot))

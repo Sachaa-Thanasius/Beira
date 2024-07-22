@@ -1,4 +1,4 @@
-"""snowball.py: A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
+"""A snowball cog that implements a version of Discord's 2021 Snowball Bot game.
 
 Notes
 -----
@@ -52,7 +52,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="snowflake", animated=True, id=1077980648867901531)
 
@@ -64,13 +64,16 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         Parameters
         ----------
-        ctx: `beira.Context`
+        ctx: beira.Context
             The invocation context where the error happened.
-        error: `Exception`
+        error: Exception
             The error that happened.
         """
 
-        assert ctx.command is not None
+        assert ctx.command
+
+        if ctx.error_handled:
+            return
 
         # Extract the original error.
         error = getattr(error, "original", error)
@@ -83,15 +86,18 @@ class SnowballCog(commands.Cog, name="Snowball"):
             embed.title = "Missing Parameter!"
             embed.description = "This command needs a target."
             ctx.command.reset_cooldown(ctx)
+            ctx.error_handled = True
         elif isinstance(error, commands.CommandOnCooldown):
             embed.title = "Command on Cooldown!"
             embed.description = f"Please wait {error.retry_after:.2f} seconds before trying this command again."
+            ctx.error_handled = True
         elif isinstance(error, beira.CannotTargetSelf):
             embed.title = "No Targeting Yourself!"
             embed.description = (
                 "Are you a masochist or do you just like the taste of snow? Regardless, no hitting yourself in the "
                 "face."
             )
+            ctx.error_handled = True
         else:
             embed.title = f"{ctx.command.name}: Unknown Command Error"
             embed.description = (

@@ -102,9 +102,9 @@ class TimingCog(commands.Cog, name="Timing"):
 
         Parameters
         ----------
-        ctx: beira.Context
+        ctx: `beira.Context`
             The command invocation context.
-        tz: str
+        tz: `str`
             The timezone.
         """
 
@@ -168,8 +168,8 @@ class TimingCog(commands.Cog, name="Timing"):
         ][:25]
 
 
-# TODO: Complete and enable later.
 async def setup(bot: beira.Beira) -> None:
     """Connects cog to bot."""
 
+    # TODO: Complete and enable later.
     # await bot.add_cog(TimingCog(bot))  # noqa: ERA001

@@ -23,7 +23,7 @@ from exts import EXTENSIONS
 from .checks import is_blocked
 from .config import Config, load_config
 from .tree import HookableTree
-from .utils import LoggingManager, Pool_alias, conn_init
+from .utils import LoggingManager, Pool_alias, conn_init, copy_annotations
 
 
 LOGGER = logging.getLogger(__name__)
@@ -40,11 +40,18 @@ class Context(commands.Context["Beira"]):
 
     Attributes
     ----------
+    error_handled: bool, default=False
+        Whether an error handler has already taken care of an error.
     session
     db
     """
 
     voice_client: wavelink.Player | None  # type: ignore # Type lie for narrowing
+
+    @copy_annotations(commands.Context["Beira"].__init__)
+    def __init__(self, *args: object, **kwargs: object):
+        super().__init__(*args, **kwargs)
+        self.error_handled: bool = False
 
     @property
     def session(self) -> aiohttp.ClientSession:
@@ -193,12 +200,15 @@ class Beira(commands.Bot):
     async def on_command_error(self, context: Context, exception: commands.CommandError) -> None:  # type: ignore # Narrowing
         assert context.command  # Pre-condition for being here.
 
+        if context.error_handled:
+            return
+
         if isinstance(exception, commands.CommandNotFound):
             return
 
         exception = getattr(exception, "original", exception)
 
-        tb_text = "".join(traceback.format_exception(type(exception), exception, exception.__traceback__, chain=False))
+        tb_text = "".join(traceback.format_exception(exception, chain=False))
         embed = (
             discord.Embed(
                 title="Command Error",

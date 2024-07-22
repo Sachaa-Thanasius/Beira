@@ -1,6 +1,4 @@
-"""
-todo.py: A module/cog for handling todo lists made in Discord and stored in a database.
-"""
+"""A module/cog for handling todo lists made in Discord and stored in a database."""
 
 import datetime
 import logging
@@ -56,7 +54,7 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        conn: `asyncpg.Pool` | `asyncpg.Connection`
+        conn: asyncpg.Pool | asyncpg.Connection
             The connection/pool that will be used to make this database command.
         """
 
@@ -72,9 +70,9 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        conn: `asyncpg.Pool` | `asyncpg.Connection`
+        conn: asyncpg.Pool | asyncpg.Connection
             The connection/pool that will be used to make this database command.
-        updated_content: `str`
+        updated_content: str
             The new to-do content.
         """
 
@@ -87,7 +85,7 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        conn: `asyncpg.Pool` | `asyncpg.Connection`
+        conn: asyncpg.Pool | asyncpg.Connection
             The connection/pool that will be used to make this database command.
         """
 
@@ -98,12 +96,12 @@ class TodoItem(msgspec.Struct):
 
         Parameters
         ----------
-        to_be_deleted: `bool`, default=False
+        to_be_deleted: bool, default=False
             Whether the given to-do item is going to be deleted from the database. Defaults to False.
 
         Returns
         -------
-        `discord.Embed`
+        discord.Embed
             The formatted embed for the to-do item.
         """
 
@@ -137,16 +135,16 @@ class TodoModal(discord.ui.Modal, title="What do you want to do?"):
 
     Parameters
     ----------
-    existing_content: `str`, default=""
+    existing_content: str, default=""
         If working with an existing to-do item, this is the current content of that item to be edited. Defaults to an
         empty string.
 
     Attributes
     ----------
-    content: `discord.ui.TextInput`
+    content: discord.ui.TextInput
         The text box that will allow a user to enter or edit a to-do item's content. If editing, existing content is
         added as "default".
-    interaction: `discord.Interaction`
+    interaction: discord.Interaction
         The interaction of the user with the modal. Only populates on submission.
     """
 
@@ -187,10 +185,10 @@ class TodoCompleteButton(discord.ui.Button[TodoViewABC]):
 
     Parameters
     ----------
-    completed_at: `datetime.datetime`, optional
+    completed_at: datetime.datetime, optional
         An optional completion time for the to-do item in the parent view. Determines the button's initial look.
     **kwargs
-        Arbitrary keywords arguments primarily for `discord.ui.Button`. See that class for more information.
+        Arbitrary keywords arguments primarily for discord.ui.Button. See that class for more information.
     """
 
     def __init__(self, completed_at: datetime.datetime | None = None, **kwargs: Any) -> None:
@@ -234,7 +232,7 @@ class TodoEditButton(discord.ui.Button[TodoViewABC]):
     Parameters
     ----------
     **kwargs
-        Arbitrary keywords arguments primarily for `discord.ui.Button`. See that class for more information.
+        Arbitrary keywords arguments primarily for discord.ui.Button. See that class for more information.
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -274,7 +272,7 @@ class TodoDeleteButton(discord.ui.Button[TodoViewABC]):
     Parameters
     ----------
     **kwargs
-        Arbitrary keywords arguments primarily for `discord.ui.Button`. See that class for more information.
+        Arbitrary keywords arguments primarily for discord.ui.Button. See that class for more information.
     """
 
     def __init__(self, **kwargs: Any) -> None:
@@ -297,20 +295,20 @@ class TodoView(TodoViewABC):
 
     Parameters
     ----------
-    author_id: `int`
+    author_id: int
         The Discord ID of the user that triggered this view. No one else can use it.
-    todo_item: `TodoItem`
+    todo_item: TodoItem
         The to-do item that's being viewed and interacted with.
     **kwargs
-        Arbitrary keyword arguments, primarily for `discord.ui.View`. See that class for more information.
+        Arbitrary keyword arguments, primarily for discord.ui.View. See that class for more information.
 
     Attributes
     ----------
-    message: `discord.Message` | None
-        The message to which the view is attached to, allowing interaction without a `discord.Interaction`.
-    author: `discord.User` | `discord.Member`
+    message: discord.Message | None
+        The message to which the view is attached to, allowing interaction without a discord.Interaction.
+    author: discord.User | discord.Member
         The user that triggered this view. No one else can use it.
-    todo_item: `TodoItem` | None
+    todo_item: TodoItem | None
         The to-do item that's being viewed and interacted with. Might be set to None of the record is deleted.
     """
 
@@ -336,9 +334,9 @@ class TodoView(TodoViewABC):
 
         Parameters
         ----------
-        interaction: `beira.Interaction`
+        interaction: beira.Interaction
             The interaction that caused this state change.
-        updated_record: `TodoItem`
+        updated_record: TodoItem
             The new version of the to-do item for the view to display.
         """
 
@@ -359,9 +357,9 @@ class TodoListView(PaginatedEmbedView[TodoItem], TodoViewABC):
     Parameters
     ----------
     *args
-        Variable length argument list, primarily for `PaginatedEmbedView`.
+        Variable length argument list, primarily for PaginatedEmbedView.
     **kwargs
-        Arbitrary keyword arguments, primarily for `PaginatedEmbedView`. See that class for more information.
+        Arbitrary keyword arguments, primarily for PaginatedEmbedView. See that class for more information.
     """
 
     def __init__(self, *args: Any, **kwargs: Any) -> None:
@@ -414,9 +412,9 @@ class TodoListView(PaginatedEmbedView[TodoItem], TodoViewABC):
 
         Parameters
         ----------
-        interaction: `beira.Interaction`
+        interaction: beira.Interaction
             The interaction that caused this state change.
-        updated_record: `TodoItem`
+        updated_record: TodoItem
             The new version of the to-do item for the view to display.
         """
 
@@ -440,17 +438,9 @@ class TodoCog(commands.Cog, name="Todo"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{SPIRAL NOTE PAD}")
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_group()
     async def todo(self, ctx: beira.Context) -> None:

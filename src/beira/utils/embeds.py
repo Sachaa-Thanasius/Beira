@@ -10,7 +10,7 @@ import discord
 
 LOGGER = logging.getLogger(__name__)
 
-type AnyEmoji = discord.Emoji | discord.PartialEmoji | str
+type _AnyEmoji = discord.Emoji | discord.PartialEmoji | str
 
 
 __all__ = ("StatsEmbed",)
@@ -37,7 +37,7 @@ class StatsEmbed(discord.Embed):
         self,
         *,
         names: Iterable[object],
-        emojis: Iterable[AnyEmoji] = ("",),
+        emojis: Iterable[_AnyEmoji] = ("",),
         values: Iterable[object],
         inline: bool = False,
         emoji_as_header: bool = False,
@@ -76,7 +76,7 @@ class StatsEmbed(discord.Embed):
         self,
         *,
         ldbd_content: Iterable[Sequence[object]],
-        ldbd_emojis: Iterable[AnyEmoji] = ("",),
+        ldbd_emojis: Iterable[_AnyEmoji] = ("",),
         name_format: str = "| {}",
         value_format: str = "{}",
         inline: bool = False,

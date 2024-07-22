@@ -30,14 +30,6 @@ class TestCog(commands.Cog, name="_Test", command_attrs={"hidden": True}):
 
         return await self.bot.is_owner(ctx.author)
 
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
-
     @commands.command()
     async def test_pre(self, ctx: beira.Context) -> None:
         """Test prefix command."""
@@ -92,16 +84,15 @@ class TestCog(commands.Cog, name="_Test", command_attrs={"hidden": True}):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
+    dev_guild_ids = list(bot.config.discord.important_guilds["dev"])
+    cog = TestCog(bot)
 
     # Can't use the guilds kwarg in add_cog, as it doesn't currently work for hybrids.
     # Ref: https://github.com/Rapptz/discord.py/pull/9428
-    dev_guilds_objects = [discord.Object(id=guild_id) for guild_id in bot.config.discord.important_guilds["dev"]]
-    cog = TestCog(bot)
-    for cmd in cog.walk_app_commands():
-        if cmd._guild_ids is None:
-            cmd._guild_ids = [g.id for g in dev_guilds_objects]
+    for cmd in cog.get_app_commands():
+        if cmd._guild_ids is None:  # pyright: ignore [reportPrivateUsage]
+            cmd._guild_ids = dev_guild_ids  # pyright: ignore [reportPrivateUsage]
         else:
-            cmd._guild_ids.extend(g.id for g in dev_guilds_objects)
+            cmd._guild_ids.extend(dev_guild_ids)  # pyright: ignore [reportPrivateUsage]
 
     await bot.add_cog(cog)

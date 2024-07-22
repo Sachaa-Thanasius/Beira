@@ -1,4 +1,4 @@
-"""misc.py: A cog for testing slash and hybrid command functionality."""
+"""A cog for miscellaneous commands."""
 
 import asyncio
 import colorsys
@@ -133,20 +133,12 @@ class OtherCog(commands.Cog, name="Other"):
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:
-        """`discord.PartialEmoji`: A partial emoji representing this cog."""
+        """discord.PartialEmoji: A partial emoji representing this cog."""
 
         return discord.PartialEmoji(name="\N{WOMANS SANDAL}")
 
     async def cog_unload(self) -> None:
         self.bot.tree.remove_command(context_menu_meowify.name, type=context_menu_meowify.type)
-
-    async def cog_command_error(self, ctx: beira.Context, error: Exception) -> None:  # type: ignore # Narrowing
-        # Extract the original error.
-        error = getattr(error, "original", error)
-        if ctx.interaction:
-            error = getattr(error, "original", error)
-
-        LOGGER.exception("", exc_info=error)
 
     @commands.hybrid_command()
     async def hello(self, ctx: beira.Context) -> None:
@@ -214,13 +206,7 @@ class OtherCog(commands.Cog, name="Other"):
 
     @commands.hybrid_command(name="ping")
     async def ping_(self, ctx: beira.Context) -> None:
-        """Display the time necessary for the bot to communicate with Discord.
-
-        Parameters
-        ----------
-        ctx: `beira.Context`
-            The invocation context.
-        """
+        """Display the time necessary for the bot to communicate with Discord."""
 
         ws_ping = self.bot.latency * 1000
 
@@ -313,6 +299,4 @@ class OtherCog(commands.Cog, name="Other"):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(OtherCog(bot))
