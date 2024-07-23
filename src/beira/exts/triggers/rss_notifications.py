@@ -36,6 +36,7 @@ class RSSNotificationsCog(commands.Cog):
 
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot
+        self.records: list[NotificationRecord] = []
         # self.notification_check_loop.start()
 
     async def cog_unload(self) -> None:

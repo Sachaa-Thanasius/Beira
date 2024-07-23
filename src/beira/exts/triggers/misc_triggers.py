@@ -13,8 +13,6 @@ from discord.ext import commands
 import beira
 
 
-LOGGER = logging.getLogger(__name__)
-
 type ValidGuildChannel = (
     discord.VoiceChannel | discord.StageChannel | discord.ForumChannel | discord.TextChannel | discord.CategoryChannel
 )
@@ -48,6 +46,8 @@ PRIVATE_GUILD_WITH_9GAG_LINKS = 1097976528832307271
 LEAKY_INSTAGRAM_LINK_PATTERN = re.compile(r"(instagram\.com/.*?)&igsh.*==")
 LOSSY_TWITTER_LINK_PATTERN = re.compile(r"(?:http(?:s)?://|(?<!\S))(?:twitter|x)\.com/.+")
 LOSSY_9GAG_LINK_PATTERN = re.compile(r"(?:http(?:s)?://)9gag\.com/gag/[\S]*")
+
+LOGGER = logging.getLogger(__name__)
 
 
 class MiscTriggersCog(commands.Cog):

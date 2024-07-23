@@ -81,6 +81,7 @@ async def parse_bcp47_timezones(session: aiohttp.ClientSession) -> dict[str, str
 class TimingCog(commands.Cog, name="Timing"):
     def __init__(self, bot: beira.Beira) -> None:
         self.bot = bot
+        self.timezone_aliases: dict[str, str] = {}
 
     async def cog_load(self) -> None:
         self.timezone_aliases: dict[str, str] = await parse_bcp47_timezones(self.bot.web_session)
@@ -155,7 +156,9 @@ class TimingCog(commands.Cog, name="Timing"):
     @timezone_set.autocomplete("tz")
     @timezone_info.autocomplete("tz")
     async def timezone_autocomplete(
-        self, itx: beira.Interaction, current: str
+        self,
+        itx: beira.Interaction,
+        current: str,
     ) -> list[discord.app_commands.Choice[str]]:
         if not current:
             return [

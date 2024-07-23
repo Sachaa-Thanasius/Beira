@@ -10,19 +10,19 @@
 # endregion
 
 import asyncio
+import random
+import time
+from collections.abc import Callable
 from datetime import datetime, timedelta
-from itertools import count
-from types import TracebackType
 from typing import Protocol, Self
-from uuid import uuid4
 from warnings import warn
 from zoneinfo import ZoneInfo
 
 import asyncpg
-from msgspec import Struct, field
+from msgspec import Struct
 from msgspec.json import decode as json_decode, encode as json_encode
 
-from ..db import Connection_alias  # noqa: TID252
+from .db import Connection_alias  # noqa: TID252
 
 
 class BotLike(Protocol):
@@ -31,19 +31,70 @@ class BotLike(Protocol):
     async def wait_until_ready(self) -> None: ...
 
 
+def _uuid7gen() -> Callable[[], str]:
+    """UUIDv7 has been accepted as part of rfc9562
+
+    This is intended to be a compliant implementation, but I am not advertising it
+    in public, exported APIs as such *yet*
+
+    In particular, this is:
+    UUIDv7 as described in rfc9562 section 5.7 utilizing the
+    optional sub-millisecond timestamp fraction described in section 6.2 method 3
+    """
+    _last_timestamp: int | None = None
+
+    def uuid7() -> str:
+        """This is unique identifer generator
+
+        This was chosen to increase performance of indexing and
+        to pick something likely to get specific database support
+        for this to be a portably efficient choice should someone
+        decide to have this be backed by something other than sqlite
+
+        This should not be relied on as always generating valid UUIDs of
+        any version or variant at this time. The current intent is that
+        this is a UUIDv7 in str form, but this should not be relied
+        on outside of this library and may be changed in the future for
+        better performance within this library.
+        """
+        nonlocal _last_timestamp
+        nanoseconds = time.time_ns()
+        if _last_timestamp is not None and nanoseconds <= _last_timestamp:
+            nanoseconds = _last_timestamp + 1
+        _last_timestamp = nanoseconds
+        timestamp_s, timestamp_ns = divmod(nanoseconds, 10**9)
+        subsec_a = timestamp_ns >> 18
+        subsec_b = (timestamp_ns >> 6) & 0x0FFF
+        subsec_seq_node = (timestamp_ns & 0x3F) << 56
+        subsec_seq_node += random.SystemRandom().getrandbits(56)
+        uuid_int = (timestamp_s & 0x0FFFFFFFFF) << 92
+        uuid_int += subsec_a << 80
+        uuid_int += subsec_b << 64
+        uuid_int += subsec_seq_node
+        uuid_int &= ~(0xC000 << 48)
+        uuid_int |= 0x8000 << 48
+        uuid_int &= ~(0xF000 << 64)
+        uuid_int |= 7 << 76
+        return f"{uuid_int:032x}"
+
+    return uuid7
+
+
+_uuid7 = _uuid7gen()
+
 __all__ = ("DiscordBotScheduler", "ScheduledDispatch", "Scheduler")
 
 SQLROW_TYPE = tuple[str, str, str, str, int | None, int | None, bytes | None]
 DATE_FMT = r"%Y-%m-%d %H:%M"
 
-_c = count()
 
+# Requires a postgres extension: https://github.com/fboulnois/pg_uuidv7
 INITIALIZATION_STATEMENTS = """
 CREATE TABLE IF NOT EXISTS scheduled_dispatches (
-    task_id             UUID                        PRIMARY KEY     DEFAULT gen_random_uuid(),
-    dispatch_name       TEXT                        NOT NULL,
-    dispatch_time       TIMESTAMP WITH TIME ZONE    NOT NULL,
-    dispatch_zone       TEXT                        NOT NULL,
+    task_id             UUID        PRIMARY KEY     DEFAULT uuid_generate_v7(),
+    dispatch_name       TEXT        NOT NULL,
+    dispatch_time       TIMESTAMP   NOT NULL,
+    dispatch_zone       TEXT        NOT NULL,
     associated_guild    BIGINT,
     associated_user     BIGINT,
     dispatch_extra      JSONB
@@ -161,23 +212,22 @@ class ScheduledDispatch(Struct, frozen=True, gc=False):
     associated_guild: int | None
     associated_user: int | None
     dispatch_extra: bytes | None
-    _count: int = field(default_factory=lambda: next(_c))
 
     def __eq__(self, other: object) -> bool:
         return self is other
 
-    def __lt__(self, other: object) -> bool:
-        if isinstance(other, type(self)):
-            return (self.get_arrow_time(), self._count) < (other.get_arrow_time(), other._count)
+    def __lt__(self, other: Self) -> bool:
+        if type(self) is type(other):
+            return (self.get_arrow_time(), self.task_id) < (other.get_arrow_time(), self.task_id)
         return False
 
-    def __gt__(self, other: object) -> bool:
-        if isinstance(other, type(self)):
-            return (self.get_arrow_time(), self._count) > (other.get_arrow_time(), other._count)
+    def __gt__(self, other: Self) -> bool:
+        if type(self) is type(other):
+            return (self.get_arrow_time(), self.task_id) > (other.get_arrow_time(), self.task_id)
         return False
 
     @classmethod
-    def from_pg_row(cls: type[Self], row: asyncpg.Record) -> Self:
+    def from_pg_row(cls, row: asyncpg.Record) -> Self:
         tid, name, time, zone, guild, user, extra_bytes = row
         return cls(tid, name, time, zone, guild, user, extra_bytes)
 
@@ -196,7 +246,7 @@ class ScheduledDispatch(Struct, frozen=True, gc=False):
         if extra is not None:
             f = json_encode(extra)
             packed = f
-        return cls(uuid4().hex, name, time, zone, guild, user, packed)
+        return cls(_uuid7(), name, time, zone, guild, user, packed)
 
     def to_pg_row(self) -> SQLROW_TYPE:
         return (
@@ -213,7 +263,7 @@ class ScheduledDispatch(Struct, frozen=True, gc=False):
         return datetime.strptime(self.dispatch_time, DATE_FMT).replace(tzinfo=ZoneInfo(self.dispatch_zone))
 
     def unpack_extra(self) -> object | None:
-        if self.dispatch_extra:
+        if self.dispatch_extra is not None:
             return json_decode(self.dispatch_extra, strict=True)
         return None
 
@@ -316,7 +366,7 @@ class Scheduler:
                 for s in scheduled:
                     await self._queue.put(s)
 
-    async def __aexit__(self, exc_type: type[BaseException], exc_value: BaseException, traceback: TracebackType):
+    async def __aexit__(self, *exc_info: object):
         if not self._closing:
             msg = "Exiting without use of stop_gracefully may cause loss of tasks"
             warn(msg, stacklevel=2)

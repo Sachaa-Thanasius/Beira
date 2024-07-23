@@ -1,10 +1,15 @@
 """Custom errors used by the bot."""
 
+from collections.abc import Callable, Coroutine
+from typing import Any
+
+import discord
 from discord import app_commands
 from discord.ext import commands
 
 
-AppCheckFunc = app_commands.commands.Check
+# Copied from discord.app_commands.commands.Check.
+type AppCheckFunc = Callable[[discord.Interaction[Any]], bool | Coroutine[Any, Any, bool]]
 
 
 __all__ = (
@@ -21,14 +26,14 @@ __all__ = (
 class CannotTargetSelf(commands.BadArgument):
     """Exception raised when the member provided as a target was also the command invoker.
 
-    This inherits from :exc:`commands.BadArgument`.
+    This inherits from commands.BadArgument.
     """
 
 
 class NotOwnerOrFriend(commands.CheckFailure):
     """Exception raised when the message author is not the owner of the bot or on the special friends list.
 
-    This inherits from :exc:`CheckFailure`.
+    This inherits from CheckFailure.
     """
 
     def __init__(self, message: str | None = None) -> None:
@@ -38,7 +43,7 @@ class NotOwnerOrFriend(commands.CheckFailure):
 class NotAdmin(commands.CheckFailure):
     """Exception raised when the message author is not an administrator of the guild in the current context.
 
-    This inherits from :exc:`commands.CheckFailure`.
+    This inherits from commands.CheckFailure.
     """
 
     def __init__(self, message: str | None = None) -> None:
@@ -48,7 +53,7 @@ class NotAdmin(commands.CheckFailure):
 class NotInBotVoiceChannel(commands.CheckFailure):
     """Exception raised when the message author is not in the same voice channel as the bot in a context's guild.
 
-    This inherits from :exc:`commands.CheckFailure`.
+    This inherits from commands.CheckFailure.
     """
 
     def __init__(self, message: str | None = None) -> None:
@@ -58,7 +63,7 @@ class NotInBotVoiceChannel(commands.CheckFailure):
 class UserIsBlocked(commands.CheckFailure):
     """Exception raised when the message author is blocked from using the bot.
 
-    This inherits from :exc:`commands.CheckFailure`.
+    This inherits from commands.CheckFailure.
     """
 
     def __init__(self, message: str | None = None) -> None:
@@ -68,7 +73,7 @@ class UserIsBlocked(commands.CheckFailure):
 class GuildIsBlocked(commands.CheckFailure):
     """Exception raised when the message guild is blocked from using the bot.
 
-    This inherits from :exc:`commands.CheckFailure`.
+    This inherits from commands.CheckFailure.
     """
 
     def __init__(self, message: str | None = None) -> None:
@@ -76,15 +81,15 @@ class GuildIsBlocked(commands.CheckFailure):
 
 
 class CheckAnyFailure(app_commands.CheckFailure):
-    """Exception raised when all predicates in :func:`check_any` fail.
+    """Exception raised when all predicates in `check_any` fail.
 
-    This inherits from :exc:`app_commands.CheckFailure`.
+    This inherits from app_commands.CheckFailure.
 
     Attributes
-    ------------
-    errors: list[`app_commands.CheckFailure`]
+    ----------
+    errors: list[app_commands.CheckFailure]
         A list of errors that were caught during execution.
-    checks: List[Callable[[`discord.Interaction`], `bool`]]
+    checks: List[Callable[[discord.Interaction], bool]]
         A list of check predicates that failed.
     """
 

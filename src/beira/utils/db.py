@@ -7,11 +7,7 @@ from asyncpg import Connection, Pool, Record
 from asyncpg.pool import PoolConnectionProxy
 
 
-__all__ = (
-    "Connection_alias",
-    "Pool_alias",
-    "conn_init",
-)
+__all__ = ("Connection_alias", "Pool_alias", "conn_init")
 
 if TYPE_CHECKING:
     type Connection_alias = Connection[Record] | PoolConnectionProxy[Record]

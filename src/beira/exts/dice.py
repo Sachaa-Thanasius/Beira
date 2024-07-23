@@ -120,7 +120,7 @@ def roll_custom_dice_expression(expression: str) -> tuple[str, int]:
                 components.append(sum(rolls))
             else:
                 return f"(Invalid expression; expected number or dice expression, not {part!r})", 0
-        else:  # noqa: PLR5501
+        else:
             if part == "-":
                 operations.append(operator.sub)
             elif part == "+":

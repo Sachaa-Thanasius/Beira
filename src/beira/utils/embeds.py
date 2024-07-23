@@ -1,14 +1,11 @@
 """Embed-related helpers, e.g. a class for displaying user-specific statistics separated into fields."""
 
 import itertools
-import logging
 from collections.abc import Iterable, Sequence
 from typing import Self
 
 import discord
 
-
-LOGGER = logging.getLogger(__name__)
 
 type _AnyEmoji = discord.Emoji | discord.PartialEmoji | str
 

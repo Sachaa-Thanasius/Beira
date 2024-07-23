@@ -90,14 +90,13 @@ class Beira(commands.Bot):
         Arbitrary keyword arguments, primarily for `commands.Bot`. See that class for more information.
     """
 
-    logging_manager: LoggingManager
-
     def __init__(
         self,
         *args: Any,
         config: Config,
         db_pool: Pool_alias,
         web_session: aiohttp.ClientSession,
+        logging_manager: LoggingManager,
         initial_extensions: list[str] | None = None,
         **kwargs: Any,
     ) -> None:
@@ -105,6 +104,7 @@ class Beira(commands.Bot):
         self.config = config
         self.db_pool = db_pool
         self.web_session = web_session
+        self.logging_manager = logging_manager
         self.initial_extensions: list[str] = initial_extensions or []
 
         # Various webfiction-related clients.
@@ -160,7 +160,11 @@ class Beira(commands.Bot):
 
     @overload
     async def get_context[ContextT: commands.Context[Any]](
-        self, origin: discord.Message | discord.Interaction, /, *, cls: type[ContextT]
+        self,
+        origin: discord.Message | discord.Interaction,
+        /,
+        *,
+        cls: type[ContextT],
     ) -> ContextT: ...
 
     async def get_context[ContextT: commands.Context[Any]](
@@ -353,10 +357,10 @@ async def main() -> None:
             config=config,
             db_pool=pool,
             web_session=web_session,
+            logging_manager=logging_manager,
             intents=intents,
             tree_cls=HookableTree,
         ) as bot:
-            bot.logging_manager = logging_manager
             await bot.start(config.discord.token)
 
     # Needed for graceful exit?

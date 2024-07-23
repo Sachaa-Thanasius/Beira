@@ -30,28 +30,28 @@ class LoggingManager:
 
     Parameters
     ----------
-    stream: `bool`, default=True
+    stream: bool, default=True
         Whether the logs should be output to a stream. Defaults to True.
 
     Attributes
     ----------
-    log: `logging.Logger`
+    log: logging.Logger
         The primary bot handler.
-    max_bytes: `int`
+    max_bytes: int
         The maximum size of each log file.
-    logging_path: `Path`
+    logging_path: Path
         A path to the directory for all log files.
-    stream: `bool`
+    stream: bool
         A boolean indicating whether the logs should be output to a stream.
-    log_queue: `asyncio.Queue[logging.LogRecord]`
+    log_queue: asyncio.Queue[logging.LogRecord]
         An asyncio queue with logs to send to a logging webhook.
     """
 
     def __init__(self, *, stream: bool = True) -> None:
         self.log = logging.getLogger()
         self.max_bytes = 32 * 1024 * 1024  # 32MiB
-        self.logging_path = Path("./logs/")
-        self.logging_path.mkdir(exist_ok=True)
+        self.logs_path = Path("./logs/")
+        self.logs_path.mkdir(exist_ok=True)
         self.stream = stream
         self.log_queue: asyncio.Queue[logging.LogRecord] = asyncio.Queue()
 
@@ -61,15 +61,15 @@ class LoggingManager:
     def __enter__(self) -> Self:
         """Set and customize loggers."""
 
-        logging.getLogger("wavelink").setLevel(logging.INFO)
         logging.getLogger("discord").setLevel(logging.INFO)
         logging.getLogger("discord.http").setLevel(logging.INFO)
         logging.getLogger("discord.state").addFilter(RemoveNoise())
+        logging.getLogger("wavelink").setLevel(logging.INFO)
         self.log.setLevel(logging.INFO)
 
         # Add a file handler.
         handler = RotatingFileHandler(
-            filename=self.logging_path / "Beira.log",
+            filename=self.logs_path / "Beira.log",
             encoding="utf-8",
             mode="w",
             maxBytes=self.max_bytes,

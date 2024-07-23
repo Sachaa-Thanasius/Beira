@@ -102,6 +102,7 @@ class PatreonCheckCog(commands.Cog, name="Patreon"):
         self.bot = bot
         self.access_token = bot.config.patreon.creator_access_token
         self.patrons_on_discord: dict[str, list[discord.Member]] = {}
+        self.patreon_tiers_info: list[PatreonTierInfo] = []
 
     @property
     def cog_emoji(self) -> discord.PartialEmoji:

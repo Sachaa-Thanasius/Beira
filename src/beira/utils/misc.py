@@ -18,12 +18,13 @@ class catchtime:
 
     Parameters
     ----------
-    logger: `logging.Logger`, optional
-        The logging channel to send the time to, if relevant. Optional.
+    logger: logging.Logger, optional
+        The logging channel to send the time to, if provided. Optional.
     """
 
     def __init__(self, logger: logging.Logger | None = None):
         self.logger = logger
+        self.elapsed = 0.0
 
     def __enter__(self):
         self.elapsed = time.perf_counter()

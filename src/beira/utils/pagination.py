@@ -52,9 +52,9 @@ class OwnedView(discord.ui.View):
 
     Parameters
     ----------
-    author: `int`
+    author: int
         The Discord ID of the user that triggered this view. No one else can use it.
-    timeout: `float` | None, optional
+    timeout: float | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
     """
@@ -77,11 +77,11 @@ class PageSeekModal(discord.ui.Modal, title="Page Jump"):
 
     Attributes
     ----------
-    input_page_num: `TextInput`
+    input_page_num: TextInput
         A UI text input element to allow users to enter a page number.
-    parent: `PaginatedEmbedView`
+    parent: PaginatedEmbedView
         The paginated view that this modal was called from.
-    interaction: `discord.Interaction`
+    interaction: discord.Interaction
         The interaction of the user with the modal. Only populates on submission.
     """
 
@@ -115,27 +115,27 @@ class PaginatedEmbedView[_LT](abc.ABC, OwnedView):
 
     Parameters
     ----------
-    author_id: `int`
+    author_id: int
         The Discord ID of the user that triggered this view. No one else can use it.
     pages_content: list[Any]
         The content for every possible page.
-    per: `int`
+    per: int
         The number of entries to be displayed per page.
-    timeout: `float`, optional
+    timeout: float, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
 
     Attributes
     ----------
-    message: `discord.Message`
-        The message to which the view is attached to, allowing interaction without a `discord.Interaction`.
-    per_page: `int`
+    message: discord.Message
+        The message to which the view is attached to, allowing interaction without a discord.Interaction.
+    per_page: int
         The number of entries to be displayed per page.
     pages: list[Any]
         A list of content for pages, split according to how much content is wanted per page.
-    page_index: `int`
+    page_index: int
         The index for the current page.
-    page_modal_strings: tuple[`str`, ...], default=()
+    page_modal_strings: tuple[str, ...], default=()
         Tuple of strings to modify the page seek modal with if necessary. Empty by default.
     total_pages
     """
@@ -155,7 +155,7 @@ class PaginatedEmbedView[_LT](abc.ABC, OwnedView):
 
     @property
     def total_pages(self) -> int:
-        """``int`: The total number of pages."""
+        """int: The total number of pages."""
 
         return len(self.pages)
 
@@ -291,21 +291,21 @@ class PaginatedSelectView[_LT](abc.ABC, OwnedView):
 
     Parameters
     ----------
-    author_id: `int`
+    author_id: int
         The Discord ID of the user that triggered this view. No one else can use it.
     pages_content: Sequence[Any]
         The content for every possible page.
-    timeout: `float` | None, optional
+    timeout: float | None, optional
         Timeout in seconds from last interaction with the UI before no longer accepting input.
         If ``None`` then there is no timeout.
 
     Attributes
     ----------
-    message: `discord.Message`
-        The message to which the view is attached to, allowing interaction without a `discord.Interaction`.
+    message: discord.Message
+        The message to which the view is attached to, allowing interaction without a discord.Interaction.
     pages: list[Any]
         A list of content for pages.
-    page_index: `int`
+    page_index: int
         The index for the current page.
     total_pages
     """
@@ -324,7 +324,7 @@ class PaginatedSelectView[_LT](abc.ABC, OwnedView):
 
     @property
     def total_pages(self) -> int:
-        """``int`: The total number of pages."""
+        """int: The total number of pages."""
 
         return len(self.pages)
 

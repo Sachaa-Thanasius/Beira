@@ -12,7 +12,7 @@ from .errors import CheckAnyFailure, GuildIsBlocked, NotAdmin, NotInBotVoiceChan
 
 
 if TYPE_CHECKING:
-    from discord.ext.commands._types import Check  # type: ignore [reportMissingTypeStubs]
+    from discord.ext.commands._types import Check  # pyright: ignore [reportMissingTypeStubs]
 
 
 class AppCheck(Protocol):

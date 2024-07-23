@@ -1,7 +1,6 @@
 """For loading configuration information, such as api keys and tokens, default prefixes, etc."""
 
 import pathlib
-from typing import Any
 
 import msgspec
 
@@ -9,36 +8,26 @@ import msgspec
 __all__ = ("Config", "load_config")
 
 
-class Base(msgspec.Struct):
-    """A base class to hold some common functions."""
-
-    def to_dict(self) -> dict[str, Any]:
-        return msgspec.structs.asdict(self)
-
-    def to_tuple(self) -> tuple[Any, ...]:
-        return msgspec.structs.astuple(self)
-
-
-class UserPassConfig(Base):
+class UserPassConfig(msgspec.Struct):
     user: str
     password: str
 
 
-class KeyConfig(Base):
+class KeyConfig(msgspec.Struct):
     key: str
 
 
-class SpotifyConfig(Base):
+class SpotifyConfig(msgspec.Struct):
     client_id: str
     client_secret: str
 
 
-class LavalinkConfig(Base):
+class LavalinkConfig(msgspec.Struct):
     uri: str
     password: str
 
 
-class PatreonConfig(Base):
+class PatreonConfig(msgspec.Struct):
     client_id: str
     client_secret: str
     creator_access_token: str
@@ -46,11 +35,11 @@ class PatreonConfig(Base):
     patreon_guild_id: int
 
 
-class DatabaseConfig(Base):
+class DatabaseConfig(msgspec.Struct):
     pg_url: str
 
 
-class DiscordConfig(Base):
+class DiscordConfig(msgspec.Struct):
     token: str
     default_prefix: str
     logging_webhook: str
@@ -59,7 +48,7 @@ class DiscordConfig(Base):
     webhooks: list[str] = msgspec.field(default_factory=list)
 
 
-class Config(Base):
+class Config(msgspec.Struct):
     discord: DiscordConfig
     database: DatabaseConfig
     patreon: PatreonConfig
@@ -72,10 +61,12 @@ class Config(Base):
 
 
 def decode(data: bytes | str) -> Config:
-    """Decode a TOMl file with the `Config` schema."""
+    """Decode a TOML file with the Config schema."""
 
     return msgspec.toml.decode(data, type=Config)
 
 
 def load_config() -> Config:
+    """Load the contents of a "config.toml" file into a Config struct."""
+
     return decode(pathlib.Path("config.toml").read_text(encoding="utf-8"))

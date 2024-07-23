@@ -14,6 +14,7 @@ if TYPE_CHECKING:
     from discord.types.interactions import ApplicationCommandInteractionData
     from typing_extensions import TypeVar
 
+    # Copied from discord._types.ClientT.
     ClientT_co = TypeVar("ClientT_co", bound=Client, covariant=True, default=Client)
 else:
     from typing import TypeVar
@@ -61,7 +62,7 @@ def before_app_invoke[GroupT: (Group | commands.Cog), **P, T](
         raise TypeError(msg)
 
     def decorator(inner: Command[GroupT, P, T]) -> Command[GroupT, P, T]:
-        inner._before_invoke = coro  # type: ignore # Runtime attribute assignment.
+        inner._before_invoke = coro  # pyright: ignore # Runtime attribute assignment.
         return inner
 
     return decorator
@@ -96,7 +97,7 @@ def after_app_invoke[GroupT: (Group | commands.Cog), **P, T](
         raise TypeError(msg)
 
     def decorator(inner: Command[GroupT, P, T]) -> Command[GroupT, P, T]:
-        inner._after_invoke = coro  # type: ignore # Runtime attribute assignment.
+        inner._after_invoke = coro  # pyright: ignore # Runtime attribute assignment.
         return inner
 
     return decorator
@@ -135,12 +136,11 @@ class HookableTree(CommandTree[ClientT_co]):
 
     async def _call(self, interaction: Interaction[ClientT_co]) -> None:
         # ---- Copy the original logic but add hook checks/calls near the end.
-
         if not await self.interaction_check(interaction):
             interaction.command_failed = True
             return
 
-        data: ApplicationCommandInteractionData = interaction.data  # type: ignore
+        data: ApplicationCommandInteractionData = interaction.data  # pyright: ignore [reportAssignmentType]
         type_ = data.get("type", 1)
         if type_ != 1:
             # Context menu command...
@@ -150,14 +150,14 @@ class HookableTree(CommandTree[ClientT_co]):
         command, options = self._get_app_command_options(data)
 
         # Pre-fill the cached slot to prevent re-computation
-        interaction._cs_command = command  # type: ignore # Protected
+        interaction._cs_command = command  # pyright: ignore [reportPrivateUsage]
 
         # At this point options refers to the arguments of the command
         # and command refers to the class type we care about
         namespace = Namespace(interaction, data.get("resolved", {}), options)
 
         # Same pre-fill as above
-        interaction._cs_namespace = namespace  # type: ignore # Protected
+        interaction._cs_namespace = namespace  # pyright: ignore [reportPrivateUsage]
 
         # Auto complete handles the namespace differently... so at this point this is where we decide where that is.
         if interaction.type is discord.enums.InteractionType.autocomplete:
@@ -167,10 +167,10 @@ class HookableTree(CommandTree[ClientT_co]):
                 raise AppCommandError(msg)
 
             try:
-                await command._invoke_autocomplete(interaction, focused, namespace)  # type: ignore # Protected
-            except Exception:  # noqa: S110, BLE001
+                await command._invoke_autocomplete(interaction, focused, namespace)  # pyright: ignore [reportPrivateUsage]
+            except Exception:
                 # Suppress exception since it can't be handled anyway.
-                pass
+                LOGGER.exception("Ignoring exception in autocomplete for %r", command.qualified_name)
 
             return
 
@@ -178,29 +178,25 @@ class HookableTree(CommandTree[ClientT_co]):
         # Pre-command hooks are run before actual command-specific checks, unlike prefix commands.
         # It doesn't really make sense, but the only solution seems to be monkey-patching
         # Command._invoke_with_namespace, which doesn't seem feasible.
-        before_invoke = getattr(command, "_before_invoke", None)
-        if before_invoke:
-            instance = getattr(before_invoke, "__self__", None)
-            if instance:
+        if before_invoke := getattr(command, "_before_invoke", None):
+            if instance := getattr(before_invoke, "__self__", None):
                 await before_invoke(instance, interaction)
             else:
                 await before_invoke(interaction)
 
         try:
-            await command._invoke_with_namespace(interaction, namespace)  # type: ignore # Protected
+            await command._invoke_with_namespace(interaction, namespace)  # pyright: ignore [reportPrivateUsage]
         except AppCommandError as e:
             interaction.command_failed = True
-            await command._invoke_error_handlers(interaction, e)  # type: ignore # Protected
+            await command._invoke_error_handlers(interaction, e)  # pyright: ignore [reportPrivateUsage]
             await self.on_error(interaction, e)
         else:
             if not interaction.command_failed:
                 self.client.dispatch("app_command_completion", interaction, command)
         finally:
             # -- Look for a post-command hook.
-            after_invoke = getattr(command, "_after_invoke", None)
-            if after_invoke:
-                instance = getattr(after_invoke, "__self__", None)
-                if instance:
+            if after_invoke := getattr(command, "_after_invoke", None):
+                if instance := getattr(after_invoke, "__self__", None):
                     await after_invoke(instance, interaction)
                 else:
                     await after_invoke(interaction)

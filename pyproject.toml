@@ -1,6 +1,6 @@
 [project]
 name = "Beira"
-version = "2024.06.22"
+version = "2024.07.22"
 description = "An personal Discord bot made in Python."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -13,7 +13,7 @@ authors = [
 Homepage = "https://github.com/Sachaa-Thanasius/Beira"
 
 [tool.ruff]
-include = ["src/beira/**/*.py", "misc/**/*.py"]
+include = ["src/**/*.py", "misc/**/*.py"]
 line-length = 120
 target-version = "py312"
 
@@ -56,10 +56,11 @@ ignore = [
     "SIM105",  # Suppressable exception. contextlib.suppress is a stylistic choice with overhead.
     "ANN101",  # Type of Self for self is usually implicit.
     "ANN102",  # Type of type[Self] for cls is usually implicit.
-    "ANN204",  # Special method return types are usually implicit or known by type checkers.
+    "ANN204",  # Return types for magic methods are usually inferred or known.
     "ANN401",  # Any is necessary sometimes.
     "PT001",   # pytest recommends against empty parentheses on pytest.fixture.
     "UP038",   # isinstance performs better with tuples than unions.
+    "RUF001",  # Allow ambiguous characters. 
     # == Recommended ignores by ruff when using ruff format.
     "E111",
     "E114",
@@ -72,11 +73,8 @@ ignore = [
     "ISC001",
     "ISC002",
     # == Project-specific ignores.
-    "S311",    # No need for cryptographically secure number generation in this use case; it's just dice rolls.
-    "PLR0911", # Unlimited returns.
-    "PLR0912", # Unlimited branches.
-    "PLR0913", # Unlimited arguments.
-    "PYI036",  # Bug with annotations for __(a)exit__ if a placeholder for a needed type exists in the else clause of an `if TYPE_CHECKING` block.
+    "S311", # No need for cryptographically secure number generation in this use case; it's just dice rolls.
+    # "PLR",  # Allow complexity.
 ]
 unfixable = [
     "ERA", # Don't want erroneous deletion of comments.
@@ -94,11 +92,14 @@ lines-after-imports = 2
 combine-as-imports = true
 
 [tool.pyright]
-include = ["src/beira"]
+include = ["src"]
 pythonVersion = "3.12"
 typeCheckingMode = "strict"
 
-# reportImportCycles = "warning"
+reportCallInDefaultInitializer = "warning"
+reportImportCycles = "warning"
 reportPropertyTypeMismatch = "warning"
+reportShadowedImports = "error"
+reportUninitializedInstanceVariable = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"
-enableExperimentalFeatures = true
+
