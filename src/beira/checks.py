@@ -115,9 +115,9 @@ def is_blocked() -> "Check[Any]":
 
     async def predicate(ctx: Context) -> bool:
         if not (await ctx.bot.is_owner(ctx.author)):
-            if ctx.author.id in ctx.bot.blocked_entities_cache["users"]:
+            if ctx.author.id in ctx.bot.blocked_users:
                 raise UserIsBlocked
-            if ctx.guild and (ctx.guild.id in ctx.bot.blocked_entities_cache["guilds"]):
+            if ctx.guild and ctx.guild.id in ctx.bot.blocked_guilds:
                 raise GuildIsBlocked
         return True
 

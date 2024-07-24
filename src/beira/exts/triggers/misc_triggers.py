@@ -13,6 +13,8 @@ from discord.ext import commands
 import beira
 
 
+LOGGER = logging.getLogger(__name__)
+
 type ValidGuildChannel = (
     discord.VoiceChannel | discord.StageChannel | discord.ForumChannel | discord.TextChannel | discord.CategoryChannel
 )
@@ -46,8 +48,6 @@ PRIVATE_GUILD_WITH_9GAG_LINKS = 1097976528832307271
 LEAKY_INSTAGRAM_LINK_PATTERN = re.compile(r"(instagram\.com/.*?)&igsh.*==")
 LOSSY_TWITTER_LINK_PATTERN = re.compile(r"(?:http(?:s)?://|(?<!\S))(?:twitter|x)\.com/.+")
 LOSSY_9GAG_LINK_PATTERN = re.compile(r"(?:http(?:s)?://)9gag\.com/gag/[\S]*")
-
-LOGGER = logging.getLogger(__name__)
 
 
 class MiscTriggersCog(commands.Cog):
@@ -96,7 +96,7 @@ class MiscTriggersCog(commands.Cog):
             if after.joined_at is not None:
                 # Technically, at 8 points every two minutes, it's possible to hit the lowest relevant leveled role in
                 # 20h 50m on ACI, so 21 hours will be the limit.
-                recently_rejoined = (discord.utils.utcnow() - after.joined_at).total_seconds() < 75600
+                recently_rejoined = (discord.utils.utcnow() - after.joined_at).total_seconds() < (60 * 24 * 21)
             else:
                 recently_rejoined = False
 

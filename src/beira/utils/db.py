@@ -2,9 +2,9 @@
 
 from typing import TYPE_CHECKING
 
-import msgspec
 from asyncpg import Connection, Pool, Record
 from asyncpg.pool import PoolConnectionProxy
+from msgspec.json import decode as json_decode, encode as json_encode
 
 
 __all__ = ("Connection_alias", "Pool_alias", "conn_init")
@@ -20,9 +20,4 @@ else:
 async def conn_init(connection: Connection_alias) -> None:
     """Sets up codecs for Postgres connection."""
 
-    await connection.set_type_codec(
-        "jsonb",
-        schema="pg_catalog",
-        encoder=msgspec.json.encode,
-        decoder=msgspec.json.decode,
-    )
+    await connection.set_type_codec("jsonb", schema="pg_catalog", encoder=json_encode, decoder=json_decode)

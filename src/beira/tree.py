@@ -22,13 +22,14 @@ else:
     ClientT_co = TypeVar("ClientT_co", bound=Client, covariant=True)
 
 
+LOGGER = logging.getLogger(__name__)
+
 type Coro[T] = Coroutine[Any, Any, T]
 type CoroFunc = Callable[..., Coro[Any]]
 type AppHook[GroupT: (Group | commands.Cog)] = (
     Callable[[GroupT, Interaction[Any]], Coro[Any]] | Callable[[Interaction[Any]], Coro[Any]]
 )
 
-LOGGER = logging.getLogger(__name__)
 
 __all__ = ("before_app_invoke", "after_app_invoke", "HookableTree")
 

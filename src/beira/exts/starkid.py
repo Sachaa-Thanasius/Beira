@@ -3,15 +3,10 @@
 Shoutout to Theo and Ali for inspiration, as well as the whole StarKid server.
 """
 
-import logging
-
 import discord
 from discord.ext import commands
 
 import beira
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 class StarKidCog(commands.Cog, name="StarKid"):

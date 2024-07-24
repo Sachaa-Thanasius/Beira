@@ -73,8 +73,10 @@ ignore = [
     "ISC001",
     "ISC002",
     # == Project-specific ignores.
-    "S311", # No need for cryptographically secure number generation in this use case; it's just dice rolls.
-    # "PLR",  # Allow complexity.
+    "PLR0912", # Allow more branches
+    "PLR0913", # Allow more parameters
+    "S311",    # No need for cryptographically secure number generation in this use case; it's just dice rolls.
+
 ]
 unfixable = [
     "ERA", # Don't want erroneous deletion of comments.
@@ -100,6 +102,5 @@ reportCallInDefaultInitializer = "warning"
 reportImportCycles = "warning"
 reportPropertyTypeMismatch = "warning"
 reportShadowedImports = "error"
-reportUninitializedInstanceVariable = "warning"
+# reportUninitializedInstanceVariable = "warning"
 reportUnnecessaryTypeIgnoreComment = "warning"
-

@@ -3,7 +3,6 @@
 The implementation is based off of this guide: https://gist.github.com/InterStella0/b78488fb28cadf279dfd3164b9f0cf96
 """
 
-import logging
 import re
 from collections.abc import Mapping
 from typing import Any
@@ -15,8 +14,6 @@ from discord.ext import commands
 import beira
 from beira.utils import PaginatedEmbedView
 
-
-LOGGER = logging.getLogger(__name__)
 
 HELP_COLOR = 0x16A75D
 
@@ -240,7 +237,7 @@ class HelpCog(commands.Cog, name="Help"):
             A name to match to a bot command. If unfilled, default to the generic help dialog.
         """
 
-        ctx = await self.bot.get_context(interaction, cls=beira.Context)
+        ctx = await self.bot.get_context(interaction)
 
         if command is not None:
             await ctx.send_help(command)
@@ -258,7 +255,7 @@ class HelpCog(commands.Cog, name="Help"):
         """Autocompletes the help command."""
 
         assert self.bot.help_command
-        ctx = await self.bot.get_context(interaction, cls=beira.Context)
+        ctx = await self.bot.get_context(interaction)
         help_command = self.bot.help_command.copy()
         help_command.context = ctx
 
@@ -277,6 +274,4 @@ class HelpCog(commands.Cog, name="Help"):
 
 
 async def setup(bot: beira.Beira) -> None:
-    """Connects cog to bot."""
-
     await bot.add_cog(HelpCog(bot))

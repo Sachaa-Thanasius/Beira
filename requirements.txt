@@ -1,22 +1,18 @@
 aiohttp
-ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py@main
+ao3.py @ git+https://github.com/Sachaa-Thanasius/ao3.py
 arsenic
 async-lru
 asyncpg==0.29.0
 asyncpg-stubs==0.29.1
-atlas-api @ https://github.com/Sachaa-Thanasius/atlas-api-wrapper
+atlas-api @ git+https://github.com/Sachaa-Thanasius/atlas-api-wrapper
 discord.py[speed,voice]>=2.4.0
-fichub-api @ https://github.com/Sachaa-Thanasius/fichub-api
-jishaku @ git+https://github.com/Gorialis/jishaku@a6661e2813124fbfe53326913e54f7c91e5d0dec
+fichub-api @ git+https://github.com/Sachaa-Thanasius/fichub-api
+jishaku @ git+https://github.com/Gorialis/jishaku
 lxml>=4.9.3
 markdownify
-msgspec[toml]
+msgspec
 openpyxl
 Pillow>=10.0.0
 types-lxml
+tzdata; platform_system == "Windows"
 wavelink>=3.4.0
-
-# To be used later:
-# parsedatetime
-# parsedatetime-stubs @ git+https://github.com/Sachaa-Thanasius/parsedatetime-stubs
-# python-dateutil

@@ -3,7 +3,6 @@
 import asyncio
 import colorsys
 import importlib.metadata
-import logging
 import math
 import random
 import re
@@ -18,8 +17,6 @@ from discord.ext import commands
 
 import beira
 
-
-LOGGER = logging.getLogger(__name__)
 
 INSPIROBOT_API_URL = "https://inspirobot.me/api"
 INSPIROBOT_ICON_URL = "https://pbs.twimg.com/profile_images/815624354876760064/zPmAZWP4_400x400.jpg"

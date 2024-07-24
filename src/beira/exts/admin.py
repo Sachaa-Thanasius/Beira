@@ -2,16 +2,11 @@
 owner's behest.
 """
 
-import logging
-
 import discord
 from asyncpg import PostgresError, PostgresWarning
 from discord.ext import commands
 
 import beira
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 class AdminCog(commands.Cog, name="Administration"):

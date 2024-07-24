@@ -1,7 +1,6 @@
 """A module/cog for handling todo lists made in Discord and stored in a database."""
 
 import datetime
-import logging
 import textwrap
 from abc import ABC, abstractmethod
 from typing import Any, Self
@@ -13,9 +12,6 @@ from discord.ext import commands
 
 import beira
 from beira.utils import Connection_alias, OwnedView, PaginatedEmbedView, Pool_alias
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 class TodoItem(msgspec.Struct):
@@ -46,50 +42,6 @@ class TodoItem(msgspec.Struct):
     @classmethod
     def generate_deleted(cls) -> Self:
         return cls(-1, 0, "", discord.utils.utcnow())
-
-    async def change_completion(self, conn: Pool_alias | Connection_alias) -> Self:
-        """Adds or removes a completion date from the record in the database, giving back the new version of the record.
-
-        This function returns a new instance of the class.
-
-        Parameters
-        ----------
-        conn: asyncpg.Pool | asyncpg.Connection
-            The connection/pool that will be used to make this database command.
-        """
-
-        stmt = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
-        new_date = discord.utils.utcnow() if self.completed_at is None else None
-        record = await conn.fetchrow(stmt, new_date, self.todo_id)
-        return self.from_record(record) if record else type(self).generate_deleted()
-
-    async def update(self, conn: Pool_alias | Connection_alias, updated_content: str) -> Self:
-        """Changes the to-do content of the record, giving back the new version of the record.
-
-        This function returns a new instance of the class.
-
-        Parameters
-        ----------
-        conn: asyncpg.Pool | asyncpg.Connection
-            The connection/pool that will be used to make this database command.
-        updated_content: str
-            The new to-do content.
-        """
-
-        stmt = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
-        record = await conn.fetchrow(stmt, updated_content, self.todo_id)
-        return self.from_record(record) if record else type(self).generate_deleted()
-
-    async def delete(self, conn: Pool_alias | Connection_alias) -> None:
-        """Deletes the record from the database.
-
-        Parameters
-        ----------
-        conn: asyncpg.Pool | asyncpg.Connection
-            The connection/pool that will be used to make this database command.
-        """
-
-        await conn.execute("DELETE FROM todos where todo_id = $1;", self.todo_id)
 
     def display_embed(self, *, to_be_deleted: bool = False) -> discord.Embed:
         """Generates a formatted embed from a to-do record.
@@ -128,6 +80,29 @@ class TodoItem(msgspec.Struct):
                 todo_embed.set_footer(text="Overdue")
 
         return todo_embed
+
+
+async def change_todo_completion(conn: Pool_alias | Connection_alias, item: TodoItem) -> TodoItem:
+    """Adds or removes a completion date from a to-do item in the database, giving back the new version of the item."""
+
+    stmt = "UPDATE todos SET todo_completed_at = $1 WHERE todo_id = $2 RETURNING *;"
+    new_date = discord.utils.utcnow() if item.completed_at is None else None
+    record = await conn.fetchrow(stmt, new_date, item.todo_id)
+    return TodoItem.from_record(record) if record else TodoItem.generate_deleted()
+
+
+async def update_todo_content(conn: Pool_alias, item: TodoItem, updated_content: str) -> TodoItem:
+    """Changes the content of the to-do item, giving back the new version of the item."""
+
+    stmt = "UPDATE todos SET todo_content = $1 WHERE todo_id = $2 RETURNING *;"
+    record = await conn.fetchrow(stmt, updated_content, item.todo_id)
+    return TodoItem.from_record(record) if record else TodoItem.generate_deleted()
+
+
+async def delete_todo(conn: Pool_alias, item: TodoItem) -> None:
+    """Deletes the to-do item from the database."""
+
+    await conn.execute("DELETE FROM todos where todo_id = $1;", item.todo_id)
 
 
 class TodoModal(discord.ui.Modal, title="What do you want to do?"):
@@ -207,7 +182,7 @@ class TodoCompleteButton(discord.ui.Button[TodoViewABC]):
         assert self.view is not None
 
         # Get a new version of the to-do item after adding a completion date.
-        updated_todo_item = await self.view.todo_item.change_completion(interaction.client.db_pool)
+        updated_todo_item = await change_todo_completion(interaction.client.db_pool, self.view.todo_item)
 
         # Adjust the button based on the item.
         if updated_todo_item.completed_at is None:
@@ -257,7 +232,11 @@ class TodoEditButton(discord.ui.Button[TodoViewABC]):
 
         # Adjust the view to have and display the updated to-do item, and let the user know it's updated.
         if self.view.todo_item.content != modal.content.value:
-            updated_todo_item = await self.view.todo_item.update(interaction.client.db_pool, modal.content.value)
+            updated_todo_item = await update_todo_content(
+                interaction.client.db_pool,
+                self.view.todo_item,
+                modal.content.value,
+            )
             await self.view.update_todo(modal.interaction, updated_todo_item)
             await modal.interaction.followup.send("Todo item edited.", ephemeral=True)
         else:
@@ -285,7 +264,7 @@ class TodoDeleteButton(discord.ui.Button[TodoViewABC]):
 
         assert self.view is not None
 
-        await self.view.todo_item.delete(interaction.client.db_pool)
+        await delete_todo(interaction.client.db_pool, self.view.todo_item)
         await self.view.update_todo(interaction, TodoItem.generate_deleted())
         await interaction.followup.send("Todo task deleted!", ephemeral=True)
 

@@ -10,14 +10,16 @@ Rules and code inspiration:
 import logging
 import random
 from itertools import cycle, islice
+from typing import Self
 
 import asyncpg
 import discord
+import msgspec
 from discord import app_commands
 from discord.ext import commands
 
 import beira
-from beira.utils import EMOJI_STOCK, StatsEmbed
+from beira.utils import EMOJI_STOCK, Connection_alias, Pool_alias, StatsEmbed
 
 from .snow_text import (
     COLLECT_FAIL_IMGS,
@@ -29,19 +31,298 @@ from .snow_text import (
     SNOW_CODE_NOTE,
     SNOW_INSPO_NOTE,
 )
-from .utils import (
-    GuildSnowballSettings,
-    SnowballRecord,
-    SnowballSettingsView,
-    collect_cooldown,
-    steal_cooldown,
-    transfer_cooldown,
-)
 
 
 LOGGER = logging.getLogger(__name__)
 
 LEADERBOARD_MAX = 10  # Number of people shown on one leaderboard at a time.
+
+
+class SnowballRecord(msgspec.Struct):
+    """Record-like structure that represents a member's snowball record.
+
+    Attributes
+    ----------
+    hits: int
+        The number of snowballs used that the member just hit people with.
+    misses: int
+        The number of snowballs used the member just tried to hit someone with and missed.
+    kos: int
+        The number of hits the member just took.
+    stock: int
+        The *change* in how many snowballs the member has in stock.
+    """
+
+    hits: int
+    misses: int
+    kos: int
+    stock: int
+
+    @classmethod
+    def from_record(cls, record: asyncpg.Record) -> Self:
+        return cls(*(record[val] for val in ("hits", "misses", "kos", "stock")))
+
+
+class GuildSnowballSettings(msgspec.Struct):
+    """Record-like structure to hold a guild's snowball settings.
+
+    Attributes
+    ----------
+    guild_id: int, default=0
+        The guild these settings apply to. Defaults to 0.
+    hit_odds: float, default=0.6
+        Chance of hitting someone with a snowball. Defaults to 0.6.
+    stock_cap: int, default=100
+        Maximum number of snowballs regular members can hold in their inventory. Defaults to 100.
+    transfer_cap: int, default=10
+        Maximum number of snowballs that can be gifted or stolen. Defaults to 10.
+    """
+
+    guild_id: int = 0
+    hit_odds: float = 0.6
+    stock_cap: int = 100
+    transfer_cap: int = 10
+
+    @classmethod
+    def from_record(cls, record: asyncpg.Record) -> Self:
+        return cls(record["guild_id"], record["hit_odds"], record["stock_cap"], record["transfer_cap"])
+
+
+async def update_user_snow_record(
+    conn: Pool_alias | Connection_alias,
+    member: discord.Member,
+    hits: int = 0,
+    misses: int = 0,
+    kos: int = 0,
+    stock: int = 0,
+) -> SnowballRecord | None:
+    """Upsert a user's snowball stats based on the given stat parameters."""
+
+    # Upsert the relevant users and guilds to the database before adding a snowball record.
+    stmt = """\
+        INSERT INTO guilds (guild_id) VALUES ($1) ON CONFLICT (guild_id) DO NOTHING;
+        INSERT INTO users (user_id) VALUES ($2) ON CONFLICT (user_id) DO NOTHING;
+        INSERT INTO members (guild_id, user_id) VALUES ($1, $2) ON CONFLICT (guild_id, user_id) DO NOTHING;
+
+        INSERT INTO snowball_stats (user_id, guild_id, hits, misses, kos, stock)
+        VALUES ($2, $1, $3, $4, $5, $6)
+        ON CONFLICT (user_id, guild_id) DO UPDATE
+            SET hits = snowball_stats.hits + EXCLUDED.hits,
+                misses = snowball_stats.misses + EXCLUDED.misses,
+                kos = snowball_stats.kos + EXCLUDED.kos,
+                stock = snowball_stats.stock + $7
+        RETURNING *;
+    """
+
+    values = (member.id, member.guild.id, hits, misses, kos, max(stock, 0), stock)
+    record = await conn.fetchrow(stmt, *values)
+    return SnowballRecord.from_record(record) if record else None
+
+
+async def update_guild_snow_settings(conn: Pool_alias | Connection_alias, settings: GuildSnowballSettings) -> None:
+    """Upsert these snowball settings into the database."""
+
+    stmt = """\
+        INSERT INTO snowball_settings (guild_id, hit_odds, stock_cap, transfer_cap)
+        VALUES ($1, $2, $3, $4)
+        ON CONFLICT(guild_id)
+        DO UPDATE
+            SET hit_odds = EXCLUDED.hit_odds,
+                stock_cap = EXCLUDED.stock_cap,
+                transfer_cap = EXCLUDED.transfer_cap;
+    """
+    await conn.execute(stmt, settings.guild_id, settings.hit_odds, settings.stock_cap, settings.transfer_cap)
+
+
+# region -------- Views
+
+
+class SnowballSettingsModal(discord.ui.Modal):
+    """Custom modal for changing the guild-specific settings of the snowball game.
+
+    Parameters
+    ----------
+    default_settings: SnowballSettings
+        The current snowball-related settings for the guild.
+
+    Attributes
+    ----------
+    hit_odds_input: discord.ui.TextInput
+        An editable text field showing the current hit odds for this guild.
+    stock_cap_input: discord.ui.TextInput
+        An editable text field showing the current stock cap for this guild.
+    transfer_cap_input: discord.ui.TextInput
+        An editable text field showing the current transfer cap for this guild.
+    default_settings: SnowballSettings
+        The current snowball-related settings for the guild.
+    new_settings: SnowballSettings, optional
+        The new snowball-related settings for this guild from user input.
+    """
+
+    def __init__(self, default_settings: GuildSnowballSettings) -> None:
+        super().__init__(title="This Guild's Snowball Settings")
+
+        # Create the items.
+        self.hit_odds_input: discord.ui.TextInput[Self] = discord.ui.TextInput(
+            label="The chance of hitting a person (0.0-1.0)",
+            placeholder=f"Current: {default_settings.hit_odds:.2}",
+            default=f"{default_settings.hit_odds:.2}",
+            required=False,
+        )
+        self.stock_cap_input: discord.ui.TextInput[Self] = discord.ui.TextInput(
+            label="Max snowballs a member can hold (no commas)",
+            placeholder=f"Current: {default_settings.stock_cap}",
+            default=str(default_settings.stock_cap),
+            required=False,
+        )
+        self.transfer_cap_input: discord.ui.TextInput[Self] = discord.ui.TextInput(
+            label="Max snowballs that can be gifted/stolen",
+            placeholder=f"Current: {default_settings.transfer_cap}",
+            default=str(default_settings.transfer_cap),
+            required=False,
+        )
+
+        # Add the items.
+        for item in (self.hit_odds_input, self.stock_cap_input, self.transfer_cap_input):
+            self.add_item(item)
+
+        # Save the settings.
+        self.default_settings: GuildSnowballSettings = default_settings
+        self.new_settings: GuildSnowballSettings | None = None
+
+    async def on_submit(self, interaction: beira.Interaction, /) -> None:  # type: ignore # Narrowing.
+        """Verify changes and update the snowball settings in the database appropriately."""
+
+        guild_id = self.default_settings.guild_id
+
+        # Get the new settings values and verify that they are be the right types.
+        new_odds_val = self.default_settings.hit_odds
+        try:
+            temp = float(self.hit_odds_input.value)
+        except ValueError:
+            pass
+        else:
+            if 0.0 <= temp <= 1.0:
+                new_odds_val = temp
+
+        new_stock_val = self.default_settings.stock_cap
+        try:
+            temp = int(self.stock_cap_input.value)
+        except ValueError:
+            pass
+        else:
+            if temp >= 0:
+                new_stock_val = temp
+
+        new_transfer_val = self.default_settings.transfer_cap
+        try:
+            temp = int(self.transfer_cap_input.value)
+        except ValueError:
+            pass
+        else:
+            if temp >= 0:
+                new_transfer_val = temp
+
+        # Update the record in the database if there's been a change.
+        self.new_settings = GuildSnowballSettings(guild_id, new_odds_val, new_stock_val, new_transfer_val)
+        if self.new_settings != self.default_settings:
+            await update_guild_snow_settings(interaction.client.db_pool, self.new_settings)
+            await interaction.response.send_message("Settings updated!")
+
+
+class SnowballSettingsView(discord.ui.View):
+    """A view with a button that allows server administrators and bot owners to change snowball-related settings.
+
+    Parameters
+    ----------
+    guild_settings: SnowballSettings
+        The current snowball-related settings for the guild.
+
+    Attributes
+    ----------
+    settings: SnowballSettings
+        The current snowball-related settings for the guild.
+    message: discord.Message
+        The message an instance of this view is attached to.
+    """
+
+    message: discord.Message
+
+    def __init__(self, guild_name: str, guild_settings: GuildSnowballSettings) -> None:
+        super().__init__()
+        self.guild_name = guild_name
+        self.settings: GuildSnowballSettings = guild_settings
+
+    async def on_timeout(self) -> None:
+        # Disable everything on timeout.
+
+        for item in self.children:
+            item.disabled = True  # type: ignore
+
+        await self.message.edit(view=self)
+
+    async def interaction_check(self, interaction: beira.Interaction, /) -> bool:  # type: ignore # Needed narrowing.
+        """Ensure people interacting with this view are only server administrators or bot owners."""
+
+        # This should only ever be called in a guild context.
+        assert interaction.guild
+        assert isinstance(interaction.user, discord.Member)
+
+        user = interaction.user
+        check = bool(user.guild_permissions.administrator or interaction.client.owner_id == user.id)
+
+        if not check:
+            await interaction.response.send_message("You can't change that unless you're a guild admin.")
+        return check
+
+    def format_embed(self) -> discord.Embed:
+        return (
+            discord.Embed(
+                color=0x5E9A40,
+                title=f"Snowball Settings in {self.guild_name}",
+                description=(
+                    "Below are the settings for the bot's snowball hit rate, stock maximum, and more. Settings can be "
+                    "added on a per-guild basis, but currently don't have any effect. Fix coming soon."
+                ),
+            )
+            .add_field(
+                name=f"Odds = {self.settings.hit_odds}",
+                value="The odds of landing a snowball on someone.",
+                inline=False,
+            )
+            .add_field(
+                name=f"Default Stock Cap = {self.settings.stock_cap}",
+                value="The maximum number of snowballs the average member can hold at once.",
+                inline=False,
+            )
+            .add_field(
+                name=f"Transfer Cap = {self.settings.transfer_cap}",
+                value="The maximum number of snowballs that can be gifted or stolen at once.",
+                inline=False,
+            )
+        )
+
+    @discord.ui.button(label="Update", emoji="⚙")
+    async def change_settings_button(self, interaction: beira.Interaction, _: discord.ui.Button[Self]) -> None:
+        """Send a modal that allows the user to edit the snowball settings for this guild."""
+
+        # Get inputs from a modal.
+        modal = SnowballSettingsModal(self.settings)
+        await interaction.response.send_modal(modal)
+        modal_timed_out = await modal.wait()
+
+        if modal_timed_out or self.is_finished():
+            return
+
+        # Update the known settings.
+        if modal.new_settings is not None and modal.new_settings != self.settings:
+            self.settings = modal.new_settings
+
+            # Edit the embed with the settings information.
+            await interaction.edit_original_response(embed=self.format_embed())
+
+
+# endregion
 
 
 class SnowballCog(commands.Cog, name="Snowball"):
@@ -120,7 +401,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         """Show what the settings are for the snowballs in this server."""
 
         # Get the settings for the guild and make an embed display.
-        guild_settings = await GuildSnowballSettings.from_database(ctx.db, ctx.guild.id)
+        record = await ctx.db.fetchrow("SELECT * FROM snowball_settings WHERE guild_id = $1;", ctx.guild.id)
+        guild_settings = GuildSnowballSettings.from_record(record) if record else GuildSnowballSettings(ctx.guild.id)
         view = SnowballSettingsView(ctx.guild.name, guild_settings)
         embed = view.format_embed()
 
@@ -129,6 +411,24 @@ class SnowballCog(commands.Cog, name="Snowball"):
             view.message = await ctx.send(embed=embed, view=view)
         else:
             await ctx.send(embed=embed)
+
+    @staticmethod
+    def collect_cooldown(ctx: beira.Context) -> commands.Cooldown | None:
+        """Sets cooldown for SnowballCog.collect() command. 10 seconds by default.
+
+        Bot owner and friends get less time.
+        """
+
+        rate, per = 1.0, 15.0  # Default cooldown
+        exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
+        testing_guild_ids: list[int] = ctx.bot.config.discord.important_guilds["dev"]
+
+        if ctx.author.id in exempt:
+            return None
+        if ctx.guild and (ctx.guild.id in testing_guild_ids):
+            per = 1.0
+
+        return commands.Cooldown(rate, per)
 
     @snow.command()
     @commands.guild_only()
@@ -141,10 +441,10 @@ class SnowballCog(commands.Cog, name="Snowball"):
         base_stock_cap = guild_snow_settings.stock_cap
 
         # Only special people get the higher snowball limit.
-        privilege_check = bool(ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author))
+        privilege_check = ctx.author.id in (self.bot.owner_id, ctx.bot.special_friends["aeroali"])
         stock_limit = base_stock_cap * 2 if privilege_check else base_stock_cap
 
-        record = await SnowballRecord.upsert_record(ctx.db, ctx.author, stock=1)
+        record = await update_user_snow_record(ctx.db, ctx.author, stock=1)
 
         embed = discord.Embed(color=0x5E62D3)
         if record:
@@ -200,15 +500,15 @@ class SnowballCog(commands.Cog, name="Snowball"):
             # Update the database records and prepare the response message and embed based on the outcome.
             if roll < base_hit_odds:
                 async with ctx.db.acquire() as conn, conn.transaction():
-                    await SnowballRecord.upsert_record(conn, ctx.author, hits=1, stock=-1)
-                    await SnowballRecord.upsert_record(conn, target, kos=1)
+                    await update_user_snow_record(conn, ctx.author, hits=1, stock=-1)
+                    await update_user_snow_record(conn, target, kos=1)
 
                 embed.description = random.choice(HIT_NOTES).format(target.mention)
                 embed.set_image(url=random.choice(HIT_IMGS))
                 message = target.mention
 
             else:
-                await SnowballRecord.upsert_record(ctx.db, ctx.author, misses=1)
+                await update_user_snow_record(ctx.db, ctx.author, misses=1)
 
                 misses_text = random.choice(MISS_NOTES)
                 embed.colour = 0xFFA600
@@ -222,6 +522,21 @@ class SnowballCog(commands.Cog, name="Snowball"):
             ephemeral = True
 
         await ctx.send(content=message, embed=embed, ephemeral=ephemeral)
+
+    @staticmethod
+    def transfer_cooldown(ctx: beira.Context) -> commands.Cooldown | None:
+        """Sets cooldown for transfer command. 60 seconds by default, less for bot owner and friends."""
+
+        rate, per = 1.0, 60.0  # Default cooldown
+        exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"]]
+        testing_guild_ids: list[int] = ctx.bot.config.discord.important_guilds["dev"]
+
+        if ctx.author.id in exempt:
+            return None
+        if ctx.guild and (ctx.guild.id in testing_guild_ids):
+            per = 2.0
+
+        return commands.Cooldown(rate, per)
 
     @snow.command()
     @commands.guild_only()
@@ -251,7 +566,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         base_stock_cap = guild_snow_settings.stock_cap
 
         # Only special people get the higher snowball limit.
-        privilege_check = bool(ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author))
+        privilege_check = ctx.author.id in (self.bot.owner_id, ctx.bot.special_friends["aeroali"])
         stock_limit = base_stock_cap * 2 if privilege_check else base_stock_cap
 
         # Build on an embed.
@@ -288,13 +603,28 @@ class SnowballCog(commands.Cog, name="Snowball"):
 
         # Update the giver and receiver's records.
         async with ctx.db.acquire() as conn, conn.transaction():
-            await SnowballRecord.upsert_record(conn, ctx.author, stock=-amount)
-            await SnowballRecord.upsert_record(conn, receiver, stock=amount)
+            await update_user_snow_record(conn, ctx.author, stock=-amount)
+            await update_user_snow_record(conn, receiver, stock=amount)
 
         # Send notification message of successful transfer.
         def_embed.description = f"Transfer successful! You've given {receiver.mention} {amount} of your snowballs!"
         message = f"{ctx.author.mention}, {receiver.mention}"
         await ctx.send(content=message, embed=def_embed, ephemeral=False)
+
+    @staticmethod
+    def steal_cooldown(ctx: beira.Context) -> commands.Cooldown | None:
+        """Sets cooldown for steal command. 90 seconds by default, less for bot owner and friends."""
+
+        rate, per = 1.0, 90.0  # Default cooldown
+        exempt = [ctx.bot.owner_id, ctx.bot.special_friends["aeroali"], ctx.bot.special_friends["athenahope"]]
+        testing_guild_ids: list[int] = ctx.bot.config.discord.important_guilds["dev"]
+
+        if ctx.author.id in exempt:
+            return None
+        if ctx.guild and (ctx.guild.id in testing_guild_ids):
+            per = 2.0
+
+        return commands.Cooldown(rate, per)
 
     @snow.command()
     @commands.guild_only()
@@ -328,7 +658,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         base_stock_cap = guild_snow_settings.stock_cap
 
         # Only special people get the higher snowball limit.
-        privilege_check = bool(ctx.author.id == self.bot.owner_id or self.bot.is_ali(ctx.author))
+        privilege_check = ctx.author.id in (self.bot.owner_id, ctx.bot.special_friends["aeroali"])
         stock_limit = base_stock_cap * 2 if privilege_check else base_stock_cap
 
         # Build on an embed.
@@ -370,8 +700,8 @@ class SnowballCog(commands.Cog, name="Snowball"):
         async with ctx.db.acquire() as conn, conn.transaction():
             assert victim_record is not None
             amount_to_steal = min(victim_record["stock"], amount)
-            await SnowballRecord.upsert_record(conn, ctx.author, stock=amount_to_steal)
-            await SnowballRecord.upsert_record(conn, victim, stock=-amount_to_steal)
+            await update_user_snow_record(conn, ctx.author, stock=amount_to_steal)
+            await update_user_snow_record(conn, victim, stock=-amount_to_steal)
 
         # Send notification message of successful theft.
         def_embed.description = f"Thievery successful! You've stolen {amount_to_steal} snowballs from {victim.mention}!"
@@ -562,7 +892,12 @@ class SnowballCog(commands.Cog, name="Snowball"):
         This allows the use of guild-specific limits stored in the db and now temporarily in the context.
         """
 
-        guild_snow_settings = await GuildSnowballSettings.from_database(ctx.db, ctx.guild.id)
+        record = await ctx.db.fetchrow("SELECT * FROM snowball_settings WHERE guild_id = $1;", ctx.guild.id)
+        if record:
+            guild_snow_settings = GuildSnowballSettings.from_record(record)
+        else:
+            guild_snow_settings = GuildSnowballSettings(ctx.guild.id)
+
         ctx.guild_snow_settings = guild_snow_settings  # type: ignore # Runtime attribute assignment.
 
     @collect.after_invoke
@@ -593,11 +928,7 @@ class SnowballCog(commands.Cog, name="Snowball"):
         special_stars = (EMOJI_STOCK[name] for name in ("orange_star", "blue_star", "pink_star"))
 
         # Create a list of emojis to accompany the leaderboard members.
-        ldbd_places_emojis = (
-            "\N{GLOWING STAR}",
-            "\N{WHITE MEDIUM STAR}",
-            *tuple(emoji for emoji in islice(cycle(special_stars), 8)),
-        )
+        ldbd_places_emojis = ("\N{GLOWING STAR}", "\N{WHITE MEDIUM STAR}", *islice(cycle(special_stars), 8))
 
         # Assemble each entry's data.
         snow_data = [(_get_entity_from_record(row), row["hits"], row["misses"], row["kos"]) for row in records]

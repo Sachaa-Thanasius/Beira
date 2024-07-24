@@ -286,7 +286,7 @@ class PaginatedEmbedView[_LT](abc.ABC, OwnedView):
         await self.update_page(interaction)
 
 
-class PaginatedSelectView[_LT](abc.ABC, OwnedView):
+class PaginatedSelectView[_SequenceT: Sequence[Any]](abc.ABC, OwnedView):
     """A view that handles paginated embeds and page buttons.
 
     Parameters
@@ -312,7 +312,7 @@ class PaginatedSelectView[_LT](abc.ABC, OwnedView):
 
     message: discord.Message
 
-    def __init__(self, author_id: int, pages_content: Sequence[_LT], *, timeout: float | None = 180) -> None:
+    def __init__(self, author_id: int, pages_content: _SequenceT, *, timeout: float | None = 180) -> None:
         super().__init__(author_id, timeout=timeout)
         self.pages = pages_content
         self.page_index: int = 0

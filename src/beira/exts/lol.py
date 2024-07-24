@@ -5,7 +5,6 @@ Credit to Ralph for the idea and initial implementation.
 
 import asyncio
 import itertools
-import logging
 from pathlib import Path
 from typing import Any, Self
 from urllib.parse import quote, urljoin
@@ -19,8 +18,6 @@ from discord.ext import commands
 import beira
 from beira.utils import StatsEmbed
 
-
-LOGGER = logging.getLogger(__name__)
 
 GECKODRIVER = Path().resolve().joinpath("drivers/geckodriver/geckodriver.exe")
 GECKODRIVER_LOGS = Path().resolve().joinpath("logs/geckodriver.log")

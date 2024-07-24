@@ -11,12 +11,13 @@ import beira
 
 
 # The supposed schedule table right now.
+# Requires a postgres extension: https://github.com/fboulnois/pg_uuidv7
 """
 CREATE TABLE IF NOT EXISTS scheduled_dispatches (
-    task_id             UUID                        PRIMARY KEY,
-    dispatch_name       TEXT                        NOT NULL,
-    dispatch_time       TIMESTAMP WITH TIME ZONE    NOT NULL,
-    dispatch_zone       TEXT                        NOT NULL,
+    task_id             UUID        PRIMARY KEY     DEFAULT uuid_generate_v7(),
+    dispatch_name       TEXT        NOT NULL,
+    dispatch_time       TIMESTAMP   NOT NULL,
+    dispatch_zone       TEXT        NOT NULL,
     associated_guild    BIGINT,
     associated_user     BIGINT,
     dispatch_extra      JSONB

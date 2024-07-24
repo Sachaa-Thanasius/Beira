@@ -1,14 +1,9 @@
-import logging
-
 import discord
 from discord import app_commands
 from discord.ext import commands
 
 import beira
 from beira.tree import after_app_invoke, before_app_invoke
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 async def example_before_hook(itx: discord.Interaction) -> None:

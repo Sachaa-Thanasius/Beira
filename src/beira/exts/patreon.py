@@ -50,7 +50,7 @@ class PatreonTierInfo(msgspec.Struct):
         return cls(*(record[attr] for attr in attrs_), emoji=discord.PartialEmoji.from_str(record["tier_emoji"]))
 
 
-class PatreonTierSelectView(PaginatedSelectView[PatreonTierInfo]):
+class PatreonTierSelectView(PaginatedSelectView[list[PatreonTierInfo]]):
     """A view that displays Patreon tiers and benefits as pages."""
 
     async def on_timeout(self) -> None:

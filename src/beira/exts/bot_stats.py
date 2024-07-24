@@ -1,6 +1,5 @@
 """A cog for tracking different bot metrics."""
 
-import logging
 from datetime import timedelta
 from typing import Literal
 
@@ -11,9 +10,6 @@ from discord.ext import commands
 
 import beira
 from beira.utils import StatsEmbed
-
-
-LOGGER = logging.getLogger(__name__)
 
 
 class CommandStatsSearchFlags(commands.FlagConverter):
@@ -49,7 +45,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
     async def track_command_use(self, ctx: beira.Context) -> None:
         """Stores records of command uses in the database after some processing."""
 
-        assert ctx.command is not None
+        assert ctx.command
 
         db = self.bot.db_pool
 
@@ -209,7 +205,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
                     "\N{FIRST PLACE MEDAL}",
                     "\N{SECOND PLACE MEDAL}",
                     "\N{THIRD PLACE MEDAL}",
-                    *("\N{SPORTS MEDAL}" for _ in range(6)),
+                    *(["\N{SPORTS MEDAL}"] * 6),
                 ]
 
                 embed.add_leaderboard_fields(ldbd_content=record_tuples, ldbd_emojis=ldbd_emojis)
@@ -223,7 +219,7 @@ class BotStatsCog(commands.Cog, name="Bot Stats"):
         """Autocompletes with bot command names."""
 
         assert self.bot.help_command
-        ctx = await self.bot.get_context(interaction, cls=beira.Context)
+        ctx = await self.bot.get_context(interaction)
         help_command = self.bot.help_command.copy()
         help_command.context = ctx
 

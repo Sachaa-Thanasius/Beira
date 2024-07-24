@@ -1,6 +1,5 @@
 """A cog that implements commands for reloading and syncing extensions and other commands, at the owner's behest."""
 
-import contextlib
 import logging
 from collections.abc import Generator
 from time import perf_counter
@@ -63,13 +62,13 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         for dev_guild in self.dev_guilds:
             self.bot.tree.remove_command(
                 self.block_add_ctx_menu.name,
-                type=self.block_add_ctx_menu.type,
                 guild=dev_guild,
+                type=self.block_add_ctx_menu.type,
             )
             self.bot.tree.remove_command(
                 self.block_remove_ctx_menu.name,
-                type=self.block_remove_ctx_menu.type,
                 guild=dev_guild,
+                type=self.block_remove_ctx_menu.type,
             )
 
     async def cog_check(self, ctx: beira.Context) -> bool:  # type: ignore # Narrowing, and async is allowed.
@@ -84,17 +83,11 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         By default, display the users and guilds that are blocked from using the bot.
         """
 
-        users = self.bot.blocked_entities_cache["users"]
-        guilds = self.bot.blocked_entities_cache["guilds"]
+        users_descr = "\n".join(str(self.bot.get_user(u) or u) for u in self.bot.blocked_users)
+        users_embed = discord.Embed(title="Blocked Users", description=users_descr)
 
-        users_embed = discord.Embed(
-            title="Blocked Users",
-            description="\n".join(str(self.bot.get_user(u) or u) for u in users),
-        )
-        guilds_embed = discord.Embed(
-            title="Blocked Guilds",
-            description="\n".join(str(self.bot.get_guild(g) or g) for g in guilds),
-        )
+        guilds_descr = "\n".join(str(self.bot.get_guild(g) or g) for g in self.bot.blocked_guilds)
+        guilds_embed = discord.Embed(title="Blocked Guilds", description=guilds_descr)
         await ctx.send(embeds=[users_embed, guilds_embed])
 
     @block.command("add")
@@ -127,7 +120,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                     SET is_blocked = EXCLUDED.is_blocked;
             """
             await ctx.db.executemany(stmt, [(user.id, True) for user in entities])
-            self.bot.blocked_entities_cache["users"].update(user.id for user in entities)
+            self.bot.blocked_users.update(user.id for user in entities)
             embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
         else:
             stmt = """\
@@ -138,7 +131,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                     SET is_blocked = EXCLUDED.is_blocked;
             """
             await ctx.db.executemany(stmt, [(guild.id, True) for guild in entities])
-            self.bot.blocked_entities_cache["guilds"].update(guild.id for guild in entities)
+            self.bot.blocked_guilds.update(guild.id for guild in entities)
             embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
 
         # Display the results.
@@ -174,8 +167,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                     SET is_blocked = EXCLUDED.is_blocked;
             """
             await ctx.db.executemany(stmt, [(user.id, False) for user in entities])
-            self.bot.blocked_entities_cache["users"].difference_update(user.id for user in entities)
-            embed = discord.Embed(title="Users", description="\n".join(str(user) for user in entities))
+            self.bot.blocked_users.difference_update(user.id for user in entities)
+            embed = discord.Embed(title="Users", description="\n".join(map(str, entities)))
         else:
             stmt = """\
                 INSERT INTO guilds (guild_id, is_blocked)
@@ -185,8 +178,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                     SET is_blocked = EXCLUDED.is_blocked;
             """
             await ctx.db.executemany(stmt, [(guild.id, False) for guild in entities])
-            self.bot.blocked_entities_cache["guilds"].difference_update(guild.id for guild in entities)
-            embed = discord.Embed(title="Guilds", description="\n".join(str(guild) for guild in entities))
+            self.bot.blocked_guilds.difference_update(guild.id for guild in entities)
+            embed = discord.Embed(title="Guilds", description="\n".join(map(str, entities)))
 
         # Display the results.
         await ctx.send("Unblocked the following from bot usage:", embed=embed, ephemeral=True)
@@ -201,7 +194,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         if ctx.interaction:
             error = getattr(error, "original", error)
 
-        if isinstance(error, PostgresError | PostgresConnectionError):
+        if isinstance(error, (PostgresError, PostgresConnectionError)):
             action = "block" if ctx.command.qualified_name == "block add" else "unblock"
             await ctx.send(f"Unable to {action} these users/guilds at this time.", ephemeral=True)
 
@@ -215,7 +208,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 SET is_blocked = EXCLUDED.is_blocked;
         """
         await self.bot.db_pool.execute(stmt, user.id, True)
-        self.bot.blocked_entities_cache["users"].update((user.id,))
+        self.bot.blocked_users.add(user.id)
 
         # Display the results.
         embed = discord.Embed(title="Users", description=str(user))
@@ -235,7 +228,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 SET is_blocked = EXCLUDED.is_blocked;
         """
         await self.bot.db_pool.execute(stmt, user.id, False)
-        self.bot.blocked_entities_cache["users"].difference_update((user.id,))
+        self.bot.blocked_users.difference_update((user.id,))
 
         # Display the results.
         embed = discord.Embed(title="Users", description=str(user))
@@ -258,17 +251,15 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         def create_walk_embed(title: str, cmds: list[app_commands.AppCommand]) -> None:
             """Creates an embed for global and guild command areas and adds it to a collection of embeds."""
 
-            descr = "\n".join([f"**{cmd.mention}**\n" for cmd in cmds])
+            descr = "\n\n".join(f"**{cmd.mention}**" for cmd in cmds)
             walk_embed = discord.Embed(color=0xCCCCCC, title=title, description=descr)
             all_embeds.append(walk_embed)
 
-        global_commands = await self.bot.tree.fetch_commands()
-        if global_commands:
+        if global_commands := await self.bot.tree.fetch_commands():
             create_walk_embed("Global App Commands Registered", global_commands)
 
         for guild in self.bot.guilds:
-            guild_commands = await self.bot.tree.fetch_commands(guild=guild)
-            if guild_commands:
+            if guild_commands := await self.bot.tree.fetch_commands(guild=guild):
                 create_walk_embed(f"Guild App Commands Registered - {guild}", guild_commands)
 
         await ctx.reply(embeds=all_embeds, ephemeral=True)
@@ -307,7 +298,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
 
         exts_to_load = set(EXTENSIONS).difference(set(self.bot.extensions), set(IGNORE_EXTENSIONS))
         return [
-            app_commands.Choice(name=ext.rsplit(".", 1)[1], value=ext)
+            app_commands.Choice(name=ext.rpartition(".")[2], value=ext)
             for ext in exts_to_load
             if current.lower() in ext.lower()
         ][:25]
@@ -398,7 +389,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         """Autocompletes names for currently loaded extensions."""
 
         return [
-            app_commands.Choice(name=ext.rsplit(".", 1)[1], value=ext)
+            app_commands.Choice(name=ext.rpartition(".")[2], value=ext)
             for ext in self.bot.extensions
             if current.lower() in ext.lower()
         ][:25]
@@ -427,7 +418,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         self,
         ctx: beira.Context,
         guilds: commands.Greedy[discord.Object] = None,  # type: ignore # Can't be type-hinted as optional.
-        spec: app_commands.Choice[str] | None = None,
+        spec: str | None = None,
     ) -> None:
         """Syncs the command tree in some way based on input.
 
@@ -529,7 +520,6 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 "Syncing the commands failed due to a user related error, typically because the command has invalid "
                 "data. This is equivalent to an HTTP status code of 400."
             )
-            LOGGER.error("", exc_info=error)
         elif isinstance(error, discord.Forbidden):
             embed.description = "The bot does not have the `applications.commands` scope in the guild."
         elif isinstance(error, app_commands.MissingApplicationID):
@@ -540,26 +530,18 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
             embed.description = "Generic HTTP error: Syncing the commands failed."
         else:
             embed.description = "Syncing the commands failed."
-            LOGGER.exception("Unknown error in sync command", exc_info=error)
 
         await ctx.reply(embed=embed)
 
     @commands.hybrid_command()
     async def cmd_tree(self, ctx: beira.Context) -> None:
-        indent_level = 0
+        """Display all bot commands in a pretty tree-like format."""
 
-        @contextlib.contextmanager
-        def new_indent(num: int = 4) -> Generator[None, object, None]:
-            nonlocal indent_level
-            indent_level += num
-            try:
-                yield
-            finally:
-                indent_level -= num
+        def walk_commands_with_indent(group: commands.GroupMixin[Any], indent_level: int = 0) -> Generator[str]:
+            indent_level += 4
 
-        def walk_commands_with_indent(group: commands.GroupMixin[Any]) -> Generator[str, object, None]:
             for cmd in group.commands:
-                if indent_level != 0:  # noqa: SIM108
+                if indent_level > 4:  # noqa: SIM108
                     indent = (indent_level - 1) * "─"
                 else:
                     indent = ""
@@ -567,11 +549,9 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 yield f"└{indent}{cmd.qualified_name}"
 
                 if isinstance(cmd, commands.GroupMixin):
-                    with new_indent():
-                        yield from walk_commands_with_indent(cmd)
+                    yield from walk_commands_with_indent(cmd, indent_level)
 
-        result = "\n".join(["Beira", *walk_commands_with_indent(ctx.bot)])
-        await ctx.send(f"```\n{result}\n```")
+        await ctx.send("\n".join(("```", "Beira", *walk_commands_with_indent(ctx.bot), "```")))
 
 
 async def setup(bot: beira.Beira) -> None:
