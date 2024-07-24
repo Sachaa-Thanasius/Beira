@@ -117,7 +117,7 @@ def is_blocked() -> "Check[Any]":
         if not (await ctx.bot.is_owner(ctx.author)):
             if ctx.author.id in ctx.bot.blocked_users:
                 raise UserIsBlocked
-            if ctx.guild and ctx.guild.id in ctx.bot.blocked_guilds:
+            if ctx.guild and (ctx.guild.id in ctx.bot.blocked_guilds):
                 raise GuildIsBlocked
         return True
 

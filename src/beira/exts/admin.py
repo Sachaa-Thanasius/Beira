@@ -76,7 +76,7 @@ class AdminCog(commands.Cog, name="Administration"):
                     await conn.execute(guild_stmt, ctx.guild.id)
                     await conn.execute(prefix_stmt, ctx.guild.id, new_prefix)
                     # Update it in the cache.
-                    self.bot.prefix_cache.setdefault(ctx.guild.id, []).append(new_prefix)
+                    self.bot.prefixes.setdefault(ctx.guild.id, []).append(new_prefix)
 
                     await ctx.send(f"'{new_prefix}' has been registered as a prefix in this guild.")
 
@@ -103,7 +103,7 @@ class AdminCog(commands.Cog, name="Administration"):
                 # Update it in the database and the cache.
                 prefix_stmt = "DELETE FROM guild_prefixes WHERE guild_id = $1 AND prefix = $2;"
                 await self.bot.db_pool.execute(prefix_stmt, ctx.guild.id, old_prefix)
-                self.bot.prefix_cache.setdefault(ctx.guild.id, [old_prefix]).remove(old_prefix)
+                self.bot.prefixes.setdefault(ctx.guild.id, [old_prefix]).remove(old_prefix)
 
                 await ctx.send(f"'{old_prefix}' has been unregistered as a prefix in this guild.")
 
@@ -117,7 +117,7 @@ class AdminCog(commands.Cog, name="Administration"):
             # Update it in the database and the cache.
             prefix_stmt = """DELETE FROM guild_prefixes WHERE guild_id = $1;"""
             await self.bot.db_pool.execute(prefix_stmt, ctx.guild.id)
-            self.bot.prefix_cache.setdefault(ctx.guild.id, []).clear()
+            self.bot.prefixes.setdefault(ctx.guild.id, []).clear()
 
             content = "The prefix(es) for this guild have been reset. Now only accepting the default prefix: `$`."
             await ctx.send(content)

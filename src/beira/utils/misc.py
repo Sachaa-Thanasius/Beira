@@ -24,16 +24,16 @@ class catchtime:
 
     def __init__(self, logger: logging.Logger | None = None):
         self.logger = logger
-        self.elapsed = 0.0
+        self.time = 0.0
 
     def __enter__(self):
-        self.elapsed = time.perf_counter()
+        self.time = time.perf_counter()
         return self
 
     def __exit__(self, *exc_info: object) -> None:
-        self.elapsed = time.perf_counter() - self.elapsed
+        self.time = time.perf_counter() - self.time
         if self.logger:
-            self.logger.info("Time: %.3f seconds", self.elapsed)
+            self.logger.info("Time: %.3f seconds", self.time)
 
 
 _BEFORE_WS = re.compile(r"^([\s]+)")
@@ -48,7 +48,7 @@ def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False
     italics_marker: str = "_"
 
     if base_url is not None:
-        node.make_links_absolute("".join(base_url.partition(".com/wiki/")[0:-1]), resolve_base_href=True)
+        node.make_links_absolute("".join(base_url.partition(".com/wiki/")[0:2]), resolve_base_href=True)
 
     for child in node.iter():
         if child.text:
@@ -59,27 +59,27 @@ def html_to_markdown(node: lxml.html.HtmlElement, *, include_spans: bool = False
         else:
             before_ws = after_ws = child_text = ""
 
-        if child.tag in {"i", "em"}:
-            text.append(f"{before_ws}{italics_marker}{child_text}{italics_marker}{after_ws}")
-            if italics_marker == "*":  # type: ignore # Pyright bug?
-                italics_marker = "_"
-        elif child.tag in {"b", "strong"}:
-            if text and text[-1].endswith("*"):
-                text.append("\u200b")
-            text.append(f"{before_ws}**{child_text}**{after_ws}")
-        elif child.tag == "a":
-            # No markup for links
-            if base_url is None:
+        match child.tag:
+            case "i" | "em":
+                text.append(f"{before_ws}{italics_marker}{child_text}{italics_marker}{after_ws}")
+                italics_marker = "_" if italics_marker == "*" else "*"
+            case "b" | "strong":
+                if text and text[-1].endswith("*"):
+                    text.append("\u200b")
+                text.append(f"{before_ws}**{child_text}**{after_ws}")
+            case "a" if base_url is None:  # No markup for incomplete links
                 text.append(f"{before_ws}{child_text}{after_ws}")
-            else:
+            case "a":
                 text.append(f"{before_ws}[{child.text}]({child.attrib['href']}){after_ws}")
-        elif child.tag == "p":
-            text.append(f"\n{child_text}\n")
-        elif include_spans and child.tag == "span":
-            if len(child) > 1:
-                text.append(f"{html_to_markdown(child, include_spans=True)}")
-            else:
-                text.append(f"{before_ws}{child_text}{after_ws}")
+            case "p":
+                text.append(f"\n{child_text}\n")
+            case "span" if include_spans:
+                if len(child) > 1:
+                    text.append(html_to_markdown(child, include_spans=True))
+                else:
+                    text.append(f"{before_ws}{child_text}{after_ws}")
+            case _:
+                pass
 
         if child.tail:
             text.append(child.tail)

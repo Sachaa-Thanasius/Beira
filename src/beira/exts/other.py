@@ -7,7 +7,6 @@ import math
 import random
 import re
 import tempfile
-import time
 from io import BytesIO, StringIO
 
 import discord
@@ -16,6 +15,7 @@ import openpyxl.styles
 from discord.ext import commands
 
 import beira
+from beira.utils import catchtime
 
 
 INSPIROBOT_API_URL = "https://inspirobot.me/api"
@@ -205,29 +205,27 @@ class OtherCog(commands.Cog, name="Other"):
     async def ping_(self, ctx: beira.Context) -> None:
         """Display the time necessary for the bot to communicate with Discord."""
 
-        ws_ping = self.bot.latency * 1000
+        ws_ping = self.bot.latency
 
-        start_time = time.perf_counter()
-        await ctx.typing()
-        typing_ping = (time.perf_counter() - start_time) * 1000
+        with catchtime() as typing_ping:
+            await ctx.typing()
 
-        start_time = time.perf_counter()
-        await self.bot.db_pool.fetch("SELECT * FROM guilds;")
-        db_ping = (time.perf_counter() - start_time) * 1000
+        with catchtime() as db_ping:
+            await self.bot.db_pool.fetch("SELECT * FROM guilds;")
 
-        start_time = time.perf_counter()
-        message = await ctx.send(embed=discord.Embed(title="Ping..."))
-        msg_ping = (time.perf_counter() - start_time) * 1000
+        with catchtime() as msg_ping:
+            message = await ctx.send(embed=discord.Embed(title="Ping..."))
 
+        total_time = sum((ws_ping, *(catch.time for catch in (typing_ping, db_ping, msg_ping))))
         pong_embed = (
             discord.Embed(title="Pong! \N{TABLE TENNIS PADDLE AND BALL}")
-            .add_field(name="Websocket", value=f"```json\n{ws_ping:.2f} ms\n```")
-            .add_field(name="Typing", value=f"```json\n{typing_ping:.2f} ms\n```")
+            .add_field(name="Websocket", value=f"```json\n{ws_ping * 1000:.2f} ms\n```")
+            .add_field(name="Typing", value=f"```json\n{typing_ping.time * 1000:.2f} ms\n```")
             .add_field(name="\u200b", value="\u200b")
-            .add_field(name="Database", value=f"```json\n{db_ping:.2f} ms\n```")
-            .add_field(name="Message", value=f"```json\n{msg_ping:.2f} ms\n```")
+            .add_field(name="Database", value=f"```json\n{db_ping.time * 1000:.2f} ms\n```")
+            .add_field(name="Message", value=f"```json\n{msg_ping.time * 1000:.2f} ms\n```")
             .add_field(name="\u200b", value="\u200b")
-            .add_field(name="Average", value=f"```json\n{(ws_ping + typing_ping + db_ping + msg_ping) / 4:.2f} ms\n```")
+            .add_field(name="Average", value=f"```json\n{total_time * 1000 / 4:.2f} ms\n```")
         )
 
         await message.edit(embed=pong_embed)

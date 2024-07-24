@@ -2,7 +2,6 @@
 
 import logging
 from collections.abc import Generator
-from time import perf_counter
 from typing import Any, Literal
 
 import discord
@@ -11,6 +10,7 @@ from discord import app_commands
 from discord.ext import commands
 
 import beira
+from beira.utils import catchtime
 
 from . import EXTENSIONS
 
@@ -363,23 +363,22 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 reloaded: list[str] = []
                 failed: list[str] = []
 
-                start_time = perf_counter()
-                for ext in sorted(self.bot.extensions):
-                    try:
-                        await self.bot.reload_extension(ext)
-                    except commands.ExtensionError as err:
-                        failed.append(ext)
-                        LOGGER.exception("Couldn't reload extension: %s", ext, exc_info=err)
-                    else:
-                        reloaded.append(ext)
-                end_time = perf_counter()
+                with catchtime() as reload_time:
+                    for ext in sorted(self.bot.extensions):
+                        try:
+                            await self.bot.reload_extension(ext)
+                        except commands.ExtensionError as err:
+                            failed.append(ext)
+                            LOGGER.exception("Couldn't reload extension: %s", ext, exc_info=err)
+                        else:
+                            reloaded.append(ext)
 
                 ratio_succeeded = f"{len(reloaded)}/{len(self.bot.extensions)}"
                 LOGGER.info("Attempted to reload all extensions. Successful: %s.", ratio_succeeded)
 
                 embed.add_field(name="Reloaded", value="\n".join(reloaded))
                 embed.add_field(name="Failed to reload", value="\n".join(failed))
-                embed.set_footer(text=f"Time taken: {end_time - start_time:.3f}s")
+                embed.set_footer(text=f"Time taken: {reload_time:.3f}s")
 
                 await ctx.send(embed=embed, ephemeral=True)
 
@@ -538,10 +537,8 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
         """Display all bot commands in a pretty tree-like format."""
 
         def walk_commands_with_indent(group: commands.GroupMixin[Any], indent_level: int = 0) -> Generator[str]:
-            indent_level += 4
-
             for cmd in group.commands:
-                if indent_level > 4:  # noqa: SIM108
+                if indent_level != 0:  # noqa: SIM108
                     indent = (indent_level - 1) * "─"
                 else:
                     indent = ""
@@ -549,7 +546,7 @@ class DevCog(commands.Cog, name="_Dev", command_attrs={"hidden": True}):
                 yield f"└{indent}{cmd.qualified_name}"
 
                 if isinstance(cmd, commands.GroupMixin):
-                    yield from walk_commands_with_indent(cmd, indent_level)
+                    yield from walk_commands_with_indent(cmd, indent_level + 4)
 
         await ctx.send("\n".join(("```", "Beira", *walk_commands_with_indent(ctx.bot), "```")))
 

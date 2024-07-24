@@ -36,7 +36,7 @@ async def update_op_gg_profiles(urls: list[str]) -> None:
 
     # Create the webdriver.
     with GECKODRIVER_LOGS.open(mode="a", encoding="utf-8") as log_file:
-        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)  # type: ignore # attrs class
+        service = services.Geckodriver(binary=str(GECKODRIVER), log_file=log_file)  # type: ignore # Untyped class
         browser = browsers.Firefox(**{"moz:firefoxOptions": {"args": ["-headless"]}})
 
         async with get_session(service, browser) as session:

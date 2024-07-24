@@ -24,7 +24,7 @@ from .config import Config, load_config
 from .exts import EXTENSIONS
 from .scheduler import Scheduler
 from .tree import HookableTree
-from .utils import LoggingManager, Pool_alias, conn_init, copy_annotations
+from .utils import LoggingManager, Pool_alias, catchtime, conn_init, copy_annotations
 
 
 LOGGER = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ class Beira(commands.Bot):
         self.ao3_client = ao3.Client(session=self.web_session)
 
         # Things to load before connecting to the Gateway.
-        self.prefix_cache: dict[int, list[str]] = {}
+        self.prefixes: dict[int, list[str]] = {}
         self.blocked_guilds: set[int] = set()
         self.blocked_users: set[int] = set()
 
@@ -140,10 +140,39 @@ class Beira(commands.Bot):
         LOGGER.info("Logged in as %s (ID: %s)", self.user, self.user.id)
 
     async def setup_hook(self) -> None:
+        # Start up the scheduler.
         self.scheduler.start_discord_dispatch(self)
-        await self._load_guild_prefixes()
-        await self._load_blocked_entities()
-        await self._load_extensions()
+
+        # Load guild prefixes.
+        prefix_records = await self.db_pool.fetch("SELECT guild_id, prefix FROM guild_prefixes;")
+        for entry in prefix_records:
+            self.prefixes.setdefault(entry["guild_id"], []).append(entry["prefix"])
+
+        LOGGER.info("Loaded all guild prefixes.")
+
+        # Load all blocked users and guilds.
+        blocked_user_records = await self.db_pool.fetch("SELECT user_id FROM users WHERE is_blocked;")
+        self.blocked_users |= {record["user_id"] for record in blocked_user_records}
+
+        blocked_guild_records = await self.db_pool.fetch("SELECT guild_id FROM guilds WHERE is_blocked;")
+        self.blocked_guilds |= {record["guild_id"] for record in blocked_guild_records}
+
+        # Load extensions/cogs. If a list of initial ones isn't provided, all extensions are loaded by default.
+        await self.load_extension("jishaku")
+
+        exts_to_load = self.initial_extensions or EXTENSIONS
+        with catchtime() as all_exts_time:
+            for extension in exts_to_load:
+                start_time = time.perf_counter()
+                try:
+                    await self.load_extension(extension)
+                except commands.ExtensionError as err:
+                    LOGGER.exception("Failed to load extension: %s", extension, exc_info=err)
+                else:
+                    end_time = time.perf_counter()
+                    LOGGER.info("Loaded extension: %s -- Time: %.5f", extension, end_time - start_time)
+
+        LOGGER.info("Total extension loading time: Time: %.5f", all_exts_time.time)
 
         # Connect to lavalink node(s).
         node = wavelink.Node(
@@ -165,7 +194,7 @@ class Beira(commands.Bot):
         await super().close()
 
     async def get_prefix(self, message: discord.Message, /) -> list[str] | str:
-        return self.prefix_cache.get(message.guild.id, "$") if message.guild else "$"
+        return self.prefixes.get(message.guild.id, "$") if message.guild else "$"
 
     @overload
     async def get_context(self, origin: discord.Message | discord.Interaction, /) -> Context: ...
@@ -251,57 +280,11 @@ class Beira(commands.Bot):
         embed.add_field(name="Channel", value=f"{context.channel}", inline=False)
         LOGGER.error("Exception in command %s", context.command, exc_info=exception, extra={"embed": embed})
 
-    async def _load_blocked_entities(self) -> None:
-        """Load all blocked users and guilds from the bot database."""
-
-        user_records = await self.db_pool.fetch("SELECT user_id FROM users WHERE is_blocked;")
-        self.blocked_users.update([record["user_id"] for record in user_records])
-
-        guild_records = await self.db_pool.fetch("SELECT guild_id FROM guilds WHERE is_blocked;")
-        self.blocked_guilds.update([record["guild_id"] for record in guild_records])
-
-    async def _load_guild_prefixes(self) -> None:
-        """Load all prefixes from the bot database."""
-
-        try:
-            db_prefixes = await self.db_pool.fetch("SELECT guild_id, prefix FROM guild_prefixes;")
-        except OSError:
-            LOGGER.exception("Couldn't load guild prefixes from the database. Using default(s) instead.")
-        else:
-            for entry in db_prefixes:
-                self.prefix_cache.setdefault(entry["guild_id"], []).append(entry["prefix"])
-
-            LOGGER.info("(Re)loaded all guild prefixes.")
-
-    async def _load_extensions(self) -> None:
-        """Loads extensions/cogs.
-
-        If a list of initial ones isn't provided, all extensions are loaded by default.
-        """
-
-        await self.load_extension("jishaku")
-
-        exts_to_load = self.initial_extensions or EXTENSIONS
-        all_exts_start_time = time.perf_counter()
-        for extension in exts_to_load:
-            start_time = time.perf_counter()
-            try:
-                await self.load_extension(extension)
-            except commands.ExtensionError as err:
-                LOGGER.exception("Failed to load extension: %s", extension, exc_info=err)
-            else:
-                end_time = time.perf_counter()
-                LOGGER.info("Loaded extension: %s -- Time: %.5f", extension, end_time - start_time)
-        all_exts_end_time = time.perf_counter()
-        LOGGER.info("Total extension loading time: Time: %.5f", all_exts_end_time - all_exts_start_time)
-
     async def _load_special_friends(self) -> None:
         await self.wait_until_ready()
 
         friends_ids: list[int] = self.config.discord.friend_ids
-        for user_id in friends_ids:
-            if user_obj := self.get_user(user_id):
-                self.special_friends[user_obj.name] = user_id
+        self.special_friends |= {user.name: user_id for user_id in friends_ids if (user := self.get_user(user_id))}
 
     @async_lru.alru_cache()
     async def get_user_timezone(self, user_id: int) -> str | None:
